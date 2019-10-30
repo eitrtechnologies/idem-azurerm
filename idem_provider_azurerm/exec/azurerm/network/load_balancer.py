@@ -1,0 +1,369 @@
+# -*- coding: utf-8 -*-
+'''
+Azure Resource Manager (ARM) Network Load Balancer Execution Module
+
+.. versionadded:: 1.0.0
+
+:maintainer: <devops@eitr.tech>
+:maturity: new
+:depends:
+    * `azure <https://pypi.python.org/pypi/azure>`_ >= 4.0.0
+    * `azure-common <https://pypi.python.org/pypi/azure-common>`_ >= 1.1.23
+    * `azure-mgmt <https://pypi.python.org/pypi/azure-mgmt>`_ >= 4.0.0
+    * `azure-mgmt-compute <https://pypi.python.org/pypi/azure-mgmt-compute>`_ >= 4.6.2
+    * `azure-mgmt-network <https://pypi.python.org/pypi/azure-mgmt-network>`_ >= 4.0.0
+    * `azure-mgmt-resource <https://pypi.python.org/pypi/azure-mgmt-resource>`_ >= 2.2.0
+    * `azure-mgmt-storage <https://pypi.python.org/pypi/azure-mgmt-storage>`_ >= 2.0.0
+    * `azure-mgmt-web <https://pypi.python.org/pypi/azure-mgmt-web>`_ >= 0.35.0
+    * `azure-storage <https://pypi.python.org/pypi/azure-storage>`_ >= 0.36.0
+    * `msrestazure <https://pypi.python.org/pypi/msrestazure>`_ >= 0.6.1
+:platform: linux
+
+:configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
+    to every function in order to work properly.
+
+    Required provider parameters:
+
+    if using username and password:
+      * ``subscription_id``
+      * ``username``
+      * ``password``
+
+    if using a service principal:
+      * ``subscription_id``
+      * ``tenant``
+      * ``client_id``
+      * ``secret``
+
+    Optional provider parameters:
+
+**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
+      * ``AZURE_PUBLIC_CLOUD`` (default)
+      * ``AZURE_CHINA_CLOUD``
+      * ``AZURE_US_GOV_CLOUD``
+      * ``AZURE_GERMAN_CLOUD``
+
+'''
+
+# Python libs
+from __future__ import absolute_import
+import logging
+
+try:
+    from six.moves import range as six_range
+except ImportError:
+    six_range = range
+
+# Azure libs
+HAS_LIBS = False
+try:
+    import azure.mgmt.network.models  # pylint: disable=unused-import
+    from msrestazure.tools import is_valid_resource_id, parse_resource_id
+    from msrest.exceptions import SerializationError
+    from msrestazure.azure_exceptions import CloudError
+    HAS_LIBS = True
+except ImportError:
+    pass
+
+log = logging.getLogger(__name__)
+
+
+async def list_all(hub, **kwargs):
+    '''
+    .. versionadded:: 1.0.0
+
+    List all load balancers within a subscription.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.network.load_balancer.list_all
+
+    '''
+    result = {}
+    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    try:
+        load_balancers = await hub.exec.utils.azurerm.paged_object_to_list(netconn.load_balancers.list_all())
+
+        for load_balancer in load_balancers:
+            result[load_balancer['name']] = load_balancer
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def list_(hub, resource_group, **kwargs):
+    '''
+    .. versionadded:: 1.0.0
+
+    List all load balancers within a resource group.
+
+    :param resource_group: The resource group name to list load balancers
+        within.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.network.load_balancer.list testgroup
+
+    '''
+    result = {}
+    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    try:
+        load_balancers = await hub.exec.utils.azurerm.paged_object_to_list(
+            netconn.load_balancers.list(
+                resource_group_name=resource_group
+            )
+        )
+
+        for load_balancer in load_balancers:
+            result[load_balancer['name']] = load_balancer
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def get(hub, name, resource_group, **kwargs):
+    '''
+    .. versionadded:: 1.0.0
+
+    Get details about a specific load balancer.
+
+    :param name: The name of the load balancer to query.
+
+    :param resource_group: The resource group name assigned to the
+        load balancer.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.network.load_balancer.get testlb testgroup
+
+    '''
+    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    try:
+        load_balancer = netconn.load_balancers.get(
+            load_balancer_name=name,
+            resource_group_name=resource_group
+        )
+        result = load_balancer.as_dict()
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def create_or_update(hub, name, resource_group, **kwargs):
+    '''
+    .. versionadded:: 1.0.0
+
+    Create or update a load balancer within a specified resource group.
+
+    :param name: The name of the load balancer to create.
+
+    :param resource_group: The resource group name assigned to the
+        load balancer.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.network.load_balancer.create_or_update testlb testgroup
+
+    '''
+    if 'location' not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(
+            resource_group, **kwargs
+        )
+
+        if 'error' in rg_props:
+            log.error(
+                'Unable to determine location from resource group specified.'
+            )
+            return False
+        kwargs['location'] = rg_props['location']
+
+    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+
+    if isinstance(kwargs.get('frontend_ip_configurations'), list):
+        for idx in six_range(0, len(kwargs['frontend_ip_configurations'])):
+            # Use Public IP Address name to link to the ID of an existing Public IP
+            if 'public_ip_address' in kwargs['frontend_ip_configurations'][idx]:
+                pub_ip = public_ip_address_get(
+                    name=kwargs['frontend_ip_configurations'][idx]['public_ip_address'],
+                    resource_group=resource_group,
+                    **kwargs
+                )
+                if 'error' not in pub_ip:
+                    kwargs['frontend_ip_configurations'][idx]['public_ip_address'] = {'id': str(pub_ip['id'])}
+            # Use Subnet name to link to the ID of an existing Subnet
+            elif 'subnet' in kwargs['frontend_ip_configurations'][idx]:
+                vnets = virtual_networks_list(
+                    resource_group=resource_group,
+                    **kwargs
+                )
+                if 'error' not in vnets:
+                    for vnet in vnets:
+                        subnets = subnets_list(
+                            virtual_network=vnet,
+                            resource_group=resource_group,
+                            **kwargs
+                        )
+                        if kwargs['frontend_ip_configurations'][idx]['subnet'] in subnets:
+                            kwargs['frontend_ip_configurations'][idx]['subnet'] = {
+                                'id': str(subnets[kwargs['frontend_ip_configurations'][idx]['subnet']]['id'])
+                            }
+                            break
+
+    id_url = '/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Network/loadBalancers/{2}/{3}/{4}'
+
+    if isinstance(kwargs.get('load_balancing_rules'), list):
+        for idx in six_range(0, len(kwargs['load_balancing_rules'])):
+            # Link to sub-objects which might be created at the same time as the load balancer
+            if 'frontend_ip_configuration' in kwargs['load_balancing_rules'][idx]:
+                kwargs['load_balancing_rules'][idx]['frontend_ip_configuration'] = {
+                    'id': id_url.format(
+                        kwargs.get('subscription_id'),
+                        resource_group,
+                        name,
+                        'frontendIPConfigurations',
+                        kwargs['load_balancing_rules'][idx]['frontend_ip_configuration']
+                    )
+                }
+            if 'backend_address_pool' in kwargs['load_balancing_rules'][idx]:
+                kwargs['load_balancing_rules'][idx]['backend_address_pool'] = {
+                    'id': id_url.format(
+                        kwargs.get('subscription_id'),
+                        resource_group,
+                        name,
+                        'backendAddressPools',
+                        kwargs['load_balancing_rules'][idx]['backend_address_pool']
+                    )
+                }
+            if 'probe' in kwargs['load_balancing_rules'][idx]:
+                kwargs['load_balancing_rules'][idx]['probe'] = {
+                    'id': id_url.format(
+                        kwargs.get('subscription_id'),
+                        resource_group,
+                        name,
+                        'probes',
+                        kwargs['load_balancing_rules'][idx]['probe']
+                    )
+                }
+
+    if isinstance(kwargs.get('inbound_nat_rules'), list):
+        for idx in six_range(0, len(kwargs['inbound_nat_rules'])):
+            # Link to sub-objects which might be created at the same time as the load balancer
+            if 'frontend_ip_configuration' in kwargs['inbound_nat_rules'][idx]:
+                kwargs['inbound_nat_rules'][idx]['frontend_ip_configuration'] = {
+                    'id': id_url.format(
+                        kwargs.get('subscription_id'),
+                        resource_group,
+                        name,
+                        'frontendIPConfigurations',
+                        kwargs['inbound_nat_rules'][idx]['frontend_ip_configuration']
+                    )
+                }
+
+    if isinstance(kwargs.get('inbound_nat_pools'), list):
+        for idx in six_range(0, len(kwargs['inbound_nat_pools'])):
+            # Link to sub-objects which might be created at the same time as the load balancer
+            if 'frontend_ip_configuration' in kwargs['inbound_nat_pools'][idx]:
+                kwargs['inbound_nat_pools'][idx]['frontend_ip_configuration'] = {
+                    'id': id_url.format(
+                        kwargs.get('subscription_id'),
+                        resource_group,
+                        name,
+                        'frontendIPConfigurations',
+                        kwargs['inbound_nat_pools'][idx]['frontend_ip_configuration']
+                    )
+                }
+
+    if isinstance(kwargs.get('outbound_nat_rules'), list):
+        for idx in six_range(0, len(kwargs['outbound_nat_rules'])):
+            # Link to sub-objects which might be created at the same time as the load balancer
+            if 'frontend_ip_configuration' in kwargs['outbound_nat_rules'][idx]:
+                kwargs['outbound_nat_rules'][idx]['frontend_ip_configuration'] = {
+                    'id': id_url.format(
+                        kwargs.get('subscription_id'),
+                        resource_group,
+                        name,
+                        'frontendIPConfigurations',
+                        kwargs['outbound_nat_rules'][idx]['frontend_ip_configuration']
+                    )
+                }
+            if 'backend_address_pool' in kwargs['outbound_nat_rules'][idx]:
+                kwargs['outbound_nat_rules'][idx]['backend_address_pool'] = {
+                    'id': id_url.format(
+                        kwargs.get('subscription_id'),
+                        resource_group,
+                        name,
+                        'backendAddressPools',
+                        kwargs['outbound_nat_rules'][idx]['backend_address_pool']
+                    )
+                }
+
+    try:
+        lbmodel = await hub.exec.utils.azurerm.create_object_model('network', 'LoadBalancer', **kwargs)
+    except TypeError as exc:
+        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        return result
+
+    try:
+        load_balancer = netconn.load_balancers.create_or_update(
+            resource_group_name=resource_group,
+            load_balancer_name=name,
+            parameters=lbmodel
+        )
+        load_balancer.wait()
+        lb_result = load_balancer.result()
+        result = lb_result.as_dict()
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        result = {'error': str(exc)}
+    except SerializationError as exc:
+        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+
+    return result
+
+
+async def delete(hub, name, resource_group, **kwargs):
+    '''
+    .. versionadded:: 1.0.0
+
+    Delete a load balancer.
+
+    :param name: The name of the load balancer to delete.
+
+    :param resource_group: The resource group name assigned to the
+        load balancer.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.network.load_balancer.delete testlb testgroup
+
+    '''
+    result = False
+    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    try:
+        load_balancer = netconn.load_balancers.delete(
+            load_balancer_name=name,
+            resource_group_name=resource_group
+        )
+        load_balancer.wait()
+        result = True
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+
+    return result
