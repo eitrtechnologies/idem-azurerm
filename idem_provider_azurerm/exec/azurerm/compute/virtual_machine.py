@@ -49,6 +49,7 @@ Azure Resource Manager (ARM) Compute Virtual Machine Execution Module
 # Python libs
 from __future__ import absolute_import
 import logging
+import os
 
 # Azure libs
 HAS_LIBS = False
@@ -62,6 +63,252 @@ except ImportError:
     pass
 
 log = logging.getLogger(__name__)
+
+
+async def create_or_update(hub, name, resource_group, vm_size, admin_username='idem', os_disk_create_option='FromImage',
+                           os_disk_size_gb=30, ssh_public_keys=None, allocate_public_ip=False,
+                           create_interfaces=True, network_resource_group=None, virtual_network=None,
+                           subnet=None, network_interfaces=None, **kwargs):
+    '''
+    .. versionadded:: 1.0.0
+
+    Create or update a virtual machine.
+
+    :param name: The virtual machine to create.
+
+    :param resource_group: The resource group name assigned to the virtual machine.
+
+    :param vm_size: The size of the virtual machine.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.compute.virtual_machine.create_or_update testvm testgroup
+
+    '''
+    if 'location' not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(
+            resource_group, **kwargs
+        )
+
+        if 'error' in rg_props:
+            log.error(
+                'Unable to determine location from resource group specified.'
+            )
+            return False
+        kwargs['location'] = rg_props['location']
+
+    if not network_interfaces:
+        network_interfaces = []
+
+    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+
+    params = kwargs.copy()
+
+    # These can be passed as kwargs:
+    #   priority = low or regular
+    #   eviction_policy = deallocate or delete
+    #   license_type = Windows_Client or Windows_Server
+    #   zones = [ list of zone numbers ]
+
+    # This section creates dictionaries if required in order to properly create SubResource objects
+    if 'availability_set' in params and not isinstance(params['availability_set'], dict):
+        params.update({'availability_set': {'id': params['availability_set']}})
+
+    if 'virtual_machine_scale_set' in params and not isinstance(params['virtual_machine_scale_set'], dict):
+        params.update({'virtual_machine_scale_set': {'id': params['virtual_machine_scale_set']}})
+
+    if 'proximity_placement_group' in params and not isinstance(params['proximity_placement_group'], dict):
+        params.update({'proximity_placement_group': {'id': params['proximity_placement_group']}})
+
+    if 'host' in params and not isinstance(params['host'], dict):
+        params.update({'host': {'id': params['host']}})
+
+    if not network_interfaces and create_interfaces:
+        ipc = {'name': f'{name}-iface0-ip'}
+
+        if allocate_public_ip:
+            pubip = await hub.exec.azurerm.network.public_ip_address.create_or_update(
+                f'{name}-ip',
+                resource_group,
+                **kwargs
+            )
+
+            try:
+                ipc.update({'public_ip_address': {'id': pubip['id']}})
+            except KeyError as exc:
+                result = {'error': 'The public IP address could not be createed. ({0})'.format(str(exc))}
+                return result
+
+        iface = await hub.exec.azurerm.network.network_interface.create_or_update(
+            f'{name}-iface0',
+            [ipc],
+            subnet,
+            virtual_network,
+            network_resource_group or resource_group,
+            **kwargs
+        )
+
+        try:
+            nic = {'id': iface['id']}
+        except KeyError as exc:
+            result = {'error': 'The network interface could not be createed. ({0})'.format(str(exc))}
+            return result
+
+        network_interfaces.append(nic)
+
+    params.update(
+        {
+            #'plan': {
+            #    'name' None,
+            #    'publisher': None,
+            #    'product': None,
+            #    'promotion_code': None
+            #},
+            'hardware_profile': {
+                'vm_size': vm_size.lower()
+            },
+            'storage_profile': {
+                'os_disk': {
+                    #'os_type': None, # Windows or Linux
+                    #'encryption_settings': {
+                    #    'disk_encryption_key': {
+                    #        'secret_url': '',
+                    #        'source_vault': { id: '' }
+                    #    },
+                    #    'key_encryption_key': {
+                    #        'key_url': '',
+                    #        'source_vault': { id: '' }
+                    #    },
+                    #    'enabled': None # True or False
+                    #},
+                    #'name': None,
+                    #'vhd': { 'uri': '' },
+                    #'image': { 'uri': '' },
+                    #'caching': None, # ReadOnly or ReadWrite
+                    #'write_accelerator_enabled': None, # True or False
+                    #'diff_disk_settings': { 'option': None }, # Local or None
+                    'create_option': os_disk_create_option, # Attach or FromImage
+                    'disk_size_gb': os_disk_size_gb,
+                    #'managed_disk': { 'id': None, 'storage_account_type': None } # (Standard|Premium)_LRS or (Standard|Ultra)SSD_LRS
+                },
+                'data_disks': [
+                    #{
+                    #    'lun': None,
+                    #    'name': None,
+                    #    'vhd': { 'uri': '' },
+                    #    'image': { 'uri': '' },
+                    #    'caching': None, # ReadOnly or ReadWrite
+                    #    'write_accelerator_enabled': None, # True or False
+                    #    'create_option': None, # Attach or FromImage
+                    #    'disk_size_gb': None,
+                    #    'managed_disk': { 'id': None, 'storage_account_type': None }, # (Standard|Premium)_LRS or (Standard|Ultra)SSD_LRS
+                    #    'to_be_detached': None # True or False
+                    #}
+                ],
+                'image_reference': {
+                    #'id': None,
+                    'publisher': 'Canonical',
+                    'offer': 'UbuntuServer',
+                    'sku': '18.04-LTS',
+                    'version': 'latest'
+                }
+            },
+            #'additional_capabilities': {
+            #    'ultra_ssd_enabled': None
+            #},
+            'os_profile': {
+                'computer_name': name,
+                'admin_username': admin_username,
+            #    'admin_password': admin_password,
+            #    'custom_data': None,
+            #    'windows_configuration': None,
+            #    'secrets': None,
+            #    'allow_extension_operations': None,
+            #    'require_guest_provision_signal': None
+            },
+            'network_profile': {
+                'network_interfaces': network_interfaces  #[
+                    #{ 'id': iface_id }
+                #]
+            },
+            #'diagnostics_profiles': {
+            #    'boot_diagnostics': {
+            #        'enabled': None, # True or False
+            #        'storage_uri': # storage account URI
+            #    }
+            #},
+            #'identity': {
+            #    'type': None, # SystemAssigned or UserAssigned
+            #    'user_assigned_identities': None # VirtualMachineIdentityUserAssignedIdentitiesValue
+            #},
+            #'billing_profile': { max_price: None }
+        }
+    )
+
+    if isinstance(ssh_public_keys, list):
+        pubkeys = []
+        for pubkey in ssh_public_keys:
+            if os.path.isfile(pubkey):
+                try:
+                    with open(pubkey, 'r') as pubkey_file:
+                        pubkeys.append(
+                            {
+                                'key_data': pubkey_file.read(),
+                                'path': f'/home/{admin_username}/.ssh/authorized_keys'
+                            }
+                        )
+                except FileNotFoundError as exc:
+                    log.error(
+                        'Unable to open ssh public key file: %s (%s)', pubkey, exc
+                    )
+            else:
+                pubkeys.append(
+                    {
+                        'key_data': pubkey,
+                        'path': f'/home/{admin_username}/.ssh/authorized_keys'
+                    }
+                )
+
+        params['os_profile'].update(
+            {
+                'linux_configuration': {
+                    'disable_password_authentication': True,
+                    'ssh': {
+                        'public_keys': pubkeys
+                    }
+                }
+            }
+        )
+
+    try:
+        vmmodel = await hub.exec.utils.azurerm.create_object_model(
+            'compute',
+            'VirtualMachine',
+            **params
+        )
+    except TypeError as exc:
+        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        return result
+
+    try:
+        vm = compconn.virtual_machines.create_or_update(
+            resource_group_name=resource_group,
+            vm_name=name,
+            parameters=vmmodel
+        )
+        vm.wait()
+        vm_result = vm.result()
+        result = vm_result.as_dict()
+
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
+        result = {'error': str(exc)}
+    except SerializationError as exc:
+        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+
+    return result
 
 
 async def capture(hub, name, destination_name, resource_group, prefix='capture-', overwrite=False, **kwargs):

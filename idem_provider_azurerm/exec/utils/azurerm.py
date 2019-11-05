@@ -29,7 +29,7 @@ import sys
 
 # Import Salt libs
 #import salt.config
-#import salt.ext.six as six
+import six
 #import salt.loader
 #import salt.utils.stringutils
 #import salt.version

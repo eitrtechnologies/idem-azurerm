@@ -178,7 +178,7 @@ async def create_or_update(hub, name, ip_configurations, subnet, virtual_network
 
     # Use NSG name to link to the ID of an existing NSG.
     if kwargs.get('network_security_group'):
-        nsg = network_security_group_get(
+        nsg = await hub.exec.azurerm.network.network_security_group.get(
             name=kwargs['network_security_group'],
             resource_group=resource_group,
             **kwargs
@@ -188,7 +188,7 @@ async def create_or_update(hub, name, ip_configurations, subnet, virtual_network
 
     # Use VM name to link to the ID of an existing VM.
     if kwargs.get('virtual_machine'):
-        vm_instance = await hub.exec.azurerm.compute.virtual_machine_get(
+        vm_instance = await hub.exec.azurerm.compute.virtual_machine.get(
             name=kwargs['virtual_machine'],
             resource_group=resource_group,
             **kwargs
@@ -198,7 +198,7 @@ async def create_or_update(hub, name, ip_configurations, subnet, virtual_network
 
     # Loop through IP Configurations and build each dictionary to pass to model creation.
     if isinstance(ip_configurations, list):
-        subnet = subnet_get(
+        subnet = await hub.exec.azurerm.network.virtual_network.subnet_get(
             name=subnet,
             virtual_network=virtual_network,
             resource_group=resource_group,
@@ -219,7 +219,7 @@ async def create_or_update(hub, name, ip_configurations, subnet, virtual_network
                         # TODO: Add ID lookup for referenced object names
                         pass
                     if ipconfig.get('public_ip_address'):
-                        pub_ip = public_ip_address_get(
+                        pub_ip = await hub.exec.azurerm.network.public_ip_address.get(
                             name=ipconfig['public_ip_address'],
                             resource_group=resource_group,
                             **kwargs
