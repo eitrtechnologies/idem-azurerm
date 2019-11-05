@@ -91,7 +91,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-async def present(hub, name, resource_group, tags=None, platform_update_domain_count=None, platform_fault_domain_count=None,
+async def present(hub, ctx, name, resource_group, tags=None, platform_update_domain_count=None, platform_fault_domain_count=None,
             virtual_machines=None, sku=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -206,7 +206,7 @@ async def present(hub, name, resource_group, tags=None, platform_update_domain_c
             ret['comment'] = 'Availability set {0} is already present.'.format(name)
             return ret
 
-        if hub.OPT.get('test'):
+        if ctx['test']:
             ret['result'] = None
             ret['comment'] = 'Availability set {0} would be updated.'.format(name)
             return ret
@@ -224,7 +224,7 @@ async def present(hub, name, resource_group, tags=None, platform_update_domain_c
             }
         }
 
-    if hub.OPT.get('test'):
+    if ctx['test']:
         ret['comment'] = 'Availability set {0} would be created.'.format(name)
         ret['result'] = None
         return ret
@@ -252,7 +252,7 @@ async def present(hub, name, resource_group, tags=None, platform_update_domain_c
     return ret
 
 
-async def absent(hub, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
@@ -291,7 +291,7 @@ async def absent(hub, name, resource_group, connection_auth=None):
         ret['comment'] = 'Availability set {0} was not found.'.format(name)
         return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         ret['comment'] = 'Availability set {0} would be deleted.'.format(name)
         ret['result'] = None
         ret['changes'] = {

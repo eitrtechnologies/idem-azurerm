@@ -99,7 +99,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def connection_present(hub, name, resource_group, virtual_network_gateway, connection_type, virtual_network_gateway2=None,
+async def connection_present(hub, ctx, name, resource_group, virtual_network_gateway, connection_type, virtual_network_gateway2=None,
                        local_network_gateway2=None, peer=None, connection_protocol=None, shared_key=None,
                        enable_bgp=None, ipsec_policies=None, use_policy_based_traffic_selectors=None,
                        routing_weight=None, express_route_gateway_bypass=None, authorization_key=None, tags=None,
@@ -349,7 +349,7 @@ async def connection_present(hub, name, resource_group, virtual_network_gateway,
             ret['comment'] = 'Virtual network gateway connection {0} is already present.'.format(name)
             return ret
 
-        if hub.OPT.get('test'):
+        if ctx['test']:
             ret['result'] = None
             ret['comment'] = 'Virtual network gateway connection {0} would be updated.'.format(name)
             return ret
@@ -390,7 +390,7 @@ async def connection_present(hub, name, resource_group, virtual_network_gateway,
         if routing_weight is not None:
             ret['changes']['new']['routing_weight'] = routing_weight
 
-    if hub.OPT.get('test'):
+    if ctx['test']:
         ret['comment'] = 'Virtual network gateway connection {0} would be created.'.format(name)
         ret['result'] = None
         return ret
@@ -437,7 +437,7 @@ async def connection_present(hub, name, resource_group, virtual_network_gateway,
     return ret
 
 
-async def connection_absent(hub, name, resource_group, connection_auth=None):
+async def connection_absent(hub, ctx, name, resource_group, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
@@ -486,7 +486,7 @@ async def connection_absent(hub, name, resource_group, connection_auth=None):
         ret['comment'] = 'Virtual network gateway connection {0} was not found.'.format(name)
         return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         ret['comment'] = 'Virtual network gateway connection {0} would be deleted.'.format(name)
         ret['result'] = None
         ret['changes'] = {
@@ -514,7 +514,7 @@ async def connection_absent(hub, name, resource_group, connection_auth=None):
     return ret
 
 
-async def present(hub, name, resource_group, virtual_network, ip_configurations, gateway_type=None, vpn_type=None, sku=None,
+async def present(hub, ctx, name, resource_group, virtual_network, ip_configurations, gateway_type=None, vpn_type=None, sku=None,
             enable_bgp=None, active_active=None, bgp_settings=None, address_prefixes=None, tags=None,
             connection_auth=None, **kwargs):
     '''
@@ -717,7 +717,7 @@ async def present(hub, name, resource_group, virtual_network, ip_configurations,
             ret['comment'] = 'Virtual network gateway {0} is already present.'.format(name)
             return ret
 
-        if hub.OPT.get('test'):
+        if ctx['test']:
             ret['result'] = None
             ret['comment'] = 'Virtual network gateway {0} would be updated.'.format(name)
             return ret
@@ -750,7 +750,7 @@ async def present(hub, name, resource_group, virtual_network, ip_configurations,
         if address_prefixes:
             ret['changes']['new']['custom_routes'] = {'address_prefixes': address_prefixes}
 
-    if hub.OPT.get('test'):
+    if ctx['test']:
         ret['comment'] = 'Virtual network gateway {0} would be created.'.format(name)
         ret['result'] = None
         return ret
@@ -783,7 +783,7 @@ async def present(hub, name, resource_group, virtual_network, ip_configurations,
     return ret
 
 
-async def absent(hub, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
@@ -832,7 +832,7 @@ async def absent(hub, name, resource_group, connection_auth=None):
         ret['comment'] = 'Virtual network gateway object {0} was not found.'.format(name)
         return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         ret['comment'] = 'Virtual network gateway object {0} would be deleted.'.format(name)
         ret['result'] = None
         ret['changes'] = {

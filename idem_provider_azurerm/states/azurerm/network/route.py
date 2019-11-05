@@ -99,7 +99,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def table_present(hub, name, resource_group, tags=None, routes=None, disable_bgp_route_propagation=None,
+async def table_present(hub, ctx, name, resource_group, tags=None, routes=None, disable_bgp_route_propagation=None,
                   connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -198,7 +198,7 @@ async def table_present(hub, name, resource_group, tags=None, routes=None, disab
             ret['comment'] = 'Route table {0} is already present.'.format(name)
             return ret
 
-        if hub.OPT.get('test'):
+        if ctx['test']:
             ret['result'] = None
             ret['comment'] = 'Route table {0} would be updated.'.format(name)
             return ret
@@ -214,7 +214,7 @@ async def table_present(hub, name, resource_group, tags=None, routes=None, disab
             }
         }
 
-    if hub.OPT.get('test'):
+    if ctx['test']:
         ret['comment'] = 'Route table {0} would be created.'.format(name)
         ret['result'] = None
         return ret
@@ -240,7 +240,7 @@ async def table_present(hub, name, resource_group, tags=None, routes=None, disab
     return ret
 
 
-async def table_absent(hub, name, resource_group, connection_auth=None):
+async def table_absent(hub, ctx, name, resource_group, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
@@ -279,7 +279,7 @@ async def table_absent(hub, name, resource_group, connection_auth=None):
         ret['comment'] = 'Route table {0} was not found.'.format(name)
         return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         ret['comment'] = 'Route table {0} would be deleted.'.format(name)
         ret['result'] = None
         ret['changes'] = {
@@ -303,7 +303,7 @@ async def table_absent(hub, name, resource_group, connection_auth=None):
     return ret
 
 
-async def present(hub, name, address_prefix, next_hop_type, route_table, resource_group, next_hop_ip_address=None,
+async def present(hub, ctx, name, address_prefix, next_hop_type, route_table, resource_group, next_hop_ip_address=None,
             connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -393,7 +393,7 @@ async def present(hub, name, address_prefix, next_hop_type, route_table, resourc
             ret['comment'] = 'Route {0} is already present.'.format(name)
             return ret
 
-        if hub.OPT.get('test'):
+        if ctx['test']:
             ret['result'] = None
             ret['comment'] = 'Route {0} would be updated.'.format(name)
             return ret
@@ -409,7 +409,7 @@ async def present(hub, name, address_prefix, next_hop_type, route_table, resourc
             }
         }
 
-    if hub.OPT.get('test'):
+    if ctx['test']:
         ret['comment'] = 'Route {0} would be created.'.format(name)
         ret['result'] = None
         return ret
@@ -436,7 +436,7 @@ async def present(hub, name, address_prefix, next_hop_type, route_table, resourc
     return ret
 
 
-async def absent(hub, name, route_table, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, route_table, resource_group, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
@@ -479,7 +479,7 @@ async def absent(hub, name, route_table, resource_group, connection_auth=None):
         ret['comment'] = 'Route {0} was not found.'.format(name)
         return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         ret['comment'] = 'Route {0} would be deleted.'.format(name)
         ret['result'] = None
         ret['changes'] = {

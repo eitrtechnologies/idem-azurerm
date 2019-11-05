@@ -99,7 +99,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def present(hub, name, resource_group, tags=None, sku=None, public_ip_allocation_method=None,
+async def present(hub, ctx, name, resource_group, tags=None, sku=None, public_ip_allocation_method=None,
             public_ip_address_version=None, dns_settings=None, idle_timeout_in_minutes=None, connection_auth=None,
             **kwargs):
     '''
@@ -237,7 +237,7 @@ async def present(hub, name, resource_group, tags=None, sku=None, public_ip_allo
             ret['comment'] = 'Public IP address {0} is already present.'.format(name)
             return ret
 
-        if hub.OPT.get('test'):
+        if ctx['test']:
             ret['result'] = None
             ret['comment'] = 'Public IP address {0} would be updated.'.format(name)
             return ret
@@ -256,7 +256,7 @@ async def present(hub, name, resource_group, tags=None, sku=None, public_ip_allo
             }
         }
 
-    if hub.OPT.get('test'):
+    if ctx['test']:
         ret['comment'] = 'Public IP address {0} would be created.'.format(name)
         ret['result'] = None
         return ret
@@ -285,7 +285,7 @@ async def present(hub, name, resource_group, tags=None, sku=None, public_ip_allo
     return ret
 
 
-async def absent(hub, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
@@ -324,7 +324,7 @@ async def absent(hub, name, resource_group, connection_auth=None):
         ret['comment'] = 'Public IP address {0} was not found.'.format(name)
         return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         ret['comment'] = 'Public IP address {0} would be deleted.'.format(name)
         ret['result'] = None
         ret['changes'] = {
