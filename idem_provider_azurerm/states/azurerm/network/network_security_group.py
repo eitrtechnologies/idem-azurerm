@@ -99,7 +99,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def present(hub, name, resource_group, tags=None, security_rules=None, connection_auth=None, **kwargs):
+async def present(hub, ctx, name, resource_group, tags=None, security_rules=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -198,7 +198,7 @@ async def present(hub, name, resource_group, tags=None, security_rules=None, con
             ret['comment'] = 'Network security group {0} is already present.'.format(name)
             return ret
 
-        if hub.OPT.get('test'):
+        if ctx['test']:
             ret['result'] = None
             ret['comment'] = 'Network security group {0} would be updated.'.format(name)
             return ret
@@ -214,7 +214,7 @@ async def present(hub, name, resource_group, tags=None, security_rules=None, con
             }
         }
 
-    if hub.OPT.get('test'):
+    if ctx['test']:
         ret['comment'] = 'Network security group {0} would be created.'.format(name)
         ret['result'] = None
         return ret
@@ -239,7 +239,7 @@ async def present(hub, name, resource_group, tags=None, security_rules=None, con
     return ret
 
 
-async def absent(hub, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
@@ -278,7 +278,7 @@ async def absent(hub, name, resource_group, connection_auth=None):
         ret['comment'] = 'Network security group {0} was not found.'.format(name)
         return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         ret['comment'] = 'Network security group {0} would be deleted.'.format(name)
         ret['result'] = None
         ret['changes'] = {
@@ -302,7 +302,7 @@ async def absent(hub, name, resource_group, connection_auth=None):
     return ret
 
 
-async def security_rule_present(hub, name, access, direction, priority, protocol, security_group, resource_group,
+async def security_rule_present(hub, ctx, name, access, direction, priority, protocol, security_group, resource_group,
                           destination_address_prefix=None, destination_port_range=None, source_address_prefix=None,
                           source_port_range=None, description=None, destination_address_prefixes=None,
                           destination_port_ranges=None, source_address_prefixes=None, source_port_ranges=None,
@@ -557,7 +557,7 @@ async def security_rule_present(hub, name, access, direction, priority, protocol
             ret['comment'] = 'Security rule {0} is already present.'.format(name)
             return ret
 
-        if hub.OPT.get('test'):
+        if ctx['test']:
             ret['result'] = None
             ret['comment'] = 'Security rule {0} would be updated.'.format(name)
             return ret
@@ -583,7 +583,7 @@ async def security_rule_present(hub, name, access, direction, priority, protocol
             }
         }
 
-    if hub.OPT.get('test'):
+    if ctx['test']:
         ret['comment'] = 'Security rule {0} would be created.'.format(name)
         ret['result'] = None
         return ret
@@ -620,7 +620,7 @@ async def security_rule_present(hub, name, access, direction, priority, protocol
     return ret
 
 
-async def security_rule_absent(hub, name, security_group, resource_group, connection_auth=None):
+async def security_rule_absent(hub, ctx, name, security_group, resource_group, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
@@ -663,7 +663,7 @@ async def security_rule_absent(hub, name, security_group, resource_group, connec
         ret['comment'] = 'Security rule {0} was not found.'.format(name)
         return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         ret['comment'] = 'Security rule {0} would be deleted.'.format(name)
         ret['result'] = None
         ret['changes'] = {

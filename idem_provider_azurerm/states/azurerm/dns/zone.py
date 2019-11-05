@@ -94,7 +94,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def present(hub, name, resource_group, etag=None, if_match=None, if_none_match=None, registration_virtual_networks=None,
+async def present(hub, ctx, name, resource_group, etag=None, if_match=None, if_none_match=None, registration_virtual_networks=None,
             resolution_virtual_networks=None, tags=None, zone_type='Public', connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -213,7 +213,7 @@ async def present(hub, name, resource_group, etag=None, if_match=None, if_none_m
             ret['comment'] = 'DNS zone {0} is already present.'.format(name)
             return ret
 
-        if hub.OPT.get('test'):
+        if ctx['test']:
             ret['result'] = None
             ret['comment'] = 'DNS zone {0} would be updated.'.format(name)
             return ret
@@ -232,7 +232,7 @@ async def present(hub, name, resource_group, etag=None, if_match=None, if_none_m
             }
         }
 
-    if hub.OPT.get('test'):
+    if ctx['test']:
         ret['comment'] = 'DNS zone {0} would be created.'.format(name)
         ret['result'] = None
         return ret
@@ -262,7 +262,7 @@ async def present(hub, name, resource_group, etag=None, if_match=None, if_none_m
     return ret
 
 
-async def absent(hub, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
@@ -301,7 +301,7 @@ async def absent(hub, name, resource_group, connection_auth=None):
         ret['comment'] = 'DNS zone {0} was not found.'.format(name)
         return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         ret['comment'] = 'DNS zone {0} would be deleted.'.format(name)
         ret['result'] = None
         ret['changes'] = {

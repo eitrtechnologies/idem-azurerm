@@ -91,7 +91,7 @@ import salt.utils.files
 log = logging.getLogger(__name__)
 
 
-async def definition_present(hub, name, policy_rule=None, policy_type=None, mode=None, display_name=None, description=None,
+async def definition_present(hub, ctx, name, policy_rule=None, policy_type=None, mode=None, display_name=None, description=None,
                        metadata=None, parameters=None, policy_rule_json=None, policy_rule_file=None,
                        template='jinja', source_hash=None, source_hash_name=None, skip_verify=False,
                        connection_auth=None, **kwargs):
@@ -305,7 +305,7 @@ async def definition_present(hub, name, policy_rule=None, policy_type=None, mode
             ret['comment'] = 'Policy definition {0} is already present.'.format(name)
             return ret
 
-        if hub.OPT.get('test'):
+        if ctx['test']:
             ret['comment'] = 'Policy definition {0} would be updated.'.format(name)
             ret['result'] = None
             return ret
@@ -325,7 +325,7 @@ async def definition_present(hub, name, policy_rule=None, policy_type=None, mode
             }
         }
 
-    if hub.OPT.get('test'):
+    if ctx['test']:
         ret['comment'] = 'Policy definition {0} would be created.'.format(name)
         ret['result'] = None
         return ret
@@ -391,7 +391,7 @@ async def definition_absent(hub, name, connection_auth=None):
         ret['comment'] = 'Policy definition {0} is already absent.'.format(name)
         return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         ret['comment'] = 'Policy definition {0} would be deleted.'.format(name)
         ret['result'] = None
         ret['changes'] = {
@@ -415,7 +415,7 @@ async def definition_absent(hub, name, connection_auth=None):
     return ret
 
 
-async def assignment_present(hub, name, scope, definition_name, display_name=None, description=None, assignment_type=None,
+async def assignment_present(hub, ctx, name, scope, definition_name, display_name=None, description=None, assignment_type=None,
                               parameters=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -520,7 +520,7 @@ async def assignment_present(hub, name, scope, definition_name, display_name=Non
             ret['comment'] = 'Policy assignment {0} is already present.'.format(name)
             return ret
 
-        if hub.OPT.get('test'):
+        if ctx['test']:
             ret['comment'] = 'Policy assignment {0} would be updated.'.format(name)
             ret['result'] = None
             return ret
@@ -539,7 +539,7 @@ async def assignment_present(hub, name, scope, definition_name, display_name=Non
             }
         }
 
-    if hub.OPT.get('test'):
+    if ctx['test']:
         ret['comment'] = 'Policy assignment {0} would be created.'.format(name)
         ret['result'] = None
         return ret
@@ -569,7 +569,7 @@ async def assignment_present(hub, name, scope, definition_name, display_name=Non
     return ret
 
 
-async def assignment_absent(hub, name, scope, connection_auth=None):
+async def assignment_absent(hub, ctx, name, scope, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
@@ -608,7 +608,7 @@ async def assignment_absent(hub, name, scope, connection_auth=None):
         ret['comment'] = 'Policy assignment {0} is already absent.'.format(name)
         return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         ret['comment'] = 'Policy assignment {0} would be deleted.'.format(name)
         ret['result'] = None
         ret['changes'] = {

@@ -88,7 +88,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-async def present(hub, name, location, managed_by=None, tags=None, connection_auth=None, **kwargs):
+async def present(hub, ctx, name, location, managed_by=None, tags=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -149,7 +149,7 @@ async def present(hub, name, location, managed_by=None, tags=None, connection_au
             ret['comment'] = 'Resource group {0} is already present.'.format(name)
             return ret
 
-        if hub.OPT.get('test'):
+        if ctx['test']:
             ret['comment'] = 'Resource group {0} tags would be updated.'.format(name)
             ret['result'] = None
             ret['changes'] = {
@@ -158,7 +158,7 @@ async def present(hub, name, location, managed_by=None, tags=None, connection_au
             }
             return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         ret['comment'] = 'Resource group {0} would be created.'.format(name)
         ret['result'] = None
         ret['changes'] = {
@@ -197,7 +197,7 @@ async def present(hub, name, location, managed_by=None, tags=None, connection_au
     return ret
 
 
-async def absent(hub, name, connection_auth=None):
+async def absent(hub, ctx, name, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
@@ -230,7 +230,7 @@ async def absent(hub, name, connection_auth=None):
         ret['comment'] = 'Resource group {0} is already absent.'.format(name)
         return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         group = await hub.exec.azurerm.resource.group.get(name, **connection_auth)
 
         ret['comment'] = 'Resource group {0} would be deleted.'.format(name)

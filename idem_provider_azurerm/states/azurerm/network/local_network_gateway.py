@@ -99,7 +99,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def present(hub, name, resource_group, gateway_ip_address, bgp_settings=None, address_prefixes=None, tags=None,
+async def present(hub, ctx, name, resource_group, gateway_ip_address, bgp_settings=None, address_prefixes=None, tags=None,
             connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -211,7 +211,7 @@ async def present(hub, name, resource_group, gateway_ip_address, bgp_settings=No
             ret['comment'] = 'Local network gateway {0} is already present.'.format(name)
             return ret
 
-        if hub.OPT.get('test'):
+        if ctx['test']:
             ret['result'] = None
             ret['comment'] = 'Local network gateway {0} would be updated.'.format(name)
             return ret
@@ -232,7 +232,7 @@ async def present(hub, name, resource_group, gateway_ip_address, bgp_settings=No
         if address_prefixes:
             ret['changes']['new']['local_network_address_space'] = {'address_prefixes': address_prefixes}
 
-    if hub.OPT.get('test'):
+    if ctx['test']:
         ret['comment'] = 'Local network gateway {0} would be created.'.format(name)
         ret['result'] = None
         return ret
@@ -259,7 +259,7 @@ async def present(hub, name, resource_group, gateway_ip_address, bgp_settings=No
     return ret
 
 
-async def absent(hub, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
@@ -308,7 +308,7 @@ async def absent(hub, name, resource_group, connection_auth=None):
         ret['comment'] = 'Local network gateway object {0} was not found.'.format(name)
         return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         ret['comment'] = 'Local network gateway object {0} would be deleted.'.format(name)
         ret['result'] = None
         ret['changes'] = {

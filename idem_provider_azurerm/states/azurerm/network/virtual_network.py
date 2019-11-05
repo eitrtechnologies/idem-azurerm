@@ -99,7 +99,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def present(hub, name, address_prefixes, resource_group, dns_servers=None, tags=None, connection_auth=None, **kwargs):
+async def present(hub, ctx, name, address_prefixes, resource_group, dns_servers=None, tags=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -202,7 +202,7 @@ async def present(hub, name, address_prefixes, resource_group, dns_servers=None,
             ret['comment'] = 'Virtual network {0} is already present.'.format(name)
             return ret
 
-        if hub.OPT.get('test'):
+        if ctx['test']:
             ret['result'] = None
             ret['comment'] = 'Virtual network {0} would be updated.'.format(name)
             return ret
@@ -221,7 +221,7 @@ async def present(hub, name, address_prefixes, resource_group, dns_servers=None,
             }
         }
 
-    if hub.OPT.get('test'):
+    if ctx['test']:
         ret['comment'] = 'Virtual network {0} would be created.'.format(name)
         ret['result'] = None
         return ret
@@ -247,7 +247,7 @@ async def present(hub, name, address_prefixes, resource_group, dns_servers=None,
     return ret
 
 
-async def absent(hub, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
@@ -286,7 +286,7 @@ async def absent(hub, name, resource_group, connection_auth=None):
         ret['comment'] = 'Virtual network {0} was not found.'.format(name)
         return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         ret['comment'] = 'Virtual network {0} would be deleted.'.format(name)
         ret['result'] = None
         ret['changes'] = {
@@ -310,7 +310,7 @@ async def absent(hub, name, resource_group, connection_auth=None):
     return ret
 
 
-async def subnet_present(hub, name, address_prefix, virtual_network, resource_group, security_group=None, route_table=None,
+async def subnet_present(hub, ctx, name, address_prefix, virtual_network, resource_group, security_group=None, route_table=None,
                    connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -409,7 +409,7 @@ async def subnet_present(hub, name, address_prefix, virtual_network, resource_gr
             ret['comment'] = 'Subnet {0} is already present.'.format(name)
             return ret
 
-        if hub.OPT.get('test'):
+        if ctx['test']:
             ret['result'] = None
             ret['comment'] = 'Subnet {0} would be updated.'.format(name)
             return ret
@@ -425,7 +425,7 @@ async def subnet_present(hub, name, address_prefix, virtual_network, resource_gr
             }
         }
 
-    if hub.OPT.get('test'):
+    if ctx['test']:
         ret['comment'] = 'Subnet {0} would be created.'.format(name)
         ret['result'] = None
         return ret
@@ -452,7 +452,7 @@ async def subnet_present(hub, name, address_prefix, virtual_network, resource_gr
     return ret
 
 
-async def subnet_absent(hub, name, virtual_network, resource_group, connection_auth=None):
+async def subnet_absent(hub, ctx, name, virtual_network, resource_group, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
@@ -495,7 +495,7 @@ async def subnet_absent(hub, name, virtual_network, resource_group, connection_a
         ret['comment'] = 'Subnet {0} was not found.'.format(name)
         return ret
 
-    elif hub.OPT.get('test'):
+    elif ctx['test']:
         ret['comment'] = 'Subnet {0} would be deleted.'.format(name)
         ret['result'] = None
         ret['changes'] = {
