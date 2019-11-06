@@ -359,8 +359,8 @@ async def delete(hub, name, resource_group, cleanup_disks=False, cleanup_data_di
             )
 
             os_disk_ret = await hub.exec.azurerm.compute.disk.delete(
-                resource_group=os_disk.get('resource_group'),
-                disk_name=os_disk.get('name'),
+                resource_group=os_disk['resource_group'],
+                name=os_disk['name'],
                 **kwargs
             )
 
@@ -372,7 +372,7 @@ async def delete(hub, name, resource_group, cleanup_disks=False, cleanup_data_di
 
                 data_disk_ret = await hub.exec.azurerm.compute.disk.delete(
                     resource_group=disk_dict['resource_group'],
-                    disk_name=disk_dict['name'],
+                    name=disk_dict['name'],
                     **kwargs
                 )
 
@@ -382,11 +382,29 @@ async def delete(hub, name, resource_group, cleanup_disks=False, cleanup_data_di
                     iface['id']
                 )
 
+                iface_details = await hub.exec.azurerm.network.network_interface.get(
+                    resource_group=iface_dict['resource_group'],
+                    name=iface_dict['name'],
+                    **kwargs
+                )
+
                 iface_ret = await hub.exec.azurerm.network.network_interface.delete(
                     resource_group=iface_dict['resource_group'],
                     name=iface_dict['name'],
                     **kwargs
                 )
+
+                for ipc in iface_details['ip_configurations']:
+                    if ipc.get('public_ip_address'):
+                        ip_dict = parse_resource_id(
+                            ipc['public_ip_address']['id']
+                        )
+
+                        ip_ret = await hub.exec.azurerm.network.public_ip_address.delete(
+                            resource_group=ip_dict['resource_group'],
+                            name=ip_dict['name'],
+                            **kwargs
+                        )
 
         result = True
 
