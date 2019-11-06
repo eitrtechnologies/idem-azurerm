@@ -192,7 +192,7 @@ async def create_or_update(hub, name, resource_group, source_vm=None, source_vm_
     return result
 
 
-async def image_delete(hub, name, resource_group, **kwargs):
+async def delete(hub, name, resource_group, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -224,7 +224,7 @@ async def image_delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def image_get(hub, name, resource_group, **kwargs):
+async def get(hub, name, resource_group, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
