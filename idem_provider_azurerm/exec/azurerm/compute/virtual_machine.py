@@ -57,7 +57,7 @@ try:
     import azure.mgmt.compute.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
-    from msrestazure.tools import is_valid_resource_id
+    from msrestazure.tools import is_valid_resource_id, parse_resource_id
     HAS_LIBS = True
 except ImportError:
     pass
@@ -68,7 +68,8 @@ log = logging.getLogger(__name__)
 async def create_or_update(hub, name, resource_group, vm_size, admin_username='idem', os_disk_create_option='FromImage',
                            os_disk_size_gb=30, ssh_public_keys=None, allocate_public_ip=False,
                            create_interfaces=True, network_resource_group=None, virtual_network=None,
-                           subnet=None, network_interfaces=None, **kwargs):
+                           subnet=None, network_interfaces=None, os_disk_vhd_uri=None, os_disk_image_uri=None,
+                           os_type=None, os_disk_name=None, os_disk_caching=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -79,6 +80,12 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
     :param resource_group: The resource group name assigned to the virtual machine.
 
     :param vm_size: The size of the virtual machine.
+
+    # These can be passed as kwargs:
+    #   priority = low or regular
+    #   eviction_policy = deallocate or delete
+    #   license_type = Windows_Client or Windows_Server
+    #   zones = [ list of zone numbers ]
 
     CLI Example:
 
@@ -106,12 +113,6 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
 
     params = kwargs.copy()
 
-    # These can be passed as kwargs:
-    #   priority = low or regular
-    #   eviction_policy = deallocate or delete
-    #   license_type = Windows_Client or Windows_Server
-    #   zones = [ list of zone numbers ]
-
     # This section creates dictionaries if required in order to properly create SubResource objects
     if 'availability_set' in params and not isinstance(params['availability_set'], dict):
         params.update({'availability_set': {'id': params['availability_set']}})
@@ -124,6 +125,12 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
 
     if 'host' in params and not isinstance(params['host'], dict):
         params.update({'host': {'id': params['host']}})
+
+    if os_disk_image_uri and not isinstance(os_disk_image_uri, dict):
+        os_disk_image_uri = {'id': os_disk_image_uri}
+
+    if os_disk_vhd_uri and not isinstance(os_disk_vhd_uri, dict):
+        os_disk_vhd_uri = {'id': os_disk_vhd_uri}
 
     if not network_interfaces and create_interfaces:
         ipc = {'name': f'{name}-iface0-ip'}
@@ -171,7 +178,7 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
             },
             'storage_profile': {
                 'os_disk': {
-                    #'os_type': None, # Windows or Linux
+                    'os_type': os_type,
                     #'encryption_settings': {
                     #    'disk_encryption_key': {
                     #        'secret_url': '',
@@ -183,10 +190,10 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
                     #    },
                     #    'enabled': None # True or False
                     #},
-                    #'name': None,
-                    #'vhd': { 'uri': '' },
-                    #'image': { 'uri': '' },
-                    #'caching': None, # ReadOnly or ReadWrite
+                    'name': os_disk_name,
+                    'vhd': os_disk_vhd_uri,
+                    'image': os_disk_image_uri,
+                    'caching': os_disk_caching, # ReadOnly or ReadWrite
                     #'write_accelerator_enabled': None, # True or False
                     #'diff_disk_settings': { 'option': None }, # Local or None
                     'create_option': os_disk_create_option, # Attach or FromImage
@@ -307,6 +314,84 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
         result = {'error': str(exc)}
     except SerializationError as exc:
         result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+
+    return result
+
+
+async def delete(hub, name, resource_group, cleanup_disks=False, cleanup_data_disks=False, cleanup_interfaces=False,
+                 **kwargs):
+    '''
+    .. versionadded:: 1.0.0
+
+    Delete a virtual machine.
+
+    :param name: The virtual machine to delete.
+
+    :param resource_group: The resource group name assigned to the virtual machine.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.compute.virtual_machine.delete testvm testgroup
+
+    '''
+    result = False
+    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+
+    vm = await hub.exec.azurerm.compute.virtual_machine.get(
+        resource_group=resource_group,
+        name=name,
+        **kwargs
+    )
+
+    try:
+        poller = compconn.virtual_machines.delete(
+            resource_group_name=resource_group,
+            vm_name=name
+        )
+
+        poller.wait()
+
+        if cleanup_disks:
+            os_disk = parse_resource_id(
+                vm['storage_profile']['os_disk'].get('managed_disk', {}).get('id')
+            )
+
+            os_disk_ret = await hub.exec.azurerm.compute.disk.delete(
+                resource_group=os_disk.get('resource_group'),
+                disk_name=os_disk.get('name'),
+                **kwargs
+            )
+
+        if cleanup_data_disks:
+            for disk in vm['storage_profile']['data_disks']:
+                disk_dict = parse_resource_id(
+                    disk.get('managed_disk', {}).get('id')
+                )
+
+                data_disk_ret = await hub.exec.azurerm.compute.disk.delete(
+                    resource_group=disk_dict['resource_group'],
+                    disk_name=disk_dict['name'],
+                    **kwargs
+                )
+
+        if cleanup_interfaces:
+            for iface in vm['network_profile']['network_interfaces']:
+                iface_dict = parse_resource_id(
+                    iface['id']
+                )
+
+                iface_ret = await hub.exec.azurerm.network.network_interface.delete(
+                    resource_group=iface_dict['resource_group'],
+                    name=iface_dict['name'],
+                    **kwargs
+                )
+
+        result = True
+
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
 
     return result
 
