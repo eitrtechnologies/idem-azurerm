@@ -251,7 +251,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
         ret['result'] = True
         ret['comment'] = 'Virtual machine {0} has been deleted.'.format(name)
         ret['changes'] = {
-            'old': aset,
+            'old': vm,
             'new': {}
         }
         return ret
