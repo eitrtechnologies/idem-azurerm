@@ -149,8 +149,13 @@ async def present(hub, ctx, name, resource_group, tags=None, connection_auth=Non
         **connection_auth
     )
 
+    new_vm = True
+
     if 'error' not in vm:
+        new_vm = False
+
         tag_changes = await hub.exec.utils.dictdiffer.deep_diff(vm.get('tags', {}), tags or {})
+
         if tag_changes:
             ret['changes']['tags'] = tag_changes
 
@@ -163,15 +168,6 @@ async def present(hub, ctx, name, resource_group, tags=None, connection_auth=Non
             ret['result'] = None
             ret['comment'] = 'Virtual machine {0} would be updated.'.format(name)
             return ret
-
-    else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'tags': tags
-            }
-        }
 
     if ctx['test']:
         ret['comment'] = 'Virtual machine {0} would be created.'.format(name)
@@ -188,6 +184,12 @@ async def present(hub, ctx, name, resource_group, tags=None, connection_auth=Non
         **vm_kwargs
     )
 
+    if new_vm:
+        ret['changes'] = {
+            'old': {},
+            'new': vm
+        }
+
     if 'error' not in vm:
         ret['result'] = True
         ret['comment'] = 'Virtual machine {0} has been created.'.format(name)
@@ -197,7 +199,7 @@ async def present(hub, ctx, name, resource_group, tags=None, connection_auth=Non
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -245,7 +247,10 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
         }
         return ret
 
-    deleted = await hub.exec.azurerm.compute.virtual_machine.delete(name, resource_group, **connection_auth)
+    vm_kwargs = kwargs.copy()
+    vm_kwargs.update(connection_auth)
+
+    deleted = await hub.exec.azurerm.compute.virtual_machine.delete(name, resource_group, **vm_kwargs)
 
     if deleted:
         ret['result'] = True
