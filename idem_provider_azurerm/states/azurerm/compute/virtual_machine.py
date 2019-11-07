@@ -172,6 +172,14 @@ async def present(hub, ctx, name, resource_group, tags=None, connection_auth=Non
     if ctx['test']:
         ret['comment'] = 'Virtual machine {0} would be created.'.format(name)
         ret['result'] = None
+        ret['changes'] = {
+            'old': {},
+            'new': {
+                'name': name,
+                'tags': tags,
+                **kwargs
+            }
+        }
         return ret
 
     vm_kwargs = kwargs.copy()

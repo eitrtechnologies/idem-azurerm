@@ -69,7 +69,8 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
                            os_disk_size_gb=30, ssh_public_keys=None, allocate_public_ip=False,
                            create_interfaces=True, network_resource_group=None, virtual_network=None,
                            subnet=None, network_interfaces=None, os_disk_vhd_uri=None, os_disk_image_uri=None,
-                           os_type=None, os_disk_name=None, os_disk_caching=None, **kwargs):
+                           os_type=None, os_disk_name=None, os_disk_caching=None, image=None, admin_password=None,
+                           **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -145,7 +146,7 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
             try:
                 ipc.update({'public_ip_address': {'id': pubip['id']}})
             except KeyError as exc:
-                result = {'error': 'The public IP address could not be createed. ({0})'.format(str(exc))}
+                result = {'error': 'The public IP address could not be created. ({0})'.format(str(exc))}
                 return result
 
         iface = await hub.exec.azurerm.network.network_interface.create_or_update(
@@ -160,7 +161,7 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
         try:
             nic = {'id': iface['id']}
         except KeyError as exc:
-            result = {'error': 'The network interface could not be createed. ({0})'.format(str(exc))}
+            result = {'error': 'The network interface could not be created. ({0})'.format(str(exc))}
             return result
 
         network_interfaces.append(nic)
@@ -213,14 +214,7 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
                     #    'managed_disk': { 'id': None, 'storage_account_type': None }, # (Standard|Premium)_LRS or (Standard|Ultra)SSD_LRS
                     #    'to_be_detached': None # True or False
                     #}
-                ],
-                'image_reference': {
-                    #'id': None,
-                    'publisher': 'Canonical',
-                    'offer': 'UbuntuServer',
-                    'sku': '18.04-LTS',
-                    'version': 'latest'
-                }
+                ]
             },
             #'additional_capabilities': {
             #    'ultra_ssd_enabled': None
@@ -228,7 +222,7 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
             'os_profile': {
                 'computer_name': name,
                 'admin_username': admin_username,
-            #    'admin_password': admin_password,
+                'admin_password': admin_password,
             #    'custom_data': None,
             #    'windows_configuration': None,
             #    'secrets': None,
@@ -236,9 +230,7 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
             #    'require_guest_provision_signal': None
             },
             'network_profile': {
-                'network_interfaces': network_interfaces  #[
-                    #{ 'id': iface_id }
-                #]
+                'network_interfaces': network_interfaces
             },
             #'diagnostics_profiles': {
             #    'boot_diagnostics': {
@@ -289,6 +281,17 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
             }
         )
 
+    if image:
+        if is_valid_resource_id(image):
+            params['storage_profile'].update(
+                { 'image_reference': { 'id': image }}
+            )
+        elif '|' in image:
+            image_keys = ['publisher', 'offer', 'sku', 'version']
+            params['storage_profile'].update(
+                { 'image_reference': dict(zip(image_keys, image.split('|'))) }
+            )
+
     try:
         vmmodel = await hub.exec.utils.azurerm.create_object_model(
             'compute',
@@ -305,9 +308,28 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
             vm_name=name,
             parameters=vmmodel
         )
+
         vm.wait()
         vm_result = vm.result()
         result = vm_result.as_dict()
+
+        network_interfaces = []
+
+        # Give some more details about the sub-objects
+        for iface in result['network_profile']['network_interfaces']:
+            iface_dict = parse_resource_id(
+                iface['id']
+            )
+
+            iface_details = await hub.exec.azurerm.network.network_interface.get(
+                resource_group=iface_dict['resource_group'],
+                name=iface_dict['name'],
+                **kwargs
+            )
+
+            network_interfaces.append(iface_details)
+
+        result['network_profile']['network_interfaces'] = network_interfaces
 
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
