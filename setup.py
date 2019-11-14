@@ -7,8 +7,8 @@ import sys
 import shutil
 from setuptools import setup, Command
 
-NAME = 'idem_provider_azurerm'
-DESC = ('')
+NAME = 'idem_azurerm'
+DESC = ('Idem language provider for Azure')
 
 # Version info -- read without importing
 _locals = {}
@@ -47,7 +47,7 @@ def discover_packages():
 
 
 setup(name=NAME,
-      author='',
+      author='Nicholas Hughes',
       author_email='',
       url='',
       version=VERSION,
@@ -55,15 +55,10 @@ setup(name=NAME,
       classifiers=[
           'Operating System :: OS Independent',
           'Programming Language :: Python',
-          'Programming Language :: Python :: 3.5',
-          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
           'Development Status :: 5 - Production/Stable',
           ],
-      entry_points={
-        'console_scripts': [
-            'idem_provider_azurerm = idem_provider_azurerm.scripts:start',
-            ],
-          },
       packages=discover_packages(),
       cmdclass={'clean': Clean},
       )
