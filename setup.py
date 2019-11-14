@@ -7,7 +7,8 @@ import sys
 import shutil
 from setuptools import setup, Command
 
-NAME = 'idem_azurerm'
+PYPI_NAME = 'idem_azurerm'
+NAME = 'idem_provider_azurerm'
 DESC = ('Idem language provider for Azure')
 
 # Version info -- read without importing
@@ -46,7 +47,7 @@ def discover_packages():
     return modules
 
 
-setup(name=NAME,
+setup(name=PYPI_NAME,
       author='Nicholas Hughes',
       author_email='',
       url='',
