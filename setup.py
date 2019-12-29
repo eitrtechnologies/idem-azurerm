@@ -7,8 +7,14 @@ import sys
 import shutil
 from setuptools import setup, Command
 
-NAME = 'idem_provider_azurerm'
-DESC = ('')
+NAME = 'idem-azurerm'
+DESC = ('Idem language provider for Azure')
+
+with open('README.md', encoding='utf-8') as f:
+    LONG_DESC = f.read()
+
+with open('requirements.txt') as f:
+    REQUIREMENTS = f.read().splitlines()
 
 # Version info -- read without importing
 _locals = {}
@@ -47,11 +53,14 @@ def discover_packages():
 
 
 setup(name=NAME,
-      author='',
-      author_email='',
-      url='',
+      author='EITR Technologies, LLC',
+      author_email='devops@eitr.tech',
+      url='https://github.com/eitrtechnologies/idem_provider_azurerm',
       version=VERSION,
       description=DESC,
+      install_requires=REQUIREMENTS,
+      long_description=LONG_DESC,
+      long_description_content_type='text/markdown',
       classifiers=[
           'Operating System :: OS Independent',
           'Programming Language :: Python',

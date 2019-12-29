@@ -1,1 +1,1 @@
-# idem_provider_azurerm
+# Microsoft Azure Cloud Provider for Idem
