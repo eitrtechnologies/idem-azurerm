@@ -90,6 +90,14 @@ import salt.utils.files
 
 log = logging.getLogger(__name__)
 
+TREQ = {
+    'assignment_present': {
+        'require': [
+            'azurerm.resource.policy.definition_present',
+        ]
+    },
+}
+
 
 async def definition_present(hub, ctx, name, policy_rule=None, policy_type=None, mode=None, display_name=None, description=None,
                        metadata=None, parameters=None, policy_rule_json=None, policy_rule_file=None,

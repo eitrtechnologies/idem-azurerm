@@ -92,6 +92,16 @@ import logging
 
 log = logging.getLogger(__name__)
 
+TREQ = {
+    'present': {
+        'require': [
+            'azurerm.resource.group.present',
+            'azurerm.network.virtual_network.present',
+            'azurerm.network.virtual_network.subnet_present',
+        ]
+    },
+}
+
 
 async def present(hub, ctx, name, resource_group, tags=None, connection_auth=None, **kwargs):
     '''

@@ -98,6 +98,20 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
+TREQ = {
+    'present': {
+        'require': [
+            'azurerm.resource.group.present',
+        ]
+    },
+    'subnet_present': {
+        'require': [
+            'azurerm.resource.group.present',
+            'azurerm.network.virtual_network.present',
+        ]
+    },
+}
+
 
 async def present(hub, ctx, name, address_prefixes, resource_group, dns_servers=None, tags=None, connection_auth=None, **kwargs):
     '''
