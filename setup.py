@@ -7,7 +7,8 @@ import sys
 import shutil
 from setuptools import setup, Command
 
-NAME = 'idem-azurerm'
+PYPI_NAME = 'idem_azurerm'
+NAME = 'idem_provider_azurerm'
 DESC = ('Idem language provider for Azure')
 
 with open('README.md', encoding='utf-8') as f:
@@ -52,7 +53,7 @@ def discover_packages():
     return modules
 
 
-setup(name=NAME,
+setup(name=PYPI_NAME,
       author='EITR Technologies, LLC',
       author_email='devops@eitr.tech',
       url='https://github.com/eitrtechnologies/idem_provider_azurerm',
@@ -64,15 +65,10 @@ setup(name=NAME,
       classifiers=[
           'Operating System :: OS Independent',
           'Programming Language :: Python',
-          'Programming Language :: Python :: 3.5',
-          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
           'Development Status :: 5 - Production/Stable',
           ],
-      entry_points={
-        'console_scripts': [
-            'idem_provider_azurerm = idem_provider_azurerm.scripts:start',
-            ],
-          },
       packages=discover_packages(),
       cmdclass={'clean': Clean},
       )
