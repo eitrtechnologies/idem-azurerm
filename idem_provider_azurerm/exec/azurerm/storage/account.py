@@ -95,7 +95,7 @@ async def check_name_availability(hub, name, **kwargs):
     return result
 
 
-async def create(hub, name, resource_group, parameters, **kwargs):
+async def create(hub, name, resource_group, sku, kind, location, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -109,17 +109,59 @@ async def create(hub, name, resource_group, parameters, **kwargs):
 
     :param resource_group: The name of the resource group that the storage account belongs to.
 
-    :param params: DO THIS (FIGURE OUT WHAT IS NECESSARY)
+    :param sku: A dictionary representing a storage account SKU. Valid parameters are:
+          - ``name``: The name of the storage account SKU. This is required. Possible values include: 'Standard_LRS',
+                      'Standard_GRS', 'Standard_RAGRS', 'Standard_ZRS', 'Premium_LRS', 'Premium_ZRS', 'Standard_GZRS',
+                      'Standard_RAGZRS'.
+          - ``tier``: The tier of the storage account SKU. Possible values include: 'Standard', 'Premium'.
+
+    :param kind: Indicates the type of storage account. Possible values include: 'Storage', 'StorageV2', 'BlobStorage'.
+
+    :param location: Gets or sets the location of the resource. This will be one of the supported and registered Azure
+        Geo Regions (e.g. West US, East US, Southeast Asia, etc.). The geo region of a resource cannot be changed once
+        it is created, but if an identical geo region is specified on update, the request will succeed.
+
+    NOTE: An access tier is required for when the kind is set to 'BlobStorage'. The access tier is used for billing. 
+        Possible values include: 'Hot' and 'Cool'.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.storage.account.create test_name test_group UPDATE PARAMS HERE
+        azurerm.storage.account.create test_name test_group test_sku test_kind test_location
 
     '''
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
-    pass
+
+    try:
+        accountmodel = await hub.exec.utils.azurerm.create_object_model(
+            'storage',
+            'StorageAccountCreateParameters',
+            sku=sku,
+            kind=kind,
+            location=location,   
+            **kwargs
+        )
+    except TypeError as exc:
+        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        return result
+
+    try:
+        account = storconn.storage_accounts.create(
+            account_name=name,
+            resource_group_name=resource_group,
+            parameters=accountmodel
+        )
+        account.wait()
+        account_result = account.result()
+        result = account_result.as_dict()
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
+        result = {'error': str(exc)}
+    except SerializationError as exc:
+        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+
+    return result
 
 
 async def delete(hub, name, resource_group, **kwargs):
@@ -209,7 +251,7 @@ async def get_properties(hub, name, resource_group, **kwargs):
     return result
 
 
-async def list(hub, **kwargs):
+async def list_(hub, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -266,7 +308,7 @@ async def list_account_sas(hub, name, resource_group, **kwargs):
             )
         )
 
-        result = creds
+        result = creds.as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
@@ -325,15 +367,29 @@ async def list_keys(hub, name, resource_group, **kwargs):
         azurerm.storage.account.list_keys test_name test_group
 
     '''
+    result = {}
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
-    pass
+    try:
+        keys = await hub.exec.utils.azurerm.paged_object_to_list(
+            storconn.storage_accounts.list_keys(
+                account_name=name,
+                resource_group_name=resource_group
+            )
+        )
+
+        result = keys.as_dict() 
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
 
 
 async def list_service_sas(hub, name, resource_group, PARAMS, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
-    Lists the access keys or Kerberos keys (if active directory enabled) for the specified storage account.
+    List service SAS credentials of a specific resource.
 
     :param name: The name of the storage account.
 
