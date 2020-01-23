@@ -65,6 +65,7 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
+
 async def check_name_availability(hub, name, **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -152,9 +153,7 @@ async def create(hub, name, resource_group, sku, kind, location, **kwargs):
             resource_group_name=resource_group,
             parameters=accountmodel
         )
-        account.wait()
-        account_result = account.result()
-        result = account_result.as_dict()
+        result = account.as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
@@ -452,7 +451,7 @@ async def revoke_user_delegation_keys(hub, name, resource_group, **kwargs):
     pass
 
 
-async def update(hub, name, resource_group, PARAMS, **kwargs):
+async def update(hub, name, resource_group, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -468,13 +467,36 @@ async def update(hub, name, resource_group, PARAMS, **kwargs):
 
     :param resource_group: The name of the resource group that the storage account belongs to.
 
-    :param PARAMS: FIGURE OUT WHICH ARE NECESSARY
-
     CLI Example:
 
-    .. code-block:: bash                                                                                                                          
-        azurerm.storage.account.update test_name test_group UPDATE PARAMS HERE
+    .. code-block:: bash                                  
+                                                                
+        azurerm.storage.account.update test_name test_group
 
     '''
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
-    pass
+
+    try:
+        accountmodel = await hub.exec.utils.azurerm.create_object_model(
+            'storage',
+            'StorageAccountUpdateParameters',
+            **kwargs
+        )
+    except TypeError as exc:
+        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        return result
+
+    try:
+        account = storconn.storage_accounts.update(
+            account_name=name,
+            resource_group_name=resource_group,
+            parameters=accountmodel
+        )
+        result = account.as_dict()
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
+        result = {'error': str(exc)}
+    except SerializationError as exc:
+        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+
+    return result

@@ -89,7 +89,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, identity=
     '''
     .. versionadded:: 1.0.0
 
-    Ensure a virtual network exists.
+    Ensure a storage account exists in the resource group.
 
     :param name: The name of the storage account.
 
@@ -159,8 +159,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, identity=
         if sku_changes:
             ret['changes']['sku'] = sku_changes
  
-        encryption_changes = await hub.exec.utils.dictdiffer.deep_diff(account.get('encryption', {}), 
-                                                                                    encryption or {})
+        encryption_changes = await hub.exec.utils.dictdiffer.deep_diff(account.get('encryption', {}), encryption or {})
         if encryption_changes:
             ret['changes']['encryption'] = encryption_changes
        
@@ -190,6 +189,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, identity=
             'old': {},
             'new': {
                 'name': name,
+                'resource_group': resource_group,
                 'sku': sku,
                 'kind': kind,
                 'location': location,
@@ -220,7 +220,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, identity=
             ret['changes']['new']['routing_preference'] = routing_preference
 
     if ctx['test']:
-        ret['comment'] = 'Virtual network gateway {0} would be created.'.format(name)
+        ret['comment'] = 'Storage account {0} would be created.'.format(name)
         ret['result'] = None
         return ret
 
