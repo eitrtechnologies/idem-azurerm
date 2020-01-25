@@ -83,6 +83,7 @@ async def check_name_availability(hub, name, **kwargs):
     '''
     result = {}
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
+
     try:
         status = storconn.storage_accounts.check_name_availability(
             name=name
@@ -153,6 +154,7 @@ async def create(hub, name, resource_group, sku, kind, location, **kwargs):
             resource_group_name=resource_group,
             parameters=accountmodel
         )
+
         result = account.as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
@@ -182,6 +184,7 @@ async def delete(hub, name, resource_group, **kwargs):
     '''
     result = False
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
+
     try:
         account = storconn.storage_accounts.delete(
             account_name=name,
@@ -194,28 +197,6 @@ async def delete(hub, name, resource_group, **kwargs):
 
     return result
 
-
-async def failover(hub, name, resource_group, **kwargs):
-    '''
-    .. versionadded:: 1.0.0
-
-    Failover request can be triggered for a storage account in case of availability issues. The failover occurs from 
-        the storage account's primary cluster to secondary cluster for RA-GRS accounts. The secondary cluster will 
-        become primary after failover.
-
-    :param name: The name of the storage account.
-
-    :param resource_group: The name of the resource group that the storage account belongs to.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.storage.account.failover test_name test_group
-
-    '''
-    storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
-    pass
 
 async def get_properties(hub, name, resource_group, **kwargs):
     '''
@@ -236,6 +217,7 @@ async def get_properties(hub, name, resource_group, **kwargs):
 
     '''
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
+
     try:
         props = storconn.storage_accounts.get_properties(
             account_name=name,
@@ -266,6 +248,7 @@ async def list_(hub, **kwargs):
     '''
     result = {}
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
+
     try:
         accounts = await hub.exec.utils.azurerm.paged_object_to_list(
             storconn.storage_accounts.list()
@@ -280,7 +263,8 @@ async def list_(hub, **kwargs):
     return result
 
 
-async def list_account_sas(hub, name, resource_group, **kwargs):
+async def list_account_sas(hub, name, resource_group, services, resource_types, permissions, shared_access_expiry_time,
+                           **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -290,20 +274,49 @@ async def list_account_sas(hub, name, resource_group, **kwargs):
 
     :param resource_group: The name of the resource group that the storage account belongs to.
 
+    :param services: The signed services accessible with the account SAS. Possible values include: Blob (b), Queue (q), 
+        Table (t), File (f). Possible values include: 'b', 'q', 't', 'f'.
+
+    :param resource_types: The signed resource types that are accessible with the account SAS. Service (s): Access to
+        service-level APIs; Container (c): Access to container-level APIs; Object (o): Access to object-level APIs for
+        blobs, queue messages, table entities, and files. Possible values include: 's', 'c', 'o'.
+
+    :param permissions: The signed permissions for the account SAS. Possible values include: Read (r), Write (w), Delete
+        (d), List (l), Add (a), Create (c), Update (u) and Process (p). Possible values include: 'r', 'd', 'w', 'l', 
+        'a', 'c', 'u', 'p'.
+
+    :param shared_access_expiry_time: The time at which the shared access signature becomes invalid.
+
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.storage.account.list_account_sas test_name test_group
+        azurerm.storage.account.list_account_sas test_name test_group test_services test_types test_perms test_time
 
     '''
     result = {}
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
+
+    try:
+        accountmodel = await hub.exec.utils.azurerm.create_object_model(
+            'storage',
+            'AccountSasParameters',
+            permissions=permissions,
+            shared_access_expiry_time=shared_access_expiry_time,
+            resource_types=resource_types,
+            services=services,
+            **kwargs
+        )
+    except TypeError as exc:
+        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        return result
+
     try:
         creds = await hub.exec.utils.azurerm.paged_object_to_list(
             storconn.storage_accounts.list_account_sas(
                 account_name=name,
                 resource_group_name=name,
+                parameters=accountmodel
             )
         )
 
@@ -369,11 +382,9 @@ async def list_keys(hub, name, resource_group, **kwargs):
     result = {}
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
     try:
-        keys = await hub.exec.utils.azurerm.paged_object_to_list(
-            storconn.storage_accounts.list_keys(
-                account_name=name,
-                resource_group_name=resource_group
-            )
+        keys = storconn.storage_accounts.list_keys(
+            account_name=name,
+            resource_group_name=resource_group
         )
 
         result = keys.as_dict() 
@@ -384,7 +395,7 @@ async def list_keys(hub, name, resource_group, **kwargs):
     return result
 
 
-async def list_service_sas(hub, name, resource_group, PARAMS, **kwargs):
+async def list_service_sas(hub, name, resource_group, canonicalized_resource, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -394,17 +405,44 @@ async def list_service_sas(hub, name, resource_group, PARAMS, **kwargs):
 
     :param resource_group: The name of the resource group that the storage account belongs to.
 
-    :param PARAMS: DO THIS
+    :param canonicalized_resource: The canonical path to the signed resource.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.storage.account.list_service_sas test_name test_group UPDATE PARAMS HERE
+        azurerm.storage.account.list_service_sas test_name test_group test_resource
 
     '''
+    result = {}
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
-    pass
+
+    try:
+        accountmodel = await hub.exec.utils.azurerm.create_object_model(
+            'storage',
+            'ServiceSasParameters',
+            canonicalized_resource=canonicalized_resource,
+            **kwargs
+        )
+    except TypeError as exc:
+        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        return result
+
+    try:
+        creds = await hub.exec.utils.azurerm.paged_object_to_list(
+            storconn.storage_accounts.list_account_sas(
+                account_name=name,
+                resource_group_name=name,
+                parameters=accountmodel
+            )
+        )
+
+        result = creds.as_dict()
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
 
 
 async def regenerate_key(hub, name, resource_group, key_name, **kwargs):
@@ -427,28 +465,21 @@ async def regenerate_key(hub, name, resource_group, key_name, **kwargs):
 
     '''
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
-    pass
 
+    try:
+        keys = storconn.storage_accounts.regenerate_key(
+            resource_group_name=resource_group,
+            account_name=name,
+            key_name=key_name,
+            **kwargs
+        )
 
-async def revoke_user_delegation_keys(hub, name, resource_group, **kwargs):
-    '''
-    .. versionadded:: 1.0.0
+        result = keys
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
+        result = {'error': str(exc)}
 
-    Revoke user delegation keys.
-
-    :param name: The name of the storage account.
-
-    :param resource_group: The name of the resource group that the storage account belongs to.
-
-    CLI Example:
-    
-    .. code-block:: bash
-
-        azurerm.storage.account.revoke_user_delegation_keys test_name test_group
-
-    '''
-    storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
-    pass
+    return result
 
 
 async def update(hub, name, resource_group, **kwargs):
@@ -492,6 +523,7 @@ async def update(hub, name, resource_group, **kwargs):
             resource_group_name=resource_group,
             parameters=accountmodel
         )
+
         result = account.as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)

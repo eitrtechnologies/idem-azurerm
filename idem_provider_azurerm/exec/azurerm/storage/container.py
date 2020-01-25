@@ -91,7 +91,21 @@ async def clear_legal_hold(hub, name, account, resource_group, tags, **kwargs):
 
     '''
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
-    pass
+
+    try:
+        hold = storconn.blob_containers.clear_legal_hold(
+            container_name=name,
+            resource_group_name=resource_group,
+            account_name=account,
+            tags=tags
+        )
+
+        result = hold
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
 
 
 async def create(hub, name, account, resource_group, public_access=None, metadata=None, **kwargs):
@@ -417,11 +431,11 @@ async def get_immutability_policy(hub, name, account, resource_group, if_match=N
     return result
 
 
-async def lease(hub, name, account, resource_group, PARAMS=None, **kwargs):
+async def lease(hub, name, account, resource_group, action, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
-    The Lease Container operation establishes and manages a lock on a container for delete operations. The lock duration 
+    The Lease Container operation establishes and manages a lock on a container for delete operations. The lock duration
         can be 15 to 60 seconds, or can be infinite.
                                                                                        
     :param name: The name of the blob container within the specified storage account. Blob container names must be
@@ -433,17 +447,43 @@ async def lease(hub, name, account, resource_group, PARAMS=None, **kwargs):
 
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
-    UPDATE PARAMS
+    :param action: Specifies the lease action. Can be one of the available actions. Possible values include: 'Acquire',
+        'Renew', 'Change', 'Release', 'Break'
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.storage.container.lease test_name test_account test_group UPDATE PARAMS
+        azurerm.storage.container.lease test_name test_account test_group test_action
 
     '''
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
-    pass
+
+    try:
+        leasemodel = await hub.exec.utils.azurerm.create_object_model(
+            'storage',
+            'LeaseContainerRequest',
+            action=action,
+            **kwargs
+        )
+    except TypeError as exc:
+        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        return result
+
+    try:
+        container = storconn.blob_containers.lease(
+            container_name=name,
+            account_name=account,
+            resource_group_name=resource_group,
+            parameters=leasemodel
+        )
+
+        result = policy.as_dict()
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
 
 
 async def list_(hub, account, resource_group, **kwargs):
@@ -469,11 +509,9 @@ async def list_(hub, account, resource_group, **kwargs):
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
     
     try:
-        containers = await hub.exec.utils.azurerm.paged_object_to_list(
-            storconn.blob_containers.list(
-                account_name=account,
-                resource_group_name=resource_group
-            )
+        containers = storconn.blob_containers.list(
+            account_name=account,
+            resource_group_name=resource_group
         )
 
         for container in containers:
@@ -510,7 +548,22 @@ async def lock_immutability_policy(hub, name, account, resource_group, if_match,
 
     '''
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
-    pass
+
+    try:
+        policy = storconn.blob_containers.lock_immutability_policy(
+            container_name=name,
+            account_name=account,
+            resource_group_name=resource_group,
+            if_match=if_match,
+            **kwargs
+        )
+
+        result = policy
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
 
 
 async def set_legal_hold(hub, name, account, resource_group, tags, **kwargs):
@@ -539,7 +592,21 @@ async def set_legal_hold(hub, name, account, resource_group, tags, **kwargs):
 
     '''
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
-    pass
+
+    try:
+        hold = storconn.blob_containers.set_legal_hold(
+            container_name=name,
+            resource_group_name=resource_group,
+            account_name=account,
+            tags=tags
+        )
+
+        result = hold
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
 
 
 async def update(hub, name, account, resource_group, public_access=None, metadata=None, **kwargs):
