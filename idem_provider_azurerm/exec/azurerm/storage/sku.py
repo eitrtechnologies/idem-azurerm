@@ -86,7 +86,7 @@ async def list_(hub, **kwargs):
         skus = await hub.exec.utils.azurerm.paged_object_to_list(
             storconn.skus.list()
         )
-  
+
         for sku in skus:
             result[sku['name']] = sku
     except CloudError as exc:

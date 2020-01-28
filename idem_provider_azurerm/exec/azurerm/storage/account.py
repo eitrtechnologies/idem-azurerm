@@ -312,15 +312,13 @@ async def list_account_sas(hub, name, resource_group, services, resource_types, 
         return result
 
     try:
-        creds = await hub.exec.utils.azurerm.paged_object_to_list(
-            storconn.storage_accounts.list_account_sas(
-                account_name=name,
-                resource_group_name=name,
-                parameters=accountmodel
-            )
+        creds = storconn.storage_accounts.list_account_sas(
+            account_name=name,
+            resource_group_name=resource_group,
+            parameters=accountmodel
         )
 
-        result = creds.as_dict()
+        result = creds
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
@@ -395,7 +393,8 @@ async def list_keys(hub, name, resource_group, **kwargs):
     return result
 
 
-async def list_service_sas(hub, name, resource_group, canonicalized_resource, **kwargs):
+async def list_service_sas(hub, name, resource_group, canonicalized_resource, permissions, shared_access_expiry_time,
+                           **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -407,11 +406,18 @@ async def list_service_sas(hub, name, resource_group, canonicalized_resource, **
 
     :param canonicalized_resource: The canonical path to the signed resource.
 
+    :param permissions: The signed permissions for the service SAS. Possible values include: Read (r), Write (w), 
+        Delete (d), List (l), Add (a), Create (c), Update (u) and Process (p). Possible values include: 'r', 'd', 'w',
+        'l', 'a', 'c', 'u', 'p'.
+
+    :param shared_access_expiry_time: The time at which the shared access signature becomes invalid. This parameter
+        must be a string representation of a Datetime object in ISO-8601 format.
+
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.storage.account.list_service_sas test_name test_group test_resource
+        azurerm.storage.account.list_service_sas test_name test_group test_resource test_perms test_time
 
     '''
     result = {}
@@ -421,7 +427,9 @@ async def list_service_sas(hub, name, resource_group, canonicalized_resource, **
         accountmodel = await hub.exec.utils.azurerm.create_object_model(
             'storage',
             'ServiceSasParameters',
+            permissions=permissions,
             canonicalized_resource=canonicalized_resource,
+            shared_access_expiry_time=shared_access_expiry_time,
             **kwargs
         )
     except TypeError as exc:
@@ -430,14 +438,14 @@ async def list_service_sas(hub, name, resource_group, canonicalized_resource, **
 
     try:
         creds = await hub.exec.utils.azurerm.paged_object_to_list(
-            storconn.storage_accounts.list_account_sas(
+            storconn.storage_accounts.list_service_sas(
                 account_name=name,
-                resource_group_name=name,
+                resource_group_name=resource_group,
                 parameters=accountmodel
             )
         )
 
-        result = creds.as_dict()
+        result = creds
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
