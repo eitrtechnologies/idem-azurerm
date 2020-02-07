@@ -74,14 +74,13 @@ async def operation_get(hub, operation, deployment, resource_group, **kwargs):
 
     :param deployment: The name of the deployment containing the operation.
 
-    :param resource_group: The resource group name assigned to the
-        deployment.
+    :param resource_group: The resource group name assigned to the deployment.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurearm_resource.deployment_operation_get XXXXX testdeploy testgroup
+        azurerm.resource.deployment.operation_get testoperation testdeploy testgroup
 
     '''
     resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
@@ -108,17 +107,15 @@ async def operations_list(hub, name, resource_group, result_limit=10, **kwargs):
 
     :param name: The name of the deployment to query.
 
-    :param resource_group: The resource group name assigned to the
-        deployment.
+    :param resource_group: The resource group name assigned to the deployment.
 
-    :param result_limit: (Default: 10) The limit on the list of deployment
-        operations.
+    :param result_limit: (Default: 10) The limit on the list of deployment operations.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurearm_resource.deployment_operations_list testdeploy testgroup
+        azurerm.resource.deployment.operations_list testdeploy testgroup
 
     '''
     result = {}
@@ -149,14 +146,13 @@ async def delete(hub, name, resource_group, **kwargs):
 
     :param name: The name of the deployment to delete.
 
-    :param resource_group: The resource group name assigned to the
-        deployment.
+    :param resource_group: The resource group name assigned to the deployment.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurearm_resource.deployment_delete testdeploy testgroup
+        azurerm.resource.deployment.delete testdeploy testgroup
 
     '''
     result = False
@@ -182,14 +178,13 @@ async def check_existence(hub, name, resource_group, **kwargs):
 
     :param name: The name of the deployment to query.
 
-    :param resource_group: The resource group name assigned to the
-        deployment.
+    :param resource_group: The resource group name assigned to the deployment.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurearm_resource.deployment_check_existence testdeploy testgroup
+        azurerm.resource.deployment.check_existence testdeploy testgroup
 
     '''
     result = False
@@ -216,8 +211,7 @@ async def create_or_update(hub, name, resource_group, deploy_mode='incremental',
 
     :param name: The name of the deployment to create or update.
 
-    :param resource_group: The resource group name assigned to the
-        deployment.
+    :param resource_group: The resource group name assigned to the deployment.
 
     :param deploy_mode: The mode that is used to deploy resources. This value can be either
         'incremental' or 'complete'. In Incremental mode, resources are deployed without deleting
@@ -250,7 +244,7 @@ async def create_or_update(hub, name, resource_group, deploy_mode='incremental',
 
     .. code-block:: bash
 
-        azurearm_resource.deployment_create_or_update testdeploy testgroup
+        azurerm.resource.deployment.create_or_update testdeploy testgroup
 
     '''
     resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
@@ -279,7 +273,7 @@ async def create_or_update(hub, name, resource_group, deploy_mode='incremental',
 
     try:
         deploy_model = await hub.exec.utils.azurerm.create_object_model(
-            'resource',
+            'resource.resources',
             'DeploymentProperties',
             **deploy_kwargs
         )
@@ -288,10 +282,16 @@ async def create_or_update(hub, name, resource_group, deploy_mode='incremental',
         return result
 
     try:
-        validate = deployment_validate(
+        validate = await hub.exec.azurerm.resource.deployment.validate(
             name=name,
             resource_group=resource_group,
-            **deploy_kwargs
+            deploy_mode=deploy_mode,
+            debug_setting=debug_setting,
+            deploy_params=deploy_params,
+            parameters_link=parameters_link,
+            deploy_template=deploy_template,
+            template_link=template_link,
+            **kwargs
         )
         if 'error' in validate:
             result = validate
@@ -321,14 +321,13 @@ async def get(hub, name, resource_group, **kwargs):
 
     :param name: The name of the deployment to query.
 
-    :param resource_group: The resource group name assigned to the
-        deployment.
+    :param resource_group: The resource group name assigned to the deployment.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurearm_resource.deployment_get testdeploy testgroup
+        azurerm.resource.deployment.get testdeploy testgroup
 
     '''
     resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
@@ -353,14 +352,13 @@ async def cancel(hub, name, resource_group, **kwargs):
 
     :param name: The name of the deployment to cancel.
 
-    :param resource_group: The resource group name assigned to the
-        deployment.
+    :param resource_group: The resource group name assigned to the deployment.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurearm_resource.deployment_cancel testdeploy testgroup
+        azurerm.resource.deployment.cancel testdeploy testgroup
 
     '''
     resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
@@ -387,13 +385,11 @@ async def validate(hub, name, resource_group, deploy_mode=None,
     '''
     .. versionadded:: 1.0.0
 
-    Validates whether the specified template is syntactically correct
-    and will be accepted by Azure Resource Manager.
+    Validates whether the specified template is syntactically correct and will be accepted by Azure Resource Manager.
 
     :param name: The name of the deployment to validate.
 
-    :param resource_group: The resource group name assigned to the
-        deployment.
+    :param resource_group: The resource group name assigned to the deployment.
 
     :param deploy_mode: The mode that is used to deploy resources. This value can be either
         'incremental' or 'complete'. In Incremental mode, resources are deployed without deleting
@@ -426,7 +422,7 @@ async def validate(hub, name, resource_group, deploy_mode=None,
 
     .. code-block:: bash
 
-        azurearm_resource.deployment_validate testdeploy testgroup
+        azurerm.resource.deployment.validate testdeploy testgroup
 
     '''
     resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
@@ -455,7 +451,7 @@ async def validate(hub, name, resource_group, deploy_mode=None,
 
     try:
         deploy_model = await hub.exec.utils.azurerm.create_object_model(
-            'resource',
+            'resource.resources',
             'DeploymentProperties',
             **deploy_kwargs
         )
@@ -491,14 +487,13 @@ async def export_template(hub, name, resource_group, **kwargs):
 
     :param name: The name of the deployment to query.
 
-    :param resource_group: The resource group name assigned to the
-        deployment.
+    :param resource_group: The resource group name assigned to the deployment.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurearm_resource.deployment_export_template testdeploy testgroup
+        azurerm.resource.deployment.export_template testdeploy testgroup
 
     '''
     resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
@@ -525,7 +520,7 @@ async def list_(hub, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurearm_resource.deployments_list testgroup
+        azurerm.resource.deployment.list testgroup
 
     '''
     result = {}
