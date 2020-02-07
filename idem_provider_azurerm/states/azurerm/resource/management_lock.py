@@ -66,6 +66,16 @@ from __future__ import absolute_import
 import json
 import logging
 
+# Azure libs
+HAS_LIBS = False
+try:
+    import azure.mgmt.resource.resources.models  # pylint: disable=unused-import
+    from msrest.exceptions import SerializationError
+    from msrestazure.azure_exceptions import CloudError
+    HAS_LIBS = True
+except ImportError:
+    pass
+
 log = logging.getLogger(__name__)
 
 
@@ -81,13 +91,13 @@ async def present_at_resource_group_level(hub, ctx, name, resource_group, lock_l
 
     :param resource_group: The name of the resource group.
 
-    :param lock_level: The level of the lock. Possible values are: 'NotSpecified', 'CanNotDelete', & 'ReadOnly'.
-        CanNotDelete means authorized users are able to read and modify the resources, but not delete. ReadOnly means
-        authorized users can only read from a resource, but they can't modify or delete it.
+    :param lock_level: The level of the lock. Possible values are: 'CanNotDelete' and 'ReadOnly'. CanNotDelete means
+        authorized users are able to read and modify the resources, but not delete. ReadOnly means authorized users
+        can only read from a resource, but they can't modify or delete it.
 
     :param tags: A dictionary of strings can be passed as tag metadata to the resource group object.
 
-    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the 
+    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
     Example usage:
@@ -127,9 +137,9 @@ async def present_at_resource_group_level(hub, ctx, name, resource_group, lock_l
         if tag_changes:
             ret['changes']['tags'] = tag_changes
 
-        if lock_level != lock.get('lock_level'):
-            ret['changes']['lock_level'] = {
-                'old': lock.get('lock_level'),
+        if lock_level != lock.get('level'):
+            ret['changes']['level'] = {
+                'old': lock.get('level'),
                 'new': lock_level
             }
 
@@ -137,12 +147,6 @@ async def present_at_resource_group_level(hub, ctx, name, resource_group, lock_l
             ret['changes']['notes'] = {
                 'old': lock.get('notes'),
                 'new': kwargs.get('notes')
-            }
-
-        if kwargs.get('owners', None) != lock.get('owners'):
-            ret['changes']['owners'] = {
-                'old': lock.get('owners'),
-                'new': kwargs.get('owners')
             }
 
         if not ret['changes']:
@@ -194,6 +198,8 @@ async def present_at_resource_group_level(hub, ctx, name, resource_group, lock_l
         return ret
 
     ret['comment'] = 'Failed to create management lock {0}! ({1})'.format(name, lock.get('error'))
+    if ret['result'] == False:
+        ret['changes'] = {}
     return ret
 
 
@@ -203,7 +209,7 @@ async def absent_at_resource_group_level(hub, ctx, name, resource_group, connect
 
     Ensure a management lock does not exist at the resource group level.
 
-    :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &, 
+    :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
         :, , ?, /, or any control characters.
 
     :param resource_group: The name of the resource group.
@@ -255,8 +261,8 @@ async def absent_at_resource_group_level(hub, ctx, name, resource_group, connect
         return ret
 
     deleted = await hub.exec.azurerm.resource.management_lock.delete_at_resource_group_level(
-        name, 
-        resource_group, 
+        name,
+        resource_group,
         **connection_auth
     )
 
@@ -287,13 +293,13 @@ async def present_by_scope(hub, ctx, name, scope, lock_level, tags=None, connect
         '/subscriptions/{subscriptionId}/resourcegroups/{resourceGroupName}' for resource groups, and
         '/subscriptions/{subscriptionId}/resourcegroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{parentResourcePathIfPresent}/{resourceType}/{resourceName}' for resources.
 
-    :param lock_level: The level of the lock. Possible values are: 'NotSpecified', 'CanNotDelete', & 'ReadOnly'.
-        CanNotDelete means authorized users are able to read and modify the resources, but not delete. ReadOnly means
-        authorized users can only read from a resource, but they can't modify or delete it.
+    :param lock_level: The level of the lock. Possible values are: 'CanNotDelete' and 'ReadOnly'. CanNotDelete means
+        authorized users are able to read and modify the resources, but not delete. ReadOnly means authorized users
+        can only read from a resource, but they can't modify or delete it.
 
     :param tags: A dictionary of strings can be passed as tag metadata to the resource group object.
 
-    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the 
+    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
     Example usage:
@@ -332,10 +338,10 @@ async def present_by_scope(hub, ctx, name, scope, lock_level, tags=None, connect
         tag_changes = await hub.exec.utils.dictdiffer.deep_diff(lock.get('tags', {}), tags or {})
         if tag_changes:
             ret['changes']['tags'] = tag_changes
-        
-        if lock_level != lock.get('lock_level'):
-            ret['changes']['lock_level'] = {
-                'old': lock.get('lock_level'),
+
+        if lock_level != lock.get('level'):
+            ret['changes']['level'] = {
+                'old': lock.get('level'),
                 'new': lock_level
             }
 
@@ -343,12 +349,6 @@ async def present_by_scope(hub, ctx, name, scope, lock_level, tags=None, connect
             ret['changes']['notes'] = {
                 'old': lock.get('notes'),
                 'new': kwargs.get('notes')
-            }
-
-        if kwargs.get('owners', None) != lock.get('owners'):
-            ret['changes']['owners'] = {
-                'old': lock.get('owners'),
-                'new': kwargs.get('owners')
             }
 
         if not ret['changes']:
@@ -400,6 +400,8 @@ async def present_by_scope(hub, ctx, name, scope, lock_level, tags=None, connect
         return ret
 
     ret['comment'] = 'Failed to create management lock {0}! ({1})'.format(name, lock.get('error'))
+    if ret['result'] == False:
+        ret['changes'] = {}
     return ret
 
 
@@ -409,7 +411,7 @@ async def absent_by_scope(hub, ctx, name, scope, connection_auth=None):
 
     Ensure a management lock does not exist by scope.
 
-    :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &, 
+    :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
         :, , ?, /, or any control characters.
 
     :param scope: The scope for the lock. When providing a scope for the assignment,
@@ -464,8 +466,8 @@ async def absent_by_scope(hub, ctx, name, scope, connection_auth=None):
         return ret
 
     deleted = await hub.exec.azurerm.resource.management_lock.delete_by_scope(
-        name, 
-        scope, 
+        name,
+        scope,
         **connection_auth
     )
 
@@ -482,8 +484,8 @@ async def absent_by_scope(hub, ctx, name, scope, connection_auth=None):
     return ret
 
 
-async def present_at_resource_level(hub, name, lock_level, resource_group, resource, resource_type, 
-                                    resource_provider_namespace, parent_resource_path=None, tags=None, 
+async def present_at_resource_level(hub, name, lock_level, resource_group, resource, resource_type,
+                                    resource_provider_namespace, parent_resource_path=None, tags=None,
                                     connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -493,9 +495,9 @@ async def present_at_resource_level(hub, name, lock_level, resource_group, resou
     :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain
         <, > %, &, :, , ?, /, or any control characters.
 
-    :param lock_level: The level of the lock. Possible values are: 'NotSpecified', 'CanNotDelete', & 'ReadOnly'.
-        CanNotDelete means authorized users are able to read and modify the resources, but not delete. ReadOnly means
-        authorized users can only read from a resource, but they can't modify or delete it.
+    :param lock_level: The level of the lock. Possible values are: 'CanNotDelete' and 'ReadOnly'. CanNotDelete means
+        authorized users are able to read and modify the resources, but not delete. ReadOnly means authorized users
+        can only read from a resource, but they can't modify or delete it.
 
     :param resource_group: The name of the resource group containing the resource to lock.
 
@@ -509,7 +511,7 @@ async def present_at_resource_level(hub, name, lock_level, resource_group, resou
 
     :param tags: A dictionary of strings can be passed as tag metadata to the resource group object.
 
-    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the 
+    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
     Example usage:
@@ -519,11 +521,11 @@ async def present_at_resource_level(hub, name, lock_level, resource_group, resou
         Ensure management lock exists at resource level:
             azurerm.resource.management_lock.present_at_resource_level:
                 - name: my_lock
-                - lock_level: 'ReadOnly'
                 - resource_group: my_rg
                 - resource: my_resource
                 - resource_type: my_type
                 - resource_provider_namespace: my_namespace
+                - lock_level: 'ReadOnly'
                 - tags:
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
@@ -555,10 +557,10 @@ async def present_at_resource_level(hub, name, lock_level, resource_group, resou
         tag_changes = await hub.exec.utils.dictdiffer.deep_diff(lock.get('tags', {}), tags or {})
         if tag_changes:
             ret['changes']['tags'] = tag_changes
-        
-        if lock_level != lock.get('lock_level'):
-            ret['changes']['lock_level'] = {
-                'old': lock.get('lock_level'),
+
+        if lock_level != lock.get('level'):
+            ret['changes']['level'] = {
+                'old': lock.get('level'),
                 'new': lock_level
             }
 
@@ -566,12 +568,6 @@ async def present_at_resource_level(hub, name, lock_level, resource_group, resou
             ret['changes']['notes'] = {
                 'old': lock.get('notes'),
                 'new': kwargs.get('notes')
-            }
-
-        if kwargs.get('owners', None) != lock.get('owners'):
-            ret['changes']['owners'] = {
-                'old': lock.get('owners'),
-                'new': kwargs.get('owners')
             }
 
         if not ret['changes']:
@@ -593,7 +589,7 @@ async def present_at_resource_level(hub, name, lock_level, resource_group, resou
                 'lock_level': lock_level,
                 'resource': resource,
                 'resource_type': resource_type,
-                'resource_provider_namespace': resource_provider_namespace
+                'resource_provider_namespace': resource_provider_namespace,
             }
         }
 
@@ -632,6 +628,8 @@ async def present_at_resource_level(hub, name, lock_level, resource_group, resou
         return ret
 
     ret['comment'] = 'Failed to create management lock {0}! ({1})'.format(name, lock.get('error'))
+    if ret['result'] == False:
+        ret['changes'] = {}
     return ret
 
 

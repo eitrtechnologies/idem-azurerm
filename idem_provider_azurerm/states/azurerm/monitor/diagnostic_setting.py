@@ -65,12 +65,20 @@ Azure Resource Manager (ARM) Diagnostic Setting State Module
 # Python libs
 from __future__ import absolute_import
 import logging
-import re
 
 try:
     from six.moves import range as six_range
 except ImportError:
     six_range = range
+
+HAS_LIBS = False
+try:
+    import azure.mgmt.monitor.models  # pylint: disable=unused-import
+    from msrest.exceptions import SerializationError
+    from msrestazure.azure_exceptions import CloudError
+    HAS_LIBS = True
+except ImportError:
+    pass
 
 log = logging.getLogger(__name__)
 
@@ -96,6 +104,10 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
     :param metrics: The list of metric settings. This is a list of dictionaries representing MetricSettings objects.
 
     :param logs: The list of logs settings. This is a list of dictionaries representing LogSettings objects.
+
+    :param metrics: A dictionary representing a MetricSettings object.
+
+    :param logs: A dictionary representing a LogSettings object.
 
     :param workspace_id: The workspace ID (resource ID of a Log Analytics workspace) for a Log Analytics workspace to
         which you would like to send Diagnostic Logs.
@@ -124,8 +136,12 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
             azurerm.monitor.diagnostic_setting.present:
                 - name: my_setting
                 - resource_uri: my_resource
-                - metrics: [{'category': 'AllMetrics', 'enabled': True, 'retention_policy': {'enabled': False, 'days': 0}}]
-                - logs: [{'category': 'VMProtectionAlerts', 'enabled': False, 'retention_policy': {'enabled': False, 'days': 0}}]}
+                - metrics: 
+                    category: 'AllMetrics'
+                    enabled: True
+                - logs:
+                    category: 'VMProtectionAlerts'
+                    enabled: True 
                 - storage_account_id: my_account_id
                 - tags:
                     contact_name: Elmer Fudd Gantry
@@ -154,8 +170,14 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
         tag_changes = await hub.exec.utils.dictdiffer.deep_diff(setting.get('tags', {}), tags or {})
         if tag_changes:
             ret['changes']['tags'] = tag_changes
-    
-        # Metrics and logs need to be compared here
+
+        metrics_changes = await hub.exec.utils.dictdiffer.deep_diff(setting.get('metrics', [])[0] or {}, metrics or {})
+        if metrics_changes:
+            ret['changes']['metrics'] = metrics_changes
+
+        logs_changes = await hub.exec.utils.dictdiffer.deep_diff(setting.get('logs', [])[0] or {}, logs or {})
+        if logs_changes:
+            ret['changes']['logs'] = logs_changes
 
         if storage_account_id:
             if storage_account_id != setting.get('storage_account_id', None):
@@ -269,7 +291,7 @@ async def absent(hub, ctx, name, resource_uri, connection_auth=None):
 
     :param resource_uri: The identifier of the resource.
 
-    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the 
+    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
     Example usage:
