@@ -82,9 +82,9 @@ async def create_or_update(hub, name, resource_uri, metrics, logs, workspace_id=
 
     :param resource_uri: The identifier of the resource.
 
-    :param metrics: The list of metric settings. This is a list of dictionaries representing MetricSettings objects.
+    :param metrics: A dictionary representing a MetricSettings object.
 
-    :param logs: The list of logs settings. This is a list of dictionaries representing LogSettings objects.
+    :param logs: A dictionary representing a LogSettings object.
 
     :param workspace_id: The workspace ID (resource ID of a Log Analytics workspace) for a Log Analytics workspace to
         which you would like to send Diagnostic Logs.
@@ -113,8 +113,8 @@ async def create_or_update(hub, name, resource_uri, metrics, logs, workspace_id=
         diagmodel = await hub.exec.utils.azurerm.create_object_model(
             'monitor',
             'DiagnosticSettingsResource',
-            metrics=metrics,
-            logs=logs,
+            metrics=[metrics],
+            logs=[logs],
             workspace_id=workspace_id,
             storage_account_id=storage_account_id,
             service_bus_rule_id=service_bus_rule_id,
@@ -201,7 +201,6 @@ async def get(hub, name, resource_uri, **kwargs):
             **kwargs
         )
         result = diag.as_dict()
-
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('monitor', str(exc), **kwargs)
         result = {'error': str(exc)}
