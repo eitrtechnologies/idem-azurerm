@@ -57,6 +57,7 @@ try:
     import azure.mgmt.monitor.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+    from azure.mgmt.monitor.models import ErrorResponseException
     HAS_LIBS = True
 except ImportError:
     pass
@@ -194,14 +195,16 @@ async def get(hub, name, resource_uri, **kwargs):
     '''
     result = {}
     moniconn = await hub.exec.utils.azurerm.get_client('monitor', **kwargs)
+
     try:
         diag = moniconn.diagnostic_settings.get(
             name=name,
             resource_uri=resource_uri,
             **kwargs
         )
+
         result = diag.as_dict()
-    except CloudError as exc:
+    except (CloudError, ErrorResponseException) as exc:
         await hub.exec.utils.azurerm.log_cloud_error('monitor', str(exc), **kwargs)
         result = {'error': str(exc)}
 
