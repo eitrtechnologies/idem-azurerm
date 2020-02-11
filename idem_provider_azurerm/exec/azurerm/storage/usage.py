@@ -70,25 +70,25 @@ async def list_(hub, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
-    Gets the current usage count and the limit for the resources under the subscription.   
-    
+    Gets the current usage count and the limit for the resources under the subscription.
+
     CLI Example:
-    
+
     .. code-block:: bash
-    
+
        azurerm.storage.usage.list
-    
+
     '''
     result = {}
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
 
     try:
         usages = await hub.exec.utils.azurerm.paged_object_to_list(
-            storconn.usages.list()
+            storconn.usage.list()
         )
 
         for usage in usages:
-            result[usage['name']] = usage
+            result[usage['name']['value']] = usage
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
@@ -116,11 +116,11 @@ async def list_by_location(hub, location, **kwargs):
 
     try:
         usages = await hub.exec.utils.azurerm.paged_object_to_list(
-            storconn.usages.list_by_location(location)
+            storconn.usage.list_by_location(location)
         )
 
         for usage in usages:
-            result[usage['name']] = usage
+            result[usage['name']['value']] = usage
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
