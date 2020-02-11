@@ -69,11 +69,11 @@ async def clear_legal_hold(hub, name, account, resource_group, tags, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
-    Clears legal hold tags. Clearing the same or non-existent tag results in an idempotent operation. ClearLegalHold 
+    Clears legal hold tags. Clearing the same or non-existent tag results in an idempotent operation. ClearLegalHold
         clears out only the specified tags in the request.
 
     :param name: The name of the blob container within the specified storage account. Blob container names must be
-        between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-) 
+        between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
         character must be immediately preceded and followed by a letter or number.
 
     :param account: The name of the storage account within the specified resource group. Storage account names must be
@@ -100,7 +100,7 @@ async def clear_legal_hold(hub, name, account, resource_group, tags, **kwargs):
             tags=tags
         )
 
-        result = hold
+        result = hold.as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
@@ -136,6 +136,7 @@ async def create(hub, name, account, resource_group, public_access=None, metadat
         azurerm.storage.container.create test_name test_account test_group test_access test_metadata
 
     '''
+    result = {}
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
 
     try:
@@ -163,8 +164,7 @@ async def create_or_update_immutability_policy(hub, name, account, resource_grou
     '''
     .. versionadded:: 1.0.0
 
-    Creates or updates an unlocked immutability policy. ETag in If-Match is honored if given but not required for 
-        this operation.
+    Creates or updates an unlocked immutability policy.
 
     :param name: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
@@ -179,17 +179,17 @@ async def create_or_update_immutability_policy(hub, name, account, resource_grou
         policy creation, in days.
 
     :param if_match: The entity state (ETag) version of the immutability policy to update. A value of "*" can be used
-        to apply the operation only if the immutability policy already exists. If omitted, this operation will always 
+        to apply the operation only if the immutability policy already exists. If omitted, this operation will always
         be applied. Defaults to None.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.storage.container.create_or_update_immutability_policy test_name test_account test_group test_period \
-                  test_if_match
+        azurerm.storage.container.create_or_update_immutability_policy test_name test_account test_group test_period
 
     '''
+    result = {}
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
 
     try:
@@ -243,7 +243,7 @@ async def delete(hub, name, account, resource_group, **kwargs):
             account_name=account,
             resource_group_name=resource_group
         )
-        
+
         result = True
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
@@ -370,6 +370,7 @@ async def get(hub, name, account, resource_group, **kwargs):
         azurerm.storage.container.get test_name test_account test_group
 
     '''
+    result = {}
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
 
     try:
@@ -413,6 +414,7 @@ async def get_immutability_policy(hub, name, account, resource_group, if_match=N
         azurerm.storage.container.get_immutability_policy test_name test_account test_group test_if_match
 
     '''
+    result = {}
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
 
     try:
@@ -437,7 +439,7 @@ async def lease(hub, name, account, resource_group, action, **kwargs):
 
     The Lease Container operation establishes and manages a lock on a container for delete operations. The lock duration
         can be 15 to 60 seconds, or can be infinite.
-                                                                                       
+
     :param name: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
         character must be immediately preceded and followed by a letter or number.
@@ -457,6 +459,7 @@ async def lease(hub, name, account, resource_group, action, **kwargs):
         azurerm.storage.container.lease test_name test_account test_group test_action
 
     '''
+    result = {}
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
 
     try:
@@ -490,10 +493,10 @@ async def list_(hub, account, resource_group, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
-    Lists all containers and does not support a prefix like data plane. Also SRP today does not return 
-        continuation token.
+    Lists all containers and does not support a prefix like data plane. Also SRP today does not return continuation
+        token.
 
-    :param account: The name of the storage account within the specified resource group. Storage account names must be 
+    :param account: The name of the storage account within the specified resource group. Storage account names must be
         between 3 and 24 characters in length and use numbers and lower-case letters only.
 
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
@@ -507,14 +510,15 @@ async def list_(hub, account, resource_group, **kwargs):
     '''
     result = {}
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
-    
+
     try:
         containers = storconn.blob_containers.list(
             account_name=account,
             resource_group_name=resource_group
         )
 
-        for container in containers:
+        containers_list = containers.as_dict().get('value', [])
+        for container in containers_list:
             result[container['name']] = container
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
@@ -581,7 +585,7 @@ async def set_legal_hold(hub, name, account, resource_group, tags, **kwargs):
         between 3 and 24 characters in length and use numbers and lower-case letters only.
 
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
-    
+
     :param tags: Each tag should be 3 to 23 alphanumeric characters and is normalized to lower case at SRP.
 
     CLI Example:
@@ -601,7 +605,7 @@ async def set_legal_hold(hub, name, account, resource_group, tags, **kwargs):
             tags=tags
         )
 
-        result = hold
+        result = hold.as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}

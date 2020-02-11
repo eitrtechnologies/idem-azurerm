@@ -107,7 +107,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, identity=
         Geo Regions (e.g. West US, East US, Southeast Asia, etc.). The geo region of a resource cannot be changed once
         it is created, but if an identical geo region is specified on update, the request will succeed.
 
-    :param tags: A dictionary of strings can be passed as tag metadata to the virtual network object.
+    :param tags: A dictionary of strings can be passed as tag metadata to the storage account object.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the 
         Azure Resource Manager API.
@@ -126,7 +126,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, identity=
                 - sku:
                     name: 'Standard_LRS'
                     tier: 'Standard'
-                - kind: 'FileStorage'
+                - kind: 'Storage'
                 - location: 'eastus'
                 - tags:
                     contact_name: Elmer Fudd Gantry

@@ -104,7 +104,7 @@ async def present(hub, ctx, name, account, resource_group, public_access=None, m
 
     :param metadata: A name-value pair to associate with the container as metadata. Defaults to None.
  
-    :param tags: A dictionary of strings can be passed as tag metadata to the virtual network object.
+    :param tags: A dictionary of strings can be passed as tag metadata to the container object.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the 
         Azure Resource Manager API.
@@ -236,7 +236,7 @@ async def immutability_policy_present(hub, ctx, name, account, resource_group,
         to apply the operation only if the immutability policy already exists. If omitted, this operation will always
         be applied. Defaults to None.
 
-    :param tags: A dictionary of strings can be passed as tag metadata to the virtual network object.
+    :param tags: A dictionary of strings can be passed as tag metadata to the container object.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.

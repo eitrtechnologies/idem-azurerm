@@ -97,7 +97,9 @@ async def check_name_availability(hub, name, **kwargs):
     return result
 
 
-async def create(hub, name, resource_group, sku, kind, location, **kwargs):
+async def create(hub, name, resource_group, sku, kind, location, identity=None, custom_domain=None, encryption=None,
+                 network_rule_set=None, access_tier=None, enable_https_traffic_only=False, is_hns_enabled=False, 
+                 **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -112,16 +114,30 @@ async def create(hub, name, resource_group, sku, kind, location, **kwargs):
     :param resource_group: The name of the resource group that the storage account belongs to.
 
     :param sku: A dictionary representing a storage account SKU. Valid parameters are:
-          - ``name``: The name of the storage account SKU. This is required. Possible values include: 'Standard_LRS',
-                      'Standard_GRS', 'Standard_RAGRS', 'Standard_ZRS', 'Premium_LRS', 'Premium_ZRS', 'Standard_GZRS',
-                      'Standard_RAGZRS'.
-          - ``tier``: The tier of the storage account SKU. Possible values include: 'Standard', 'Premium'.
+        - ``name``: The name of the storage account SKU. This is required. Possible values include: 'Standard_LRS',
+                    'Standard_GRS', 'Standard_RAGRS', 'Standard_ZRS', 'Premium_LRS', 'Premium_ZRS', 'Standard_GZRS',
+                    'Standard_RAGZRS'.
+        - ``tier``: The tier of the storage account SKU. Possible values include: 'Standard', 'Premium'.
 
     :param kind: Indicates the type of storage account. Possible values include: 'Storage', 'StorageV2', 'BlobStorage'.
 
     :param location: Gets or sets the location of the resource. This will be one of the supported and registered Azure
         Geo Regions (e.g. West US, East US, Southeast Asia, etc.). The geo region of a resource cannot be changed once
         it is created, but if an identical geo region is specified on update, the request will succeed.
+
+    :param identity: A dictionary representing the identity of the resource. Valid parameters are:
+        - ``type``: Required. The identity type. Default value: "SystemAssigned".
+        - ``tenant_id``: The tenant ID of the resource.
+        - ``principal_id``: The principal ID of resource identity. 
+
+    :param custom_domain: User domain assigned to the storage account. Valid parameters are:
+        - ``name``: Required. Gets or sets the custom domain name assigned to the storage account. Name is the CNAME 
+                    source. To clear the existing custom domain, use an empty string for this property.
+        - ``use_sub_domain_name``: Indicates whether indirect CName validation is enabled. Default value is false.
+                                   This should only be set on updates.
+
+    :param encryption: Provides the encryption settings on the account. If left unspecified the account encryption
+        settings will remain the same. The default setting is unencrypted.
 
     NOTE: An access tier is required for when the kind is set to 'BlobStorage'. The access tier is used for billing. 
         Possible values include: 'Hot' and 'Cool'.
@@ -285,7 +301,8 @@ async def list_account_sas(hub, name, resource_group, services, resource_types, 
         (d), List (l), Add (a), Create (c), Update (u) and Process (p). Possible values include: 'r', 'd', 'w', 'l', 
         'a', 'c', 'u', 'p'.
 
-    :param shared_access_expiry_time: The time at which the shared access signature becomes invalid.
+    :param shared_access_expiry_time: The time at which the shared access signature becomes invalid. This parameter
+        must be a string representation of a Datetime object in ISO-8601 format.
 
     CLI Example:
 
@@ -318,7 +335,7 @@ async def list_account_sas(hub, name, resource_group, services, resource_types, 
             parameters=accountmodel
         )
 
-        result = creds
+        result = creds.as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
@@ -424,7 +441,7 @@ async def list_service_sas(hub, name, resource_group, canonicalized_resource, pe
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
 
     try:
-        accountmodel = await hub.exec.utils.azurerm.create_object_model(
+        servicemodel = await hub.exec.utils.azurerm.create_object_model(
             'storage',
             'ServiceSasParameters',
             permissions=permissions,
@@ -437,15 +454,13 @@ async def list_service_sas(hub, name, resource_group, canonicalized_resource, pe
         return result
 
     try:
-        creds = await hub.exec.utils.azurerm.paged_object_to_list(
-            storconn.storage_accounts.list_service_sas(
-                account_name=name,
-                resource_group_name=resource_group,
-                parameters=accountmodel
-            )
+        creds = storconn.storage_accounts.list_service_sas(
+            account_name=name,
+            resource_group_name=resource_group,
+            parameters=servicemodel
         )
 
-        result = creds
+        result = creds.as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
