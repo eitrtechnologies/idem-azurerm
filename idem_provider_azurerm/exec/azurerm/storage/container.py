@@ -433,7 +433,7 @@ async def get_immutability_policy(hub, name, account, resource_group, if_match=N
     return result
 
 
-async def lease(hub, name, account, resource_group, action, **kwargs):
+async def lease(hub, name, account, resource_group, parameters=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -449,39 +449,28 @@ async def lease(hub, name, account, resource_group, action, **kwargs):
 
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
-    :param action: Specifies the lease action. Can be one of the available actions. Possible values include: 'Acquire',
-        'Renew', 'Change', 'Release', 'Break'
+    :param parameters: A dictionary representing a LeaseContainerRequest object. Defaults to none.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.storage.container.lease test_name test_account test_group test_action
+        azurerm.storage.container.lease test_name test_account test_group
 
     '''
     result = {}
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
 
     try:
-        leasemodel = await hub.exec.utils.azurerm.create_object_model(
-            'storage',
-            'LeaseContainerRequest',
-            action=action,
-            **kwargs
-        )
-    except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
-        return result
-
-    try:
         container = storconn.blob_containers.lease(
             container_name=name,
             account_name=account,
             resource_group_name=resource_group,
-            parameters=leasemodel
+            parameters=parameters,
+            **kwargs
         )
 
-        result = policy.as_dict()
+        result = container.as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
