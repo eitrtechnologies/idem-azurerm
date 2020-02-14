@@ -64,7 +64,8 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def create_or_update_at_resource_group_level(hub, name, resource_group, lock_level, **kwargs):
+async def create_or_update_at_resource_group_level(hub, name, resource_group, lock_level, notes=None, owners=None,
+                                                   **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -72,14 +73,19 @@ async def create_or_update_at_resource_group_level(hub, name, resource_group, lo
         all child resources inherit the same lock. To create management locks, you must have access to
         Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
 
-    :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain
-        <, > %, &, :, , ?, /, or any control characters.
+    :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
+        :, ?, /, or any control characters.
 
     :param resource_group: The name of the resource group.
 
     :param lock_level: The level of the lock. Possible values are: 'NotSpecified', 'CanNotDelete', & 'ReadOnly'.
         CanNotDelete means authorized users are able to read and modify the resources, but not delete. ReadOnly means
         authorized users can only read from a resource, but they can't modify or delete it.
+
+    :param notes: An optional string representing notes about the lock. Maximum of 512 characters.
+
+    :param owners: An optional list of strings representing owners of the lock. Each string represents the application
+        id of the lock owner.
 
     CLI Example:
 
@@ -92,11 +98,20 @@ async def create_or_update_at_resource_group_level(hub, name, resource_group, lo
     result = {}
     lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
 
+    # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
+    lock_owners = None
+    if owners is not None:
+        lock_owners = []
+        for owner in owners:
+            lock_owners.append({'application_id': owner})
+
     try:
         lockmodel = await hub.exec.utils.azurerm.create_object_model(
             'resource.locks',
             'ManagementLockObject',
             level=lock_level,
+            notes=notes,
+            owners=lock_owners,
             **kwargs
         )
     except TypeError as exc:
@@ -191,7 +206,7 @@ async def get_at_resource_group_level(hub, name, resource_group, **kwargs):
     return result
 
 
-async def create_or_update_by_scope(hub, name, scope, lock_level, **kwargs):
+async def create_or_update_by_scope(hub, name, scope, lock_level, notes=None, owners=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -199,8 +214,8 @@ async def create_or_update_by_scope(hub, name, scope, lock_level, **kwargs):
         all child resources inherit the same lock. To create management locks, you must have access to
         Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
 
-    :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain
-        <, > %, &, :, , ?, /, or any control characters.
+    :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
+        :, ?, /, or any control characters.
 
     :param scope: The scope for the lock. When providing a scope for the assignment,
         use '/subscriptions/{subscriptionId}' for subscriptions,
@@ -212,6 +227,11 @@ async def create_or_update_by_scope(hub, name, scope, lock_level, **kwargs):
         CanNotDelete means authorized users are able to read and modify the resources, but not delete. ReadOnly means
         authorized users can only read from a resource, but they can't modify or delete it.
 
+    :param notes: An optional string representing notes about the lock. Maximum of 512 characters.
+
+    :param owners: An optional list of strings representing owners of the lock. Each string represents the application
+        id of the lock owner.
+
     CLI Example:
 
     .. code-block:: bash
@@ -222,11 +242,20 @@ async def create_or_update_by_scope(hub, name, scope, lock_level, **kwargs):
     result = {}
     lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
 
+    # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
+    lock_owners = None
+    if owners is not None:
+        lock_owners = []
+        for owner in owners:
+            lock_owners.append({'application_id': owner})
+
     try:
         lockmodel = await hub.exec.utils.azurerm.create_object_model(
             'resource.locks',
             'ManagementLockObject',
             level=lock_level,
+            notes=notes,
+            owners=lock_owners,
             **kwargs
         )
     except TypeError as exc:
@@ -259,8 +288,8 @@ async def delete_by_scope(hub, name, scope, **kwargs):
 
     :param name: The name of the lock to be deleted.
 
-    :param scope: The scope for the lock. When providing a scope for the assignment, 
-        use '/subscriptions/{subscriptionId}' for subscriptions, 
+    :param scope: The scope for the lock. When providing a scope for the assignment,
+        use '/subscriptions/{subscriptionId}' for subscriptions,
         '/subscriptions/{subscriptionId}/resourcegroups/{resourceGroupName}' for resource groups, and
         '/subscriptions/{subscriptionId}/resourcegroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{parentResourcePathIfPresent}/{resourceType}/{resourceName}'
         for resources.
@@ -330,8 +359,8 @@ async def get_by_scope(hub, name, scope, **kwargs):
 
 
 async def create_or_update_at_resource_level(hub, name, lock_level, resource_group, resource, resource_type,
-                                             resource_provider_namespace, parent_resource_path=None,
-                                             **kwargs):
+                                             resource_provider_namespace, parent_resource_path=None, notes=None,
+                                             owners=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -339,8 +368,8 @@ async def create_or_update_at_resource_level(hub, name, lock_level, resource_gro
         at a parent scope, all child resources inherit the same lock. To create management locks, you must have access
         to Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
 
-    :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain
-        <, > %, &, :, , ?, /, or any control characters.
+    :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
+        :, ?, /, or any control characters.
 
     :param lock_level: The level of the lock. Possible values are: 'NotSpecified', 'CanNotDelete', & 'ReadOnly'.
         CanNotDelete means authorized users are able to read and modify the resources, but not delete. ReadOnly means
@@ -356,6 +385,11 @@ async def create_or_update_at_resource_level(hub, name, lock_level, resource_gro
 
     :param parent_resource_path: The parent resource identity.
 
+    :param notes: An optional string representing notes about the lock. Maximum of 512 characters.
+
+    :param owners: An optional list of strings representing owners of the lock. Each string represents the application
+        id of the lock owner.
+
     CLI Example:
 
     .. code-block:: bash
@@ -367,11 +401,20 @@ async def create_or_update_at_resource_level(hub, name, lock_level, resource_gro
     result = {}
     lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
 
+    # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
+    lock_owners = None
+    if owners is not None:
+        lock_owners = []
+        for owner in owners:
+            lock_owners.append({'application_id': owner})
+
     try:
         lockmodel = await hub.exec.utils.azurerm.create_object_model(
             'resource.locks',
             'ManagementLockObject',
             level=lock_level,
+            notes=notes,
+            owners=lock_owners,
             **kwargs
         )
     except TypeError as exc:
@@ -508,7 +551,7 @@ async def get_at_resource_level(hub, name, resource_group, resource, resource_ty
     return result
 
 
-async def create_or_update_at_subscription_level(hub, name, lock_level, **kwargs):
+async def create_or_update_at_subscription_level(hub, name, lock_level, notes=None, owners=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -516,12 +559,17 @@ async def create_or_update_at_subscription_level(hub, name, lock_level, **kwargs
         all child resources inherit the same lock. To create management locks, you must have access to
         Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
 
-    :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain
-        <, > %, &, :, , ?, /, or any control characters.
+    :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
+        :, ?, /, or any control characters.
 
     :param lock_level: The level of the lock. Possible values are: 'NotSpecified', 'CanNotDelete', & 'ReadOnly'.
         CanNotDelete means authorized users are able to read and modify the resources, but not delete. ReadOnly means
         authorized users can only read from a resource, but they can't modify or delete it.
+
+    :param notes: An optional string representing notes about the lock. Maximum of 512 characters.
+
+    :param owners: An optional list of strings representing owners of the lock. Each string represents the application
+        id of the lock owner.
 
     CLI Example:
 
@@ -533,11 +581,20 @@ async def create_or_update_at_subscription_level(hub, name, lock_level, **kwargs
     result = {}
     lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
 
+    # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
+    lock_owners = None
+    if owners is not None:
+        lock_owners = []
+        for owner in owners:
+            lock_owners.append({'application_id': owner})
+
     try:
         lockmodel = await hub.exec.utils.azurerm.create_object_model(
             'resource.locks',
             'ManagementLockObject',
             level=lock_level,
+            notes=notes,
+            owners=lock_owners,
             **kwargs
         )
     except TypeError as exc:
@@ -659,7 +716,7 @@ async def list_at_resource_group_level(hub, resource_group, **kwargs):
 
 
 async def list_at_resource_level(hub, resource_group, resource, resource_type, resource_provider_namespace,
-                                          parent_resource_path=None, **kwargs):
+                                 parent_resource_path=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
