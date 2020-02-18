@@ -114,8 +114,8 @@ async def create_or_update(hub, name, resource_uri, metrics, logs, workspace_id=
         diagmodel = await hub.exec.utils.azurerm.create_object_model(
             'monitor',
             'DiagnosticSettingsResource',
-            metrics=[metrics],
-            logs=[logs],
+            metrics=metrics,
+            logs=logs,
             workspace_id=workspace_id,
             storage_account_id=storage_account_id,
             service_bus_rule_id=service_bus_rule_id,
@@ -228,13 +228,16 @@ async def list_(hub, resource_uri, **kwargs):
     '''
     result = {}
     moniconn = await hub.exec.utils.azurerm.get_client('monitor', **kwargs)
+    
     try:
         diag = moniconn.diagnostic_settings.list(
             resource_uri=resource_uri,
             **kwargs
         )
 
-        result = diag.as_dict()
+        values = diag.as_dict().get('value', [])
+        for value in values:
+            result[value['name']] = value
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('monitor', str(exc), **kwargs)
         result = {'error': str(exc)}

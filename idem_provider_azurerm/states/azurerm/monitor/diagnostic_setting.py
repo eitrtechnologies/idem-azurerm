@@ -95,19 +95,36 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
             2. Stream the diagnostic settings to an event hub. This would require the event_hub_name and
                event_hub_authorization_rule_id params.
             3. Send the diagnostic settings to Log Analytics. This would require the workspace_id param.
-        Any combination of these destinations is acceptable.
+        Any combination of these destinations is acceptable. 
 
     :param name: The name of the diagnostic setting.
 
     :param resource_uri: The identifier of the resource.
 
-    :param metrics: The list of metric settings. This is a list of dictionaries representing MetricSettings objects.
+    :param metrics: A list of dictionaries representing valid MetricSettings objects. If this list is empty then the
+        list passed as the logs parameter must have at least one element. Valid parameters are:
+        - ``category``: Name of a diagnostic metric category for a resource type this setting is applied to. To obtain
+          the list of Diagnostic metric categories for a resource, first perform a GET diagnostic setting operation.
+          This is a required parameter.
+        - ``enabled``: A value indicating whether this category is enabled. This is a required parameter.
+        - ``time_grain``: An optional timegrain of the metric in ISO8601 format.
+        - ``retention_policy``: An optional dictionary representing a RetentionPolicy object for the specified category.
+          The default retention policy for a diagnostic setting is {'enabled': False, 'days': 0}. Required parameters
+          include:
+            - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
+            - ``enabled``: A value indicating whether the retention policy is enabled.
 
-    :param logs: The list of logs settings. This is a list of dictionaries representing LogSettings objects.
-
-    :param metrics: A dictionary representing a MetricSettings object.
-
-    :param logs: A dictionary representing a LogSettings object.
+    :param logs: A list of dictionaries representing valid LogSettings objects. If this list is empty then the list
+        passed as the metrics parameter must have at least one element. Valid parameters are:
+        - ``category``: Name of a diagnostic log category for a resource type this setting is applied to. To obtain
+          the list of Diagnostic log categories for a resource, first perform a GET diagnostic setting operation.
+          This is a required parameter.
+        - ``enabled``: A value indicating whether this category is enabled. This is a required parameter.
+        - ``retention_policy``: An optional dictionary representing a RetentionPolicy object for the specified category.
+          The default retention policy for a diagnostic setting is {'enabled': False, 'days': 0}. Required parameters
+          include:
+            - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
+            - ``enabled``: A value indicating whether the retention policy is enabled.
 
     :param workspace_id: The workspace ID (resource ID of a Log Analytics workspace) for a Log Analytics workspace to
         which you would like to send Diagnostic Logs.
@@ -139,9 +156,15 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
                 - metrics: 
                     category: 'AllMetrics'
                     enabled: True
+                    retention_policy:
+                      enabled: True
+                      days: 0
                 - logs:
                     category: 'VMProtectionAlerts'
-                    enabled: True 
+                    enabled: True
+                    retention_policy:
+                      enabled: True
+                      days: 0
                 - storage_account_id: my_account_id
                 - tags:
                     contact_name: Elmer Fudd Gantry
@@ -171,13 +194,47 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
         if tag_changes:
             ret['changes']['tags'] = tag_changes
 
-        metrics_changes = await hub.exec.utils.dictdiffer.deep_diff(setting.get('metrics', [])[0] or {}, metrics or {})
-        if metrics_changes:
-            ret['changes']['metrics'] = metrics_changes
+        '''
+        # Checks for changes within the metrics dictionary
+        for property, value in metrics.items():
+            if not isinstance(value, dict):
+                if value != (setting.get('metrics')[0]).get(property):
+                    ret['changes']['metrics'] = {
+                        'old': setting.get('metrics'),
+                        'new': metrics
+                    }
+                    break
+            else:
+                # Stores the retention policy
+                policy = value
+                for policy_prop, policy_value in policy.items():
+                    if policy_value != (setting.get('metrics')[0]).get('retention_policy', {}).get(policy_prop):
+                        ret['changes']['metrics'] = {
+                            'old': setting.get('metrics'),
+                            'new': metrics
+                        }
+                        break 
 
-        logs_changes = await hub.exec.utils.dictdiffer.deep_diff(setting.get('logs', [])[0] or {}, logs or {})
-        if logs_changes:
-            ret['changes']['logs'] = logs_changes
+        # Checks for changes within the logs dictionary
+        for property, value in logs.items():
+            if not isinstance(value, dict):
+                if value != (setting.get('logs')[0]).get(property):
+                    ret['changes']['logs'] = {
+                        'old': setting.get('logs'),
+                        'new': logs
+                    }
+                    break
+            else:
+                # Stores the retention policy
+                policy = value
+                for policy_prop, policy_value in policy.items():
+                    if policy_value != (setting.get('logs')[0]).get('retention_policy', {}).get(policy_prop):
+                        ret['changes']['logs'] = {
+                            'old': setting.get('logs'),
+                            'new': logs
+                        }
+                        break
+        '''
 
         if storage_account_id:
             if storage_account_id != setting.get('storage_account_id', None):
