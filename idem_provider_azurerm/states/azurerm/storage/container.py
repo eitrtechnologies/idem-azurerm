@@ -83,7 +83,7 @@ TREQ = {
 }
 
 
-async def present(hub, ctx, name, account, resource_group, public_access=None, metadata=None, tags=None, 
+async def present(hub, ctx, name, account, resource_group, public_access=None, metadata=None, tags=None,
                   connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -97,16 +97,16 @@ async def present(hub, ctx, name, account, resource_group, public_access=None, m
     :param account: The name of the storage account within the specified resource group. Storage account names must be
         between 3 and 24 characters in length and use numbers and lower-case letters only.
 
-    :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.   
+    :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
     :param public_access: Specifies whether data in the container may be accessed publicly and the level of access.
         Possible values include: 'Container', 'Blob', 'None'. Defaults to None.
 
-    :param metadata: A name-value pair to associate with the container as metadata. Defaults to None.
- 
+    :param metadata: A dictionary of name-value pairs to associate with the container as metadata. Defaults to None.
+
     :param tags: A dictionary of strings can be passed as tag metadata to the container object.
 
-    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the 
+    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
     Example usage:
@@ -118,6 +118,7 @@ async def present(hub, ctx, name, account, resource_group, public_access=None, m
                 - name: my_container
                 - account: my_account
                 - resource_group: my_rg
+                - public_access: 'Blob'
                 - tags:
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
@@ -140,8 +141,11 @@ async def present(hub, ctx, name, account, resource_group, public_access=None, m
         resource_group,
         **connection_auth
     )
+    existed = False
 
     if 'error' not in container:
+        existed = True
+
         tag_changes = await hub.exec.utils.dictdiffer.deep_diff(container.get('tags', {}), tags or {})
         if tag_changes:
             ret['changes']['tags'] = tag_changes
@@ -149,7 +153,7 @@ async def present(hub, ctx, name, account, resource_group, public_access=None, m
         metadata_changes = await hub.exec.utils.dictdiffer.deep_diff(container.get('metadata', {}), metadata or {})
         if metadata_changes:
             ret['changes']['metadata'] = metadata_changes
- 
+
         if public_access and public_access != container.get('public_access'):
             ret['changes']['public_access'] = {
                 'old': container.get('public_access'),
@@ -191,14 +195,26 @@ async def present(hub, ctx, name, account, resource_group, public_access=None, m
     container_kwargs = kwargs.copy()
     container_kwargs.update(connection_auth)
 
-    container = await hub.exec.azurerm.storage.container.create(
-        name=name,
-        account=account,
-        resource_group=resource_group,
-        tags=tags,
-        public_access=public_access,
-        metadata=metadata,
-        **container_kwargs
+    if not existed:
+        container = await hub.exec.azurerm.storage.container.create(
+            name=name,
+            account=account,
+            resource_group=resource_group,
+            tags=tags,
+            public_access=public_access,
+            metadata=metadata,
+            **container_kwargs
+        )
+
+    else:
+        container = await hub.exec.azurerm.storage.container.update(
+            name=name,
+            account=account,
+            resource_group=resource_group,
+            tags=tags,
+            public_access=public_access,
+            metadata=metadata,
+            **container_kwargs
     )
 
     if 'error' not in container:
@@ -212,13 +228,14 @@ async def present(hub, ctx, name, account, resource_group, public_access=None, m
     return ret
 
 
-async def immutability_policy_present(hub, ctx, name, account, resource_group, 
+async def immutability_policy_present(hub, ctx, name, account, resource_group,
                                       immutability_period_since_creation_in_days, if_match=None, tags=None,
                                       connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
-    Ensures that the immutability policy of a specified blob container exists.
+    Ensures that the immutability policy of a specified blob container exists. The container must be of account kind
+        'StorageV2' in order to utilize an immutability policy.
 
     :param name: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
@@ -232,9 +249,9 @@ async def immutability_policy_present(hub, ctx, name, account, resource_group,
     :param immutability_period_since_creation_in_days: The immutability period for the blobs in the container since the
         policy creation, in days.
 
-    :param if_match: The entity state (ETag) version of the immutability policy to update. A value of "*" can be used
-        to apply the operation only if the immutability policy already exists. If omitted, this operation will always
-        be applied. Defaults to None.
+    :param if_match: The entity state (ETag) version of the immutability policy to update. It is important to note that
+        the ETag must be passed as a string that includes double quotes. For example, '"8d7b4bb4d393b8c"' is a valid
+        string to pass as the if_match parameter, but "8d7b4bb4d393b8c" is not. Defaults to None.
 
     :param tags: A dictionary of strings can be passed as tag metadata to the container object.
 
@@ -279,12 +296,6 @@ async def immutability_policy_present(hub, ctx, name, account, resource_group,
         tag_changes = await hub.exec.utils.dictdiffer.deep_diff(policy.get('tags', {}), tags or {})
         if tag_changes:
             ret['changes']['tags'] = tag_changes
-
-        if if_match and if_match != policy.get('if_match'):
-            ret['changes']['if_match'] = {
-                'old': policy.get('if_match'),
-                'new': if_match
-            }
 
         if immutability_period_since_creation_in_days != policy.get('immutability_period_since_creation_in_days'):
             ret['changes']['immutability_period_since_creation_in_days'] = {
@@ -341,7 +352,7 @@ async def immutability_policy_present(hub, ctx, name, account, resource_group,
         ret['comment'] = 'The immutability policy of the blob container {0} has been created.'.format(name)
         return ret
 
-    ret['comment'] = 'Failed to create the immutability policy of the blob container {0}! ({1})'.format(name, 
+    ret['comment'] = 'Failed to create the immutability policy of the blob container {0}! ({1})'.format(name,
                                                                                                   policy.get('error'))
     if ret['result'] == False:
         ret['changes'] = {}
@@ -424,7 +435,7 @@ async def absent(hub, ctx, name, account, resource_group, connection_auth=None):
     return ret
 
 
-async def immutability_policy_absent(hub, ctx, name, account, resource_group, if_match, connection_auth=None):
+async def immutability_policy_absent(hub, ctx, name, account, resource_group, if_match=None, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
@@ -439,9 +450,9 @@ async def immutability_policy_absent(hub, ctx, name, account, resource_group, if
 
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
-    :param if_match: The entity state (ETag) version of the immutability policy to update. A value of "*" can be used
-        to apply the operation only if the immutability policy already exists. If omitted, this operation will always
-        be applied.
+    :param if_match: The entity state (ETag) version of the immutability policy to update. It is important to note that
+        the ETag must be passed as a string that includes double quotes. For example, '"8d7b4bb4d393b8c"' is a valid
+        string to pass as the if_match parameter, but "8d7b4bb4d393b8c" is not. Defaults to None.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -454,7 +465,7 @@ async def immutability_policy_absent(hub, ctx, name, account, resource_group, if
                 - name: my_container
                 - account: my_account
                 - resource_group: my_rg
-                - if_match: 'my_etag'
+                - if_match: '"my_etag"'
                 - connection_auth: {{ profile }}
 
     '''
@@ -491,7 +502,10 @@ async def immutability_policy_absent(hub, ctx, name, account, resource_group, if
         }
         return ret
 
-    deleted = await hub.exec.azurerm.storage.container.delete_immutability_policy(name, account, resource_group, 
+    if not if_match:
+        if_match = policy.get('etag')
+
+    deleted = await hub.exec.azurerm.storage.container.delete_immutability_policy(name, account, resource_group,
                                                                                   if_match, **connection_auth)
 
     if deleted:

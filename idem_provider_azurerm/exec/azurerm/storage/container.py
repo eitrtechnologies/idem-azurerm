@@ -127,7 +127,7 @@ async def create(hub, name, account, resource_group, public_access=None, metadat
     :param public_access: Specifies whether data in the container may be accessed publicly and the level of access.
         Possible values include: 'Container', 'Blob', 'None'. Defaults to None.
 
-    :param metadata: A name-value pair to associate with the container as metadata. Defaults to None.
+    :param metadata: A dictionary of name-value pairs to associate with the container as metadata. Defaults to None.
 
     CLI Example:
 
@@ -164,7 +164,8 @@ async def create_or_update_immutability_policy(hub, name, account, resource_grou
     '''
     .. versionadded:: 1.0.0
 
-    Creates or updates an unlocked immutability policy.
+    Creates or updates an unlocked immutability policy. The container must be of account kind 'StorageV2' in order to
+        utilize an immutability policy.
 
     :param name: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
@@ -178,9 +179,9 @@ async def create_or_update_immutability_policy(hub, name, account, resource_grou
     :param immutability_period_since_creation_in_days: The immutability period for the blobs in the container since the
         policy creation, in days.
 
-    :param if_match: The entity state (ETag) version of the immutability policy to update. A value of "*" can be used
-        to apply the operation only if the immutability policy already exists. If omitted, this operation will always
-        be applied. Defaults to None.
+    :param if_match: The entity state (ETag) version of the immutability policy to update. It is important to note that
+        the ETag must be passed as a string that includes double quotes. For example, '"8d7b4bb4d393b8c"' is a valid
+        string to pass as the if_match parameter, but "8d7b4bb4d393b8c" is not. Defaults to None.
 
     CLI Example:
 
@@ -268,9 +269,9 @@ async def delete_immutability_policy(hub, name, account, resource_group, if_matc
 
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
-    :param if_match: The entity state (ETag) version of the immutability policy to update. A value of "*" can be used
-        to apply the operation only if the immutability policy already exists. If omitted, this operation will always
-        be applied.
+    :param if_match: The entity state (ETag) version of the immutability policy to update. It is important to note that
+        the ETag must be passed as a string that includes double quotes. For example, '"8d7b4bb4d393b8c"' is a valid
+        string to pass as the if_match parameter, but "8d7b4bb4d393b8c" is not.
 
     CLI Example:
 
@@ -317,9 +318,9 @@ async def extend_immutability_policy(hub, name, account, resource_group, immutab
     :param immutability_period_since_creation_in_days: The immutability period for the blobs in the container since the
         policy creation, in days.
 
-    :param if_match: The entity state (ETag) version of the immutability policy to update. A value of "*" can be used
-        to apply the operation only if the immutability policy already exists. If omitted, this operation will always
-        be applied.
+    :param if_match: The entity state (ETag) version of the immutability policy to update. It is important to note that
+        the ETag must be passed as a string that includes double quotes. For example, '"8d7b4bb4d393b8c"' is a valid
+        string to pass as the if_match parameter, but "8d7b4bb4d393b8c" is not.
 
     CLI Example:
 
@@ -403,9 +404,9 @@ async def get_immutability_policy(hub, name, account, resource_group, if_match=N
 
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
-    :param if_match: The entity state (ETag) version of the immutability policy to update. A value of "*" can be used
-        to apply the operation only if the immutability policy already exists. If omitted, this operation will always
-        be applied. Defaults to None.
+    :param if_match: The entity state (ETag) version of the immutability policy to update. It is important to note that
+        the ETag must be passed as a string that includes double quotes. For example, '"8d7b4bb4d393b8c"' is a valid
+        string to pass as the if_match parameter, but "8d7b4bb4d393b8c" is not. Defaults to None.
 
     CLI Example:
 
@@ -426,51 +427,6 @@ async def get_immutability_policy(hub, name, account, resource_group, if_match=N
         )
 
         result = policy.as_dict()
-    except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
-        result = {'error': str(exc)}
-
-    return result
-
-
-async def lease(hub, name, account, resource_group, parameters=None, **kwargs):
-    '''
-    .. versionadded:: 1.0.0
-
-    The Lease Container operation establishes and manages a lock on a container for delete operations. The lock duration
-        can be 15 to 60 seconds, or can be infinite.
-
-    :param name: The name of the blob container within the specified storage account. Blob container names must be
-        between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
-        character must be immediately preceded and followed by a letter or number.
-
-    :param account: The name of the storage account within the specified resource group. Storage account names must be
-        between 3 and 24 characters in length and use numbers and lower-case letters only.
-
-    :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
-
-    :param parameters: A dictionary representing a LeaseContainerRequest object. Defaults to none.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.storage.container.lease test_name test_account test_group
-
-    '''
-    result = {}
-    storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
-
-    try:
-        container = storconn.blob_containers.lease(
-            container_name=name,
-            account_name=account,
-            resource_group_name=resource_group,
-            parameters=parameters,
-            **kwargs
-        )
-
-        result = container.as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
@@ -529,9 +485,9 @@ async def lock_immutability_policy(hub, name, account, resource_group, if_match,
 
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
-    :params if_match: The entity state (ETag) version of the immutability policy to update. A value of "*" can be used
-        to apply the operation only if the immutability policy already exists. If omitted, this operation will always
-        be applied.
+    :param if_match: The entity state (ETag) version of the immutability policy to update. It is important to note that
+        the ETag must be passed as a string that includes double quotes. For example, '"8d7b4bb4d393b8c"' is a valid
+        string to pass as the if_match parameter, but "8d7b4bb4d393b8c" is not.
 
     CLI Example:
 
@@ -642,7 +598,7 @@ async def update(hub, name, account, resource_group, public_access=None, metadat
             **kwargs
         )
 
-        result = container.as_dict()
+        result = container.result().as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
