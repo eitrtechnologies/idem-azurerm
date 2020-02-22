@@ -97,8 +97,8 @@ async def check_name_availability(hub, name, **kwargs):
     return result
 
 
-async def create(hub, name, resource_group, sku, kind, location, identity=None, custom_domain=None, encryption=None,
-                 network_rule_set=None, access_tier=None, enable_https_traffic_only=False, is_hns_enabled=False, 
+async def create(hub, name, resource_group, sku, kind, location, custom_domain=None, encryption=None,
+                 network_rule_set=None, access_tier=None, enable_https_traffic_only=False, is_hns_enabled=False,
                  **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -113,11 +113,8 @@ async def create(hub, name, resource_group, sku, kind, location, identity=None, 
 
     :param resource_group: The name of the resource group that the storage account belongs to.
 
-    :param sku: A dictionary representing a storage account SKU. Valid parameters are:
-        - ``name``: The name of the storage account SKU. This is required. Possible values include: 'Standard_LRS',
-                    'Standard_GRS', 'Standard_RAGRS', 'Standard_ZRS', 'Premium_LRS', 'Premium_ZRS', 'Standard_GZRS',
-                    'Standard_RAGZRS'.
-        - ``tier``: The tier of the storage account SKU. Possible values include: 'Standard', 'Premium'.
+    :param sku: The name of the storage accoubt SKU. Possible values include: 'Standard_LRS', 'Standard_GRS',
+        'Standard_RAGRS', 'Standard_ZRS', 'Premium_LRS', 'Premium_ZRS', 'Standard_GZRS', and 'Standard_RAGZRS'.
 
     :param kind: Indicates the type of storage account. Possible values include: 'Storage', 'StorageV2', 'BlobStorage'.
 
@@ -125,13 +122,8 @@ async def create(hub, name, resource_group, sku, kind, location, identity=None, 
         Geo Regions (e.g. West US, East US, Southeast Asia, etc.). The geo region of a resource cannot be changed once
         it is created, but if an identical geo region is specified on update, the request will succeed.
 
-    :param identity: A dictionary representing the identity of the resource. Valid parameters are:
-        - ``type``: Required. The identity type. Default value: "SystemAssigned".
-        - ``tenant_id``: The tenant ID of the resource.
-        - ``principal_id``: The principal ID of resource identity. 
-
     :param custom_domain: User domain assigned to the storage account. Valid parameters are:
-        - ``name``: Required. Gets or sets the custom domain name assigned to the storage account. Name is the CNAME 
+        - ``name``: Required. Gets or sets the custom domain name assigned to the storage account. Name is the CNAME
                     source. To clear the existing custom domain, use an empty string for this property.
         - ``use_sub_domain_name``: Indicates whether indirect CName validation is enabled. Default value is false.
                                    This should only be set on updates.
@@ -139,8 +131,15 @@ async def create(hub, name, resource_group, sku, kind, location, identity=None, 
     :param encryption: Provides the encryption settings on the account. If left unspecified the account encryption
         settings will remain the same. The default setting is unencrypted.
 
-    NOTE: An access tier is required for when the kind is set to 'BlobStorage'. The access tier is used for billing. 
+    :param network_rule_set: A dictionary representing a NetworkRuleSet object.
+
+    :param access_tier: The access tier is used for billing. Required for when the kind is set to 'BlobStorage'.
         Possible values include: 'Hot' and 'Cool'.
+
+    :param enable_https_traffic_only: Allows https traffic only to storage service if set to True. The default value
+        is False.
+
+    :param is_hns_enabled: Account HierarchicalNamespace enabled if set to True. The default value is False.
 
     CLI Example:
 
@@ -151,13 +150,21 @@ async def create(hub, name, resource_group, sku, kind, location, identity=None, 
     '''
     storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
 
+    sku = {'name': sku}
+
     try:
         accountmodel = await hub.exec.utils.azurerm.create_object_model(
             'storage',
             'StorageAccountCreateParameters',
             sku=sku,
             kind=kind,
-            location=location,   
+            location=location,
+            encryption=encryption,
+            custom_domain=custom_domain,
+            network_rule_set=network_rule_set,
+            access_tier=access_tier,
+            enable_https_traffic_only=enable_https_traffic_only,
+            is_hns_enabled=is_hns_enabled,
             **kwargs
         )
     except TypeError as exc:
@@ -171,7 +178,7 @@ async def create(hub, name, resource_group, sku, kind, location, identity=None, 
             parameters=accountmodel
         )
 
-        result = account.as_dict()
+        result = account.result().as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
@@ -206,7 +213,7 @@ async def delete(hub, name, resource_group, **kwargs):
             account_name=name,
             resource_group_name=resource_group
         )
-        
+
         result = True
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
@@ -290,7 +297,7 @@ async def list_account_sas(hub, name, resource_group, services, resource_types, 
 
     :param resource_group: The name of the resource group that the storage account belongs to.
 
-    :param services: The signed services accessible with the account SAS. Possible values include: Blob (b), Queue (q), 
+    :param services: The signed services accessible with the account SAS. Possible values include: Blob (b), Queue (q),
         Table (t), File (f). Possible values include: 'b', 'q', 't', 'f'.
 
     :param resource_types: The signed resource types that are accessible with the account SAS. Service (s): Access to
@@ -298,7 +305,7 @@ async def list_account_sas(hub, name, resource_group, services, resource_types, 
         blobs, queue messages, table entities, and files. Possible values include: 's', 'c', 'o'.
 
     :param permissions: The signed permissions for the account SAS. Possible values include: Read (r), Write (w), Delete
-        (d), List (l), Add (a), Create (c), Update (u) and Process (p). Possible values include: 'r', 'd', 'w', 'l', 
+        (d), List (l), Add (a), Create (c), Update (u) and Process (p). Possible values include: 'r', 'd', 'w', 'l',
         'a', 'c', 'u', 'p'.
 
     :param shared_access_expiry_time: The time at which the shared access signature becomes invalid. This parameter
@@ -347,7 +354,7 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
-    Lists all the storage accounts available under the given resource group. Note that storage keys are not returned; 
+    Lists all the storage accounts available under the given resource group. Note that storage keys are not returned;
         use the ListKeys operation for this.
 
     :param resource_group: The name of the resource group that the storage account belongs to.
@@ -402,7 +409,7 @@ async def list_keys(hub, name, resource_group, **kwargs):
             resource_group_name=resource_group
         )
 
-        result = keys.as_dict() 
+        result = keys.as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
@@ -423,7 +430,7 @@ async def list_service_sas(hub, name, resource_group, canonicalized_resource, pe
 
     :param canonicalized_resource: The canonical path to the signed resource.
 
-    :param permissions: The signed permissions for the service SAS. Possible values include: Read (r), Write (w), 
+    :param permissions: The signed permissions for the service SAS. Possible values include: Read (r), Write (w),
         Delete (d), List (l), Add (a), Create (c), Update (u) and Process (p). Possible values include: 'r', 'd', 'w',
         'l', 'a', 'c', 'u', 'p'.
 
@@ -497,61 +504,9 @@ async def regenerate_key(hub, name, resource_group, key_name, **kwargs):
             **kwargs
         )
 
-        result = keys
+        result = keys.as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
-
-    return result
-
-
-async def update(hub, name, resource_group, **kwargs):
-    '''
-    .. versionadded:: 1.0.0
-
-    The update operation can be used to update the SKU, encryption, access tier, or tags for a storage account. It can 
-        also be used to map the account to a custom domain. Only one custom domain is supported per storage account; 
-        the replacement/change of custom domain is not supported. In order to replace an old custom domain, the old 
-        value must be cleared/unregistered before a new value can be set. The update of multiple properties is 
-        supported. This call does not change the storage keys for the account. If you want to change the storage 
-        account keys, use the regenerate keys operation. The location and name of the storage account cannot be changed
-        after creation.
-
-    :param name: The name of the storage account.
-
-    :param resource_group: The name of the resource group that the storage account belongs to.
-
-    CLI Example:
-
-    .. code-block:: bash                                  
-                                                                
-        azurerm.storage.account.update test_name test_group
-
-    '''
-    storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
-
-    try:
-        accountmodel = await hub.exec.utils.azurerm.create_object_model(
-            'storage',
-            'StorageAccountUpdateParameters',
-            **kwargs
-        )
-    except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
-        return result
-
-    try:
-        account = storconn.storage_accounts.update(
-            account_name=name,
-            resource_group_name=resource_group,
-            parameters=accountmodel
-        )
-
-        result = account.as_dict()
-    except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
-        result = {'error': str(exc)}
-    except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
 
     return result

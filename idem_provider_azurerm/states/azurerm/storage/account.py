@@ -82,24 +82,21 @@ TREQ = {
 }
 
 
-async def present(hub, ctx, name, resource_group, sku, kind, location, identity=None, custom_domain=None, 
-                  encryption=None, network_rule_set=None, access_tier=None, 
-                  azure_files_identity_based_authentication=None, enable_https_traffic_only=None, is_hns_enabled=None, 
-                  large_file_shares_state=None, routing_preference=None, tags=None, connection_auth=None, **kwargs):
+async def present(hub, ctx, name, resource_group, sku, kind, location, custom_domain=None, encryption=None,
+                  network_rule_set=None, access_tier=None, enable_https_traffic_only=None, is_hns_enabled=None,
+                  tags=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
     Ensure a storage account exists in the resource group.
 
-    :param name: The name of the storage account.
+    :param name: The name of the storage account being created. Storage account names must be between 3 and 24
+        characters in length and use numbers and lower-case letters only.
 
     :param resource_group: The name of the resource group that the storage account belongs to.
-    
-    :param sku: A dictionary representing a storage account SKU. Valid parameters are:
-          - ``name``: The name of the storage account SKU. This is required. Possible values include: 'Standard_LRS',
-                      'Standard_GRS', 'Standard_RAGRS', 'Standard_ZRS', 'Premium_LRS', 'Premium_ZRS', 'Standard_GZRS',
-                      'Standard_RAGZRS'.
-          - ``tier``: The tier of the storage account SKU. Possible values include: 'Standard', 'Premium'.
+
+    :param sku: The name of the storage accoubt SKU. Possible values include: 'Standard_LRS', 'Standard_GRS',
+        'Standard_RAGRS', 'Standard_ZRS', 'Premium_LRS', 'Premium_ZRS', 'Standard_GZRS', and 'Standard_RAGZRS'.
 
     :param kind: Indicates the type of storage account. Possible values include: 'Storage', 'StorageV2', 'BlobStorage'.
 
@@ -107,13 +104,29 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, identity=
         Geo Regions (e.g. West US, East US, Southeast Asia, etc.). The geo region of a resource cannot be changed once
         it is created, but if an identical geo region is specified on update, the request will succeed.
 
+    :param custom_domain: User domain assigned to the storage account. Valid parameters are:
+        - ``name``: Required. Gets or sets the custom domain name assigned to the storage account. Name is the CNAME
+                    source. To clear the existing custom domain, use an empty string for this property.
+        - ``use_sub_domain_name``: Indicates whether indirect CName validation is enabled. Default value is false.
+                                   This should only be set on updates.
+
+    :param encryption: Provides the encryption settings on the account. If left unspecified the account encryption
+        settings will remain the same. The default setting is unencrypted.
+
+    :param network_rule_set: A dictionary representing a NetworkRuleSet object.
+
+    :param access_tier: The access tier is used for billing. Required for when the kind is set to 'BlobStorage'.
+        Possible values include: 'Hot' and 'Cool'.
+
+    :param enable_https_traffic_only: Allows https traffic only to storage service if set to True. The default value
+        is False.
+
+    :param is_hns_enabled: Account HierarchicalNamespace enabled if set to True. The default value is False.
+
     :param tags: A dictionary of strings can be passed as tag metadata to the storage account object.
 
-    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the 
+    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
-
-    NOTE: An access tier is required for when the kind is set to 'BlobStorage'. The access tier is used for billing.
-        Possible values include: 'Hot' and 'Cool'.
 
     Example usage:
 
@@ -123,9 +136,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, identity=
             azurerm.storage.account.present:
                 - name: my_account
                 - resource_group: my_rg
-                - sku:
-                    name: 'Standard_LRS'
-                    tier: 'Standard'
+                - sku: 'Standard_LRS'
                 - kind: 'Storage'
                 - location: 'eastus'
                 - tags:
@@ -155,24 +166,57 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, identity=
         if tag_changes:
             ret['changes']['tags'] = tag_changes
 
-        sku_changes = await hub.exec.utils.dictdiffer.deep_diff(account.get('sku', {}), sku)
-        if sku_changes:
-            ret['changes']['sku'] = sku_changes
- 
-        encryption_changes = await hub.exec.utils.dictdiffer.deep_diff(account.get('encryption', {}), encryption or {})
-        if encryption_changes:
-            ret['changes']['encryption'] = encryption_changes
-       
-        domain_changes = await hub.exec.utils.dictdiffer.deep_diff(account.get('custom_domain', {}), 
-                                                                                custom_domain or {})
-        if domain_changes:
-            ret['changes']['custom_domain'] = domain_changes
-
-        if access_tier and access_tier != account.get('access_tier'):
-            ret['changes']['access_tier'] = {
-                'old': account.get('access_tier'),
-                'new': access_tier
+        if sku != account.get('sku').get('name'):
+            ret['changes']['sku'] = {
+                'old': account.get('sku').get('name'),
+                'new': sku
             }
+
+        if kind != account.get('kind'):
+            ret['changes']['kind'] = {
+                'old': account.get('kind'),
+                'new': kind
+            }
+
+        if enable_https_traffic_only is not None:
+            if enable_https_traffic_only != account.get('enable_https_traffic_only'):
+                ret['changes']['enable_https_traffic_only'] = {
+                    'old': account.get('enable_https_traffic_only'),
+                    'new': enable_https_traffic_only
+                }
+
+        if is_hns_enabled is not None:
+            if is_hns_enabled != account.get('is_hns_enabled'):
+                ret['changes']['is_hns_enabled'] = {
+                    'old': account.get('is_hns_enabled'),
+                    'new': is_hns_enabled
+                }
+
+        if network_rule_set is not None:
+            rule_set_changes = await hub.exec.utils.dictdiffer.deep_diff(account.get('network_rule_set', {}),
+                                                                         network_rule_set or {})
+            if rule_set_changes:
+                ret['changes']['network_rule_set'] = rule_set_changes
+
+        if encryption is not None:
+            encryption_changes = await hub.exec.utils.dictdiffer.deep_diff(account.get('encryption', {}),
+                                                                           encryption or {})
+            if encryption_changes:
+                ret['changes']['encryption'] = encryption_changes
+
+        # The Custom Domain can only be added on once, so if it already exists then this cannot be changed
+        if custom_domain is not None:
+            domain_changes = await hub.exec.utils.dictdiffer.deep_diff(account.get('custom_domain', {}),
+                                                                       custom_domain or {})
+            if domain_changes:
+                ret['changes']['custom_domain'] = domain_changes
+
+        if access_tier is not None:
+            if access_tier != account.get('access_tier'):
+                ret['changes']['access_tier'] = {
+                    'old': account.get('access_tier'),
+                    'new': access_tier
+                }
 
         if not ret['changes']:
             ret['result'] = True
@@ -200,24 +244,16 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, identity=
             ret['changes']['new']['tags'] = tags
         if access_tier:
             ret['changes']['new']['access_tier'] = access_tier
-        if identity:
-            ret['changes']['new']['identity'] = identity
         if custom_domain:
             ret['changes']['new']['custom_domain'] = custom_domain
         if encryption:
             ret['changes']['new']['encryption'] = encryption
         if network_rule_set:
             ret['changes']['new']['network_rule_set'] = network_rule_set
-        if azure_files_identity_based_authentication:
-            ret['changes']['new']['azure_files_identity_based_authentication'] = azure_files_identity_based_authentication
         if enable_https_traffic_only is not None:
             ret['changes']['new']['enable_https_traffic_only'] = enable_https_traffic_only
         if is_hns_enabled is not None:
             ret['changes']['new']['is_hns_enabled'] = is_hns_enabled
-        if large_file_shares_state:
-            ret['changes']['new']['large_file_shares_state'] = large_file_shares_state
-        if routing_preference:
-            ret['changes']['new']['routing_preference'] = routing_preference
 
     if ctx['test']:
         ret['comment'] = 'Storage account {0} would be created.'.format(name)
@@ -234,15 +270,12 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, identity=
         sku=sku,
         kind=kind,
         location=location,
-        identity=identity,
         custom_domain=custom_domain,
         encryption=encryption,
         network_rule_set=network_rule_set,
         access_tier=access_tier,
         enable_https_traffic_only=enable_https_traffic_only,
         is_hns_enabled=is_hns_enabled,
-        large_file_shares_state=large_file_shares_state,
-        routing_preference=routing_preference,
         **account_kwargs
     )
 
