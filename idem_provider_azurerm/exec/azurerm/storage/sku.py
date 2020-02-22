@@ -43,8 +43,8 @@ Azure Resource Manager (ARM) SKU Operations Execution Module
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
-'''
 
+'''
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -66,7 +66,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def list_(hub, api_version='2017-06-01', **kwargs):
+async def list_(hub, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -86,11 +86,9 @@ async def list_(hub, api_version='2017-06-01', **kwargs):
         skus = await hub.exec.utils.azurerm.paged_object_to_list(
             storconn.skus.list(api_version=api_version)
         )
-        '''
+
         for sku in skus:
             result[sku['name']] = sku
-        '''
-        result = skus
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
         result = {'error': str(exc)}
