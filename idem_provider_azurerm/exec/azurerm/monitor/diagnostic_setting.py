@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-Azure (ARM) Monitor Diagnostic Setting Execution Module
+Azure Resource Manager (ARM) Diagnostic Setting Execution Module
 
 .. versionadded:: 1.0.0
 
@@ -72,34 +72,33 @@ async def create_or_update(hub, name, resource_uri, metrics, logs, workspace_id=
     .. versionadded:: 1.0.0
 
     Create or update diagnostic settings for the specified resource. At least one destination for the diagnostic
-        setting is required. The three possible destinations for the diagnostic settings are as follows:
+        setting logs is required. Any combination of the following destinations is acceptable:
             1. Archive the diagnostic settings to a stroage account. This would require the storage_account_id param.
             2. Stream the diagnostic settings to an event hub. This would require the event_hub_name and
                event_hub_authorization_rule_id params.
             3. Send the diagnostic settings to Log Analytics. This would require the workspace_id param.
-        Any combination of these destinations is acceptable.
 
     :param name: The name of the diagnostic setting.
 
     :param resource_uri: The identifier of the resource.
 
-    :param metrics: A list of dictionaries representing valid MetricSettings objects. If this list is empty then the
+    :param metrics: A list of dictionaries representing valid MetricSettings objects. If this list is empty, then the
         list passed as the logs parameter must have at least one element. Valid parameters are:
-        - ``category``: Name of a diagnostic metric category for a resource type this setting is applied to. To obtain
-          the list of Diagnostic metric categories for a resource, first perform a GET diagnostic setting operation.
+        - ``category``: Name of a diagnostic metric category for the resource type this setting is applied to. To obtain
+          the list of diagnostic metric categories for a resource, first perform a GET diagnostic setting operation.
           This is a required parameter.
         - ``enabled``: A value indicating whether this category is enabled. This is a required parameter.
-        - ``time_grain``: An optional timegrain of the metric in ISO8601 format.
+        - ``time_grain``: An optional timegrain of the metric in ISO-8601 format.
         - ``retention_policy``: An optional dictionary representing a RetentionPolicy object for the specified category.
           The default retention policy for a diagnostic setting is {'enabled': False, 'days': 0}. Required parameters
           include:
             - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
             - ``enabled``: A value indicating whether the retention policy is enabled.
 
-    :param logs: A list of dictionaries representing valid LogSettings objects. If this list is empty then the list
+    :param logs: A list of dictionaries representing valid LogSettings objects. If this list is empty, then the list
         passed as the metrics parameter must have at least one element. Valid parameters are:
-        - ``category``: Name of a diagnostic log category for a resource type this setting is applied to. To obtain
-          the list of Diagnostic log categories for a resource, first perform a GET diagnostic setting operation.
+        - ``category``: Name of a diagnostic log category for the resource type this setting is applied to. To obtain
+          the list of diagnostic log categories for a resource, first perform a GET diagnostic setting operation.
           This is a required parameter.
         - ``enabled``: A value indicating whether this category is enabled. This is a required parameter.
         - ``retention_policy``: An optional dictionary representing a RetentionPolicy object for the specified category.
@@ -108,13 +107,13 @@ async def create_or_update(hub, name, resource_uri, metrics, logs, workspace_id=
             - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
             - ``enabled``: A value indicating whether the retention policy is enabled.
 
-    :param workspace_id: The workspace ID (resource ID of a Log Analytics workspace) for a Log Analytics workspace to
-        which you would like to send Diagnostic Logs.
+    :param workspace_id: The workspace (resource) ID for the Log Analytics workspace to which you would like to
+        send Diagnostic Logs.
 
     :param storage_account_id: The resource ID of the storage account to which you would like to send Diagnostic Logs.
 
-    :param service_bus_rule_id: The service bus rule ID of the diagnostic setting.
-        This is here to maintain backwards compatibility.
+    :param service_bus_rule_id: The service bus rule ID of the diagnostic setting. This is here to
+        maintain backwards compatibility.
 
     :param event_hub_authorization_rule_id: The resource ID for the event hub authorization rule.
 
@@ -124,8 +123,8 @@ async def create_or_update(hub, name, resource_uri, metrics, logs, workspace_id=
 
     .. code-block:: bash
 
-        azurerm.monitor.diagnostic_setting.create_or_update testname testuri testmetrics testlogs \
-                  testdestination
+        azurerm.monitor.diagnostic_setting.create_or_update test_name test_uri test_metrics test_logs \
+                  test_destination
 
     '''
     result = {}
@@ -177,7 +176,7 @@ async def delete(hub, name, resource_uri, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.monitor.diagnostic_setting.delete testname testuri
+        azurerm.monitor.diagnostic_setting.delete test_name test_uri
 
     '''
     result = False
@@ -211,7 +210,7 @@ async def get(hub, name, resource_uri, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.monitor.diagnostic_setting.get testname testuri
+        azurerm.monitor.diagnostic_setting.get test_name test_uri
 
     '''
     result = {}
@@ -244,7 +243,7 @@ async def list_(hub, resource_uri, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.monitor.diagnostic_setting.get testname testuri
+        azurerm.monitor.diagnostic_setting.list test_uri
 
     '''
     result = {}
