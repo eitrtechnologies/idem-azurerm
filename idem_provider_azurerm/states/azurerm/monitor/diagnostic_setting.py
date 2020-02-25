@@ -65,6 +65,7 @@ Azure Resource Manager (ARM) Diagnostic Setting State Module
 # Python libs
 from __future__ import absolute_import
 import logging
+from operator import itemgetter
 
 try:
     from six.moves import range as six_range
@@ -76,6 +77,7 @@ try:
     import azure.mgmt.monitor.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+    from azure.mgmt.monitor.models import ErrorResponseException
     HAS_LIBS = True
 except ImportError:
     pass
@@ -84,18 +86,18 @@ log = logging.getLogger(__name__)
 
 
 async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None, storage_account_id=None,
-                  service_bus_rule_id=None, event_hub_authorization_rule_id=None, event_hub_name=None, tags=None,
+                  service_bus_rule_id=None, event_hub_authorization_rule_id=None, event_hub_name=None,
                   connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
     Ensure a diagnostic setting exists. At least one destination for the diagnostic setting is required. The three
-        possible destinations for the diagnostic settings are as follows:
-            1. Archive the diagnostic settings to a stroage account. This would require the storage_account_id param.
+        possible destinations for the diagnostic setting are as follows:
+            1. Archive the diagnostic settings to a storage account. This would require the storage_account_id param.
             2. Stream the diagnostic settings to an event hub. This would require the event_hub_name and
                event_hub_authorization_rule_id params.
             3. Send the diagnostic settings to Log Analytics. This would require the workspace_id param.
-        Any combination of these destinations is acceptable. 
+        Any combination of these destinations is acceptable.
 
     :param name: The name of the diagnostic setting.
 
@@ -138,11 +140,7 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
 
     :param event_hub_name: The name of the event hub. If none is specified, the default event hub will be selected.
 
-    :param tags:
-        A dictionary of strings can be passed as tag metadata to the diagnostic settings object.
-
-    :param connection_auth:
-        A dict with subscription and authentication parameters to be used in connecting to the
+    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
     Example usage:
@@ -153,21 +151,16 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
             azurerm.monitor.diagnostic_setting.present:
                 - name: my_setting
                 - resource_uri: my_resource
-                - metrics: 
-                    category: 'AllMetrics'
+                - metrics:
+                  - category: my_category
                     enabled: True
                     retention_policy:
                       enabled: True
-                      days: 0
+                      days: 10
                 - logs:
-                    category: 'VMProtectionAlerts'
+                  - category: my_category
                     enabled: True
-                    retention_policy:
-                      enabled: True
-                      days: 0
                 - storage_account_id: my_account_id
-                - tags:
-                    contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
     '''
@@ -190,52 +183,45 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
     )
 
     if 'error' not in setting:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(setting.get('tags', {}), tags or {})
-        if tag_changes:
-            ret['changes']['tags'] = tag_changes
-
-        '''
-        # Checks for changes within the metrics dictionary
-        for property, value in metrics.items():
-            if not isinstance(value, dict):
-                if value != (setting.get('metrics')[0]).get(property):
+        # Checks for changes in the metrics parameter
+        if len(metrics) == len(setting.get('metrics', [])):
+            new_metrics_sorted = sorted(metrics, key=itemgetter('category', 'enabled'))
+            old_metrics_sorted = sorted(setting.get('metrics', []), key=itemgetter('category', 'enabled'))
+            index = 0
+            for metric in new_metrics_sorted:
+                changes = await hub.exec.utils.dictdiffer.deep_diff(setting.get('metrics')[index], metric)
+                index = index + 1
+                if changes:
                     ret['changes']['metrics'] = {
-                        'old': setting.get('metrics'),
+                        'old': setting.get('metrics', []),
                         'new': metrics
                     }
                     break
-            else:
-                # Stores the retention policy
-                policy = value
-                for policy_prop, policy_value in policy.items():
-                    if policy_value != (setting.get('metrics')[0]).get('retention_policy', {}).get(policy_prop):
-                        ret['changes']['metrics'] = {
-                            'old': setting.get('metrics'),
-                            'new': metrics
-                        }
-                        break 
+        else:
+            ret['changes']['metrics'] = {
+                'old': setting.get('metrics', []),
+                'new': metrics
+            }
 
-        # Checks for changes within the logs dictionary
-        for property, value in logs.items():
-            if not isinstance(value, dict):
-                if value != (setting.get('logs')[0]).get(property):
+        # Checks for changes in the logs parameter
+        if len(logs) == len(setting.get('logs', [])):
+            new_logs_sorted = sorted(logs, key=itemgetter('category', 'enabled'))
+            old_logs_sorted = sorted(setting.get('logs', []), key=itemgetter('category', 'enabled'))
+            index = 0
+            for log in new_logs_sorted:
+                changes = await hub.exec.utils.dictdiffer.deep_diff(setting.get('logs')[index], log)
+                index = index + 1
+                if changes:
                     ret['changes']['logs'] = {
-                        'old': setting.get('logs'),
+                        'old': setting.get('logs', []),
                         'new': logs
                     }
                     break
-            else:
-                # Stores the retention policy
-                policy = value
-                for policy_prop, policy_value in policy.items():
-                    if policy_value != (setting.get('logs')[0]).get('retention_policy', {}).get(policy_prop):
-                        ret['changes']['logs'] = {
-                            'old': setting.get('logs'),
-                            'new': logs
-                        }
-                        break
-        '''
-
+        else:
+            ret['changes']['logs'] = {
+                'old': setting.get('logs', []),
+                'new': logs
+            }
         if storage_account_id:
             if storage_account_id != setting.get('storage_account_id', None):
                 ret['changes']['storage_account_id'] = {
@@ -292,8 +278,6 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
             }
         }
 
-        if tags:
-            ret['changes']['new']['tags'] = tags
         if storage_account_id:
             ret['changes']['new']['storage_account_id'] = storage_account_id
         if workspace_id:
@@ -323,7 +307,6 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
         event_hub_name=event_hub_name,
         event_hub_authorization_rule_id=event_hub_authorization_rule_id,
         service_bus_rule_id=service_bus_rule_id,
-        tags=tags,
         **setting_kwargs
     )
 

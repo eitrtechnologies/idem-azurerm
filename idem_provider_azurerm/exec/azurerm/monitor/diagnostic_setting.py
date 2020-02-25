@@ -83,9 +83,30 @@ async def create_or_update(hub, name, resource_uri, metrics, logs, workspace_id=
 
     :param resource_uri: The identifier of the resource.
 
-    :param metrics: A dictionary representing a MetricSettings object.
+    :param metrics: A list of dictionaries representing valid MetricSettings objects. If this list is empty then the
+        list passed as the logs parameter must have at least one element. Valid parameters are:
+        - ``category``: Name of a diagnostic metric category for a resource type this setting is applied to. To obtain
+          the list of Diagnostic metric categories for a resource, first perform a GET diagnostic setting operation.
+          This is a required parameter.
+        - ``enabled``: A value indicating whether this category is enabled. This is a required parameter.
+        - ``time_grain``: An optional timegrain of the metric in ISO8601 format.
+        - ``retention_policy``: An optional dictionary representing a RetentionPolicy object for the specified category.
+          The default retention policy for a diagnostic setting is {'enabled': False, 'days': 0}. Required parameters
+          include:
+            - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
+            - ``enabled``: A value indicating whether the retention policy is enabled.
 
-    :param logs: A dictionary representing a LogSettings object.
+    :param logs: A list of dictionaries representing valid LogSettings objects. If this list is empty then the list
+        passed as the metrics parameter must have at least one element. Valid parameters are:
+        - ``category``: Name of a diagnostic log category for a resource type this setting is applied to. To obtain
+          the list of Diagnostic log categories for a resource, first perform a GET diagnostic setting operation.
+          This is a required parameter.
+        - ``enabled``: A value indicating whether this category is enabled. This is a required parameter.
+        - ``retention_policy``: An optional dictionary representing a RetentionPolicy object for the specified category.
+          The default retention policy for a diagnostic setting is {'enabled': False, 'days': 0}. Required parameters
+          include:
+            - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
+            - ``enabled``: A value indicating whether the retention policy is enabled.
 
     :param workspace_id: The workspace ID (resource ID of a Log Analytics workspace) for a Log Analytics workspace to
         which you would like to send Diagnostic Logs.
@@ -135,7 +156,7 @@ async def create_or_update(hub, name, resource_uri, metrics, logs, workspace_id=
         )
 
         result = diag.as_dict()
-    except CloudError as exc:
+    except (CloudError, ErrorResponseException) as exc:
         await hub.exec.utils.azurerm.log_cloud_error('monitor', str(exc), **kwargs)
         result = {'error': str(exc)}
 
@@ -228,7 +249,7 @@ async def list_(hub, resource_uri, **kwargs):
     '''
     result = {}
     moniconn = await hub.exec.utils.azurerm.get_client('monitor', **kwargs)
-    
+
     try:
         diag = moniconn.diagnostic_settings.list(
             resource_uri=resource_uri,
