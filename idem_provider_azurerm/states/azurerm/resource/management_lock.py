@@ -79,7 +79,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 async def present_at_resource_group_level(hub, ctx, name, resource_group, lock_level, notes=None, owners=None,
-                                          tags=None, connection_auth=None, **kwargs):
+                                          connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -99,8 +99,6 @@ async def present_at_resource_group_level(hub, ctx, name, resource_group, lock_l
     :param owners: An optional list of strings representing owners of the lock. Each string represents the application
         id of the lock owner.
 
-    :param tags: A dictionary of strings can be passed as tag metadata to the resource group object.
-
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
@@ -113,8 +111,6 @@ async def present_at_resource_group_level(hub, ctx, name, resource_group, lock_l
                 - name: my_lock
                 - resource_group: my_rg
                 - lock_level: 'ReadOnly'
-                - tags:
-                    contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
     '''
@@ -137,10 +133,6 @@ async def present_at_resource_group_level(hub, ctx, name, resource_group, lock_l
     )
 
     if 'error' not in lock:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(lock.get('tags', {}), tags or {})
-        if tag_changes:
-            ret['changes']['tags'] = tag_changes
-
         if lock_level != lock.get('level'):
             ret['changes']['level'] = {
                 'old': lock.get('level'),
@@ -187,8 +179,6 @@ async def present_at_resource_group_level(hub, ctx, name, resource_group, lock_l
             }
         }
 
-        if tags:
-            ret['changes']['new']['tags'] = tags
         if owners:
             ret['changes']['new']['owners'] = owners
         if notes:
@@ -208,7 +198,6 @@ async def present_at_resource_group_level(hub, ctx, name, resource_group, lock_l
         lock_level=lock_level,
         notes=notes,
         owners=owners,
-        tags=tags,
         **lock_kwargs
     )
 
@@ -299,8 +288,7 @@ async def absent_at_resource_group_level(hub, ctx, name, resource_group, connect
     return ret
 
 
-async def present_by_scope(hub, ctx, name, scope, lock_level, notes=None, owners=None, tags=None, connection_auth=None,
-                           **kwargs):
+async def present_by_scope(hub, ctx, name, scope, lock_level, notes=None, owners=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -312,7 +300,8 @@ async def present_by_scope(hub, ctx, name, scope, lock_level, notes=None, owners
     :param scope: The scope for the lock. When providing a scope for the assignment,
         use '/subscriptions/{subscriptionId}' for subscriptions,
         '/subscriptions/{subscriptionId}/resourcegroups/{resourceGroupName}' for resource groups, and
-        '/subscriptions/{subscriptionId}/resourcegroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{parentResourcePathIfPresent}/{resourceType}/{resourceName}' for resources.
+        '/subscriptions/{subscriptionId}/resourcegroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{parentResourcePathIfPresent}/{resourceType}/{resourceName}'
+        for resources.
 
     :param lock_level: The level of the lock. Possible values are: 'CanNotDelete' and 'ReadOnly'. CanNotDelete means
         authorized users are able to read and modify the resources, but not delete. ReadOnly means authorized users
@@ -322,8 +311,6 @@ async def present_by_scope(hub, ctx, name, scope, lock_level, notes=None, owners
 
     :param owners: An optional list of strings representing owners of the lock. Each string represents the application
         id of the lock owner.
-
-    :param tags: A dictionary of strings can be passed as tag metadata to the resource group object.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -337,8 +324,6 @@ async def present_by_scope(hub, ctx, name, scope, lock_level, notes=None, owners
                 - name: my_lock
                 - scope: my_scope
                 - lock_level: 'ReadOnly'
-                - tags:
-                    contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
     '''
@@ -361,10 +346,6 @@ async def present_by_scope(hub, ctx, name, scope, lock_level, notes=None, owners
     )
 
     if 'error' not in lock:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(lock.get('tags', {}), tags or {})
-        if tag_changes:
-            ret['changes']['tags'] = tag_changes
-
         if lock_level != lock.get('level'):
             ret['changes']['level'] = {
                 'old': lock.get('level'),
@@ -411,8 +392,6 @@ async def present_by_scope(hub, ctx, name, scope, lock_level, notes=None, owners
             }
         }
 
-        if tags:
-            ret['changes']['new']['tags'] = tags
         if owners:
             ret['changes']['new']['owners'] = owners
         if notes:
@@ -432,7 +411,6 @@ async def present_by_scope(hub, ctx, name, scope, lock_level, notes=None, owners
         lock_level=lock_level,
         notes=notes,
         owners=owners,
-        tags=tags,
         **lock_kwargs
     )
 
@@ -528,7 +506,7 @@ async def absent_by_scope(hub, ctx, name, scope, connection_auth=None):
 
 async def present_at_resource_level(hub, ctx, name, lock_level, resource_group, resource, resource_type,
                                     resource_provider_namespace, parent_resource_path=None, notes=None, owners=None,
-                                    tags=None, connection_auth=None, **kwargs):
+                                    connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -556,8 +534,6 @@ async def present_at_resource_level(hub, ctx, name, lock_level, resource_group, 
     :param owners: An optional list of strings representing owners of the lock. Each string represents the application
         id of the lock owner.
 
-    :param tags: A dictionary of strings can be passed as tag metadata to the resource group object.
-
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
@@ -573,8 +549,6 @@ async def present_at_resource_level(hub, ctx, name, lock_level, resource_group, 
                 - resource_type: my_type
                 - resource_provider_namespace: my_namespace
                 - lock_level: 'ReadOnly'
-                - tags:
-                    contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
     '''
@@ -601,10 +575,6 @@ async def present_at_resource_level(hub, ctx, name, lock_level, resource_group, 
     )
 
     if 'error' not in lock:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(lock.get('tags', {}), tags or {})
-        if tag_changes:
-            ret['changes']['tags'] = tag_changes
-
         if lock_level != lock.get('level'):
             ret['changes']['level'] = {
                 'old': lock.get('level'),
@@ -654,8 +624,6 @@ async def present_at_resource_level(hub, ctx, name, lock_level, resource_group, 
             }
         }
 
-        if tags:
-            ret['changes']['new']['tags'] = tags
         if owners:
             ret['changes']['new']['owners'] = owners
         if notes:
@@ -681,7 +649,6 @@ async def present_at_resource_level(hub, ctx, name, lock_level, resource_group, 
         lock_level=lock_level,
         notes=notes,
         owners=owners,
-        tags=tags,
         **lock_kwargs
     )
 
@@ -792,8 +759,8 @@ async def absent_at_resource_level(hub, ctx, name, resource_group, resource, res
     return ret
 
 
-async def present_at_subscription_level(hub, ctx, name, lock_level, notes=None, owners=None, tags=None,
-                                        connection_auth=None, **kwargs):
+async def present_at_subscription_level(hub, ctx, name, lock_level, notes=None, owners=None, connection_auth=None,
+                                        **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -811,8 +778,6 @@ async def present_at_subscription_level(hub, ctx, name, lock_level, notes=None, 
     :param owners: An optional list of strings representing owners of the lock. Each string represents the application
         id of the lock owner.
 
-    :param tags: A dictionary of strings can be passed as tag metadata to the resource group object.
-
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
@@ -824,8 +789,6 @@ async def present_at_subscription_level(hub, ctx, name, lock_level, notes=None, 
             azurerm.resource.management_lock.present_at_subscription_level:
                 - name: my_lock
                 - lock_level: 'ReadOnly'
-                - tags:
-                    contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
     '''
@@ -847,10 +810,6 @@ async def present_at_subscription_level(hub, ctx, name, lock_level, notes=None, 
     )
 
     if 'error' not in lock:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(lock.get('tags', {}), tags or {})
-        if tag_changes:
-            ret['changes']['tags'] = tag_changes
-
         if lock_level != lock.get('level'):
             ret['changes']['level'] = {
                 'old': lock.get('level'),
@@ -896,8 +855,6 @@ async def present_at_subscription_level(hub, ctx, name, lock_level, notes=None, 
             }
         }
 
-        if tags:
-            ret['changes']['new']['tags'] = tags
         if owners:
             ret['changes']['new']['owners'] = owners
         if notes:
@@ -916,7 +873,6 @@ async def present_at_subscription_level(hub, ctx, name, lock_level, notes=None, 
         lock_level=lock_level,
         notes=notes,
         owners=owners,
-        tags=tags,
         **lock_kwargs
     )
 
@@ -931,7 +887,7 @@ async def present_at_subscription_level(hub, ctx, name, lock_level, notes=None, 
     return ret
 
 
-async def absent_at_subscription_level(hub, ctx, name, scope, connection_auth=None):
+async def absent_at_subscription_level(hub, ctx, name, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 

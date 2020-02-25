@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-Azure Resource Manager (ARM) Management Lock Resource Execution Module
+Azure Resource Manager (ARM) Management Lock Execution Module
 
 .. versionadded:: 1.0.0
 
@@ -45,7 +45,6 @@ Azure Resource Manager (ARM) Management Lock Resource Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 from json import loads, dumps
@@ -91,8 +90,7 @@ async def create_or_update_at_resource_group_level(hub, name, resource_group, lo
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.create_or_update_at_resource_group_level testname testgroup \
-                  testlevel
+        azurerm.resource.management_lock.create_or_update_at_resource_group_level test_name test_group test_level
 
     '''
     result = {}
@@ -150,7 +148,7 @@ async def delete_at_resource_group_level(hub, name, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.delete_at_resource_group_level testname testgroup
+        azurerm.resource.management_lock.delete_at_resource_group_level test_name test_group
 
     '''
     result = False
@@ -185,7 +183,7 @@ async def get_at_resource_group_level(hub, name, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.get_at_resource_group_level testname testgroup
+        azurerm.resource.management_lock.get_at_resource_group_level test_name test_group
 
     '''
     result = {}
@@ -210,9 +208,9 @@ async def create_or_update_by_scope(hub, name, scope, lock_level, notes=None, ow
     '''
     .. versionadded:: 1.0.0
 
-    Create or update a management lock by scope. When you apply a lock at a parent scope,
-        all child resources inherit the same lock. To create management locks, you must have access to
-        Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
+    Create or update a management lock by scope. When you apply a lock at a parent scope, all child resources inherit
+        the same lock. To create management locks, you must have access to Microsoft.Authorization/* or
+        Microsoft.Authorization/locks/* actions.
 
     :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
         :, ?, /, or any control characters.
@@ -236,7 +234,7 @@ async def create_or_update_by_scope(hub, name, scope, lock_level, notes=None, ow
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.create_or_update_by_scope testname testscope testlevel
+        azurerm.resource.management_lock.create_or_update_by_scope test_name test_scope test_level
 
     '''
     result = {}
@@ -283,8 +281,8 @@ async def delete_by_scope(hub, name, scope, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
-    Delete a management lock by scope. To delete management locks, you must have access to
-        Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
+    Delete a management lock by scope. To delete management locks, you must have access to Microsoft.Authorization/*
+        or Microsoft.Authorization/locks/* actions.
 
     :param name: The name of the lock to be deleted.
 
@@ -298,7 +296,7 @@ async def delete_by_scope(hub, name, scope, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.delete_by_scope testname testscope
+        azurerm.resource.management_lock.delete_by_scope test_name test_scope
 
     '''
     result = False
@@ -337,7 +335,7 @@ async def get_by_scope(hub, name, scope, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.get_by_scope testname testscope
+        azurerm.resource.management_lock.get_by_scope test_name test_scope
 
     '''
     result = {}
@@ -394,8 +392,8 @@ async def create_or_update_at_resource_level(hub, name, lock_level, resource_gro
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.create_or_update_at_resource_level testname testlevel testgroup \
-                  testresource testtype testnamespace testpath
+        azurerm.resource.management_lock.create_or_update_at_resource_level test_name test_level test_group \
+                  test_resource test_type test_namespace
 
     '''
     result = {}
@@ -470,8 +468,8 @@ async def delete_at_resource_level(hub, name, resource_group, resource, resource
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.delete_at_resource_level testname testgroup testresource \
-                  testtype testnamespace testpath
+        azurerm.resource.management_lock.delete_at_resource_level test_name test_group test_resource \
+                  test_type test_namespace
 
     '''
     result = False
@@ -522,8 +520,8 @@ async def get_at_resource_level(hub, name, resource_group, resource, resource_ty
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.get_at_resource_level testname testgroup testresource \
-                  testtype testnamespace testpath
+        azurerm.resource.management_lock.get_at_resource_level test_name test_group test_resource \
+                  test_type test_namespace
 
     '''
     result = {}
@@ -575,7 +573,7 @@ async def create_or_update_at_subscription_level(hub, name, lock_level, notes=No
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.create_or_update_at_subscription_level testname testlevel
+        azurerm.resource.management_lock.create_or_update_at_subscription_level test_name test_level
 
     '''
     result = {}
@@ -630,7 +628,7 @@ async def delete_at_subscription_level(hub, name, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.delete_at_subscription_level testname
+        azurerm.resource.management_lock.delete_at_subscription_level test_name
 
     '''
     result = False
@@ -662,7 +660,7 @@ async def get_at_subscription_level(hub, name, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.get_at_subscription_level testname
+        azurerm.resource.management_lock.get_at_subscription_level test_name
 
     '''
     result = {}
@@ -694,7 +692,7 @@ async def list_at_resource_group_level(hub, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.list_at_resource_group_level testgroup
+        azurerm.resource.management_lock.list_at_resource_group_level test_group
 
     '''
     result = {}
@@ -736,8 +734,8 @@ async def list_at_resource_level(hub, resource_group, resource, resource_type, r
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.list_at_resource_level testgroup testresource testtype \
-                  testnamespace testpath
+        azurerm.resource.management_lock.list_at_resource_level test_group test_resource test_type \
+                  test_namespace test_path
 
     '''
     result = {}
@@ -807,15 +805,11 @@ async def list_by_scope(hub, scope, **kwargs):
         '/subscriptions/{subscriptionId}/resourcegroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{parentResourcePathIfPresent}/{resourceType}/{resourceName}'
         for resources.
 
-    :param scope: The scope for the lock. When providing a scope for the assignment, use '/subscriptions/{subscriptionId}' for subscriptions,
-        '/subscriptions/{subscriptionId}/resourcegroups/{resourceGroupName}' for resource groups, and
-        '/subscriptions/{subscriptionId}/resourcegroups/{resourceGroupName}/providers/{resourceProviderNamespace}/{parentResourcePathIfPresent}/{resourceType}/{resourceName}' for resources.
-
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.list_by_scope testscope
+        azurerm.resource.management_lock.list_by_scope test_scope
 
     '''
     result = {}
