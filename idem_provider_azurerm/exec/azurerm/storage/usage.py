@@ -43,8 +43,8 @@ Azure Resource Manager (ARM) Usage Operations Execution Module
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
-'''
 
+'''
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -116,7 +116,9 @@ async def list_by_location(hub, location, **kwargs):
 
     try:
         usages = await hub.exec.utils.azurerm.paged_object_to_list(
-            storconn.usage.list_by_location(location)
+            storconn.usage.list_by_location(
+                location
+            )
         )
 
         for usage in usages:

@@ -43,8 +43,8 @@ Azure Resource Manager (ARM) Blob Container Operations Execution Module
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
-'''
 
+'''
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -64,6 +64,7 @@ except ImportError:
     pass
 
 log = logging.getLogger(__name__)
+
 
 async def clear_legal_hold(hub, name, account, resource_group, tags, **kwargs):
     '''
