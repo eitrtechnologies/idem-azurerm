@@ -95,7 +95,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, custom_do
 
     :param resource_group: The name of the resource group that the storage account belongs to.
 
-    :param sku: The name of the storage accoubt SKU. Possible values include: 'Standard_LRS', 'Standard_GRS',
+    :param sku: The name of the storage account SKU. Possible values include: 'Standard_LRS', 'Standard_GRS',
         'Standard_RAGRS', 'Standard_ZRS', 'Premium_LRS', 'Premium_ZRS', 'Standard_GZRS', and 'Standard_RAGZRS'.
 
     :param kind: Indicates the type of storage account. Possible values include: 'Storage', 'StorageV2', 'BlobStorage'.
