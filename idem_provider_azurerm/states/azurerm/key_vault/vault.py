@@ -97,7 +97,62 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
 
     :param resource_group: The name of the resource group to which the vault belongs.
 
-    FILL IN THE REST OF THE PARAMS ONCE THE CREATE_OR_UPDATE EXEC MODULE IS DONE AND TESTED
+    :param resource_group: The name of the resource group to which the vault belongs.
+
+    :param location: The supported Azure location where the key vault should be created.
+
+    :param tenant_id: The Azure Active Direction tenant ID that should be used for authenticating requests to
+        the key vault.
+
+    :param sku: The SKU name to specify whether the key vault is a standard vault or a premium vault. Possible
+        values include: 'standard' and 'premium'.
+
+    :param access_policies: A list of 0 to 16 dictionaries that represent AccessPolicyEntry objects. The
+        AccessPolicyEntry objects represent identities that have access to the key vault. All identities in the
+        list must use the same tenant ID as the key vault's tenant ID. When createMode is set to recover, access
+        policies are not required. Otherwise, access policies are required. Valid parameters are:
+        - ``tenant_id``: Required. The Azure Active Directory tenant ID that should be used for authenticating
+          requests to the key vault.
+        - ``object_id``: Required. The object ID of a user, service principal, or security group in the Azure Active
+          Directory tenant for the vault. The object ID must be unique for the list of access policies.
+        - ``permissions``: Required. A dictionary representing permissions the identity has for keys, secrets, and
+          certifications. Valid parameters include:
+            - ``keys``: A list that represents permissions to keys. Possible values include: 'backup', 'create',
+              'decrypt', 'delete', 'encrypt', 'get', 'import_enum', 'list', 'purge', 'recover', 'restore', 'sign',
+              'unwrap_key', 'update', 'verify', and 'wrap_key'.
+            - ``secrets``: A list that represents permissions to secrets. Possible values include: 'backup', 'delete',
+              'get', 'list', 'purge', 'recover', 'restore', and 'set'.
+            - ``certificates``: A list that represents permissions to certificates. Possible values include: 'create',
+              'delete', 'deleteissuers', 'get', 'getissuers', 'import_enum', 'list', 'listissuers', 'managecontacts',
+              'manageissuers', 'purge', 'recover', 'setissuers', and 'update'.
+            - ``storage``: A list that represents permissions to storage accounts. Possible values include: 'backup',
+              'delete', 'deletesas', 'get', 'getsas', 'list', 'listsas', 'purge', 'recover', 'regeneratekey',
+              'restore', 'set', 'setsas', and 'update'.
+
+    :param vault_uri: The URI of the vault for performing operations on keys and secrets.
+
+    :param create_mode: The vault's create mode to indicate whether the vault needs to be recovered or not. Possible
+        values include: 'recover' and 'default'.
+
+    :param enable_soft_delete: A boolean value specifying whether recoverable deletion is enabled for this key vault.
+        Setting this property to true activates the soft delete feature, whereby vaults or vault entities can be
+        recovered after deletion. Enabling this functionality is irreversible - that is, the property does not accept
+        false as its value. Defaults to False.
+
+    :param enable_purge_protection: A boolean value specifying whether protection against purge is enabled for this
+        vault. Setting this property to true activates protection against purge for this vault and its content - only
+        the Key Vault service may initiate a hard, irrecoverable deletion. The setting is effective only if soft
+        delete is also enabled. Enabling this functionality is irreversible - that is, the property does not accept
+        false as its value.
+
+    :param enabled_for_deployment: A boolean value specifying whether Azure Virtual Machines are permitted to
+        retrieve certificates stored as secrets from the key vault. Defaults to False.
+
+    :param enabled_for_disk_encryption: A boolean value specifying whether Azure Disk Encrpytion is permitted to
+        retrieve secrets from the vault and unwrap keys. Defaults to False.
+
+    :param enabled_for_template_deployment: A boolean value specifying whether Azure Resource Manager is permitted
+        to retrieve secrets from the key vault. Defaults to False.
 
     :param tags: A dictionary of strings can be passed as tag metadata to the key vault.
 
@@ -258,7 +313,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
             ret['changes']['new']['enable_soft_delete'] = enable_soft_delete 
         if create_mode:
             ret['changes']['new']['create_mode'] = create_mode
-        if enable_purge_protection:
+        if enable_purge_protection is not None:
             ret['changes']['new']['enable_purge_protection'] = enable_purge_protection
 
     if ctx['test']:
