@@ -127,7 +127,6 @@ async def create_or_update(hub, name, resource_group, location, tenant_id, sku, 
           requests to the key vault.
         - ``object_id``: Required. The object ID of a user, service principal, or security group in the Azure Active
           Directory tenant for the vault. The object ID must be unique for the list of access policies.
-        - ``application_id``: The application ID of the client making requests on behalf of a principal.
         - ``permissions``: Required. A dictionary representing permissions the identity has for keys, secrets, and
           certifications. Valid parameters include:
             - ``keys``: A list that represents permissions to keys. Possible values include: 'backup', 'create',
@@ -142,7 +141,7 @@ async def create_or_update(hub, name, resource_group, location, tenant_id, sku, 
               'delete', 'deletesas', 'get', 'getsas', 'list', 'listsas', 'purge', 'recover', 'regeneratekey',
               'restore', 'set', 'setsas', and 'update'.
 
-    :param vault_uri: The URI of the vault for performing operations on keys and secrets
+    :param vault_uri: The URI of the vault for performing operations on keys and secrets.
 
     :param create_mode: The vault's create mode to indicate whether the vault needs to be recovered or not. Possible
         values include: 'recover' and 'default'.
@@ -171,7 +170,8 @@ async def create_or_update(hub, name, resource_group, location, tenant_id, sku, 
 
     .. code-block:: bash
 
-        azurerm.key_vault.vault.create_or_update test_name test_rg ...
+        azurerm.key_vault.vault.create_or_update test_name test_rg test_location test_tenant test_sku test_policies \
+              test_uri test_mode test_flags
 
     '''
     result = {}
@@ -179,7 +179,7 @@ async def create_or_update(hub, name, resource_group, location, tenant_id, sku, 
 
     sku = {'name': sku}
 
-    # Create the properties model
+    # Create the VaultProperties object
     try:
         propsmodel = await hub.exec.utils.azurerm.create_object_model(
             'keyvault',
@@ -199,7 +199,7 @@ async def create_or_update(hub, name, resource_group, location, tenant_id, sku, 
         result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
         return result
 
-    # Create the VaultCreateOrUpdateParameters Object
+    # Create the VaultCreateOrUpdateParameters object
     try:
         paramsmodel = await hub.exec.utils.azurerm.create_object_model(
             'keyvault',
@@ -497,7 +497,7 @@ async def purge_deleted(hub, name, location, **kwargs):
     return result
 
 
-async def update_access_policy(hub, name, resource_group, operation_kind, PROPERTIES=None, **kwargs):
+async def update_access_policy(hub, name, resource_group, operation_kind, access_policies, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -507,15 +507,62 @@ async def update_access_policy(hub, name, resource_group, operation_kind, PROPER
 
     :param resource_group: The name of the resource group to which the server belongs.
 
-    :param operation_kind: Name of the operation. Possible values include: 'add', 'replace', and 'remove'
+    :param operation_kind: Name of the operation. Possible values include: 'add', 'replace', and 'remove'.
 
-    :param PROPERTIES: UPDATE
+    :param access_policies: A list of 0 to 16 dictionaries that represent AccessPolicyEntry objects. The
+        AccessPolicyEntry objects represent identities that have access to the key vault. All identities in the
+        list must use the same tenant ID as the key vault's tenant ID. Valid parameters are:
+        - ``tenant_id``: Required. The Azure Active Directory tenant ID that should be used for authenticating
+          requests to the key vault.
+        - ``object_id``: Required. The object ID of a user, service principal, or security group in the Azure Active
+          Directory tenant for the vault. The object ID must be unique for the list of access policies.
+        - ``permissions``: Required. A dictionary representing permissions the identity has for keys, secrets, and
+          certifications. Valid parameters include:
+            - ``keys``: A list that represents permissions to keys. Possible values include: 'backup', 'create',
+              'decrypt', 'delete', 'encrypt', 'get', 'import_enum', 'list', 'purge', 'recover', 'restore', 'sign',
+              'unwrap_key', 'update', 'verify', and 'wrap_key'.
+            - ``secrets``: A list that represents permissions to secrets. Possible values include: 'backup', 'delete',
+              'get', 'list', 'purge', 'recover', 'restore', and 'set'.
+            - ``certificates``: A list that represents permissions to certificates. Possible values include: 'create',
+              'delete', 'deleteissuers', 'get', 'getissuers', 'import_enum', 'list', 'listissuers', 'managecontacts',
+              'manageissuers', 'purge', 'recover', 'setissuers', and 'update'.
+            - ``storage``: A list that represents permissions to storage accounts. Possible values include: 'backup',
+              'delete', 'deletesas', 'get', 'getsas', 'list', 'listsas', 'purge', 'recover', 'regeneratekey',
+              'restore', 'set', 'setsas', and 'update'.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.key_vault.vault.update test_name test_rg test_kind ...
+        azurerm.key_vault.vault.update_access_policy test_name test_rg test_kind test_policies
 
     '''
-    pass
+    result = {}
+    vconn = await hub.exec.utils.azurerm.get_client('keyvault', **kwargs)
+
+    # Create the VaultAccessPolicyProperties object
+    try:
+        propsmodel = await hub.exec.utils.azurerm.create_object_model(
+            'keyvault',
+            'VaultAccessPolicyProperties',
+            access_policies=access_policies,
+            **kwargs
+        )
+    except TypeError as exc:
+        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        return result
+
+    try:
+        vault = vconn.vaults.update_access_policy(
+            vault_name = name,
+            resource_group_name = resource_group,
+            operation_kind=operation_kind,
+            properties=propsmodel
+        )
+
+        result = vault.as_dict()
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('keyvault', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
