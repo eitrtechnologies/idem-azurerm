@@ -84,7 +84,7 @@ async def list_(hub, **kwargs):
 
     try:
         skus = await hub.exec.utils.azurerm.paged_object_to_list(
-            storconn.skus.list(api_version=api_version)
+            storconn.skus.list()
         )
 
         for sku in skus:

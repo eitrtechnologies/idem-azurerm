@@ -229,7 +229,7 @@ async def present(hub, ctx, name, account, resource_group, public_access=None, m
 
 
 async def immutability_policy_present(hub, ctx, name, account, resource_group,
-                                      immutability_period_since_creation_in_days, if_match=None, tags=None,
+                                      immutability_period, if_match=None, tags=None,
                                       connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -246,8 +246,8 @@ async def immutability_policy_present(hub, ctx, name, account, resource_group,
 
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
-    :param immutability_period_since_creation_in_days: The immutability period for the blobs in the container since the
-        policy creation, in days.
+    :param immutability_period: The immutability period for the blobs in the container since the policy
+        creation, in days.
 
     :param if_match: The entity state (ETag) version of the immutability policy to update. It is important to note that
         the ETag must be passed as a string that includes double quotes. For example, '"8d7b4bb4d393b8c"' is a valid
@@ -267,7 +267,7 @@ async def immutability_policy_present(hub, ctx, name, account, resource_group,
                 - name: my_container
                 - account: my_account
                 - resource_group: my_rg
-                - immutability_period_since_creation_in_days: 10
+                - immutability_period: 10
                 - tags:
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
@@ -297,10 +297,10 @@ async def immutability_policy_present(hub, ctx, name, account, resource_group,
         if tag_changes:
             ret['changes']['tags'] = tag_changes
 
-        if immutability_period_since_creation_in_days != policy.get('immutability_period_since_creation_in_days'):
+        if immutability_period != policy.get('immutability_period_since_creation_in_days'):
             ret['changes']['immutability_period_since_creation_in_days'] = {
                 'old': policy.get('immutability_period_since_creation_in_days'),
-                'new': immutability_period_since_creation_in_days
+                'new': immutability_period
             }
 
         if not ret['changes']:
@@ -320,7 +320,7 @@ async def immutability_policy_present(hub, ctx, name, account, resource_group,
                 'name': name,
                 'account': account,
                 'resource_group': resource_group,
-                'immutability_period_since_creation_in_days': immutability_period_since_creation_in_days,
+                'immutability_period_since_creation_in_days': immutability_period,
             }
         }
 
@@ -343,7 +343,7 @@ async def immutability_policy_present(hub, ctx, name, account, resource_group,
         resource_group=resource_group,
         tags=tags,
         if_match=if_match,
-        immutability_period_since_creation_in_days=immutability_period_since_creation_in_days,
+        immutability_period=immutability_period,
         **policy_kwargs
     )
 

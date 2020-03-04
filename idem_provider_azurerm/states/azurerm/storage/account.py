@@ -83,7 +83,7 @@ TREQ = {
 
 
 async def present(hub, ctx, name, resource_group, sku, kind, location, custom_domain=None, encryption=None,
-                  network_rule_set=None, access_tier=None, enable_https_traffic_only=None, is_hns_enabled=None,
+                  network_rule_set=None, access_tier=None, https_traffic_only=None, is_hns_enabled=None,
                   tags=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -118,7 +118,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, custom_do
     :param access_tier: The access tier is used for billing. Required for when the kind is set to 'BlobStorage'.
         Possible values include: 'Hot' and 'Cool'.
 
-    :param enable_https_traffic_only: Allows https traffic only to storage service if set to True. The default value
+    :param https_traffic_only: Allows https traffic only to storage service if set to True. The default value
         is False.
 
     :param is_hns_enabled: Account HierarchicalNamespace enabled if set to True. The default value is False.
@@ -178,11 +178,11 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, custom_do
                 'new': kind
             }
 
-        if enable_https_traffic_only is not None:
-            if enable_https_traffic_only != account.get('enable_https_traffic_only'):
+        if https_traffic_only is not None:
+            if https_traffic_only != account.get('enable_https_traffic_only'):
                 ret['changes']['enable_https_traffic_only'] = {
                     'old': account.get('enable_https_traffic_only'),
-                    'new': enable_https_traffic_only
+                    'new': https_traffic_only
                 }
 
         if is_hns_enabled is not None:
@@ -192,20 +192,20 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, custom_do
                     'new': is_hns_enabled
                 }
 
-        if network_rule_set is not None:
+        if network_rule_set:
             rule_set_changes = await hub.exec.utils.dictdiffer.deep_diff(account.get('network_rule_set', {}),
                                                                          network_rule_set or {})
             if rule_set_changes:
                 ret['changes']['network_rule_set'] = rule_set_changes
 
-        if encryption is not None:
+        if encryption:
             encryption_changes = await hub.exec.utils.dictdiffer.deep_diff(account.get('encryption', {}),
                                                                            encryption or {})
             if encryption_changes:
                 ret['changes']['encryption'] = encryption_changes
 
         # The Custom Domain can only be added on once, so if it already exists then this cannot be changed
-        if custom_domain is not None:
+        if custom_domain:
             domain_changes = await hub.exec.utils.dictdiffer.deep_diff(account.get('custom_domain', {}),
                                                                        custom_domain or {})
             if domain_changes:
@@ -250,8 +250,8 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, custom_do
             ret['changes']['new']['encryption'] = encryption
         if network_rule_set:
             ret['changes']['new']['network_rule_set'] = network_rule_set
-        if enable_https_traffic_only is not None:
-            ret['changes']['new']['enable_https_traffic_only'] = enable_https_traffic_only
+        if https_traffic_only is not None:
+            ret['changes']['new']['enable_https_traffic_only'] = https_traffic_only
         if is_hns_enabled is not None:
             ret['changes']['new']['is_hns_enabled'] = is_hns_enabled
 
@@ -274,7 +274,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, custom_do
         encryption=encryption,
         network_rule_set=network_rule_set,
         access_tier=access_tier,
-        enable_https_traffic_only=enable_https_traffic_only,
+        https_traffic_only=https_traffic_only,
         is_hns_enabled=is_hns_enabled,
         **account_kwargs
     )

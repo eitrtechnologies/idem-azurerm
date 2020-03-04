@@ -43,8 +43,8 @@ Azure Resource Manager (ARM) Storage Account Operations Execution Module
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
-'''
 
+'''
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -98,7 +98,7 @@ async def check_name_availability(hub, name, **kwargs):
 
 
 async def create(hub, name, resource_group, sku, kind, location, custom_domain=None, encryption=None,
-                 network_rule_set=None, access_tier=None, enable_https_traffic_only=False, is_hns_enabled=False,
+                 network_rule_set=None, access_tier=None, https_traffic_only=False, is_hns_enabled=False,
                  **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -136,7 +136,7 @@ async def create(hub, name, resource_group, sku, kind, location, custom_domain=N
     :param access_tier: The access tier is used for billing. Required for when the kind is set to 'BlobStorage'.
         Possible values include: 'Hot' and 'Cool'.
 
-    :param enable_https_traffic_only: Allows https traffic only to storage service if set to True. The default value
+    :param https_traffic_only: Allows https traffic only to storage service if set to True. The default value
         is False.
 
     :param is_hns_enabled: Account HierarchicalNamespace enabled if set to True. The default value is False.
@@ -163,7 +163,7 @@ async def create(hub, name, resource_group, sku, kind, location, custom_domain=N
             custom_domain=custom_domain,
             network_rule_set=network_rule_set,
             access_tier=access_tier,
-            enable_https_traffic_only=enable_https_traffic_only,
+            enable_https_traffic_only=https_traffic_only,
             is_hns_enabled=is_hns_enabled,
             **kwargs
         )

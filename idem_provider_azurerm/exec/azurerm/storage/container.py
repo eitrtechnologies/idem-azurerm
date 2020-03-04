@@ -160,8 +160,8 @@ async def create(hub, name, account, resource_group, public_access=None, metadat
     return result
 
 
-async def create_or_update_immutability_policy(hub, name, account, resource_group,
-                                               immutability_period_since_creation_in_days, if_match=None, **kwargs):
+async def create_or_update_immutability_policy(hub, name, account, resource_group, immutability_period, if_match=None,
+                                               **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -177,8 +177,8 @@ async def create_or_update_immutability_policy(hub, name, account, resource_grou
 
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
-    :param immutability_period_since_creation_in_days: The immutability period for the blobs in the container since the
-        policy creation, in days.
+    :param immutability_period: The immutability period for the blobs in the container since the policy
+        creation, in days.
 
     :param if_match: The entity state (ETag) version of the immutability policy to update. It is important to note that
         the ETag must be passed as a string that includes double quotes. For example, '"8d7b4bb4d393b8c"' is a valid
@@ -199,7 +199,7 @@ async def create_or_update_immutability_policy(hub, name, account, resource_grou
             container_name=name,
             account_name=account,
             resource_group_name=resource_group,
-            immutability_period_since_creation_in_days=immutability_period_since_creation_in_days,
+            immutability_period_since_creation_in_days=immutability_period,
             if_match=if_match,
             **kwargs
         )
@@ -299,8 +299,7 @@ async def delete_immutability_policy(hub, name, account, resource_group, if_matc
     return result
 
 
-async def extend_immutability_policy(hub, name, account, resource_group, immutability_period_since_creation_in_days,
-                                     if_match, **kwargs):
+async def extend_immutability_policy(hub, name, account, resource_group, immutability_period, if_match, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -316,8 +315,8 @@ async def extend_immutability_policy(hub, name, account, resource_group, immutab
 
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
-    :param immutability_period_since_creation_in_days: The immutability period for the blobs in the container since the
-        policy creation, in days.
+    :param immutability_period: The immutability period for the blobs in the container since the policy
+        creation, in days.
 
     :param if_match: The entity state (ETag) version of the immutability policy to update. It is important to note that
         the ETag must be passed as a string that includes double quotes. For example, '"8d7b4bb4d393b8c"' is a valid
@@ -337,7 +336,7 @@ async def extend_immutability_policy(hub, name, account, resource_group, immutab
             container_name=name,
             account_name=account,
             resource_group_name=resource_group,
-            immutability_period_since_creation_in_days=immutability_period_since_creation_in_days,
+            immutability_period_since_creation_in_days=immutability_period,
             if_match=if_match,
             **kwargs
         )
