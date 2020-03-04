@@ -211,7 +211,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, custom_do
             if domain_changes:
                 ret['changes']['custom_domain'] = domain_changes
 
-        if access_tier is not None:
+        if access_tier:
             if access_tier != account.get('access_tier'):
                 ret['changes']['access_tier'] = {
                     'old': account.get('access_tier'),
