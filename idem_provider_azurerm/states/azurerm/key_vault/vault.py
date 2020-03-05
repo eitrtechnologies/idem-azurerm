@@ -71,17 +71,15 @@ try:
 except ImportError:
     six_range = range
 
-# Azure libs
-HAS_LIBS = False
-try:
-    import azure.mgmt.keyvault.models  # pylint: disable=unused-import
-    from msrest.exceptions import SerializationError
-    from msrestazure.azure_exceptions import CloudError
-    HAS_LIBS = True
-except ImportError:
-    pass
-
 log = logging.getLogger(__name__)
+
+TREQ = {
+    'present': {
+        'require': [
+            'azurerm.resource.group.present',
+        ]
+    }
+}
 
 
 async def present(hub, ctx, name, resource_group, location, tenant_id, sku, access_policies=None, vault_uri=None,
@@ -215,17 +213,15 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
             ret['changes']['tags'] = tag_changes
     
         # Checks for changes in the account_policies parameter
-        if len(access_policies) == len(vault.get('properties').get('access_policies', [])):
-            new_policies_sorted = sorted(access_policies, key=itemgetter('object_id'))
+        if len(access_policies or []) == len(vault.get('properties').get('access_policies', [])):
+            new_policies_sorted = sorted(access_policies or [], key=itemgetter('object_id'))
             old_policies_sorted = sorted(vault.get('properties').get('access_policies', []), key=itemgetter('object_id'))
-            index = 0
-            for policy in new_policies_sorted:
-                changes = await hub.exec.utils.dictdiffer.deep_diff(vault.get('properties').get('access_policies')[index], policy)
-                index = index + 1
+            for index, policy in enumerate(new_policies_sorted):
+                changes = await hub.exec.utils.dictdiffer.deep_diff(old_policies_sorted[index], policy)
                 if changes:
                     ret['changes']['access_policies'] = {
                         'old': vault.get('properties').get('access_policies', []),
-                        'new': access_policies
+                        'new': access_policies or []
                     }
                     break
         else:
