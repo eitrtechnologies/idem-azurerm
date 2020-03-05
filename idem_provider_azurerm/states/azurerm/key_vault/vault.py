@@ -339,7 +339,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
         return ret
 
     ret['comment'] = 'Failed to create Key Vault {0}! ({1})'.format(name, vault.get('error'))
-    if ret['result'] == False:
+    if not ret['result']:
         ret['changes'] = {}
     return ret
 
