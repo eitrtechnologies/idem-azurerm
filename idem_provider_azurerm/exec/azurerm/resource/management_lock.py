@@ -47,7 +47,6 @@ Azure Resource Manager (ARM) Management Lock Execution Module
 '''
 # Python libs
 from __future__ import absolute_import
-from json import loads, dumps
 import logging
 
 # Azure libs
@@ -97,11 +96,10 @@ async def create_or_update_at_resource_group_level(hub, name, resource_group, lo
     lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
 
     # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
-    lock_owners = None
-    if owners is not None:
+    if owners:
+        lock_owners = [{'application_id': owner} for owner in owners]
+    else:
         lock_owners = []
-        for owner in owners:
-            lock_owners.append({'application_id': owner})
 
     try:
         lockmodel = await hub.exec.utils.azurerm.create_object_model(
@@ -241,11 +239,10 @@ async def create_or_update_by_scope(hub, name, scope, lock_level, notes=None, ow
     lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
 
     # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
-    lock_owners = None
-    if owners is not None:
+    if owners:
+        lock_owners = [{'application_id': owner} for owner in owners]
+    else:
         lock_owners = []
-        for owner in owners:
-            lock_owners.append({'application_id': owner})
 
     try:
         lockmodel = await hub.exec.utils.azurerm.create_object_model(
@@ -400,11 +397,10 @@ async def create_or_update_at_resource_level(hub, name, lock_level, resource_gro
     lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
 
     # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
-    lock_owners = None
-    if owners is not None:
+    if owners:
+        lock_owners = [{'application_id': owner} for owner in owners]
+    else:
         lock_owners = []
-        for owner in owners:
-            lock_owners.append({'application_id': owner})
 
     try:
         lockmodel = await hub.exec.utils.azurerm.create_object_model(
@@ -580,11 +576,10 @@ async def create_or_update_at_subscription_level(hub, name, lock_level, notes=No
     lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
 
     # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
-    lock_owners = None
-    if owners is not None:
+    if owners:
+        lock_owners = [{'application_id': owner} for owner in owners]
+    else:
         lock_owners = []
-        for owner in owners:
-            lock_owners.append({'application_id': owner})
 
     try:
         lockmodel = await hub.exec.utils.azurerm.create_object_model(

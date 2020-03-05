@@ -66,21 +66,6 @@ from __future__ import absolute_import
 import logging
 from operator import itemgetter
 
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
-
-HAS_LIBS = False
-try:
-    import azure.mgmt.monitor.models  # pylint: disable=unused-import
-    from msrest.exceptions import SerializationError
-    from msrestazure.azure_exceptions import CloudError
-    from azure.mgmt.monitor.models import ErrorResponseException
-    HAS_LIBS = True
-except ImportError:
-    pass
-
 log = logging.getLogger(__name__)
 
 
@@ -185,10 +170,8 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
         if len(metrics) == len(setting.get('metrics', [])):
             new_metrics_sorted = sorted(metrics, key=itemgetter('category', 'enabled'))
             old_metrics_sorted = sorted(setting.get('metrics', []), key=itemgetter('category', 'enabled'))
-            index = 0
-            for metric in new_metrics_sorted:
-                changes = await hub.exec.utils.dictdiffer.deep_diff(setting.get('metrics')[index], metric)
-                index = index + 1
+            for index, metric in enumerate(new_metrics_sorted):
+                changes = await hub.exec.utils.dictdiffer.deep_diff(old_metrics_sorted[index], metric)
                 if changes:
                     ret['changes']['metrics'] = {
                         'old': setting.get('metrics', []),
@@ -205,10 +188,8 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
         if len(logs) == len(setting.get('logs', [])):
             new_logs_sorted = sorted(logs, key=itemgetter('category', 'enabled'))
             old_logs_sorted = sorted(setting.get('logs', []), key=itemgetter('category', 'enabled'))
-            index = 0
             for log in new_logs_sorted:
-                changes = await hub.exec.utils.dictdiffer.deep_diff(setting.get('logs')[index], log)
-                index = index + 1
+                changes = await hub.exec.utils.dictdiffer.deep_diff(old_logs_sorted('logs')[index], log)
                 if changes:
                     ret['changes']['logs'] = {
                         'old': setting.get('logs', []),
@@ -314,7 +295,7 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
         return ret
 
     ret['comment'] = 'Failed to create diagnostic setting {0}! ({1})'.format(name, setting.get('error'))
-    if ret['result'] == False:
+    if not ret['result']:
         ret['changes'] = {}
     return ret
 
