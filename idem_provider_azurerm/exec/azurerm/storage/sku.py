@@ -13,7 +13,7 @@ Azure Resource Manager (ARM) SKU Operations Execution Module
     * `azure-mgmt-compute <https://pypi.python.org/pypi/azure-mgmt-compute>`_ >= 4.6.2
     * `azure-mgmt-network <https://pypi.python.org/pypi/azure-mgmt-network>`_ >= 4.0.0
     * `azure-mgmt-resource <https://pypi.python.org/pypi/azure-mgmt-resource>`_ >= 2.2.0
-    * `azure-mgmt-storage <https://pypi.python.org/pypi/azure-mgmt-storage>`_ >= 2.0.0
+    * `azure-mgmt-storage <https://pypi.python.org/pypi/azure-mgmt-storage>`_ >= 8.0.0
     * `azure-mgmt-web <https://pypi.python.org/pypi/azure-mgmt-web>`_ >= 0.35.0
     * `azure-storage <https://pypi.python.org/pypi/azure-storage>`_ >= 0.36.0
     * `msrestazure <https://pypi.python.org/pypi/msrestazure>`_ >= 0.6.1
