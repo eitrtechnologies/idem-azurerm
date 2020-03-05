@@ -66,11 +66,6 @@ from __future__ import absolute_import
 import logging
 from operator import itemgetter
 
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
-
 log = logging.getLogger(__name__)
 
 TREQ = {
