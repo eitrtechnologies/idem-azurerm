@@ -50,11 +50,6 @@ Azure Resource Manager (ARM) Redis Execution Module
 from __future__ import absolute_import
 import logging
 
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
-
 # Azure libs
 HAS_LIBS = False
 try:
@@ -66,6 +61,14 @@ except ImportError:
     pass
 
 log = logging.getLogger(__name__)
+
+TREQ = {
+    'present': {
+        'require': [
+            'azurerm.resource.group.present',
+        ]
+    }
+}
 
 
 async def check_name_availability(hub, name, **kwargs):
@@ -245,6 +248,215 @@ async def force_reboot(hub, name, resource_group, reboot_type, shard_id, **kwarg
         )
 
         result = cache.as_dict()
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def get(hub, name, resource_group, **kwargs):
+    '''
+    .. versionadded:: 1.0.0
+
+    Gets a Redis cache (resource description).
+
+    :param name: The name of the Redis cache.
+
+    :param resource_group: The name of the resource group.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.redis.get test_name test_rg
+
+    '''
+    result = {}
+    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+
+    try:
+        cache = redconn.redis.get(
+            name=name,
+            resource_group_name=resource_group
+        )
+
+        result = cache.as_dict()
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def import_data(hub, name, resource_group, files, format=None, **kwargs):
+    '''
+    .. versionadded:: 1.0.0
+
+    Import data into Redis cache.
+
+    :param name: The name of the Redis cache.
+
+    :param resource_group: The name of the resource group.
+
+    :param files: A list of strings that represent the name of files to import.
+
+    :param format: An optional file format.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.redis.import_data test_name test_rg test_files
+
+    '''
+    result = {}
+    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+
+    try:
+        cache = redconn.redis.import_data(
+            name=name,
+            resource_group_name=resource_group,
+            files=files,
+            format=format
+        )
+
+        result = cache.result().as_dict()
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def list_(hub, **kwargs):
+    '''
+    .. versionadded:: 1.0.0
+
+    Gets all Redis caches in the specified subscription.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.redis.list
+
+    '''
+    result = {}
+    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+
+    try:
+        caches = await hub.exec.utils.azurerm.paged_object_to_list(
+            redconn.redis.list()
+        )
+
+        for cache in caches:
+            result[cache['name']] = cache
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def list_by_resource_group(hub, resource_group, **kwargs):
+    '''
+    .. versionadded:: 1.0.0
+
+    Lists all Redis caches in a resource group.
+
+    :param resource_group: The name of the resource group.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.redis.list_by_resource_group test_rg
+
+    '''
+    result = {}
+    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)                                                                                                                                  
+    
+    try:
+        caches = await hub.exec.utils.azurerm.paged_object_to_list(
+            redconn.redis.list_by_resource_group(
+                resource_group_name=resource_group,
+            )
+        )
+
+        for cache in caches:
+            result[cache['name']] = cache
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def list_keys(hub, name, resource_group, **kwargs):
+    '''
+    .. versionadded:: 1.0.0
+
+    Retrieve a Redis cache's access keys. This operation requires write permission to the cache resource.
+
+    :param name: The name of the Redis cache.
+
+    :param resource_group: The name of the resource group.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.redis.list_keys test_name test_rg
+
+    '''
+    result = {}
+    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+
+    try:
+        keys = redconn.redis.list_keys(
+            name=name,
+            resource_group_name=resource_group
+        )
+
+        result = keys.as_dict()
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def list_upgrade_notifications(hub, name, resource_group, history, **kwargs):
+    '''
+    .. versionadded:: 1.0.0
+
+    Gets any upgrade notifications for a Redis cache.
+
+    :param name: The name of the Redis cache.
+
+    :param resource_group: The name of the resource group.
+
+    :param history: A float representing how many minutes in past to look for upgrade notifications.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.redis.list_upgrade_notifications test_name test_rg test_history
+
+    '''
+    result = {}
+    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+
+    try:
+        notifications = redconn.redis.list_upgrade_notifications(
+            name=name,
+            resource_group_name=resource_group,
+            history=history
+        )
+
+        result = notifications.as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
         result = {'error': str(exc)}
