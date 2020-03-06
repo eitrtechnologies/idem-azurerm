@@ -68,218 +68,6 @@ import logging
 log = logging.getLogger(__name__)
 
 
-async def present_at_resource_group_level(hub, ctx, name, resource_group, lock_level, notes=None, owners=None,
-                                          connection_auth=None, **kwargs):
-    '''
-    .. versionadded:: 1.0.0
-
-    Ensure a management lock exists at the resource group level.
-
-    :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
-        :, ?, /, or any control characters.
-
-    :param resource_group: The name of the resource group.
-
-    :param lock_level: The level of the lock. Possible values are: 'CanNotDelete' and 'ReadOnly'. CanNotDelete means
-        authorized users are able to read and modify the resources, but not delete. ReadOnly means authorized users
-        can only read from a resource, but they can't modify or delete it.
-
-    :param notes: An optional string representing notes about the lock. Maximum of 512 characters.
-
-    :param owners: An optional list of strings representing owners of the lock. Each string represents the application
-        id of the lock owner.
-
-    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
-        Azure Resource Manager API.
-
-    Example usage:
-
-    .. code-block:: yaml
-
-        Ensure management lock exists at resource group level:
-            azurerm.resource.management_lock.present_at_resource_group_level:
-                - name: my_lock
-                - resource_group: my_rg
-                - lock_level: 'ReadOnly'
-                - connection_auth: {{ profile }}
-
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
-
-    if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
-
-    lock = await hub.exec.azurerm.resource.management_lock.get_at_resource_group_level(
-        name,
-        resource_group,
-        azurearm_log_level='info',
-        **connection_auth
-    )
-
-    if 'error' not in lock:
-        if lock_level != lock.get('level'):
-            ret['changes']['level'] = {
-                'old': lock.get('level'),
-                'new': lock_level
-            }
-
-        if notes != lock.get('notes'):
-            ret['changes']['notes'] = {
-                'old': lock.get('notes'),
-                'new': notes
-            }
-
-        if owners:
-            new_owners = owners.sort()
-            lock_owners = lock.get('owners', [])
-            if lock_owners:
-                # Extracts the application_id value from each dictionary that represents a ManagementLockOwner object
-                old_owners = [owner.get('application_id') for owner in lock_owners]
-                old_owners = old_owners.sort()
-            else:
-                old_owners = []
-
-            if old_owners != new_owners:
-                ret['changes']['owners'] = {
-                    'old': old_owners,
-                    'new': new_owners
-                }
-
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Management lock {0} is already present.'.format(name)
-            return ret
-
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Management lock {0} would be updated.'.format(name)
-            return ret
-
-    else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'resource_group': resource_group,
-                'lock_level': lock_level,
-            }
-        }
-
-        if owners:
-            ret['changes']['new']['owners'] = owners
-        if notes:
-            ret['changes']['new']['notes'] = notes
-
-    if ctx['test']:
-        ret['comment'] = 'Management lock {0} would be created.'.format(name)
-        ret['result'] = None
-        return ret
-
-    lock_kwargs = kwargs.copy()
-    lock_kwargs.update(connection_auth)
-
-    lock = await hub.exec.azurerm.resource.management_lock.create_or_update_at_resource_group_level(
-        name=name,
-        resource_group=resource_group,
-        lock_level=lock_level,
-        notes=notes,
-        owners=owners,
-        **lock_kwargs
-    )
-
-    if 'error' not in lock:
-        ret['result'] = True
-        ret['comment'] = 'Management lock {0} has been created.'.format(name)
-        return ret
-
-    ret['comment'] = 'Failed to create management lock {0}! ({1})'.format(name, lock.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
-    return ret
-
-
-async def absent_at_resource_group_level(hub, ctx, name, resource_group, connection_auth=None):
-    '''
-    .. versionadded:: 1.0.0
-
-    Ensure a management lock does not exist at the resource group level.
-
-    :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
-        :, ?, /, or any control characters.
-
-    :param resource_group: The name of the resource group.
-
-    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
-        Azure Resource Manager API.
-
-    Example usage:
-
-    .. code-block:: yaml
-
-        Ensure management lock is absent at resource group level:
-            azurerm.resource.management_lock.absent_at_resource_group_level:
-                - name: my_lock
-                - resource_group: my_rg
-                - connection_auth: {{ profile }}
-
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
-
-    if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
-
-    lock = await hub.exec.azurerm.resource.management_lock.get_at_resource_group_level(
-        name,
-        resource_group,
-        azurearm_log_level='info',
-        **connection_auth
-    )
-
-    if 'error' in lock:
-        ret['result'] = True
-        ret['comment'] = 'Management lock {0} was not found.'.format(name)
-        return ret
-
-    elif ctx['test']:
-        ret['comment'] = 'Management lock {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': lock,
-            'new': {},
-        }
-        return ret
-
-    deleted = await hub.exec.azurerm.resource.management_lock.delete_at_resource_group_level(
-        name,
-        resource_group,
-        **connection_auth
-    )
-
-    if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Management lock {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': lock,
-            'new': {}
-        }
-        return ret
-
-    ret['comment'] = 'Failed to delete management lock {0}!'.format(name)
-    return ret
-
-
 async def present_by_scope(hub, ctx, name, scope, lock_level, notes=None, owners=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -755,12 +543,14 @@ async def absent_at_resource_level(hub, ctx, name, resource_group, resource, res
     return ret
 
 
-async def present_at_subscription_level(hub, ctx, name, lock_level, notes=None, owners=None, connection_auth=None,
-                                        **kwargs):
+async def present(hub, ctx, name, lock_level, resource_group=None, notes=None, owners=None, connection_auth=None,
+                  **kwargs):
     '''
     .. versionadded:: 1.0.0
 
-    Ensure a management lock exists at the subscription level.
+    Ensure a management lock exists. By default this module ensures that the management lock exists at the
+        subscription level. If you would like to ensure that the management lock exists at the resource group level
+        instead, you can specify a resource group using the resource_group parameter.
 
     :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
         :, ?, /, or any control characters.
@@ -768,6 +558,8 @@ async def present_at_subscription_level(hub, ctx, name, lock_level, notes=None, 
     :param lock_level: The level of the lock. Possible values are: 'CanNotDelete' and 'ReadOnly'. CanNotDelete means
         authorized users are able to read and modify the resources, but not delete. ReadOnly means authorized users
         can only read from a resource, but they can't modify or delete it.
+
+    :param resource_group: The name of the resource group. This is an optional parameter.
 
     :param notes: An optional string representing notes about the lock. Maximum of 512 characters.
 
@@ -781,8 +573,8 @@ async def present_at_subscription_level(hub, ctx, name, lock_level, notes=None, 
 
     .. code-block:: yaml
 
-        Ensure management lock exists at subscription level:
-            azurerm.resource.management_lock.present_at_subscription_level:
+        Ensure management lock exists:
+            azurerm.resource.management_lock.present:
                 - name: my_lock
                 - lock_level: 'ReadOnly'
                 - connection_auth: {{ profile }}
@@ -799,11 +591,19 @@ async def present_at_subscription_level(hub, ctx, name, lock_level, notes=None, 
         ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
         return ret
 
-    lock = await hub.exec.azurerm.resource.management_lock.get_at_subscription_level(
-        name,
-        azurearm_log_level='info',
-        **connection_auth
-    )
+    if resource_group:
+        lock = await hub.exec.azurerm.resource.management_lock.get_at_resource_group_level(
+            name,
+            resource_group,
+            azurearm_log_level='info',
+            **connection_auth
+        )
+    else:
+        lock = await hub.exec.azurerm.resource.management_lock.get_at_subscription_level(
+            name,
+            azurearm_log_level='info',
+            **connection_auth
+        )
 
     if 'error' not in lock:
         if lock_level != lock.get('level'):
@@ -853,6 +653,8 @@ async def present_at_subscription_level(hub, ctx, name, lock_level, notes=None, 
             }
         }
 
+        if resource_group:
+            ret['changes']['new']['resource_group'] = resource_group    
         if owners:
             ret['changes']['new']['owners'] = owners
         if notes:
@@ -866,13 +668,23 @@ async def present_at_subscription_level(hub, ctx, name, lock_level, notes=None, 
     lock_kwargs = kwargs.copy()
     lock_kwargs.update(connection_auth)
 
-    lock = await hub.exec.azurerm.resource.management_lock.create_or_update_at_subscription_level(
-        name=name,
-        lock_level=lock_level,
-        notes=notes,
-        owners=owners,
-        **lock_kwargs
-    )
+    if resource_group:
+        lock = await hub.exec.azurerm.resource.management_lock.create_or_update_at_resource_group_level(
+            name=name,
+            resource_group=resource_group,
+            lock_level=lock_level,
+            notes=notes,
+            owners=owners,
+            **lock_kwargs
+        )
+    else:
+        lock = await hub.exec.azurerm.resource.management_lock.create_or_update_at_subscription_level(
+            name=name,
+            lock_level=lock_level,
+            notes=notes,
+            owners=owners,
+            **lock_kwargs
+        )
 
     if 'error' not in lock:
         ret['result'] = True
@@ -885,14 +697,18 @@ async def present_at_subscription_level(hub, ctx, name, lock_level, notes=None, 
     return ret
 
 
-async def absent_at_subscription_level(hub, ctx, name, connection_auth=None):
+async def absent(hub, ctx, name, resource_group=None, connection_auth=None):
     '''
     .. versionadded:: 1.0.0
 
-    Ensure a management lock does not exist by scope.
+    Ensure a management lock does not exist. By default this module ensures that the management lock does not exist at
+        the subscription level. If you would like to ensure that the management lock does not exist at the resource
+        group level instead, you can specify a resource group using the resource_group parameter.
 
     :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
         :, ?, /, or any control characters.
+
+    :param resource_group: The name of the resource group. This is an optional parameter.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -901,8 +717,8 @@ async def absent_at_subscription_level(hub, ctx, name, connection_auth=None):
 
     .. code-block:: yaml
 
-        Ensure management lock absent at subscription level:
-            azurerm.resource.management_lock.absent_at_subscription_level:
+        Ensure management lock is absent:
+            azurerm.resource.management_lock.absent:
                 - name: my_lock
                 - connection_auth: {{ profile }}
 
@@ -918,11 +734,19 @@ async def absent_at_subscription_level(hub, ctx, name, connection_auth=None):
         ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
         return ret
 
-    lock = await hub.exec.azurerm.resource.management_lock.get_at_subscription_level(
-        name,
-        azurearm_log_level='info',
-        **connection_auth
-    )
+    if resource_group:
+        lock = await hub.exec.azurerm.resource.management_lock.get_at_resource_group_level(
+            name,
+            resource_group,
+            azurearm_log_level='info',
+            **connection_auth
+        )
+    else:
+        lock = await hub.exec.azurerm.resource.management_lock.get_at_subscription_level(
+            name,
+            azurearm_log_level='info',
+            **connection_auth
+        )
 
     if 'error' in lock:
         ret['result'] = True
@@ -938,10 +762,17 @@ async def absent_at_subscription_level(hub, ctx, name, connection_auth=None):
         }
         return ret
 
-    deleted = await hub.exec.azurerm.resource.management_lock.delete_at_subscription_level(
-        name,
-        **connection_auth
-    )
+    if resource_group:
+        deleted = await hub.exec.azurerm.resource.management_lock.delete_at_resource_group_level(
+            name,
+            resource_group,
+            **connection_auth
+        )
+    else:
+        deleted = await hub.exec.azurerm.resource.management_lock.delete_at_subscription_level(
+            name,
+            **connection_auth
+        )
 
     if deleted:
         ret['result'] = True
