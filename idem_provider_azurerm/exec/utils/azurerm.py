@@ -142,7 +142,8 @@ async def get_client(hub, client_type, **kwargs):
                   'policy': 'Policy',
                   'resource': 'ResourceManagement',
                   'subscription': 'Subscription',
-                  'web': 'WebSiteManagement'}
+                  'web': 'WebSiteManagement',
+                  'keyvault': 'KeyVaultManagement'}
 
     if client_type not in client_map:
         raise Exception(
