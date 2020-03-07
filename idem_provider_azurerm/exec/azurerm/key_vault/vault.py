@@ -214,8 +214,8 @@ async def create_or_update(hub, name, resource_group, location, tenant_id, sku, 
 
     try:
         vault = vconn.vaults.create_or_update(
-            vault_name = name,
-            resource_group_name = resource_group,
+            vault_name=name,
+            resource_group_name=resource_group,
             parameters=paramsmodel
         )
 
