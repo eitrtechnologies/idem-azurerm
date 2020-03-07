@@ -59,17 +59,11 @@ Azure Resource Manager (ARM) Storage Account State Module
                 client_id: ABCDEFAB-1234-ABCD-1234-ABCDEFABCDEF
                 secret: XXXXXXXXXXXXXXXXXXXXXXXX
                 cloud_environment: AZURE_PUBLIC_CLOUD
-'''
 
+'''
 # Python libs
 from __future__ import absolute_import
 import logging
-import re
-
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
 
 log = logging.getLogger(__name__)
 
@@ -285,7 +279,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, custom_do
         return ret
 
     ret['comment'] = 'Failed to create storage acccount {0}! ({1})'.format(name, account.get('error'))
-    if ret['result'] == False:
+    if not ret['result']:
         ret['changes'] = {}
     return ret
 
