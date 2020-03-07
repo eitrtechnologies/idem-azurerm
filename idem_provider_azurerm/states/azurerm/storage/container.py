@@ -64,12 +64,6 @@ Azure Resource Manager (ARM) Blob Container State Module
 # Python libs
 from __future__ import absolute_import
 import logging
-import re
-
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
 
 log = logging.getLogger(__name__)
 
@@ -223,7 +217,7 @@ async def present(hub, ctx, name, account, resource_group, public_access=None, m
         return ret
 
     ret['comment'] = 'Failed to create blob container {0}! ({1})'.format(name, container.get('error'))
-    if ret['result'] == False:
+    if not ret['result']:
         ret['changes'] = {}
     return ret
 
@@ -354,7 +348,7 @@ async def immutability_policy_present(hub, ctx, name, account, resource_group,
 
     ret['comment'] = 'Failed to create the immutability policy of the blob container {0}! ({1})'.format(name,
                                                                                                   policy.get('error'))
-    if ret['result'] == False:
+    if not ret['result']:
         ret['changes'] = {}
     return ret
 

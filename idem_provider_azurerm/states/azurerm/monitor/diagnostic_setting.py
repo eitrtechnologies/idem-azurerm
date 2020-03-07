@@ -61,59 +61,69 @@ Azure Resource Manager (ARM) Diagnostic Setting State Module
                 cloud_environment: AZURE_PUBLIC_CLOUD
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 import logging
-import re
-
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
+from operator import itemgetter
 
 log = logging.getLogger(__name__)
 
 
 async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None, storage_account_id=None,
-                  service_bus_rule_id=None, event_hub_authorization_rule_id=None, event_hub_name=None, tags=None,
+                  service_bus_rule_id=None, event_hub_authorization_rule_id=None, event_hub_name=None,
                   connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
-    Ensure a diagnostic setting exists. At least one destination for the diagnostic setting is required. The three
-        possible destinations for the diagnostic settings are as follows:
-            1. Archive the diagnostic settings to a stroage account. This would require the storage_account_id param.
-            2. Stream the diagnostic settings to an event hub. This would require the event_hub_name and
-               event_hub_authorization_rule_id params.
-            3. Send the diagnostic settings to Log Analytics. This would require the workspace_id param.
-        Any combination of these destinations is acceptable.
+    Ensure a diagnostic setting exists. At least one destination for the diagnostic setting logs is required. Any
+        combination of the following destinations is acceptable:
+        1. Archive the diagnostic settings to a stroage account. This would require the storage_account_id param.
+        2. Stream the diagnostic settings to an event hub. This would require the event_hub_name and
+              event_hub_authorization_rule_id params.
+        3. Send the diagnostic settings to Log Analytics. This would require the workspace_id param.
 
     :param name: The name of the diagnostic setting.
 
     :param resource_uri: The identifier of the resource.
 
-    :param metrics: The list of metric settings. This is a list of dictionaries representing MetricSettings objects.
+    :param metrics: A list of dictionaries representing valid MetricSettings objects. If this list is empty, then the
+        list passed as the logs parameter must have at least one element. Valid parameters are:
+        - ``category``: Name of a diagnostic metric category for the resource type this setting is applied to. To obtain
+          the list of diagnostic metric categories for a resource, first perform a GET diagnostic setting operation.
+          This is a required parameter.
+        - ``enabled``: A value indicating whether this category is enabled. This is a required parameter.
+        - ``time_grain``: An optional timegrain of the metric in ISO-8601 format.
+        - ``retention_policy``: An optional dictionary representing a RetentionPolicy object for the specified category.
+          The default retention policy for a diagnostic setting is {'enabled': False, 'days': 0}. Required parameters
+          include:
+            - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
+            - ``enabled``: A value indicating whether the retention policy is enabled.
 
-    :param logs: The list of logs settings. This is a list of dictionaries representing LogSettings objects.
+    :param logs: A list of dictionaries representing valid LogSettings objects. If this list is empty, then the list
+        passed as the metrics parameter must have at least one element. Valid parameters are:
+        - ``category``: Name of a diagnostic log category for the resource type this setting is applied to. To obtain
+          the list of diagnostic log categories for a resource, first perform a GET diagnostic setting operation.
+          This is a required parameter.
+        - ``enabled``: A value indicating whether this category is enabled. This is a required parameter.
+        - ``retention_policy``: An optional dictionary representing a RetentionPolicy object for the specified category.
+          The default retention policy for a diagnostic setting is {'enabled': False, 'days': 0}. Required parameters
+          include:
+            - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
+            - ``enabled``: A value indicating whether the retention policy is enabled.
 
-    :param workspace_id: The workspace ID (resource ID of a Log Analytics workspace) for a Log Analytics workspace to
-        which you would like to send Diagnostic Logs.
+    :param workspace_id: The workspace (resource) ID for the Log Analytics workspace to which you would like to
+        send Diagnostic Logs.
 
     :param storage_account_id: The resource ID of the storage account to which you would like to send Diagnostic Logs.
 
-    :param service_bus_rule_id: The service bus rule ID of the diagnostic setting.
-        This is here to maintain backwards compatibility.
+    :param service_bus_rule_id: The service bus rule ID of the diagnostic setting. This is here to
+        maintain backwards compatibility.
 
     :param event_hub_authorization_rule_id: The resource ID for the event hub authorization rule.
 
     :param event_hub_name: The name of the event hub. If none is specified, the default event hub will be selected.
 
-    :param tags:
-        A dictionary of strings can be passed as tag metadata to the diagnostic settings object.
-
-    :param connection_auth:
-        A dict with subscription and authentication parameters to be used in connecting to the
+    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
     Example usage:
@@ -124,11 +134,16 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
             azurerm.monitor.diagnostic_setting.present:
                 - name: my_setting
                 - resource_uri: my_resource
-                - metrics: [{'category': 'AllMetrics', 'enabled': True, 'retention_policy': {'enabled': False, 'days': 0}}]
-                - logs: [{'category': 'VMProtectionAlerts', 'enabled': False, 'retention_policy': {'enabled': False, 'days': 0}}]}
+                - metrics:
+                  - category: my_category
+                    enabled: True
+                    retention_policy:
+                      enabled: True
+                      days: 10
+                - logs:
+                  - category: my_category
+                    enabled: True
                 - storage_account_id: my_account_id
-                - tags:
-                    contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
     '''
@@ -151,12 +166,41 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
     )
 
     if 'error' not in setting:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(setting.get('tags', {}), tags or {})
-        if tag_changes:
-            ret['changes']['tags'] = tag_changes
-    
-        # Metrics and logs need to be compared here
+        # Checks for changes in the metrics parameter
+        if len(metrics) == len(setting.get('metrics', [])):
+            new_metrics_sorted = sorted(metrics, key=itemgetter('category', 'enabled'))
+            old_metrics_sorted = sorted(setting.get('metrics', []), key=itemgetter('category', 'enabled'))
+            for index, metric in enumerate(new_metrics_sorted):
+                changes = await hub.exec.utils.dictdiffer.deep_diff(old_metrics_sorted[index], metric)
+                if changes:
+                    ret['changes']['metrics'] = {
+                        'old': setting.get('metrics', []),
+                        'new': metrics
+                    }
+                    break
+        else:
+            ret['changes']['metrics'] = {
+                'old': setting.get('metrics', []),
+                'new': metrics
+            }
 
+        # Checks for changes in the logs parameter
+        if len(logs) == len(setting.get('logs', [])):
+            new_logs_sorted = sorted(logs, key=itemgetter('category', 'enabled'))
+            old_logs_sorted = sorted(setting.get('logs', []), key=itemgetter('category', 'enabled'))
+            for log in new_logs_sorted:
+                changes = await hub.exec.utils.dictdiffer.deep_diff(old_logs_sorted('logs')[index], log)
+                if changes:
+                    ret['changes']['logs'] = {
+                        'old': setting.get('logs', []),
+                        'new': logs
+                    }
+                    break
+        else:
+            ret['changes']['logs'] = {
+                'old': setting.get('logs', []),
+                'new': logs
+            }
         if storage_account_id:
             if storage_account_id != setting.get('storage_account_id', None):
                 ret['changes']['storage_account_id'] = {
@@ -213,8 +257,6 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
             }
         }
 
-        if tags:
-            ret['changes']['new']['tags'] = tags
         if storage_account_id:
             ret['changes']['new']['storage_account_id'] = storage_account_id
         if workspace_id:
@@ -244,7 +286,6 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
         event_hub_name=event_hub_name,
         event_hub_authorization_rule_id=event_hub_authorization_rule_id,
         service_bus_rule_id=service_bus_rule_id,
-        tags=tags,
         **setting_kwargs
     )
 
@@ -254,7 +295,7 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
         return ret
 
     ret['comment'] = 'Failed to create diagnostic setting {0}! ({1})'.format(name, setting.get('error'))
-    if ret['result'] == False:
+    if not ret['result']:
         ret['changes'] = {}
     return ret
 
@@ -269,7 +310,7 @@ async def absent(hub, ctx, name, resource_uri, connection_auth=None):
 
     :param resource_uri: The identifier of the resource.
 
-    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the 
+    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
     Example usage:

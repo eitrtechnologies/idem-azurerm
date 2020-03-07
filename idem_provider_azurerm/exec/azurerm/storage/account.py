@@ -49,11 +49,6 @@ Azure Resource Manager (ARM) Storage Account Operations Execution Module
 from __future__ import absolute_import
 import logging
 
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
-
 # Azure libs
 HAS_LIBS = False
 try:
