@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-Azure Resource Manager (ARM) Redis State Module
+Azure Resource Manager (ARM) Redis Operations State Module
 
 .. versionadded:: 1.0.0
 
@@ -129,10 +129,13 @@ async def present(hub, ctx, name, resource_group, location, sku, redis_configura
     .. code-block:: yaml
 
         Ensure redis cache exists:
-            azurerm.redis.present:
+            azurerm.redis.operations.present:
                 - name: my_account
                 - resource_group: my_rg
-                - sku: DO THIS
+                - sku:
+                    name: 'Premium'
+                    family: 'P'
+                    capacity: 3
                 - location: 'eastus'
                 - tags:
                     contact_name: Elmer Fudd Gantry
@@ -150,7 +153,7 @@ async def present(hub, ctx, name, resource_group, location, sku, redis_configura
         ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
         return ret
 
-    cache = await hub.exec.azurerm.redis.get(
+    cache = await hub.exec.azurerm.redis.operations.get(
         name,
         resource_group,
         azurearm_log_level='info',
@@ -184,18 +187,19 @@ async def present(hub, ctx, name, resource_group, location, sku, redis_configura
                     'old': cache.get('enable_non_ssl_port'),
                     'new': enable_non_ssl_port
                 }
+        if shard_count:
+            if shard_count != cache.get('shard_count', 0):
+                ret['changes']['shard_count'] = {
+                    'old': cache.get('shard_count'),
+                    'new': shard_count
+                }
 
-        if shard_count != cache.get('shard_count', 0):
-            ret['changes']['shard_count'] = {
-                'old': cache.get('shard_count'),
-                'new': shard_count
-            }
-
-        if minimum_tls_version != cache.get('minimum_tls_version'):
-            ret['changes']['minimum_tls_version'] = {
-                'old': cache.get('minimum_tls_version'),
-                'new': minimum_tls_version
-            }
+        if minimum_tls_version:
+            if minimum_tls_version != cache.get('minimum_tls_version'):
+                ret['changes']['minimum_tls_version'] = {
+                    'old': cache.get('minimum_tls_version'),
+                    'new': minimum_tls_version
+                }
 
         if not ret['changes']:
             ret['result'] = True
@@ -247,7 +251,7 @@ async def present(hub, ctx, name, resource_group, location, sku, redis_configura
     cache_kwargs.update(connection_auth)
 
     if new_cache:
-        cache = await hub.exec.azurerm.storage.account.create(
+        cache = await hub.exec.azurerm.redis.operations.create(
             name=name,
             resource_group=resource_group,
             sku=sku,
@@ -264,7 +268,7 @@ async def present(hub, ctx, name, resource_group, location, sku, redis_configura
             **cache_kwargs
         )
     else:
-        cache = await hub.exec.azurerm.storage.account.update(
+        cache = await hub.exec.azurerm.redis.operations.update(
             name=name,
             resource_group=resource_group,
             sku=sku,
@@ -304,8 +308,9 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
     Example usage:
 
     .. code-block:: yaml
+
         Ensure redis cache does not exist:
-            azurerm.redis.absent:
+            azurerm.redis.operations.absent:
                 - name: my_account
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
@@ -322,7 +327,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
         ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
         return ret
 
-    cache = await hub.exec.azurerm.redis.get(
+    cache = await hub.exec.azurerm.redis.operations.get(
         name,
         resource_group,
         **connection_auth
@@ -337,12 +342,12 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
         ret['comment'] = 'Redis cache {0} would be deleted.'.format(name)
         ret['result'] = None
         ret['changes'] = {
-            'old': account,
+            'old': cache,
             'new': {},
         }
         return ret
 
-    deleted = await hub.exec.azurerm.redis.delete(name, resource_group, **connection_auth)
+    deleted = await hub.exec.azurerm.redis.operations.delete(name, resource_group, **connection_auth)
 
     if deleted:
         ret['result'] = True

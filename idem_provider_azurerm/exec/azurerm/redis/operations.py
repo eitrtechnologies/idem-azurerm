@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-Azure Resource Manager (ARM) Redis Execution Module
+Azure Resource Manager (ARM) Redis Operations Execution Module
 
 .. versionadded:: 1.0.0
 
@@ -75,7 +75,7 @@ async def check_name_availability(hub, name, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.redis.check_name_availability test_name
+        azurerm.redis.operations.check_name_availability test_name
 
     '''
     result = False
@@ -121,13 +121,13 @@ async def create(hub, name, resource_group, location, sku, redis_configuration=N
         maxmemory-policy, notify-keyspace-events, maxmemory-samples, slowlog-log-slower-than, slowlog-max-len,
         list-max-ziplist-entries, list-max-ziplist-value, hash-max-ziplist-entries, hash-max-ziplist-value,
         set-max-intset-entries, zset-max-ziplist-entries, zset-max-ziplist-value, and more.
-  
+
     :param enable_non_ssl_port: Specifies whether the non-ssl Redis server port (6379) is enabled. Defaults to False.
 
     :param tenant_settings: A dictionary of tenant settings.
 
     :param shard_count: The number of shards to be created on a Premium Cluster Cache.
- 
+
     :param minimum_tls_version: The specified TLS version (or higher) that clients are required to use. Possible values
         include: '1.0', '1.1', and '1.2'.
 
@@ -142,7 +142,7 @@ async def create(hub, name, resource_group, location, sku, redis_configuration=N
 
     .. code-block:: bash
 
-        azurerm.redis.create test_name test_rg test_location test_sku
+        azurerm.redis.operations.create test_name test_rg test_location test_sku
 
     '''
     redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
@@ -193,12 +193,12 @@ async def delete(hub, name, resource_group, **kwargs):
     :param name: The name of the Redis cache.
 
     :param resource_group: The name of the resource group.
-    
+
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.redis.delete test_name test_rg
+        azurerm.redis.operations.delete test_name test_rg
 
     '''
     result = False
@@ -229,7 +229,7 @@ async def export_data(hub, name, resource_group, prefix, container, format=None,
 
     :param prefix: The prefix to use for exported files.
 
-    :param container: The container name to export to.
+    :param container: The name of the container to export to.
 
     :param format: An optional file format.
 
@@ -237,7 +237,7 @@ async def export_data(hub, name, resource_group, prefix, container, format=None,
 
     .. code-block:: bash
 
-        azurerm.redis.export_data test_name test_rg test_prefix test_container
+        azurerm.redis.operations.export_data test_name test_rg test_prefix test_container
 
     '''
     result = {}
@@ -271,7 +271,7 @@ async def export_data(hub, name, resource_group, prefix, container, format=None,
     return result
 
 
-async def force_reboot(hub, name, resource_group, reboot_type, shard_id, **kwargs):
+async def force_reboot(hub, name, resource_group, reboot_type, shard_id=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -291,7 +291,7 @@ async def force_reboot(hub, name, resource_group, reboot_type, shard_id, **kwarg
 
     .. code-block:: bash
 
-        azurerm.redis.force_reboot test_name test_rg test_type test_id
+        azurerm.redis.operations.force_reboot test_name test_rg test_type test_id
 
     '''
     result = {}
@@ -327,7 +327,7 @@ async def get(hub, name, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.redis.get test_name test_rg
+        azurerm.redis.operations.get test_name test_rg
 
     '''
     result = {}
@@ -357,7 +357,7 @@ async def import_data(hub, name, resource_group, files, format=None, **kwargs):
 
     :param resource_group: The name of the resource group.
 
-    :param files: A list of strings that represent the name of files to import.
+    :param files: A list of strings that represent the names of files to import.
 
     :param format: An optional file format.
 
@@ -365,7 +365,7 @@ async def import_data(hub, name, resource_group, files, format=None, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.redis.import_data test_name test_rg test_files
+        azurerm.redis.operations.import_data test_name test_rg test_files
 
     '''
     result = {}
@@ -397,7 +397,7 @@ async def list_(hub, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.redis.list
+        azurerm.redis.operations.list
 
     '''
     result = {}
@@ -429,12 +429,12 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.redis.list_by_resource_group test_rg
+        azurerm.redis.operations.list_by_resource_group test_rg
 
     '''
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)                                                                                                                                  
-    
+    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+
     try:
         caches = await hub.exec.utils.azurerm.paged_object_to_list(
             redconn.redis.list_by_resource_group(
@@ -465,7 +465,7 @@ async def list_keys(hub, name, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.redis.list_keys test_name test_rg
+        azurerm.redis.operations.list_keys test_name test_rg
 
     '''
     result = {}
@@ -501,7 +501,7 @@ async def list_upgrade_notifications(hub, name, resource_group, history, **kwarg
 
     .. code-block:: bash
 
-        azurerm.redis.list_upgrade_notifications test_name test_rg test_history
+        azurerm.redis.operations.list_upgrade_notifications test_name test_rg test_history
 
     '''
     result = {}
@@ -538,7 +538,7 @@ async def regenerate_key(hub, name, resource_group, key_type, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.redis.renegerate_key test_name test_rg test_type
+        azurerm.redis.operations.renegerate_key test_name test_rg test_type
 
     '''
     redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
@@ -595,7 +595,7 @@ async def update(hub, name, resource_group, sku=None, redis_configuration=None, 
 
     .. code-block:: bash
 
-        azurerm.redis.update test_name test_rg test_location test_sku
+        azurerm.redis.operations.update test_name test_rg test_location test_sku
 
     '''
     redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
@@ -614,7 +614,8 @@ async def update(hub, name, resource_group, sku=None, redis_configuration=None, 
         )
     except TypeError as exc:
         result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
-        return result                                                                                                                                                                                     
+        return result
+
     try:
         cache = redconn.redis.update(
             name=name,
@@ -622,7 +623,7 @@ async def update(hub, name, resource_group, sku=None, redis_configuration=None, 
             parameters=paramsmodel
         )
 
-        result = cache.result().as_dict()
+        result = cache.as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
         result = {'error': str(exc)}
