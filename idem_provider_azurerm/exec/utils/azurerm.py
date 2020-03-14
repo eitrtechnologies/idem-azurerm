@@ -143,7 +143,8 @@ async def get_client(hub, client_type, **kwargs):
                   'resource': 'ResourceManagement',
                   'subscription': 'Subscription',
                   'web': 'WebSiteManagement',
-                  'keyvault': 'KeyVaultManagement'}
+                  'keyvault': 'KeyVaultManagement',
+                  'redis': 'RedisManagement'}
 
     if client_type not in client_map:
         raise Exception(
@@ -242,7 +243,7 @@ async def create_object_model(hub, module_name, object_name, **kwargs):
     if '_attribute_map' in dir(Model):
         for attr, items in Model._attribute_map.items():
             param = kwargs.get(attr)
-            if param:
+            if param is not None:
                 if items['type'][0].isupper() and isinstance(param, dict):
                     object_kwargs[attr] = await create_object_model(hub, module_name, items['type'], **param)
                 elif items['type'][0] == '{' and isinstance(param, dict):
