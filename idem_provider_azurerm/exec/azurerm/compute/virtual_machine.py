@@ -307,7 +307,7 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
                         'secret_url': disk_enc_secret_url,
                         'source_vault': disk_enc_src_vault
                     },
-                    'enabled': True        
+                    'enabled': True
                 }
             })
 
