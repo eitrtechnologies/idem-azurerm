@@ -70,7 +70,8 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
                            create_interfaces=True, network_resource_group=None, virtual_network=None,
                            subnet=None, network_interfaces=None, os_disk_vhd_uri=None, os_disk_image_uri=None,
                            os_type=None, os_disk_name=None, os_disk_caching=None, image=None, admin_password=None,
-                           **kwargs):
+                           disk_enc_secret_url=None, disk_enc_src_vault=None, key_enc_key_url=None,
+                           key_enc_src_vault=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -132,6 +133,12 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
 
     if os_disk_vhd_uri and not isinstance(os_disk_vhd_uri, dict):
         os_disk_vhd_uri = {'id': os_disk_vhd_uri}
+
+    if disk_enc_src_vault and not isinstance(disk_enc_src_vault, dict):
+        disk_enc_src_vault = {'id': disk_enc_src_vault}
+
+    if key_enc_src_vault and not isinstance(key_enc_src_vault, dict):
+        key_enc_src_vault = {'id': key_enc_src_vault}
 
     if not network_interfaces and create_interfaces:
         ipc = {'name': f'{name}-iface0-ip'}
@@ -291,6 +298,27 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
             params['storage_profile'].update(
                 { 'image_reference': dict(zip(image_keys, image.split('|'))) }
             )
+
+    if disk_enc_secret_url:
+        if is_valid_resource_id(disk_enc_src_vault['id']):
+            params['storage_profile']['os_disk'].update({
+                'encryption_settings': {
+                    'disk_encryption_key': {
+                        'secret_url': disk_enc_secret_url,
+                        'source_vault': disk_enc_src_vault
+                    },
+                    'enabled': True        
+                }
+            })
+
+        if key_enc_key_url:
+            if is_valid_resource_id(key_enc_src_vault['id']):
+                params['storage_profile']['os_disk']['encryption_settings'].update({
+                    'key_encryption_key': {
+                        'key_url': key_enc_key_url,
+                        'source_vault': key_enc_src_vault
+                    }
+                })
 
     try:
         vmmodel = await hub.exec.utils.azurerm.create_object_model(
