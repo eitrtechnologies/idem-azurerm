@@ -165,21 +165,24 @@ async def present(hub, ctx, name, resource_group, location, sku, redis_configura
     if 'error' not in cache:
         new_cache = False
 
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(cache.get('tags', {}), tags or {})
-        if tag_changes:
-            ret['changes']['tags'] = tag_changes
+        if tags:
+            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(cache.get('tags', {}), tags)
+            if tag_changes:
+                ret['changes']['tags'] = tag_changes
 
         sku_changes = await hub.exec.utils.dictdiffer.deep_diff(cache.get('sku'), sku)
         if sku_changes:
             ret['changes']['sku'] = sku_changes
 
-        tenant_changes = await hub.exec.utils.dictdiffer.deep_diff(cache.get('tenant_settings', {}), tenant_settings or {})
-        if tenant_changes:
-            ret['changes']['tenant_settings'] = tenant_changes
+        if tenant_settings:
+            tenant_changes = await hub.exec.utils.dictdiffer.deep_diff(cache.get('tenant_settings', {}), tenant_settings)
+            if tenant_changes:
+                ret['changes']['tenant_settings'] = tenant_changes
 
-        config_changes = await hub.exec.utils.dictdiffer.deep_diff(cache.get('redis_configuration', {}), redis_configuration or {})
-        if config_changes:
-            ret['changes']['redis_configuration'] = config_changes
+        if redis_configuration:
+            config_changes = await hub.exec.utils.dictdiffer.deep_diff(cache.get('redis_configuration', {}), redis_configuration)
+            if config_changes:
+                ret['changes']['redis_configuration'] = config_changes
 
         if enable_non_ssl_port is not None:
             if enable_non_ssl_port != cache.get('enable_non_ssl_port'):
@@ -187,7 +190,7 @@ async def present(hub, ctx, name, resource_group, location, sku, redis_configura
                     'old': cache.get('enable_non_ssl_port'),
                     'new': enable_non_ssl_port
                 }
-        if shard_count:
+        if shard_count is not None:
             if shard_count != cache.get('shard_count', 0):
                 ret['changes']['shard_count'] = {
                     'old': cache.get('shard_count'),
@@ -230,7 +233,7 @@ async def present(hub, ctx, name, resource_group, location, sku, redis_configura
             ret['changes']['new']['enable_non_ssl_port'] = enable_non_ssl_port
         if tenant_settings:
             ret['changes']['new']['tenant_settings'] = tenant_settings
-        if shard_count:
+        if shard_count is not None:
             ret['changes']['new']['shard_count'] = shard_count
         if minimum_tls_version:
             ret['changes']['new']['minimum_tls_version'] = minimum_tls_version
