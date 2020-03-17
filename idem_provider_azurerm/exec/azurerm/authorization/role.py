@@ -45,7 +45,6 @@ to every function in order to work properly.
       * ``AZURE_GERMAN_CLOUD``
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -63,13 +62,79 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def definitions_get(hub, role_id, scope, **kwargs):
+async def definitions_create_or_update(hub, defintion_id, scope, role_name=None, description=None, role_type=None,
+                                       permissions=None, assignable_scopes=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: VERSION
 
-    Get role definition by name (GUID).
+    Creates or updates a role definition.
 
-    :param role_id: The ID of the role definition.
+    :param definition_id: The ID of the role definiton.
+
+    :param scope: The scope of the role definition.
+
+    :param role_name: The role name.
+
+    :param description: The role definition description.
+
+    :param role_type: The role type.
+
+    :param permissions: A list of dictionaries representing role definition Permission objects. Valid parameters are:
+        - ``actions``: A list of strings representing allowed actions.
+        - ``not_actions``: A list of strings representing denied actions.
+
+    :param assignable_scopes: A list of role definition assignable scopes.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.authorization.role.definitions_create_or_update test_defintion_id test_scope
+
+    '''
+    result = {}
+    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+
+    try:
+        defmodel = await hub.exec.utils.azurerm.create_object_model(
+            'authorization',
+            'RoleDefinition',
+            role_name=role_name,
+            description=description,
+            role_type=role_type,
+            permissions=permissions,
+            assignable_scopes=assignable_scopes,
+            **kwargs
+        )
+
+    except TypeError as exc:
+        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        return result
+
+    try:
+        role = authconn.role_definitions.create(
+            role_definition_id=definition_id,
+            scope=scope,
+            role_definition=defmodel
+        )
+
+        result = role.as_dict()
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
+        result = {'error': str(exc)}
+    except SerializationError as exc:
+        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+
+    return result
+
+
+async def definitions_delete(hub, definition_id, scope, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Deletes a role definition.
+
+    :param definition_id: The ID of the role definition to delete.
 
     :param scope: The scope of the role definition.
 
@@ -77,7 +142,42 @@ async def definitions_get(hub, role_id, scope, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.authorization.role.definitions_get testid testscope
+        azurerm.authorization.role.definitions_delete test_name test_scope
+
+    '''
+    result = False
+    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+
+    try:
+
+    role = authconn.role_definitions.delete(
+        role_definition_id=definition_id,
+        **kwargs
+    )
+
+    result = True
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def definitions_get(hub, definition_id, scope, **kwargs):
+    '''
+    .. versionadded:: 1.0.0
+
+    Get role definition by name (GUID).
+
+    :param definition_id: The ID of the role definition.
+
+    :param scope: The scope of the role definition.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.authorization.role.definitions_get test_id test_scope
 
     '''
     result = {}
@@ -86,7 +186,7 @@ async def definitions_get(hub, role_id, scope, **kwargs):
     try:
         defs = authconn.role_definitions.get(
             scope=scope,
-            role_definition_id=role_id,
+            role_definition_id=definition_id,
             **kwargs
         )
 
@@ -98,7 +198,7 @@ async def definitions_get(hub, role_id, scope, **kwargs):
     return result
 
 
-async def definitions_get_by_id(hub, role_id, **kwargs):
+async def definitions_get_by_id(hub, definition_id, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -113,7 +213,7 @@ async def definitions_get_by_id(hub, role_id, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.authorization.role.definitions_get_by_id testid
+        azurerm.authorization.role.definitions_get_by_id test_id
 
     '''
     result = {}
@@ -121,7 +221,7 @@ async def definitions_get_by_id(hub, role_id, **kwargs):
 
     try:
         defs = authconn.role_definitions.get_by_id(
-            role_definition_id=role_id,
+            role_definition_id=definition_id,
             **kwargs
         )
 
@@ -145,7 +245,7 @@ async def definitions_list(hub, scope, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.authorization.role.definitions_list testscope
+        azurerm.authorization.role.definitions_list test_scope
 
     '''
     result = {}
@@ -168,6 +268,186 @@ async def definitions_list(hub, scope, **kwargs):
     return result
 
 
+async def assignments_create(hub, name, scope, definition_id, principal_id, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Creates a role assignment.
+
+    :param name: The name of the role assignment to create. It can be any valid GUID.
+
+    :param scope: The scope of the role assignment to create. The scope can be any REST resource instance.
+        For example, use '/subscriptions/{subscription-id}/' for a subscription,
+        '/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}' for a resource group, and
+        '/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/{resource-provider}/{resource-type}/{resource-name}'
+        for a resource.
+
+    :param definition_id: The role definition ID used in the role assignment.
+
+    :param principal_id: The principal ID assigned to the role. This maps to the ID inside the Active Directory.
+        It can point to a user, service principal, or security group.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.authorization.role.assignments_create test_name test_scope test_def test_principal
+
+    '''
+    result = {}
+    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+
+    try:
+        rolemodel = await hub.exec.utils.azurerm.create_object_model(
+            'authorization',
+            'RoleAssignmentProperties',
+            role_definition_id=definition_id,
+            principal_id=principal_id,
+            **kwargs
+        )
+    except TypeError as exc:
+        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        return result
+
+    try:
+        role = authconn.role_assignments.create(
+            role_assignment_name=name,
+            scope=scope,
+            properties=rolemodel
+        )
+
+        result = role.as_dict()
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
+        result = {'error': str(exc)}
+    except SerializationError as exc:
+        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+
+    return result
+
+
+async def assignments_create_by_id(hub, assignment_id, definition_id, principal_id, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Creates a role assignment by ID.
+
+    :param assignment_id: The fully qualified ID of the role assignment, including the scope, resource name and resource
+        type. Use the format, /{scope}/providers/Microsoft.Authorization/roleAssignments/{roleAssignmentName}.
+        Example: /subscriptions/{subId}/resourcegroups/{rgname}//providers/Microsoft.Authorization/roleAssignments/{roleAssignmentName}.
+
+    :param definition_id: The role definition ID used in the role assignment.
+
+    :param principal_id: The principal ID assigned to the role. This maps to the ID inside the Active Directory.
+        It can point to a user, service principal, or security group.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.authorization.role.assignments_create_by_id test_id test_def test_principal
+
+    '''
+    result = {}
+    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+
+    try:
+        rolemodel = await hub.exec.utils.azurerm.create_object_model(
+            'authorization',
+            'RoleAssignmentProperties',
+            role_definition_id=definition_id,
+            principal_id=principal_id,
+            **kwargs
+        )
+    except TypeError as exc:
+        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        return result
+
+    try:
+        role = authconn.role_assignments.create(
+            role_assignment_id=assignment_id,
+            properties=rolemodel
+        )
+
+        result = role.as_dict()
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
+        result = {'error': str(exc)}
+    except SerializationError as exc:
+        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+
+    return result
+
+
+async def assignments_delete(hub, name, scope, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Deletes a role assignment.
+
+    :param name: The name of the lock to be deleted.
+
+    :param scope: The scope of the role assignment to delete.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.authorization.role.assignments_delete test_name test_scope
+
+    '''
+    result = False
+    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+
+    try:
+        role = authconn.role_assignments.delete(
+            role_assignment_name=name,
+            scope=scope,
+            **kwargs
+        )
+
+        result = True
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def assignments_delete_by_id(hub, assignment_id, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Deletes a role assignment by ID.
+
+    :param assignment_id: The fully qualified ID of the role assignment, including the scope, resource name and resource
+        type. Use the format, /{scope}/providers/Microsoft.Authorization/roleAssignments/{roleAssignmentName}.
+        Example: /subscriptions/{subId}/resourcegroups/{rgname}//providers/Microsoft.Authorization/roleAssignments/{roleAssignmentName}.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.authorization.role.assignments_delete_by_id test_id
+
+    '''
+    result = False
+    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+
+    try:
+        role = authconn.role_assignments.delete_by_id(
+            role_assignment_id=assignment_id,
+            **kwargs
+        )
+
+        result = True
+    except CloudError as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
+
+
 async def assignments_get(hub, name, scope, **kwargs):
     '''
     .. versionadded:: 1.0.0
@@ -182,7 +462,7 @@ async def assignments_get(hub, name, scope, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.authorization.role.assignments_get testname testscope
+        azurerm.authorization.role.assignments_get test_name test_scope
 
     '''
     result = {}
@@ -217,7 +497,7 @@ async def assignments_get_by_id(hub, assignment_id, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.authorization.role.assignments_get_by_id testid
+        azurerm.authorization.role.assignments_get_by_id test_id
 
     '''
     result = {}
@@ -290,8 +570,8 @@ async def assignments_list_for_resource(hub, name, resource_group, resource_prov
 
     .. code-block:: bash
 
-        azurerm.authorization.role.assignments_list_for_resource testname testgroup testnamespace \
-                  testtype testpath
+        azurerm.authorization.role.assignments_list_for_resource test_name test_group test_namespace \
+                  test_type test_path
 
     '''
     result = {}
@@ -333,7 +613,7 @@ async def assignments_list_for_resource_group(hub, name, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.authorization.role.assignments_list_for_resource_group testgroup
+        azurerm.authorization.role.assignments_list_for_resource_group test_group
 
     '''
     result = {}
@@ -368,7 +648,7 @@ async def assignments_list_for_scope(hub, scope, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.authorization.role.assignments_list_for_scope testscope
+        azurerm.authorization.role.assignments_list_for_scope test_scope
 
     '''
     result = {}
