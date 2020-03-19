@@ -91,25 +91,20 @@ from __future__ import absolute_import
 import logging
 import re
 
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
-
 log = logging.getLogger(__name__)
 
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
-            'azurerm.network.virtual_network.present',
+            'states.azurerm.resource.group.present',
+            'states.azurerm.network.virtual_network.present',
         ]
     },
     'connection_present': {
         'require': [
-            'azurerm.resource.group.present',
-            'azurerm.network.virtual_network.present',
-            'azurerm.network.virtual_network_gateway.present',
+            'states.azurerm.resource.group.present',
+            'states.azurerm.network.virtual_network.present',
+            'states.azurerm.network.virtual_network_gateway.present',
         ]
     },
 }

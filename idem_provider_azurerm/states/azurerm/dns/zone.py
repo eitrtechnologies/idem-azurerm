@@ -85,18 +85,12 @@ parameters are sensitive, it's recommended to pass them to the states via pillar
 from __future__ import absolute_import
 import logging
 
-import six
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
-
 log = logging.getLogger(__name__)
 
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
+            'states.azurerm.resource.group.present',
         ]
     },
 }

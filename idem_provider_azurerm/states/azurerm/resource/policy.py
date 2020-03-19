@@ -93,7 +93,7 @@ log = logging.getLogger(__name__)
 TREQ = {
     'assignment_present': {
         'require': [
-            'azurerm.resource.policy.definition_present',
+            'states.azurerm.resource.policy.definition_present',
         ]
     },
 }
