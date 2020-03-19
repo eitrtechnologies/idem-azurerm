@@ -106,7 +106,7 @@ async def create_or_update(hub, name, resource_group, location, sku=None, retent
             location=location,
             sku=sku,
             customer_id=customer_id,
-            retention_in_days=retention,
+            retention=retention,
             e_tag=etag,
             **kwargs
         )
@@ -117,7 +117,6 @@ async def create_or_update(hub, name, resource_group, location, sku=None, retent
 
     try:
         workspace = logconn.workspaces.create_or_update(
-            role_assignment_name=name,
             workspace_name=name,
             resource_group_name=resource_group,
             parameters=spacemodel
