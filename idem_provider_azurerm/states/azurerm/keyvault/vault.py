@@ -157,7 +157,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
     .. code-block:: yaml
 
         Ensure key vault exists:
-            azurerm.key_vault.vault.present:
+            azurerm.keyvault.vault.present:
                 - name: my_vault
                 - resource_group: my_rg
                 - location: my_location
@@ -195,7 +195,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
         ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
         return ret
 
-    vault = await hub.exec.azurerm.key_vault.vault.get(
+    vault = await hub.exec.azurerm.keyvault.vault.get(
         name,
         resource_group,
         azurearm_log_level='info',
@@ -315,7 +315,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
     vault_kwargs = kwargs.copy()
     vault_kwargs.update(connection_auth)
 
-    vault = await hub.exec.azurerm.key_vault.vault.create_or_update(
+    vault = await hub.exec.azurerm.keyvault.vault.create_or_update(
         name=name,
         resource_group=resource_group,
         location=location,
@@ -362,7 +362,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
     .. code-block:: yaml
 
         Ensure key vault is absent:
-            azurerm.key_vault.vault.absent:
+            azurerm.keyvault.vault.absent:
                 - name: my_vault
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
@@ -379,7 +379,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
         ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
         return ret
 
-    vault = await hub.exec.azurerm.key_vault.vault.get(
+    vault = await hub.exec.azurerm.keyvault.vault.get(
         name,
         resource_group,
         azurearm_log_level='info',
@@ -400,7 +400,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
         }
         return ret
 
-    deleted = await hub.exec.azurerm.key_vault.vault.delete(
+    deleted = await hub.exec.azurerm.keyvault.vault.delete(
         name,
         resource_group,
         **connection_auth
