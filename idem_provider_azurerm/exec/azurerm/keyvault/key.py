@@ -72,7 +72,7 @@ async def _get_key_client(hub, vault_url, **kwargs):
     :param vault_url: The URL of the vault that the client will access.
 
     '''
-    credentials, subscription_id, cloud_env = await hub.exec.utils.azurerm.determine_auth(kwargs)
+    credentials, subscription_id, cloud_env = await hub.exec.utils.azurerm.determine_auth(**kwargs)
     key_client = KeyClient(vault_url, credentials)
     return key_client
 
