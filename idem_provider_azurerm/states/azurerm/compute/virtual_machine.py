@@ -95,9 +95,9 @@ log = logging.getLogger(__name__)
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
-            'azurerm.network.virtual_network.present',
-            'azurerm.network.virtual_network.subnet_present',
+            'states.azurerm.resource.group.present',
+            'states.azurerm.network.virtual_network.present',
+            'states.azurerm.network.virtual_network.subnet_present',
         ]
     },
 }

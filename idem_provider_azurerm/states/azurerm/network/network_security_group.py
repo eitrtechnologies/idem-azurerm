@@ -101,13 +101,13 @@ log = logging.getLogger(__name__)
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
+            'states.azurerm.resource.group.present',
         ]
     },
     'security_rule_present': {
         'require': [
-            'azurerm.resource.group.present',
-            'azurerm.network.network_security_group.present',
+            'states.azurerm.resource.group.present',
+            'states.azurerm.network.network_security_group.present',
         ]
     },
 }
