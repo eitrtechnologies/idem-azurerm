@@ -79,7 +79,7 @@ async def check_name_availability(hub, name, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.key_vault.vault.check_name_availability test_name
+        azurerm.keyvault.vault.check_name_availability test_name
 
     '''
     result = {}
@@ -170,7 +170,7 @@ async def create_or_update(hub, name, resource_group, location, tenant_id, sku, 
 
     .. code-block:: bash
 
-        azurerm.key_vault.vault.create_or_update test_name test_rg test_location test_tenant test_sku test_policies \
+        azurerm.keyvault.vault.create_or_update test_name test_rg test_location test_tenant test_sku test_policies \
               test_uri test_mode test_flags
 
     '''
@@ -178,6 +178,9 @@ async def create_or_update(hub, name, resource_group, location, tenant_id, sku, 
     vconn = await hub.exec.utils.azurerm.get_client('keyvault', **kwargs)
 
     sku = {'name': sku}
+
+    if not access_policies:
+        access_policies = []
 
     # Create the VaultProperties object
     try:
@@ -212,6 +215,8 @@ async def create_or_update(hub, name, resource_group, location, tenant_id, sku, 
         result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
         return result
 
+    log.debug('Model for creation: %s', paramsmodel.as_dict())
+
     try:
         vault = vconn.vaults.create_or_update(
             vault_name=name,
@@ -241,7 +246,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.key_vault.vault.delete test_name test_rg
+        azurerm.keyvault.vault.delete test_name test_rg
 
     '''
     result = False
@@ -274,7 +279,7 @@ async def get(hub, name, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.key_vault.vault.get test_name test_rg
+        azurerm.keyvault.vault.get test_name test_rg
 
     '''
     result = {}
@@ -308,7 +313,7 @@ async def get_deleted(hub, name, location, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.key_vault.vault.get_deleted test_name test_location
+        azurerm.keyvault.vault.get_deleted test_name test_location
 
     '''
     result = {}
@@ -340,7 +345,7 @@ async def list_(hub, top=None, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.key_vault.vault.list
+        azurerm.keyvault.vault.list
 
     '''
     result = {}
@@ -377,7 +382,7 @@ async def list_by_resource_group(hub, resource_group, top=None, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.key_vault.vault.list_by_resource_group test_rg
+        azurerm.keyvault.vault.list_by_resource_group test_rg
 
     '''
     result = {}
@@ -412,7 +417,7 @@ async def list_by_subscription(hub, top=None, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.key_vault.vault.list_by_subscription
+        azurerm.keyvault.vault.list_by_subscription
 
     '''
     result = {}
@@ -444,7 +449,7 @@ async def list_deleted(hub, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.key_vault.vault.list_deleted
+        azurerm.keyvault.vault.list_deleted
 
     '''
     result = {}
@@ -478,7 +483,7 @@ async def purge_deleted(hub, name, location, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.key_vault.vault.purge_deleted test_name test_location
+        azurerm.keyvault.vault.purge_deleted test_name test_location
 
     '''
     result = False
@@ -534,7 +539,7 @@ async def update_access_policy(hub, name, resource_group, operation_kind, access
 
     .. code-block:: bash
 
-        azurerm.key_vault.vault.update_access_policy test_name test_rg test_kind test_policies
+        azurerm.keyvault.vault.update_access_policy test_name test_rg test_kind test_policies
 
     '''
     result = {}
