@@ -179,6 +179,9 @@ async def create_or_update(hub, name, resource_group, location, tenant_id, sku, 
 
     sku = {'name': sku}
 
+    if not access_policies:
+        access_policies = []
+
     # Create the VaultProperties object
     try:
         propsmodel = await hub.exec.utils.azurerm.create_object_model(
@@ -211,6 +214,8 @@ async def create_or_update(hub, name, resource_group, location, tenant_id, sku, 
     except TypeError as exc:
         result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
         return result
+
+    log.debug('Model for creation: %s', paramsmodel.as_dict())
 
     try:
         vault = vconn.vaults.create_or_update(
