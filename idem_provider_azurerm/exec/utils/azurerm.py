@@ -27,6 +27,7 @@ import importlib
 import logging
 import six
 import sys
+import os
 
 try:
     from six.moves import range as six_range
@@ -50,8 +51,7 @@ except ImportError:
 
 try:
     from azure.identity import (
-        UsernamePasswordCredential,
-        ClientSecretCredential,
+        DefaultAzureCredential,
         KnownAuthorities,
     )
     HAS_AZURE_ID = True
@@ -61,12 +61,17 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def _determine_auth(**kwargs):
+async def determine_auth(hub, resource=None, **kwargs):
     '''
     Acquire Azure RM Credentials (mgmt modules)
     '''
     service_principal_creds_kwargs = ['client_id', 'secret', 'tenant']
     user_pass_creds_kwargs = ['username', 'password']
+
+    cred_kwargs = {}
+
+    if resource:
+        cred_kwargs.update({'resource': resource})
 
     try:
         if kwargs.get('cloud_environment') and kwargs.get('cloud_environment').startswith('http'):
@@ -87,7 +92,8 @@ async def _determine_auth(**kwargs):
             credentials = ServicePrincipalCredentials(kwargs['client_id'],
                                                       kwargs['secret'],
                                                       tenant=kwargs['tenant'],
-                                                      cloud_environment=cloud_env)
+                                                      cloud_environment=cloud_env,
+                                                      **cred_kwargs)
     elif set(user_pass_creds_kwargs).issubset(kwargs):
         if not (kwargs['username'] and kwargs['password']):
             raise Exception(
@@ -97,7 +103,8 @@ async def _determine_auth(**kwargs):
         else:
             credentials = UserPassCredentials(kwargs['username'],
                                               kwargs['password'],
-                                              cloud_environment=cloud_env)
+                                              cloud_environment=cloud_env,
+                                              **cred_kwargs)
     else:
         raise Exception(
             'Unable to determine credentials. '
@@ -159,7 +166,7 @@ async def get_client(hub, client_type, **kwargs):
                   'The azure {0} client is not available.'.format(client_type)
         )
 
-    credentials, subscription_id, cloud_env = await _determine_auth(**kwargs)
+    credentials, subscription_id, cloud_env = await hub.exec.utils.azurerm.determine_auth(**kwargs)
 
     if client_type == 'subscription':
         client = Client(
@@ -314,59 +321,41 @@ async def compare_list_of_dicts(hub, old, new, convert_id_to_name=None):
     return ret
 
 
-async def determine_id_auth(hub, **kwargs):
+async def get_identity_credentials(hub, **kwargs):
     '''
     Acquire Azure RM Credentials from the identity provider (not for mgmt)
 
     This is accessible on the hub so clients out in the code can use it. Non-management clients
     can't be consolidated neatly here.
+
+    We basically set environment variables based upon incoming parameters and then pass off to
+    the DefaultAzureCredential object to correctly parse those environment variables. See the
+    `Microsoft Docs on EnvironmentCredential <https://aka.ms/azsdk-python-identity-default-cred-ref>`_
+    for more information.
     '''
-    client_secret_creds_kwargs = ['client_id', 'secret', 'tenant']
-    user_pass_creds_kwargs = ['username', 'password', 'tenant']
+    kwarg_map = {
+        'tenant': 'AZURE_TENANT_ID',
+        'client_id': 'AZURE_CLIENT_ID',
+        'secret': 'AZURE_CLIENT_SECRET',
+        'client_certificate_path': 'AZURE_CLIENT_CERTIFICATE_PATH',
+        'username': 'AZURE_USERNAME',
+        'password': 'AZURE_PASSWORD',
+    }
+
+    for kw in kwarg_map:
+        if kwargs.get(kw):
+            os.environ[kwarg_map[kw]] = kwargs[kw]
 
     try:
         if kwargs.get('cloud_environment') and kwargs.get('cloud_environment').startswith('http'):
-            cloud_env = get_cloud_from_metadata_endpoint(kwargs['cloud_environment'])
+            authority = kwargs['cloud_environment']
         else:
-            cloud_env = getattr(KnownAuthorities, kwargs.get('cloud_environment', 'AZURE_PUBLIC_CLOUD'))
-    except (AttributeError, ImportError, MetadataEndpointError):
-        raise sys.exit('The Azure cloud environment {0} is not available.'.format(kwargs['cloud_environment']))
+            authority = getattr(KnownAuthorities, kwargs.get('cloud_environment', 'AZURE_PUBLIC_CLOUD'))
+        log.debug('AUTHORITY: %s', authority)
+    except AttributeError as exc:
+        log.error('Unknown authority presented for "cloud_environment": %s', exc)
+        authority = KnownAuthorities.AZURE_PUBLIC_CLOUD
 
-    if set(client_secret_creds_kwargs).issubset(kwargs):
-        if not (kwargs['client_id'] and kwargs['secret'] and kwargs['tenant']):
-            raise Exception(
-                'The client_id, secret, and tenant parameters must all be '
-                'populated if using client/secret credentials.'
-            )
-        else:
-            credentials = ClientSecretCredential(client_id=kwargs['client_id'],
-                                                 client_secret=kwargs['secret'],
-                                                 tenant_id=kwargs['tenant'],
-                                                 authority=cloud_env)
-    elif set(user_pass_creds_kwargs).issubset(kwargs):
-        if not (kwargs['username'] and kwargs['password']):
-            raise Exception(
-                'The username and password parameters must both be '
-                'populated if using username/password authentication.'
-            )
-        else:
-            credentials = UsernamePasswordCredential(username=kwargs['username'],
-                                                     password=kwargs['password'],
-                                                     tenant_id=kwargs['tenant'],
-                                                     authority=cloud_env)
-    else:
-        raise Exception(
-            'Unable to determine credentials. '
-            'A subscription_id with username and password, '
-            'or client_id, secret, and tenant or a profile with the '
-            'required parameters populated'
-        )
+    credential = DefaultAzureCredential(authority=authority)
 
-    if 'subscription_id' not in kwargs:
-        raise Exception(
-            'A subscription_id must be specified'
-        )
-
-    subscription_id = str(kwargs['subscription_id'])
-
-    return credentials, subscription_id, cloud_env
+    return credential
