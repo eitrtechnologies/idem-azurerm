@@ -2,7 +2,7 @@
 '''
 Azure (ARM) Utilities
 
-.. versionadded:: 2019.2.0
+.. versionadded:: 1.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -25,17 +25,9 @@ from __future__ import absolute_import, print_function, unicode_literals
 from operator import itemgetter
 import importlib
 import logging
+import six
 import sys
 
-# Import Salt libs
-#import salt.config
-import six
-#import salt.loader
-#import salt.utils.stringutils
-#import salt.version
-#from salt.exceptions import (
-#    SaltInvocationError, SaltSystemExit
-#)
 try:
     from six.moves import range as six_range
 except ImportError:
@@ -56,27 +48,13 @@ try:
 except ImportError:
     HAS_AZURE = False
 
-#__opts__ = salt.config.minion_config('/etc/salt/minion')
-#__salt__ = salt.loader.minion_mods(__opts__)
-
 log = logging.getLogger(__name__)
-
-
-#def __virtual__():
-#    if not HAS_AZURE:
-#        return False
-#    else:
-#        return True
 
 
 async def _determine_auth(**kwargs):
     '''
     Acquire Azure ARM Credentials
     '''
-    #if 'profile' in kwargs:
-    #    azure_credentials = __salt__['config.option'](kwargs['profile'])
-    #    kwargs.update(azure_credentials)
-
     service_principal_creds_kwargs = ['client_id', 'secret', 'tenant']
     user_pass_creds_kwargs = ['username', 'password']
 
