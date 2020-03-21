@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-Azure (ARM) Utilities
+Azure Resource Manager (ARM) Utilities
 
 .. versionadded:: 1.0.0
 
@@ -48,12 +48,22 @@ try:
 except ImportError:
     HAS_AZURE = False
 
+try:
+    from azure.identity import (
+        UsernamePasswordCredential,
+        ClientSecretCredential,
+        KnownAuthorities,
+    )
+    HAS_AZURE_ID = True
+except ImportError:
+    HAS_AZURE_ID = False
+
 log = logging.getLogger(__name__)
 
 
 async def _determine_auth(**kwargs):
     '''
-    Acquire Azure ARM Credentials
+    Acquire Azure RM Credentials (mgmt modules)
     '''
     service_principal_creds_kwargs = ['client_id', 'secret', 'tenant']
     user_pass_creds_kwargs = ['username', 'password']
@@ -302,3 +312,61 @@ async def compare_list_of_dicts(hub, old, new, convert_id_to_name=None):
                 return ret
 
     return ret
+
+
+async def determine_id_auth(hub, **kwargs):
+    '''
+    Acquire Azure RM Credentials from the identity provider (not for mgmt)
+
+    This is accessible on the hub so clients out in the code can use it. Non-management clients
+    can't be consolidated neatly here.
+    '''
+    client_secret_creds_kwargs = ['client_id', 'secret', 'tenant']
+    user_pass_creds_kwargs = ['username', 'password', 'tenant']
+
+    try:
+        if kwargs.get('cloud_environment') and kwargs.get('cloud_environment').startswith('http'):
+            cloud_env = get_cloud_from_metadata_endpoint(kwargs['cloud_environment'])
+        else:
+            cloud_env = getattr(KnownAuthorities, kwargs.get('cloud_environment', 'AZURE_PUBLIC_CLOUD'))
+    except (AttributeError, ImportError, MetadataEndpointError):
+        raise sys.exit('The Azure cloud environment {0} is not available.'.format(kwargs['cloud_environment']))
+
+    if set(client_secret_creds_kwargs).issubset(kwargs):
+        if not (kwargs['client_id'] and kwargs['secret'] and kwargs['tenant']):
+            raise Exception(
+                'The client_id, secret, and tenant parameters must all be '
+                'populated if using client/secret credentials.'
+            )
+        else:
+            credentials = ClientSecretCredential(client_id=kwargs['client_id'],
+                                                 client_secret=kwargs['secret'],
+                                                 tenant_id=kwargs['tenant'],
+                                                 authority=cloud_env)
+    elif set(user_pass_creds_kwargs).issubset(kwargs):
+        if not (kwargs['username'] and kwargs['password']):
+            raise Exception(
+                'The username and password parameters must both be '
+                'populated if using username/password authentication.'
+            )
+        else:
+            credentials = UsernamePasswordCredential(username=kwargs['username'],
+                                                     password=kwargs['password'],
+                                                     tenant_id=kwargs['tenant'],
+                                                     authority=cloud_env)
+    else:
+        raise Exception(
+            'Unable to determine credentials. '
+            'A subscription_id with username and password, '
+            'or client_id, secret, and tenant or a profile with the '
+            'required parameters populated'
+        )
+
+    if 'subscription_id' not in kwargs:
+        raise Exception(
+            'A subscription_id must be specified'
+        )
+
+    subscription_id = str(kwargs['subscription_id'])
+
+    return credentials, subscription_id, cloud_env
