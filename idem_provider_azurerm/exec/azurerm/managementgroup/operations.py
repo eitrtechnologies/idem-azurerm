@@ -53,7 +53,7 @@ import logging
 # Azure libs
 HAS_LIBS = False
 try:
-    #import azure.mgmt.managementgroups.models # pylint: disable=unused-import
+    import azure.mgmt.managementgroups.models # pylint: disable=unused-import
     from azure.mgmt.managementgroups import ManagementGroupsAPI
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
@@ -64,7 +64,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def _get_api_client(hub, **kwargs):
+async def get_api_client(hub, **kwargs):
     '''
     .. versionadded:: VERSION
     
@@ -72,7 +72,7 @@ async def _get_api_client(hub, **kwargs):
     
     '''
     credentials, subscription_id, cloud_env = await hub.exec.utils.azurerm.determine_auth(**kwargs)
-    client = ManagementGroupsAPI(credentials)
+    client = ManagementGroupsAPI(credentials=credentials, base_url=None)
     return client
 
 
@@ -102,7 +102,7 @@ async def create_or_update(hub, group_id, display_name=None, cache_control='no-c
 
     '''
     result = {}
-    manconn = await _get_api_client(**kwargs)
+    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
 
     if parent:
         parent = {'id': parent}
