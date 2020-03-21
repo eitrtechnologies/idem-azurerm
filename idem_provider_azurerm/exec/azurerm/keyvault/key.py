@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Key Vault Execution Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: VERSION
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -47,15 +47,15 @@ Azure Resource Manager (ARM) Key Vault Execution Module
 '''
 # Python libs
 from __future__ import absolute_import
+import datetime
 import logging
+import os
 
 # Azure libs
 HAS_LIBS = False
 try:
-    import azure.keyvault.keys.models # pylint: disable=unused-import
-    from azure.keyvault.keys.aio import KeyClient
-    from msrest.exceptions import SerializationError
-    from msrestazure.azure_exceptions import CloudError
+    from azure.keyvault.keys._shared._generated.v7_0.models._models_py3 import KeyVaultErrorException
+    from azure.keyvault.keys import KeyClient
     HAS_LIBS = True
 except ImportError:
     pass
@@ -63,18 +63,60 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def _get_key_client(hub, vault_url, **kwargs):
+async def get_key_client(hub, vault_url, **kwargs):
     '''
     .. versionadded:: VERSION
 
     Load the key client and return a KeyClient object.
 
     :param vault_url: The URL of the vault that the client will access.
-
     '''
-    credentials, subscription_id, cloud_env = await hub.exec.utils.azurerm.determine_auth(**kwargs)
-    key_client = KeyClient(vault_url, credentials)
+    credential = await hub.exec.utils.azurerm.get_identity_credentials(**kwargs)
+
+    key_client = KeyClient(vault_url=vault_url, credential=credential)
+
     return key_client
+
+
+def _key_as_dict(key):
+    result = {}
+    attrs = [
+        'id',
+        'key_operations',
+        'key_type',
+        'name',
+        'properties'
+    ]
+    for attr in attrs:
+        val = getattr(key, attr)
+        if attr == 'properties':
+            val = _key_properties_as_dict(val)
+        result[attr] = val
+    return result
+
+
+def _key_properties_as_dict(key_properties):
+    result = {}
+    props = [
+        'created_on',
+        'enabled',
+        'expires_on',
+        'id',
+        'managed',
+        'name',
+        'not_before',
+        'recovery_level',
+        'tags',
+        'updated_on',
+        'vault_url',
+        'version'
+    ]
+    for prop in props:
+        val = getattr(key_properties, prop)
+        if isinstance(val, datetime.datetime):
+            val = val.isoformat()
+        result[prop] = val
+    return result
 
 
 async def backup_key(hub, name, vault_url, **kwargs):
@@ -135,15 +177,50 @@ async def create_ec_key(hub, name, vault_url, **kwargs):
 
     '''
     result = {}
-    kconn = await _get_key_client(hub, vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(hub, vault_url, **kwargs)
 
     try:
-        key = kconn.keys.create_ec_key(
+        key = kconn.create_ec_key(
             name=name,
         )
 
-        result = key
-    except CloudError as exc:
+        result = _key_as_dict(key)
+
+        log.debug('Key return: %s', result)
+    except KeyVaultErrorException as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('key', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def list_(hub, vault_url, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    List identifiers and properties of all keys in the vault. Requires keys/list permission.
+
+    :param vault_url: The URL of the vault that the client will access.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.keyvault.key.list test_vault
+
+    '''
+    result = {}
+
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(hub, vault_url, **kwargs)
+
+    try:
+        keys = kconn.list_properties_of_keys()
+
+        for key in keys:
+            result[key.name] = _key_properties_as_dict(key)
+
+        log.debug('Key listing: %s', result)
+    except KeyVaultErrorException as exc:
         await hub.exec.utils.azurerm.log_cloud_error('key', str(exc), **kwargs)
         result = {'error': str(exc)}
 
