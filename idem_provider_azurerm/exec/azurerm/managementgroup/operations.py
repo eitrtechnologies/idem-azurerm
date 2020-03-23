@@ -55,6 +55,7 @@ HAS_LIBS = False
 try:
     import azure.mgmt.managementgroups.models # pylint: disable=unused-import
     from azure.mgmt.managementgroups import ManagementGroupsAPI
+    from azure.mgmt.managementgroups.models.error_response_py3 import ErrorResponseException
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
     HAS_LIBS = True
@@ -67,26 +68,26 @@ log = logging.getLogger(__name__)
 async def get_api_client(hub, **kwargs):
     '''
     .. versionadded:: VERSION
-    
+
     Load the ManagementGroupsAPI client and returns the client object.
-    
+
     '''
     credentials, subscription_id, cloud_env = await hub.exec.utils.azurerm.determine_auth(**kwargs)
     client = ManagementGroupsAPI(credentials=credentials, base_url=None)
     return client
 
 
-async def create_or_update(hub, group_id, display_name=None, cache_control='no-cache', parent=None, **kwargs):
+async def create_or_update(hub, name, display_name=None, cache_control='no-cache', parent=None, **kwargs):
     '''
     .. versionadded:: VERSION
 
     Create or update a management group. If a management group is already created and a subsequent create request is
         issued with different properties, the management group properties will be updated.
 
-    :param group_id: The ID of the Management Group to create or update. 
+    :param name: The ID of the management group. For example, 00000000-0000-0000-0000-000000000000.
 
     :param display_name: The friendly name of the management group. If no value is passed then this field will be set
-        to the groupId.
+        to the name of the management group.
 
     :param cache_control: ADD DESCRIPTION HERE. Defaults to 'no-cache', which indicates that the request shouldn't
         utilize any caches.
@@ -98,7 +99,7 @@ async def create_or_update(hub, group_id, display_name=None, cache_control='no-c
 
     .. code-block:: bash
 
-        azurerm.managementgroup.operations.create_or_update test_group test_name test_control test_parent
+        azurerm.managementgroup.operations.create_or_update test_name test_display test_control test_parent
 
     '''
     result = {}
@@ -131,17 +132,135 @@ async def create_or_update(hub, group_id, display_name=None, cache_control='no-c
         return result
 
     try:
-        group = manconn.management_groups.create_or_update(
-            group_id=group_id,
+        mgroup = manconn.management_groups.create_or_update(
+            group_id=name,
             create_management_group_request=group_request,
             cache_control=cache_control,
         )
 
-        result = group.result()
-    except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('managementgroup', str(exc), **kwargs)
+        result = mgroup.result()
+    except ErrorResponseException as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('managementgroups', str(exc), **kwargs)
         result = {'error': str(exc)}
     except SerializationError as exc:
         result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+
+
+    return result
+
+
+async def delete(hub, name, cache_control='no_cache', **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Delete management group. If a management group contains child resources, the request will fail.
+
+    :param name: The ID of the management group.
+
+    :param cache_control: ADD DESCRIPTION HERE. Defaults to 'no-cache', which indicates that the request shouldn't
+        utilize any caches.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.managementgroup.operations.delete test_name test_control
+
+    '''
+    result = False
+    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
+
+    try:
+        mgroup = manconn.management_groups.delete(
+            group_id=name,
+            cache_control=cache_control
+        )
+
+        result = True
+    except ErrorResponseException as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('managementgroups', str(exc), **kwargs)
+
+    return result
+
+
+async def get(hub, name, expand=None, recurse=None, filter=None, cache_control='no_cache', **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Get the details of the specified management group.
+
+    :param name: The ID of the management group.
+
+    :param expand: The expand parameter allows clients to request inclusion of children in the response payload.
+        Possible values include: 'children'. Defaults to None.
+
+    :param recurse: The recurse boolean parameter allows clients to request inclusion of entire hierarchy in the
+        response payload. Note that expand must be set to 'children' if recurse is set to True.
+
+    :param cache_control: ADD DESCRIPTION HERE. Defaults to 'no-cache', which indicates that the request shouldn't
+        utilize any caches.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.managementgroup.operations.get test_name test_expand test_recurse test_control
+
+    '''
+    result = {}
+    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
+
+    try:
+        mgroup = manconn.management_groups.get(
+            group_id=name,
+            expand=expand,
+            recurse=recurse,
+            cache_control=cache_control
+        )
+
+        result = mgroup.as_dict()
+    except ErrorResponseException as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('managementgroups', str(exc), **kwargs)
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def list_(hub, cache_control='no-cache', skip_token=None, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    List management groups for the authenticated user.
+
+    :param cache_control: ADD DESCRIPTION HERE. Defaults to 'no-cache', which indicates that the request shouldn't
+        utilize any caches.
+
+    :param skip_token: Page continuation token is only used if a previous operation returned a partial result.
+        If a previous response contains a nextLink element, the value of the nextLink element will include a token
+        parameter that specifies a starting point to use for subsequent calls. Defaults to None.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.managementgroup.operations.list test_control test_token
+
+    '''
+    result = {}
+    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
+
+    try:
+        mgroups = await hub.exec.utils.azurerm.paged_object_to_list(
+            manconn.management_groups.list(
+                cache_control=cache_control,
+                skip_token=skip_token,
+            )
+        )
+
+        for mgroup in mgroups:
+            result[mgroup['display_name']] = mgroup
+    except ErrorResponseException as exc:
+        await hub.exec.utils.azurerm.log_cloud_error('managementgroups', str(exc), **kwargs)
+        result = {'error': str(exc)}
 
     return result
