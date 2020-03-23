@@ -77,7 +77,7 @@ async def get_api_client(hub, **kwargs):
     return client
 
 
-async def create_or_update(hub, name, display_name=None, cache_control='no-cache', parent=None, **kwargs):
+async def create_or_update(hub, name, display_name=None, parent=None, **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -89,9 +89,6 @@ async def create_or_update(hub, name, display_name=None, cache_control='no-cache
     :param display_name: The friendly name of the management group. If no value is passed then this field will be set
         to the name of the management group.
 
-    :param cache_control: ADD DESCRIPTION HERE. Defaults to 'no-cache', which indicates that the request shouldn't
-        utilize any caches.
-
     :param parent: The fully qualified ID for the parent management group. For example,
         /providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000.
 
@@ -99,7 +96,7 @@ async def create_or_update(hub, name, display_name=None, cache_control='no-cache
 
     .. code-block:: bash
 
-        azurerm.managementgroup.operations.create_or_update test_name test_display test_control test_parent
+        azurerm.managementgroup.operations.create_or_update test_name test_display test_parent
 
     '''
     result = {}
@@ -135,21 +132,18 @@ async def create_or_update(hub, name, display_name=None, cache_control='no-cache
         mgroup = manconn.management_groups.create_or_update(
             group_id=name,
             create_management_group_request=group_request,
-            cache_control=cache_control,
         )
 
         result = mgroup.result()
     except ErrorResponseException as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('managementgroups', str(exc), **kwargs)
         result = {'error': str(exc)}
     except SerializationError as exc:
         result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
 
-
     return result
 
 
-async def delete(hub, name, cache_control='no_cache', **kwargs):
+async def delete(hub, name, **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -157,14 +151,11 @@ async def delete(hub, name, cache_control='no_cache', **kwargs):
 
     :param name: The ID of the management group.
 
-    :param cache_control: ADD DESCRIPTION HERE. Defaults to 'no-cache', which indicates that the request shouldn't
-        utilize any caches.
-
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.managementgroup.operations.delete test_name test_control
+        azurerm.managementgroup.operations.delete test_name test
 
     '''
     result = False
@@ -173,17 +164,16 @@ async def delete(hub, name, cache_control='no_cache', **kwargs):
     try:
         mgroup = manconn.management_groups.delete(
             group_id=name,
-            cache_control=cache_control
         )
 
         result = True
     except ErrorResponseException as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('managementgroups', str(exc), **kwargs)
+        result = {'error': str(exc)}
 
     return result
 
 
-async def get(hub, name, expand=None, recurse=None, filter=None, cache_control='no_cache', **kwargs):
+async def get(hub, name, expand=None, recurse=None, filter=None, **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -197,14 +187,11 @@ async def get(hub, name, expand=None, recurse=None, filter=None, cache_control='
     :param recurse: The recurse boolean parameter allows clients to request inclusion of entire hierarchy in the
         response payload. Note that expand must be set to 'children' if recurse is set to True.
 
-    :param cache_control: ADD DESCRIPTION HERE. Defaults to 'no-cache', which indicates that the request shouldn't
-        utilize any caches.
-
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.managementgroup.operations.get test_name test_expand test_recurse test_control
+        azurerm.managementgroup.operations.get test_name test_expand test_recurse
 
     '''
     result = {}
@@ -215,25 +202,20 @@ async def get(hub, name, expand=None, recurse=None, filter=None, cache_control='
             group_id=name,
             expand=expand,
             recurse=recurse,
-            cache_control=cache_control
         )
 
         result = mgroup.as_dict()
     except ErrorResponseException as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('managementgroups', str(exc), **kwargs)
         result = {'error': str(exc)}
 
     return result
 
 
-async def list_(hub, cache_control='no-cache', skip_token=None, **kwargs):
+async def list_(hub, skip_token=None, **kwargs):
     '''
     .. versionadded:: VERSION
 
     List management groups for the authenticated user.
-
-    :param cache_control: ADD DESCRIPTION HERE. Defaults to 'no-cache', which indicates that the request shouldn't
-        utilize any caches.
 
     :param skip_token: Page continuation token is only used if a previous operation returned a partial result.
         If a previous response contains a nextLink element, the value of the nextLink element will include a token
@@ -243,7 +225,7 @@ async def list_(hub, cache_control='no-cache', skip_token=None, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.managementgroup.operations.list test_control test_token
+        azurerm.managementgroup.operations.list test_token
 
     '''
     result = {}
@@ -252,7 +234,6 @@ async def list_(hub, cache_control='no-cache', skip_token=None, **kwargs):
     try:
         mgroups = await hub.exec.utils.azurerm.paged_object_to_list(
             manconn.management_groups.list(
-                cache_control=cache_control,
                 skip_token=skip_token,
             )
         )
@@ -260,7 +241,6 @@ async def list_(hub, cache_control='no-cache', skip_token=None, **kwargs):
         for mgroup in mgroups:
             result[mgroup['display_name']] = mgroup
     except ErrorResponseException as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('managementgroups', str(exc), **kwargs)
         result = {'error': str(exc)}
 
     return result

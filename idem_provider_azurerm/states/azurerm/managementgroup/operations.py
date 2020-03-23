@@ -69,7 +69,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-async def present(hub, ctx, name, display_name=None, cache_control='no-cache', parent=None, connection_auth=None,
+async def present(hub, ctx, name, display_name=None, parent=None, connection_auth=None,
                   **kwargs):
     '''
     .. versionadded:: VERSION
@@ -80,9 +80,6 @@ async def present(hub, ctx, name, display_name=None, cache_control='no-cache', p
 
     :param display_name: The friendly name of the management group. If no value is passed then this field will be set
         to the name of the management group.
-
-    :param cache_control: ADD DESCRIPTION HERE. Defaults to 'no-cache', which indicates that the request shouldn't
-        utilize any caches.
 
     :param parent: The fully qualified ID for the parent management group. For example,
         /providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000.
@@ -113,7 +110,6 @@ async def present(hub, ctx, name, display_name=None, cache_control='no-cache', p
 
     mgroup = await hub.exec.azurerm.managementgroup.operations.get(
         name=name,
-        cache_control=cache_control,
         azurearm_log_level='info',
         **connection_auth
     )
@@ -148,7 +144,6 @@ async def present(hub, ctx, name, display_name=None, cache_control='no-cache', p
             'old': {},
             'new': {
                 'name': name,
-                'cache_control': cache_control,
             }
         }
 
@@ -168,7 +163,6 @@ async def present(hub, ctx, name, display_name=None, cache_control='no-cache', p
     mgroup = await hub.exec.azurerm.managementgroup.operations.create_or_update(
         name=name,
         parent=parent,
-        cache_control=cache_control,
         display_name=display_name,
         **mgroup_kwargs
     )
@@ -184,7 +178,7 @@ async def present(hub, ctx, name, display_name=None, cache_control='no-cache', p
     return ret
 
 
-async def absent(hub, ctx, name, cache_control='no-cache', connection_auth=None):
+async def absent(hub, ctx, name, connection_auth=None):
     '''
     .. versionadded:: VERSION
 
@@ -192,9 +186,6 @@ async def absent(hub, ctx, name, cache_control='no-cache', connection_auth=None)
 
     :param name: The ID of the Management Group. For example, 00000000-0000-0000-0000-000000000000.
 
-    :param cache_control: ADD DESCRIPTION HERE. Defaults to 'no-cache', which indicates that the request shouldn't
-        utilize any caches.   
- 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
@@ -212,7 +203,6 @@ async def absent(hub, ctx, name, cache_control='no-cache', connection_auth=None)
 
     mgroup = await hub.exec.azurerm.managementgroup.operations.get(
         name=name,
-        cache_control=cache_control,
         azurearm_log_level='info',
         **connection_auth
     )
@@ -233,7 +223,6 @@ async def absent(hub, ctx, name, cache_control='no-cache', connection_auth=None)
 
     deleted = await hub.exec.azurerm.managementgroup.operations.delete(
         name=name,
-        cache_control=cache_control,
         **connection_auth
     )
 
