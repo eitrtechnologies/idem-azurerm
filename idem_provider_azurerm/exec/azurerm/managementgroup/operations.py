@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Management Group Operations Execution Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: VERSION
 
 :maintainer: <devops@eitr.tech>
 :maturity: new

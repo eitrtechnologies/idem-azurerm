@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Management Group State Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: VERSION
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -95,7 +95,7 @@ async def present(hub, ctx, name, display_name=None, parent=None, connection_aut
             azurerm.managementgroup.operations.present:
                 - name: my_mgroup
                 - connection_auth: {{ profile }}
-    
+
     '''
     ret = {
         'name': name,
@@ -114,7 +114,7 @@ async def present(hub, ctx, name, display_name=None, parent=None, connection_aut
         **connection_auth
     )
 
-    if 'error' not in mgroup: 
+    if 'error' not in mgroup:
         if parent:
             if parent != mgroup.get('parent').get('id'):
                 ret['changes']['parent'] = {
