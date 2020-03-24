@@ -11,6 +11,7 @@ Azure Resource Manager (ARM) Key Vault State Module
     * `azure-common <https://pypi.python.org/pypi/azure-common>`_ >= 1.1.23
     * `azure-mgmt <https://pypi.python.org/pypi/azure-mgmt>`_ >= 4.0.0
     * `azure-mgmt-compute <https://pypi.python.org/pypi/azure-mgmt-compute>`_ >= 4.6.2
+    * `azure-mgmt-keyvault <https://pypi.python.org/pypi/azure-mgmt-keyvault>`_ >= 1.1.0
     * `azure-mgmt-network <https://pypi.python.org/pypi/azure-mgmt-network>`_ >= 4.0.0
     * `azure-mgmt-resource <https://pypi.python.org/pypi/azure-mgmt-resource>`_ >= 2.2.0
     * `azure-mgmt-storage <https://pypi.python.org/pypi/azure-mgmt-storage>`_ >= 2.0.0
@@ -87,8 +88,6 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
     Ensure a specified keyvault exists.
 
     :param name: The name of the vault.
-
-    :param resource_group: The name of the resource group to which the vault belongs.
 
     :param resource_group: The name of the resource group to which the vault belongs.
 
