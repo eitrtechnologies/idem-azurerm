@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-Azure Resource Manager (ARM) Key Vault Execution Module
+Azure Resource Manager (ARM) Key Execution Module
 
 .. versionadded:: VERSION
 
@@ -11,6 +11,8 @@ Azure Resource Manager (ARM) Key Vault Execution Module
     * `azure-common <https://pypi.python.org/pypi/azure-common>`_ >= 1.1.23
     * `azure-mgmt <https://pypi.python.org/pypi/azure-mgmt>`_ >= 4.0.0
     * `azure-mgmt-compute <https://pypi.python.org/pypi/azure-mgmt-compute>`_ >= 4.6.2
+    * `azure-keyvault <https://pypi.org/project/azure-keyvault/>`_ >= 1.1.0
+    * `azure-keyvault-keys <https://pypi.org/project/azure-keyvault-keys/>`_ >= 4.0.0
     * `azure-mgmt-network <https://pypi.python.org/pypi/azure-mgmt-network>`_ >= 4.0.0
     * `azure-mgmt-resource <https://pypi.python.org/pypi/azure-mgmt-resource>`_ >= 2.2.0
     * `azure-mgmt-storage <https://pypi.python.org/pypi/azure-mgmt-storage>`_ >= 2.0.0
@@ -54,8 +56,10 @@ import os
 # Azure libs
 HAS_LIBS = False
 try:
-    from azure.keyvault.keys._shared._generated.v7_0.models._models_py3 import KeyVaultErrorException
     from azure.keyvault.keys import KeyClient
+    from azure.keyvault.keys._shared._generated.v7_0.models._models_py3 import KeyVaultErrorException
+    from azure.core.exceptions import ResourceNotFoundError, HttpResponseError, ResourceExistsError
+    from msrest.exceptions import ValidationError, SerializationError
     HAS_LIBS = True
 except ImportError:
     pass
@@ -139,23 +143,88 @@ async def backup_key(hub, name, vault_url, **kwargs):
         azurerm.keyvault.key.backup_key test_name test_vault
 
     '''
-    '''
     result = {}
-    kconn = await _get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
 
     try:
-        key = kconn.keys.backup_key(
+        backup = kconn.backup_key(
             name=name,
         )
 
-        result = key
-    except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('key', str(exc), **kwargs)
+        result = backup
+    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
         result = {'error': str(exc)}
 
     return result
+
+
+async def begin_delete_key(hub, name, vault_url, **kwargs):
     '''
-    pass
+    .. versionadded:: VERSION
+
+    Delete all versions of a key and its cryptographic material. Requires keys/delete permission. When this method
+        returns Key Vault has begun deleting the key. Deletion may take several seconds in a vault with soft-delete
+        enabled. This method therefore returns a poller enabling you to wait for deletion to complete.
+
+    :param name: The name of the key to delete.
+
+    :param vault_url: The URL of the vault that the client will access.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.keyvault.key.begin_delete_key test_name test_vault
+
+    '''
+    result = {}
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+
+    try:
+        key = kconn.begin_delete_key(
+            name=name,
+        )
+
+        result = _key_as_dict(key.result())
+    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def begin_recover_deleted_key(hub, name, vault_url, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Recover a deleted key to its latest version. Possible only in a vault with soft-delete enabled. Requires
+        keys/recover permission. When this method returns Key Vault has begun recovering the key. Recovery may take
+        several seconds. This method therefore returns a poller enabling you to wait for recovery to complete. Waiting
+        is only necessary when you want to use the recovered key in another operation immediately.
+
+    :param name: The name of the deleted key to recover.
+
+    :param vault_url: The URL of the vault that the client will access.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.keyvault.key.begin_recover_deleted_key test_name test_vault
+
+    '''
+    result = {}
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+
+    try:
+        key = kconn.begin_recover_deleted_key(
+            name=name,
+        )
+
+        result = _key_as_dict(key.result())
+    except (KeyVaultErrorException, HttpResponseError) as exc:
+        result = {'error': str(exc)}
+
+    return result
 
 
 async def create_ec_key(hub, name, vault_url, **kwargs):
@@ -163,9 +232,9 @@ async def create_ec_key(hub, name, vault_url, **kwargs):
     .. versionadded:: VERSION
 
     Create a new elliptic curve key or, if name is already in use, create a new version of the key. Requires the
-        keys/create permission.
+        keys/create permission. Key properties can be specified as keyword arguments.
 
-    :param name: The name of the new key.
+    :param name: The name of the new key. Key names can only contain alphanumeric characters and dashes.
 
     :param vault_url: The URL of the vault that the client will access.
 
@@ -177,7 +246,7 @@ async def create_ec_key(hub, name, vault_url, **kwargs):
 
     '''
     result = {}
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(hub, vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
 
     try:
         key = kconn.create_ec_key(
@@ -185,10 +254,239 @@ async def create_ec_key(hub, name, vault_url, **kwargs):
         )
 
         result = _key_as_dict(key)
+    except (KeyVaultErrorException, ValidationError, HttpResponseError) as exc:
+        result = {'error': str(exc)}
 
-        log.debug('Key return: %s', result)
-    except KeyVaultErrorException as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('key', str(exc), **kwargs)
+    return result
+
+async def create_key(hub, name, type, vault_url, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Create a key or, if name is already in use, create a new version of the key. Requires keys/create permission.
+        Key properties can be specified as keyword arguments.
+
+    :param name: The name of the new key. Key names can only contain alphanumeric characters and dashes.
+
+    :param type: The type of key to create. Possible values include: 'RSA', 'EC'. 
+
+    :param vault_url: The URL of the vault that the client will access.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.keyvault.key.create_key test_name test_type test_vault
+
+    '''
+    result = {}
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+
+    try:
+        key = kconn.create_key(
+            name=name,
+            key_type=type,
+        )
+
+        result = _key_as_dict(key)
+    except (KeyVaultErrorException, ValidationError, HttpResponseError) as exc:
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def create_rsa_key(hub, name, vault_url, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Create a new RSA key or, if name is already in use, create a new version of the key. Requires the keys/create
+        permission. Key properties can be specified as keyword arguments.
+
+    :param name: The name of the new key. Key names can only contain alphanumeric characters and dashes.
+
+    :param vault_url: The URL of the vault that the client will access.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.keyvault.key.create_rsa_key test_name test_vault
+
+    '''
+    result = {}
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+
+    try:
+        key = kconn.create_rsa_key(
+            name=name,
+        )
+
+        result = _key_as_dict(key)
+    except (KeyVaultErrorException, ValidationError, HttpResponseError) as exc:
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def get_deleted_key(hub, name, vault_url, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Get a deleted key. Possible only in a vault with soft-delete enabled. Requires keys/get permission.
+
+    :param name: The name of the key.
+
+    :param vault_url: The URL of the vault that the client will access.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.keyvault.key.get_deleted_key test_name test_vault
+
+    '''
+    result = {}
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+
+    try:
+        key = kconn.get_deleted_key(
+            name=name,
+        )
+
+        result = _key_as_dict(key)
+    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def get_key(hub, name, vault_url, version=None, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Get a key's attributes and, if it's an asymmetric key, its public material. Requires keys/get permission.
+
+    :param name: The name of the key to get.
+
+    :param vault_url: The URL of the vault that the client will access.
+
+    :param version: An optional parameter used to specify the version of the key to get. If not specified, gets the
+        latest version of the key.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.keyvault.key.get_key test_name test_vault test_version
+
+    '''
+    result = {}
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+
+    try:
+        key = kconn.get_key(
+            name=name,
+            version=version,
+        )
+
+        result = _key_as_dict(key)
+    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def import_key(hub, name, vault_url, kid=None, kty=None, key_ops=None, n=None, e=None, d=None, dp=None, dq=None,
+                     qi=None, p=None, q=None, k=None, t=None, crv=None, x=None, y=None, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Import a key created externally. Requires keys/import permission. If name is already in use, the key will be
+        imported as a new version. Parameters used to build a JSONWebKey object will be passed to this module. More
+        information about some of those parameters can be found at the following link:
+        https://tools.ietf.org/html/draft-ietf-jose-json-web-key-18.
+
+    :param name: The name of the imported key.
+
+    :param vault_url: The URL of the vault that the client will access.
+
+    :param kid: Key identifier.
+
+    :param kty: Key type. Possible values inclide: 'ec', 'ec_hsm', 'oct', 'rsa', 'rsa_hsm'.
+
+    :param key_ops: A list of allow operations for the key. Possible elements of the list include: 'decrypt', 'encrypt',
+        'sign', 'unwrap_key', 'verify', 'wrap_key'
+
+    :param n: RSA modulus.
+
+    :param e: RSA public exponent.
+
+    :param d: RSA private exponent, or the D component of the EC private key.
+
+    :param dp: RSA private key parameter.
+
+    :param dq: RSA private key parameter.
+
+    :param qi: RSA private key parameter.
+
+    :param p: RSA secret prime.
+
+    :param q: RSA secret prime, with p < q.
+
+    :param k: Symmetric key.
+
+    :param t: HSM Token, used with 'Bring Your Own Key'.
+
+    :param crv: Elliptic curve name. Posible values include: 'p_256', 'p_256_k', 'p_384', and 'p_521'.
+
+    :param x: X component of an EC public key.
+
+    :param y: Y component of an EC public key.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.keyvault.key.import_key test_name test_vault test_key_params
+
+    '''
+    result = {}
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+
+    try:
+        keymodel = await hub.exec.utils.azurerm.create_object_model(
+            'keyvault-keys',
+            'JsonWebKey',
+            kid=kid,
+            kty=kty,
+            key_ops=key_ops,
+            n=n,
+            e=e,
+            d=d,
+            dp=dp,
+            dq=dq,
+            qi=qi,
+            p=p,
+            q=q,
+            k=k,
+            t=t,
+            crv=crv,
+            x=x,
+            y=y,
+            **kwargs
+        )
+    except TypeError as exc:
+        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        return result
+
+    try:
+        key = kconn.import_key(
+            name=name,
+            key=keymodel,
+        )
+
+        result = _key_as_dict(key)
+    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
         result = {'error': str(exc)}
 
     return result
@@ -210,18 +508,181 @@ async def list_(hub, vault_url, **kwargs):
 
     '''
     result = {}
-
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(hub, vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
 
     try:
         keys = kconn.list_properties_of_keys()
 
         for key in keys:
             result[key.name] = _key_properties_as_dict(key)
+    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
+        result = {'error': str(exc)}
 
-        log.debug('Key listing: %s', result)
-    except KeyVaultErrorException as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('key', str(exc), **kwargs)
+    return result
+
+
+async def list_properties_of_key_versions(hub, name, vault_url, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    List the identifiers and properties of a key's versions. Requires keys/list permission.
+
+    :param name: The name of the key.
+
+    :param vault_url: The URL of the vault that the client will access.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.keyvault.key.list_properties_of_key_versions test_name test_vault
+
+    '''
+    result = {}
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+
+    try:
+        keys = kconn.list_properties_of_key_versions(
+            name=name,
+        )
+
+        for key in keys:
+            result[key.name] = _key_properties_as_dict(key)
+    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def list_deleted_keys(hub, vault_url, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    List all deleted keys, including the public part of each. Possible only in a vault with soft-delete enabled.
+        Requires keys/list permission.
+
+    :param vault_url: The URL of the vault that the client will access.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.keyvault.key.list_deleted_keys test_vault
+
+    '''
+    result = {}
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+
+    try:
+        keys = kconn.list_deleted_keys()
+
+        for key in keys:
+            result[key.name] = _key_as_dict(key)
+    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def purge_deleted_key(hub, name, vault_url, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Permanently deletes a deleted key. Only possible in a vault with soft-delete enabled. Performs an irreversible
+        deletion of the specified key, without possibility for recovery. The operation is not available if the
+        recovery_level does not specify 'Purgeable'. This method is only necessary for purging a key before its
+        scheduled_purge_date. Requires keys/purge permission.
+
+    :param vault_url: The URL of the vault that the client will access.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.keyvault.key.purge_deleted_key test_name test_vault
+
+    '''
+    result = False
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+
+    try:
+        key = kconn.purge_deleted_key(
+            name=name,
+        )
+
+        result = True
+    except (KeyVaultErrorException, HttpResponseError) as exc:
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def restore_key_backup(hub, backup, vault_url, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Restore a key backup to the vault. This imports all versions of the key, with its name, attributes, and access
+        control policies. If the key's name is already in use, restoring it will fail. Also, the target vault must be
+        owned by the same Microsoft Azure subscription as the source vault. Requires keys/restore permission.    
+
+    :param backup: A key backup as returned by the backup_key execution module.
+
+    :param vault_url: The URL of the vault that the client will access.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.keyvault.key.restore_key_backup test_backup test_vault
+
+    '''
+    result = {}
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+
+    try:
+        key = kconn.restore_key_backup(
+            backup=backup,
+        )
+
+        result = _key_as_dict(key)
+    except (KeyVaultErrorException, ResourceExistsError, SerializationError) as exc:
+        result = {'error': str(exc)}
+
+    return result
+
+
+async def update_key_properties(hub, name, vault_url, version=None, **kwargs):
+    '''
+    .. versionadded:: VERSION
+
+    Change a key's properties (not its cryptographic material). Requires keys/update permission. Key properties that
+        need to be updated can be specified as keyword arguments.
+
+    :param name: The name of the key to update.
+
+    :param vault_url: The URL of the vault that the client will access.
+
+    :param version: An optional parameter used to specify the version of the key to update. If no version is specified,
+        the latest version of the key will be updated.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.keyvault.key.update_key_properties test_name test_vault test_version
+
+    '''
+    result = {}
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+
+    try:
+        key = kconn.update_key_properties(
+            name=name,
+            version=version,
+        )
+
+        result = _key_as_dict(key)
+    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
         result = {'error': str(exc)}
 
     return result
