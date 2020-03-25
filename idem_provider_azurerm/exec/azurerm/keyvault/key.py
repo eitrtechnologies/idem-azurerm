@@ -9,10 +9,11 @@ Azure Resource Manager (ARM) Key Execution Module
 :depends:
     * `azure <https://pypi.python.org/pypi/azure>`_ >= 4.0.0
     * `azure-common <https://pypi.python.org/pypi/azure-common>`_ >= 1.1.23
-    * `azure-mgmt <https://pypi.python.org/pypi/azure-mgmt>`_ >= 4.0.0
-    * `azure-mgmt-compute <https://pypi.python.org/pypi/azure-mgmt-compute>`_ >= 4.6.2
     * `azure-keyvault <https://pypi.org/project/azure-keyvault/>`_ >= 1.1.0
     * `azure-keyvault-keys <https://pypi.org/project/azure-keyvault-keys/>`_ >= 4.0.0
+    * `azure-mgmt <https://pypi.python.org/pypi/azure-mgmt>`_ >= 4.0.0
+    * `azure-mgmt-compute <https://pypi.python.org/pypi/azure-mgmt-compute>`_ >= 4.6.2
+    * `azure-mgmt-keyvault <https://pypi.python.org/pypi/azure-mgmt-keyvault>`_ >= 1.1.0
     * `azure-mgmt-network <https://pypi.python.org/pypi/azure-mgmt-network>`_ >= 4.0.0
     * `azure-mgmt-resource <https://pypi.python.org/pypi/azure-mgmt-resource>`_ >= 2.2.0
     * `azure-mgmt-storage <https://pypi.python.org/pypi/azure-mgmt-storage>`_ >= 2.0.0
@@ -227,7 +228,8 @@ async def begin_recover_deleted_key(hub, name, vault_url, **kwargs):
     return result
 
 
-async def create_ec_key(hub, name, vault_url, **kwargs):
+async def create_ec_key(hub, name, vault_url, key_ops=None, enabled=None, expires_on=None, not_before=None, tags=None,
+                        **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -237,6 +239,19 @@ async def create_ec_key(hub, name, vault_url, **kwargs):
     :param name: The name of the new key. Key names can only contain alphanumeric characters and dashes.
 
     :param vault_url: The URL of the vault that the client will access.
+
+    :param key_ops: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
+        'unwrap_key', 'verify', 'wrap_key'.
+
+    :param enabled: Whether the key is enabled for use.
+
+    :param expires_on: When the key will expire, in UTC. This parameter must be a string representation of a Datetime
+        object in ISO-8601 format.
+
+    :param not_before: The time before which the key can not be used, in UTC. This parameter must be a string
+        representation of a Datetime object in ISO-8601 format.
+
+    :param tags: Application specific metadata in the form of key-value pairs.
 
     CLI Example:
 
@@ -251,6 +266,11 @@ async def create_ec_key(hub, name, vault_url, **kwargs):
     try:
         key = kconn.create_ec_key(
             name=name,
+            key_operations=key_ops,
+            enabled=enabled,
+            expires_on=expires_on,
+            not_before=not_before,
+            tags=tags,
         )
 
         result = _key_as_dict(key)
@@ -259,7 +279,9 @@ async def create_ec_key(hub, name, vault_url, **kwargs):
 
     return result
 
-async def create_key(hub, name, type, vault_url, **kwargs):
+
+async def create_key(hub, name, key_type, vault_url, key_ops=None, enabled=None, expires_on=None, not_before=None, tags=None,
+                     **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -268,9 +290,22 @@ async def create_key(hub, name, type, vault_url, **kwargs):
 
     :param name: The name of the new key. Key names can only contain alphanumeric characters and dashes.
 
-    :param type: The type of key to create. Possible values include: 'RSA', 'EC'. 
+    :param key_type: The type of key to create. Possible values include: 'ec', 'ec_hsm', 'oct', 'rsa', 'rsa_hsm'.
 
     :param vault_url: The URL of the vault that the client will access.
+
+    :param key_ops: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
+        'unwrap_key', 'verify', 'wrap_key'.
+
+    :param enabled: Whether the key is enabled for use.
+
+    :param expires_on: When the key will expire, in UTC. This parameter must be a string representation of a Datetime
+        object in ISO-8601 format.
+
+    :param not_before: The time before which the key can not be used, in UTC. This parameter must be a string
+        representation of a Datetime object in ISO-8601 format.
+
+    :param tags: Application specific metadata in the form of key-value pairs.
 
     CLI Example:
 
@@ -282,10 +317,18 @@ async def create_key(hub, name, type, vault_url, **kwargs):
     result = {}
     kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
 
+    if key_type != 'oct':
+        key_type = key_type.upper().replace('_', '-')
+
     try:
         key = kconn.create_key(
             name=name,
-            key_type=type,
+            key_type=key_type,
+            enabled=enabled,
+            expires_on=expires_on,
+            not_before=not_before,
+            tags=tags,
+            key_operations=key_ops,
         )
 
         result = _key_as_dict(key)
@@ -295,7 +338,7 @@ async def create_key(hub, name, type, vault_url, **kwargs):
     return result
 
 
-async def create_rsa_key(hub, name, vault_url, **kwargs):
+async def create_rsa_key(hub, name, vault_url, key_ops=None, enabled=None, expires_on=None, not_before=None, tags=None, **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -305,6 +348,19 @@ async def create_rsa_key(hub, name, vault_url, **kwargs):
     :param name: The name of the new key. Key names can only contain alphanumeric characters and dashes.
 
     :param vault_url: The URL of the vault that the client will access.
+
+    :param key_ops: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
+        'unwrap_key', 'verify', 'wrap_key'.
+
+    :param enabled: Whether the key is enabled for use.
+
+    :param expires_on: When the key will expire, in UTC. This parameter must be a string representation of a Datetime
+        object in ISO-8601 format.
+
+    :param not_before: The time before which the key can not be used, in UTC. This parameter must be a string
+        representation of a Datetime object in ISO-8601 format.
+
+    :param tags: Application specific metadata in the form of key-value pairs.
 
     CLI Example:
 
@@ -319,6 +375,11 @@ async def create_rsa_key(hub, name, vault_url, **kwargs):
     try:
         key = kconn.create_rsa_key(
             name=name,
+            key_operations=key_ops,
+            enabled=enabled,
+            expires_on=expires_on,
+            not_before=not_before,
+            tags=tags
         )
 
         result = _key_as_dict(key)
@@ -396,8 +457,7 @@ async def get_key(hub, name, vault_url, version=None, **kwargs):
     return result
 
 
-async def import_key(hub, name, vault_url, kid=None, kty=None, key_ops=None, n=None, e=None, d=None, dp=None, dq=None,
-                     qi=None, p=None, q=None, k=None, t=None, crv=None, x=None, y=None, **kwargs):
+async def import_key(hub, name, vault_url, **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -409,6 +469,10 @@ async def import_key(hub, name, vault_url, kid=None, kty=None, key_ops=None, n=N
     :param name: The name of the imported key.
 
     :param vault_url: The URL of the vault that the client will access.
+
+    Additional parameters passed as keyword arguments are used to build a JSONWebKey object will be passed to this
+        module. Below some of those parameters are defined. More information about some of those parameters can be
+        found at the following link: https://tools.ietf.org/html/draft-ietf-jose-json-web-key-18.
 
     :param kid: Key identifier.
 
@@ -447,32 +511,19 @@ async def import_key(hub, name, vault_url, kid=None, kty=None, key_ops=None, n=N
 
     .. code-block:: bash
 
-        azurerm.keyvault.key.import_key test_name test_vault test_key_params
+        azurerm.keyvault.key.import_key test_name test_vault test_webkey_params
 
     '''
     result = {}
     kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
 
+    if kwargs['key_type'] != 'oct':
+        kwargs['key_type'] = kwargs.get('key_type').upper().replace('_', '-')
+
     try:
         keymodel = await hub.exec.utils.azurerm.create_object_model(
             'keyvault-keys',
             'JsonWebKey',
-            kid=kid,
-            kty=kty,
-            key_ops=key_ops,
-            n=n,
-            e=e,
-            d=d,
-            dp=dp,
-            dq=dq,
-            qi=qi,
-            p=p,
-            q=q,
-            k=k,
-            t=t,
-            crv=crv,
-            x=x,
-            y=y,
             **kwargs
         )
     except TypeError as exc:
@@ -593,6 +644,8 @@ async def purge_deleted_key(hub, name, vault_url, **kwargs):
         recovery_level does not specify 'Purgeable'. This method is only necessary for purging a key before its
         scheduled_purge_date. Requires keys/purge permission.
 
+    :param name: The name of the deleted key to purge.
+
     :param vault_url: The URL of the vault that the client will access.
 
     CLI Example:
@@ -623,7 +676,7 @@ async def restore_key_backup(hub, backup, vault_url, **kwargs):
 
     Restore a key backup to the vault. This imports all versions of the key, with its name, attributes, and access
         control policies. If the key's name is already in use, restoring it will fail. Also, the target vault must be
-        owned by the same Microsoft Azure subscription as the source vault. Requires keys/restore permission.    
+        owned by the same Microsoft Azure subscription as the source vault. Requires keys/restore permission.
 
     :param backup: A key backup as returned by the backup_key execution module.
 
@@ -651,7 +704,8 @@ async def restore_key_backup(hub, backup, vault_url, **kwargs):
     return result
 
 
-async def update_key_properties(hub, name, vault_url, version=None, **kwargs):
+async def update_key_properties(hub, name, vault_url, version=None, key_ops=None, enabled=None, expires_on=None, not_before=None,
+                                tags=None, **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -664,6 +718,19 @@ async def update_key_properties(hub, name, vault_url, version=None, **kwargs):
 
     :param version: An optional parameter used to specify the version of the key to update. If no version is specified,
         the latest version of the key will be updated.
+
+    :param key_ops: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
+        'unwrap_key', 'verify', 'wrap_key'.
+
+    :param enabled: Whether the key is enabled for use.
+
+    :param expires_on: When the key will expire, in UTC. This parameter must be a string representation of a Datetime
+        object in ISO-8601 format.
+
+    :param not_before: The time before which the key can not be used, in UTC. This parameter must be a string
+        representation of a Datetime object in ISO-8601 format.
+
+    :param tags: Application specific metadata in the form of key-value pairs.
 
     CLI Example:
 
@@ -679,6 +746,11 @@ async def update_key_properties(hub, name, vault_url, version=None, **kwargs):
         key = kconn.update_key_properties(
             name=name,
             version=version,
+            key_operations=key_ops,
+            enabled=enabled,
+            expires_on=expires_on,
+            not_before=not_before,
+            tags=tags,
         )
 
         result = _key_as_dict(key)
