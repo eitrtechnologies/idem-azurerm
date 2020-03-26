@@ -150,8 +150,8 @@ async def present(hub, ctx, name, key_type, vault_url, key_ops=None, enabled=Non
             if tag_changes:
                 ret['changes']['tags'] = tag_changes
 
-        if key_ops is not None:
-            if sorted(key_ops or []) != sorted(key.get('key_operations', [])):
+        if instance(key_ops, list):
+            if sorted(key_ops) != sorted(key.get('key_operations', [])):
                 ret['changes']['key_operations'] = {
                     'old': key.get('key_operations'),
                     'new': key_ops
