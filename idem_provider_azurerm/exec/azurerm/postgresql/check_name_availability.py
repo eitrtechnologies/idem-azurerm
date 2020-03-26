@@ -91,5 +91,6 @@ async def execute(hub, name, type=None, **kwargs):
         result = availability.as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
+        result = {'error': str(exc)}
 
     return result
