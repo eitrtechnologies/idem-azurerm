@@ -146,35 +146,35 @@ async def present(hub, ctx, name, key_type, vault_url, key_ops=None, enabled=Non
 
     if 'error' not in key:
         if tags:
-            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(key.get('properties').get('tags', {}), tags or {})
+            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(key.get('properties', {}).get('tags', {}), tags or {})
             if tag_changes:
                 ret['changes']['tags'] = tag_changes
 
         if key_ops is not None:
-            if sorted(key_ops) != sorted(key.get('key_operations')):
+            if sorted(key_ops or []) != sorted(key.get('key_operations', [])):
                 ret['changes']['key_operations'] = {
                     'old': key.get('key_operations'),
                     'new': key_ops
                 }
 
         if enabled is not None:
-            if enabled != key.get('properties').get('enabled'):
+            if enabled != key.get('properties', {}).get('enabled'):
                 ret['changes']['enabled'] = {
-                    'old': key.get('properties').get('enabled'),
+                    'old': key.get('properties', {}).get('enabled'),
                     'new': enabled
                 }
 
         if expires_on:
-            if expires_on != key.get('properties').get('expires_on'):
+            if expires_on != key.get('properties', {}).get('expires_on'):
                 ret['changes']['expires_on'] = {
-                    'old': key.get('properties').get('expires_on'),
+                    'old': key.get('properties', {}).get('expires_on'),
                     'new': expires_on
                 }
 
         if not_before:
-            if not_before != key.get('properties').get('not_before'):
+            if not_before != key.get('properties', {}).get('not_before'):
                 ret['changes']['not_before'] = {
-                    'old': key.get('properties').get('not_before'),
+                    'old': key.get('properties', {}).get('not_before'),
                     'new': not_before
                 }
 
