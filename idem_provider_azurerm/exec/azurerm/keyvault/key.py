@@ -704,7 +704,7 @@ async def restore_key_backup(hub, backup, vault_url, **kwargs):
     return result
 
 
-async def update_key_properties(hub, name, vault_url, version=None, key_ops=None, enabled=None, expires_on=None, not_before=None,
+async def update_key_properties(hub, name, vault_url, version=None, enabled=None, expires_on=None, not_before=None,
                                 tags=None, **kwargs):
     '''
     .. versionadded:: VERSION
@@ -718,9 +718,6 @@ async def update_key_properties(hub, name, vault_url, version=None, key_ops=None
 
     :param version: An optional parameter used to specify the version of the key to update. If no version is specified,
         the latest version of the key will be updated.
-
-    :param key_ops: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
-        'unwrap_key', 'verify', 'wrap_key'.
 
     :param enabled: Whether the key is enabled for use.
 
@@ -746,7 +743,6 @@ async def update_key_properties(hub, name, vault_url, version=None, key_ops=None
         key = kconn.update_key_properties(
             name=name,
             version=version,
-            key_operations=key_ops,
             enabled=enabled,
             expires_on=expires_on,
             not_before=not_before,

@@ -79,8 +79,8 @@ TREQ = {
 }
 
 
-async def present(hub, ctx, name, key_type, vault_url, version=None, key_ops=None, enabled=None, expires_on=None,
-                  not_before=None, tags=None, connection_auth=None, **kwargs):
+async def present(hub, ctx, name, key_type, vault_url, key_ops=None, enabled=None, expires_on=None, not_before=None,
+                  tags=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -92,9 +92,6 @@ async def present(hub, ctx, name, key_type, vault_url, version=None, key_ops=Non
     :param key_type: The type of key to create. Possible values include: 'ec', 'ec_hsm', 'oct', 'rsa', 'rsa_hsm'.
 
     :param vault_url: The URL of the vault that the client will access.
-
-    :param version: An optional parameter used to specify the version of the key (if the key already exists).
-        If no version is specified, the latest version of the key will be updated.
 
     :param key_ops: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
         'unwrap_key', 'verify', 'wrap_key'.
@@ -140,26 +137,21 @@ async def present(hub, ctx, name, key_type, vault_url, version=None, key_ops=Non
     key = await hub.exec.azurerm.keyvault.key.get_key(
         name=name,
         vault_url=vault_url,
-        version=version,
         azurearm_log_level='info',
         **connection_auth
     )
-
-    new_key = True
 
     if key_type != 'oct':
         key_type = key_type.upper().replace('_', '-')
 
     if 'error' not in key:
-        new_key = False
-
         if tags:
             tag_changes = await hub.exec.utils.dictdiffer.deep_diff(key.get('properties').get('tags', {}), tags or {})
             if tag_changes:
                 ret['changes']['tags'] = tag_changes
 
         if key_ops is not None:
-            if key_ops.sort() != key.get('key_operations').sort():
+            if sorted(key_ops) != sorted(key.get('key_operations')):
                 ret['changes']['key_operations'] = {
                     'old': key.get('key_operations'),
                     'new': key_ops
@@ -224,29 +216,17 @@ async def present(hub, ctx, name, key_type, vault_url, version=None, key_ops=Non
     key_kwargs = kwargs.copy()
     key_kwargs.update(connection_auth)
 
-    if new_key:
-        key = await hub.exec.azurerm.keyvault.key.create_key(
-            name=name,
-            vault_url=vault_url,
-            key_type=key_type,
-            tags=tags,
-            key_ops=key_ops,
-            enabled=enabled,
-            not_before=not_before,
-            expires_on=expires_on,
-            **key_kwargs
-        )
-    else:
-        key = await hub.exec.azurerm.keyvault.key.update_key_properties(
-            name=name,
-            vault_url=vault_url,
-            tags=tags,
-            key_ops=key_ops,
-            enabled=enabled,
-            not_before=not_before,
-            expires_on=expires_on,
-            **key_kwargs
-        )
+    key = await hub.exec.azurerm.keyvault.key.create_key(
+        name=name,
+        vault_url=vault_url,
+        key_type=key_type,
+        tags=tags,
+        key_ops=key_ops,
+        enabled=enabled,
+        not_before=not_before,
+        expires_on=expires_on,
+        **key_kwargs
+    )
 
     if 'error' not in key:
         ret['result'] = True
@@ -261,7 +241,7 @@ async def present(hub, ctx, name, key_type, vault_url, version=None, key_ops=Non
 
 async def absent(hub, ctx, name, vault_url, connection_auth=None):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: VERSION
 
     Ensure the specified key does not exist within the given key vault.
 
