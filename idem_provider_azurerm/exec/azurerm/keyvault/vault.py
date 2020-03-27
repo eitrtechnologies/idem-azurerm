@@ -49,11 +49,6 @@ Azure Resource Manager (ARM) Key Vault Execution Module
 from __future__ import absolute_import
 import logging
 
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
-
 # Azure libs
 HAS_LIBS = False
 try:
@@ -99,8 +94,8 @@ async def check_name_availability(hub, name, **kwargs):
 
 
 async def create_or_update(hub, name, resource_group, location, tenant_id, sku, access_policies=None, vault_uri=None,
-                           create_mode=None, enable_soft_delete=None, enable_purge_protection=None, 
-                           enabled_for_deployment=None, enabled_for_disk_encryption=None, 
+                           create_mode=None, enable_soft_delete=None, enable_purge_protection=None,
+                           enabled_for_deployment=None, enabled_for_disk_encryption=None,
                            enabled_for_template_deployment=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
