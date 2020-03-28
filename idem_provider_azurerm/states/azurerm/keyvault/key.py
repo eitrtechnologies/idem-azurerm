@@ -146,11 +146,14 @@ async def present(hub, ctx, name, key_type, vault_url, key_ops=None, enabled=Non
 
     if 'error' not in key:
         if tags:
-            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(key.get('properties', {}).get('tags', {}), tags or {})
+            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+                key.get('properties', {}).get('tags', {}) or {},
+                tags or {}
+            )
             if tag_changes:
                 ret['changes']['tags'] = tag_changes
 
-        if instance(key_ops, list):
+        if isinstance(key_ops, list):
             if sorted(key_ops) != sorted(key.get('key_operations', [])):
                 ret['changes']['key_operations'] = {
                     'old': key.get('key_operations'),
