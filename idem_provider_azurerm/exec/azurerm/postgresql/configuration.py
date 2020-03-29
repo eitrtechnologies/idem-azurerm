@@ -67,7 +67,9 @@ async def create_or_update(hub, name, server_name, resource_group, value=None, s
     '''
     .. versionadded:: VERSION
 
-    Updates a configuration of a server.
+    Updates a configuration setting of the specified server. A list of configuration settings that can be updated
+        can be updated using the list_by_server module below. Additionally, all possible values for each individual
+        setting can be found using that module.
 
     :param name: The name of the server configuration.
 
