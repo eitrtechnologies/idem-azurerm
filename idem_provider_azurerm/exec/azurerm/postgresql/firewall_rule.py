@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-Azure Resource Manager (ARM) PostgreSQL Firewall Rule Operations Execution Module
+Azure Resource Manager (ARM) PostgreSQL Server Firewall Rule Operations Execution Module
 
 .. versionadded:: VERSION
 
@@ -98,6 +98,7 @@ async def create_or_update(hub, name, server_name, resource_group, start_ip_addr
             end_ip_address=end_ip_address
         )
 
+        rule.wait()
         result = rule.result().as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
@@ -135,6 +136,7 @@ async def delete(hub, name, server_name, resource_group, **kwargs):
             resource_group_name=resource_group,
         )
 
+        server.wait()
         result = True
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)

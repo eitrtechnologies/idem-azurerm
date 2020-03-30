@@ -150,6 +150,7 @@ async def create(hub, name, resource_group, location, sku=None, version=None, ss
             parameters=servermodel
         )
 
+        server.wait()
         result = server.result().as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
@@ -186,6 +187,7 @@ async def delete(hub, name, resource_group, **kwargs):
             resource_group_name=resource_group,
         )
 
+        server.wait()
         result = True
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
@@ -318,6 +320,7 @@ async def restart(hub, name, resource_group, **kwargs):
             resource_group_name=resource_group,
         )
 
+        server.wait()
         result = True
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
@@ -394,6 +397,7 @@ async def update(hub, name, resource_group, sku=None, version=None, ssl_enforcem
             parameters=paramsmodel
         )
 
+        server.wait()
         result = server.result().as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)

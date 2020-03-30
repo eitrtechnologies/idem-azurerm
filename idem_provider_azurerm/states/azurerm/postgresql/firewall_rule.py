@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-Azure Resource Manager (ARM) PostgreSQL Firewall Rule Operations State Module
+Azure Resource Manager (ARM) PostgreSQL Server Firewall Rule Operations State Module
 
 .. versionadded:: VERSION
 
@@ -78,7 +78,8 @@ TREQ = {
 }
 
 
-async def present(hub, ctx, name, server_name, resource_group, start_ip_address, end_ip_address, connection_auth=None, **kwargs):
+async def present(hub, ctx, name, server_name, resource_group, start_ip_address, end_ip_address, connection_auth=None,
+                  **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -108,8 +109,6 @@ async def present(hub, ctx, name, server_name, resource_group, start_ip_address,
                 - resource_group: my_rg
                 - start_ip_address: '0.0.0.0'
                 - end_ip_address: '255.255.255.255'
-                - tags:
-                    contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
     '''

@@ -98,6 +98,7 @@ async def create_or_update(hub, name, server_name, resource_group, charset=None,
             collation=collation,
         )
 
+        database.wait()
         result = database.result().as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
@@ -109,7 +110,7 @@ async def create_or_update(hub, name, server_name, resource_group, charset=None,
 async def delete(hub, name, server_name, resource_group, **kwargs):
     '''
     .. versionadded:: VERSION
-    
+
     Deletes a database.
 
     :param name: The name of the database.
@@ -135,6 +136,7 @@ async def delete(hub, name, server_name, resource_group, **kwargs):
             resource_group_name=resource_group,
         )
 
+        database.wait()
         result = True
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
@@ -153,7 +155,7 @@ async def get(hub, name, server_name, resource_group, **kwargs):
 
     :param server_name: The name of the server.
 
-    :param resource_group: The name of the resource group. The name is case insensitive.    
+    :param resource_group: The name of the resource group. The name is case insensitive.
 
     CLI Example:
 

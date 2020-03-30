@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-Azure Resource Manager (ARM) PostgreSQL Configuration Operations Execution Module
+Azure Resource Manager (ARM) PostgreSQL Server Configuration Operations Execution Module
 
 .. versionadded:: VERSION
 
@@ -55,7 +55,6 @@ HAS_LIBS = False
 try:
     import azure.mgmt.rdbms.postgresql.models  # pylint: disable=unused-import
     from msrestazure.azure_exceptions import CloudError
-    from msrest.exceptions import ValidationError
     HAS_LIBS = True
 except ImportError:
     pass
@@ -63,13 +62,13 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, name, server_name, resource_group, value=None, source=None, **kwargs):
+async def create_or_update(hub, name, server_name, resource_group, value=None, **kwargs):
     '''
     .. versionadded:: VERSION
 
-    Updates a configuration setting of the specified server. A list of configuration settings that can be updated
-        can be updated using the list_by_server module below. Additionally, all possible values for each individual
-        setting can be found using that module.
+    Updates the specified configuration setting for the given server. A list of configuration settings that can be
+        updated for the given server can be found by using the list_by_server operation below. Additionally, all
+        possible values for each individual configuration setting can be found using that module.
 
     :param name: The name of the server configuration.
 
@@ -79,13 +78,11 @@ async def create_or_update(hub, name, server_name, resource_group, value=None, s
 
     :param value: Value of the configuration. Defaults to None.
 
-    :param source: Source of the configuration. Defaults to None.
-
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.postgresql.configuration.create_or_update test_name test_server test_group test_value test_source
+        azurerm.postgresql.configuration.create_or_update test_name test_server test_group test_value
 
     '''
     result = {}
@@ -97,9 +94,9 @@ async def create_or_update(hub, name, server_name, resource_group, value=None, s
             server_name=server_name,
             resource_group_name=resource_group,
             value=value,
-            source=source,
         )
 
+        config.wait()
         result = config.result().as_dict()
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)

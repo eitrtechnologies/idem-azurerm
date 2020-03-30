@@ -78,8 +78,8 @@ TREQ = {
 
 
 async def present(hub, ctx, name, resource_group, location, sku=None, version=None, ssl_enforcement=None,
-                  storage_profile=None, login=None, login_password=None, create_mode='Default', tags=None,
-                  connection_auth=None, **kwargs):
+                  storage_profile=None, login=None, login_password=None, create_mode='Default', force_password=False,
+                  tags=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -116,6 +116,10 @@ async def present(hub, ctx, name, resource_group, location, sku=None, version=No
 
     :param login_password: The password of the administrator login.
 
+    :param force_password: A Boolean flag that represents whether or not the password should be updated. If it is set
+        to True, then the password will be updated if the server already exists. If it is set to False, then the
+        password will not be updated unless other parameters also need to be updated. Defaults to False.
+
     :param tags: A dictionary of strings can be passed as tag metadata to the server.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
@@ -130,8 +134,8 @@ async def present(hub, ctx, name, resource_group, location, sku=None, version=No
                 - name: my_server
                 - resource_group: my_rg
                 - location: my_location
-                - login: admin
-                - login_password: *****
+                - login: my_login
+                - login_password: my_password
                 - tags:
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
@@ -185,19 +189,21 @@ async def present(hub, ctx, name, resource_group, location, sku=None, version=No
                     'new': version
                 }
 
-        if login_password:
-            if login_password != server.get('adminstrator_login_password'):
-                ret['changes']['administrator_login_password'] = {
-                    'old': server.get('administrator_login_password'),
-                    'new': login_password
-                }
-
         if ssl_enforcement:
             if ssl_enforcement != server.get('ssl_enforcement'):
                 ret['changes']['ssl_enforcement'] = {
                     'old': server.get('ssl_enforcement'),
                     'new': ssl_enforcement
                 }
+
+        if force_password:
+            ret['changes']['administrator_login_password'] = {
+                'new': 'REDACTED'
+            }
+        elif ret['changes']:
+            ret['changes']['administrator_login_password'] = {
+                'new': 'REDACTED'
+            }
 
         if not ret['changes']:
             ret['result'] = True
@@ -235,7 +241,7 @@ async def present(hub, ctx, name, resource_group, location, sku=None, version=No
         if login:
             ret['changes']['new']['administrator_login'] = login
         if login_password:
-            ret['changes']['new']['administrator_login_password'] = login_password
+            ret['changes']['new']['administrator_login_password'] = 'REDACTED'
 
     if ctx['test']:
         ret['comment'] = 'Server {0} would be created.'.format(name)
