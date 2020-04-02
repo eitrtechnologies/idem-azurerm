@@ -12,6 +12,7 @@ Azure Resource Manager (ARM) Utilities
     * `azure-mgmt <https://pypi.python.org/pypi/azure-mgmt>`_ >= 0.30.0rc6
     * `azure-mgmt-compute <https://pypi.python.org/pypi/azure-mgmt-compute>`_ >= 0.33.0
     * `azure-mgmt-network <https://pypi.python.org/pypi/azure-mgmt-network>`_ >= 0.30.0rc6
+    * `azure-mgmt-rdbms <https://pypi.org/project/azure-mgmt-rdbms/>`_ >= 1.9.0
     * `azure-mgmt-resource <https://pypi.python.org/pypi/azure-mgmt-resource>`_ >= 0.30.0
     * `azure-mgmt-storage <https://pypi.python.org/pypi/azure-mgmt-storage>`_ >= 0.30.0rc6
     * `azure-mgmt-web <https://pypi.python.org/pypi/azure-mgmt-web>`_ >= 0.30.0rc6
@@ -139,7 +140,8 @@ async def get_client(hub, client_type, **kwargs):
                   'subscription': 'Subscription',
                   'web': 'WebSiteManagement',
                   'keyvault': 'KeyVaultManagement',
-                  'redis': 'RedisManagement'}
+                  'redis': 'RedisManagement',
+                  'postgresql': 'PostgreSQLManagement'}
 
     if client_type not in client_map:
         raise Exception(
@@ -153,6 +155,8 @@ async def get_client(hub, client_type, **kwargs):
         module_name = 'resource'
     elif client_type in ['managementlock']:
         module_name = 'resource.locks'
+    elif client_type in ['postgresql']:
+        module_name = 'rdbms.postgresql'
     else:
         module_name = client_type
 
