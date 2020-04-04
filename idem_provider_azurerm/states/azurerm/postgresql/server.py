@@ -346,13 +346,10 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         }
         return ret
 
-    server_kwargs = kwargs.copy()
-    server_kwargs.update(connection_auth)
-
     deleted = await hub.exec.azurerm.postgresql.server.delete(
         name=name,
         resource_group=resource_group,
-        **server_kwargs
+        **connection_auth
     )
 
     if deleted:
