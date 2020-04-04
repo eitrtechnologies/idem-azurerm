@@ -300,7 +300,7 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
     return ret
 
 
-async def absent(hub, ctx, name, resource_uri, connection_auth=None):
+async def absent(hub, ctx, name, resource_uri, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -356,10 +356,13 @@ async def absent(hub, ctx, name, resource_uri, connection_auth=None):
         }
         return ret
 
+    setting_kwargs = kwargs.copy()
+    setting_kwargs.update(connection_auth)
+
     deleted = await hub.exec.azurerm.monitor.diagnostic_setting.delete(
         name,
         resource_uri,
-        **connection_auth
+        **setting_kwargs
     )
 
     if deleted:

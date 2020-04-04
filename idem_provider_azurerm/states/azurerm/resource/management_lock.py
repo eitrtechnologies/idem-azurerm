@@ -207,7 +207,7 @@ async def present_by_scope(hub, ctx, name, scope, lock_level, notes=None, owners
     return ret
 
 
-async def absent_by_scope(hub, ctx, name, scope, connection_auth=None):
+async def absent_by_scope(hub, ctx, name, scope, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -267,10 +267,13 @@ async def absent_by_scope(hub, ctx, name, scope, connection_auth=None):
         }
         return ret
 
+    lock_kwargs = kwargs.copy()
+    lock_kwargs.update(connection_auth)
+
     deleted = await hub.exec.azurerm.resource.management_lock.delete_by_scope(
         name,
         scope,
-        **connection_auth
+        **lock_kwargs
     )
 
     if deleted:
@@ -448,7 +451,7 @@ async def present_at_resource_level(hub, ctx, name, lock_level, resource_group, 
 
 
 async def absent_at_resource_level(hub, ctx, name, resource_group, resource, resource_type, resource_provider_namespace,
-                          parent_resource_path=None, connection_auth=None):
+                          parent_resource_path=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -520,6 +523,9 @@ async def absent_at_resource_level(hub, ctx, name, resource_group, resource, res
         }
         return ret
 
+    lock_kwargs = kwargs.copy()
+    lock_kwargs.update(connection_auth)
+
     deleted = await hub.exec.azurerm.resource.management_lock.delete_at_resource_level(
         name,
         resource_group,
@@ -527,7 +533,7 @@ async def absent_at_resource_level(hub, ctx, name, resource_group, resource, res
         resource_type,
         resource_provider_namespace,
         parent_resource_path=parent_resource_path,
-        **connection_auth
+        **lock_kwargs
     )
 
     if deleted:
@@ -654,7 +660,7 @@ async def present(hub, ctx, name, lock_level, resource_group=None, notes=None, o
         }
 
         if resource_group:
-            ret['changes']['new']['resource_group'] = resource_group    
+            ret['changes']['new']['resource_group'] = resource_group
         if owners:
             ret['changes']['new']['owners'] = owners
         if notes:
@@ -697,7 +703,7 @@ async def present(hub, ctx, name, lock_level, resource_group=None, notes=None, o
     return ret
 
 
-async def absent(hub, ctx, name, resource_group=None, connection_auth=None):
+async def absent(hub, ctx, name, resource_group=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -762,16 +768,19 @@ async def absent(hub, ctx, name, resource_group=None, connection_auth=None):
         }
         return ret
 
+    lock_kwargs = kwargs.copy()
+    lock_kwargs.update(connection_auth)
+
     if resource_group:
         deleted = await hub.exec.azurerm.resource.management_lock.delete_at_resource_group_level(
             name,
             resource_group,
-            **connection_auth
+            **lock_kwargs
         )
     else:
         deleted = await hub.exec.azurerm.resource.management_lock.delete_at_subscription_level(
             name,
-            **connection_auth
+            **lock_kwargs
         )
 
     if deleted:

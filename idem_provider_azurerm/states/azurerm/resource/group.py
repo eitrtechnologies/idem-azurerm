@@ -79,7 +79,6 @@ Azure Resource Manager (ARM) Resource Group State Module
                 - connection_auth: {{ profile }}
 
 '''
-
 # Import Python libs
 from __future__ import absolute_import
 import json
@@ -194,10 +193,12 @@ async def present(hub, ctx, name, location, managed_by=None, tags=None, connecti
         return ret
 
     ret['comment'] = 'Failed to create resource group {0}! ({1})'.format(name, group.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def absent(hub, ctx, name, connection_auth=None):
+async def absent(hub, ctx, name, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -209,6 +210,7 @@ async def absent(hub, ctx, name, connection_auth=None):
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
     '''
     ret = {
         'name': name,
@@ -242,7 +244,11 @@ async def absent(hub, ctx, name, connection_auth=None):
         return ret
 
     group = await hub.exec.azurerm.resource.group.get(name, **connection_auth)
-    deleted = await hub.exec.azurerm.resource.group.delete(name, **connection_auth)
+
+    group_kwargs = kwargs.copy()
+    group_kwargs.update(connection_auth)
+
+    deleted = await hub.exec.azurerm.resource.group.delete(name, **group_kwargs)
 
     if deleted:
         present = False

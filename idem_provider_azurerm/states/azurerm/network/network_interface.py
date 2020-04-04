@@ -85,7 +85,6 @@ Azure Resource Manager (ARM) Network Interface State Module
                 - connection_auth: {{ profile }}
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -105,9 +104,9 @@ TREQ = {
 }
 
 
-async def present(hub, ctx, name, ip_configurations, subnet, virtual_network, resource_group, tags=None, virtual_machine=None,
-            network_security_group=None, dns_settings=None, mac_address=None, primary=None,
-            enable_accelerated_networking=None, enable_ip_forwarding=None, connection_auth=None, **kwargs):
+async def present(hub, ctx, name, ip_configurations, subnet, virtual_network, resource_group, tags=None,
+                  virtual_machine=None, network_security_group=None, dns_settings=None, mac_address=None, primary=None,
+                  enable_accelerated_networking=None, enable_ip_forwarding=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -361,7 +360,7 @@ async def present(hub, ctx, name, ip_configurations, subnet, virtual_network, re
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -376,6 +375,17 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure network interface absent:
+            azurerm.network.network_interface.absent:
+                - name: iface1
+                - resource_group: group1
+                - connection_auth: {{ profile }}
+
     '''
     ret = {
         'name': name,
@@ -409,7 +419,10 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
         }
         return ret
 
-    deleted = await hub.exec.azurerm.network.network_interface.delete(name, resource_group, **connection_auth)
+    iface_kwargs = kwargs.copy()
+    iface_kwargs.update(connection_auth)
+
+    deleted = await hub.exec.azurerm.network.network_interface.delete(name, resource_group, **iface_kwargs)
 
     if deleted:
         ret['result'] = True

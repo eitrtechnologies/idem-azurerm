@@ -85,7 +85,6 @@ Azure Resource Manager (ARM) Network Public IP Address State Module
                 - connection_auth: {{ profile }}
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -285,10 +284,12 @@ async def present(hub, ctx, name, resource_group, tags=None, sku=None, public_ip
         return ret
 
     ret['comment'] = 'Failed to create public IP address {0}! ({1})'.format(name, pub_ip.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -303,6 +304,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
     '''
     ret = {
         'name': name,
@@ -336,7 +338,10 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
         }
         return ret
 
-    deleted = await hub.exec.azurerm.network.public_ip_address.delete(name, resource_group, **connection_auth)
+    pub_ip_kwargs = kwargs.copy()
+    pub_ip_kwargs.update(connection_auth)
+
+    deleted = await hub.exec.azurerm.network.public_ip_address.delete(name, resource_group, **pub_ip_kwargs)
 
     if deleted:
         ret['result'] = True

@@ -85,7 +85,6 @@ Azure Resource Manager (ARM) Network Security Group State Module
                 - connection_auth: {{ profile }}
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -250,10 +249,12 @@ async def present(hub, ctx, name, resource_group, tags=None, security_rules=None
         return ret
 
     ret['comment'] = 'Failed to create network security group {0}! ({1})'.format(name, nsg.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -268,6 +269,17 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure nsg is absent:
+            azurerm.network.network_security_group.absent:
+                - name: nsg1
+                - resource_group: group1
+                - connection_auth: {{ profile }}
+
     '''
     ret = {
         'name': name,
@@ -301,7 +313,10 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
         }
         return ret
 
-    deleted = await hub.exec.azurerm.network.network_security_group.delete(name, resource_group, **connection_auth)
+    nsg_kwargs = kwargs.copy()
+    nsg_kwargs.update(connection_auth)
+
+    deleted = await hub.exec.azurerm.network.network_security_group.delete(name, resource_group, **nsg_kwargs)
 
     if deleted:
         ret['result'] = True
@@ -631,10 +646,12 @@ async def security_rule_present(hub, ctx, name, access, direction, priority, pro
         return ret
 
     ret['comment'] = 'Failed to create security rule {0}! ({1})'.format(name, rule.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def security_rule_absent(hub, ctx, name, security_group, resource_group, connection_auth=None):
+async def security_rule_absent(hub, ctx, name, security_group, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -652,6 +669,18 @@ async def security_rule_absent(hub, ctx, name, security_group, resource_group, c
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure security rule absent:
+            azurerm.network.network_security_group.security_rule_absent:
+                - name: nsg1_rule2
+                - security_group: nsg1
+                - resource_group: group1
+                - connection_auth: {{ profile }}
+
     '''
     ret = {
         'name': name,
@@ -686,11 +715,14 @@ async def security_rule_absent(hub, ctx, name, security_group, resource_group, c
         }
         return ret
 
+    rule_kwargs = kwargs.copy()
+    rule_kwargs.update(connection_auth)
+
     deleted = await hub.exec.azurerm.network.network_security_group.security_rule_delete(
         name,
         security_group,
         resource_group,
-        **connection_auth
+        **rule_kwargs
     )
 
     if deleted:

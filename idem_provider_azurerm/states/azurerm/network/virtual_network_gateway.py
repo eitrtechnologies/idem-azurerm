@@ -243,6 +243,7 @@ async def connection_present(hub, ctx, name, resource_group, virtual_network_gat
                 - require:
                   - azurearm_resource: Ensure resource group exists
                   - azurearm_network: Ensure virtual network gateway exists
+
     '''
     ret = {
         'name': name,
@@ -445,6 +446,8 @@ async def connection_present(hub, ctx, name, resource_group, virtual_network_gat
         return ret
 
     ret['comment'] = 'Failed to create virtual network gateway connection {0}! ({1})'.format(name, con.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
@@ -473,6 +476,7 @@ async def connection_absent(hub, ctx, name, resource_group, connection_auth=None
                 - name: connection1
                 - resource_group: group1
                 - connection_auth: {{ profile }}
+
     '''
     ret = {
         'name': name,
@@ -506,10 +510,13 @@ async def connection_absent(hub, ctx, name, resource_group, connection_auth=None
         }
         return ret
 
+    connection_kwargs = kwargs.copy()
+    connection_kwargs.update(connection_auth)
+
     deleted = await hub.exec.azurerm.network.virtual_network_gateway.connection_delete(
         name,
         resource_group,
-        **connection_auth
+        **connection_kwargs
     )
 
     if deleted:
@@ -643,6 +650,7 @@ async def present(hub, ctx, name, resource_group, virtual_network, ip_configurat
                 - require:
                   - azurearm_resource: Ensure resource group exists
                   - azurearm_network: Ensure virtual network gateway exists
+
     '''
     ret = {
         'name': name,
@@ -791,10 +799,12 @@ async def present(hub, ctx, name, resource_group, virtual_network, ip_configurat
         return ret
 
     ret['comment'] = 'Failed to create virtual network gateway {0}! ({1})'.format(name, gateway.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -819,6 +829,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
                 - name: gateway1
                 - resource_group: group1
                 - connection_auth: {{ profile }}
+
     '''
     ret = {
         'name': name,
@@ -852,10 +863,13 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
         }
         return ret
 
+    gateway_kwargs = kwargs.copy()
+    gateway_kwargs.update(connection_auth)
+
     deleted = await hub.exec.azurerm.network.virtual_network_gateway.delete(
         name,
         resource_group,
-        **connection_auth
+        **gateway_kwargs
     )
 
     if deleted:

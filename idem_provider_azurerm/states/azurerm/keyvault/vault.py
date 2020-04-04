@@ -378,7 +378,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -434,10 +434,13 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
         }
         return ret
 
+    vault_kwargs = kwargs.copy()
+    vault_kwargs.update(connection_auth)
+
     deleted = await hub.exec.azurerm.keyvault.vault.delete(
         name,
         resource_group,
-        **connection_auth
+        **vault_kwargs
     )
 
     if deleted:
