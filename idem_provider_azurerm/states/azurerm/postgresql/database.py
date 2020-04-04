@@ -197,7 +197,7 @@ async def present(hub, ctx, name, server_name, resource_group, charset=None, col
     return ret
 
 
-async def absent(hub, ctx, name, server_name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, server_name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -257,11 +257,14 @@ async def absent(hub, ctx, name, server_name, resource_group, connection_auth=No
         }
         return ret
 
+    database_kwargs = kwargs.copy()
+    database_kwargs.update(connection_auth)
+
     deleted = await hub.exec.azurerm.postgresql.database.delete(
         name=name,
         server_name=server_name,
         resource_group=resource_group,
-        **connection_auth
+        **database_kwargs
     )
 
     if deleted:
