@@ -32,6 +32,7 @@ import os
 
 try:
     from six.moves import range as six_range
+    import six
 except ImportError:
     six_range = range
 
