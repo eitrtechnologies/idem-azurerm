@@ -220,12 +220,9 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
         }
         return ret
 
-    mgroup_kwargs = kwargs.copy()
-    mgroup_kwargs.update(connection_auth)
-
     deleted = await hub.exec.azurerm.managementgroup.operations.delete(
         name=name,
-        **mgroup_kwargs
+        **connection_auth
     )
 
     if deleted:
