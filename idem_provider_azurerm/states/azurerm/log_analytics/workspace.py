@@ -235,7 +235,7 @@ async def present(hub, ctx, name, resource_group, location, sku=None, retention=
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -291,10 +291,13 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
         }
         return ret
 
+    workspace_kwargs = kwargs.copy()
+    workspace_kwargs.update(connection_auth)
+
     deleted = await hub.exec.azurerm.log_analytics.workspace.delete(
         name,
         resource_group,
-        **connection_auth
+        **workspace_kwargs
     )
 
     if deleted:
