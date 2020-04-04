@@ -354,14 +354,11 @@ async def absent(hub, ctx, name, virtual_network, resource_group, connection_aut
         }
         return ret
 
-    remote_peering_kwargs = remote_peering.copy()
-    remote_peering_kwargs.update(connection_auth)
-
     deleted = await hub.exec.azurerm.network.virtual_network_peering.delete(
         name,
         virtual_network,
         resource_group,
-        **remote_peering_kwargs
+        **connection_auth
     )
 
     if deleted:

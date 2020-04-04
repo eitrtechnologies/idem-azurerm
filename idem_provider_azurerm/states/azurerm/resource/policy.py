@@ -410,10 +410,7 @@ async def definition_absent(hub, name, connection_auth=None, **kwargs):
         }
         return ret
 
-    policy_kwargs = kwargs.copy()
-    policy_kwargs.update(connection_auth)
-
-    deleted = await hub.exec.azurerm.resource.policy.definition_delete(name, **policy_kwargs)
+    deleted = await hub.exec.azurerm.resource.policy.definition_delete(name, **connection_auth)
 
     if deleted:
         ret['result'] = True
@@ -633,10 +630,7 @@ async def assignment_absent(hub, ctx, name, scope, connection_auth=None, **kwarg
         }
         return ret
 
-    policy_kwargs = kwargs.copy()
-    policy_kwargs.update(connection_auth)
-
-    deleted = await hub.exec.azurerm.resource.policy.assignment_delete(name, scope, **policy_kwargs)
+    deleted = await hub.exec.azurerm.resource.policy.assignment_delete(name, scope, **connection_auth)
 
     if deleted:
         ret['result'] = True

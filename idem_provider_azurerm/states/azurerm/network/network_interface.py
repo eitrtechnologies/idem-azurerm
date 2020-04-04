@@ -357,6 +357,8 @@ async def present(hub, ctx, name, ip_configurations, subnet, virtual_network, re
         return ret
 
     ret['comment'] = 'Failed to create network interface {0}! ({1})'.format(name, iface.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
@@ -419,10 +421,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         }
         return ret
 
-    iface_kwargs = kwargs.copy()
-    iface_kwargs.update(connection_auth)
-
-    deleted = await hub.exec.azurerm.network.network_interface.delete(name, resource_group, **iface_kwargs)
+    deleted = await hub.exec.azurerm.network.network_interface.delete(name, resource_group, **connection_auth)
 
     if deleted:
         ret['result'] = True

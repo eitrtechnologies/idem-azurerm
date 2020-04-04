@@ -267,13 +267,10 @@ async def absent_by_scope(hub, ctx, name, scope, connection_auth=None, **kwargs)
         }
         return ret
 
-    lock_kwargs = kwargs.copy()
-    lock_kwargs.update(connection_auth)
-
     deleted = await hub.exec.azurerm.resource.management_lock.delete_by_scope(
         name,
         scope,
-        **lock_kwargs
+        **connection_auth
     )
 
     if deleted:
@@ -523,9 +520,6 @@ async def absent_at_resource_level(hub, ctx, name, resource_group, resource, res
         }
         return ret
 
-    lock_kwargs = kwargs.copy()
-    lock_kwargs.update(connection_auth)
-
     deleted = await hub.exec.azurerm.resource.management_lock.delete_at_resource_level(
         name,
         resource_group,
@@ -533,7 +527,7 @@ async def absent_at_resource_level(hub, ctx, name, resource_group, resource, res
         resource_type,
         resource_provider_namespace,
         parent_resource_path=parent_resource_path,
-        **lock_kwargs
+        **connection_auth
     )
 
     if deleted:
@@ -768,19 +762,16 @@ async def absent(hub, ctx, name, resource_group=None, connection_auth=None, **kw
         }
         return ret
 
-    lock_kwargs = kwargs.copy()
-    lock_kwargs.update(connection_auth)
-
     if resource_group:
         deleted = await hub.exec.azurerm.resource.management_lock.delete_at_resource_group_level(
             name,
             resource_group,
-            **lock_kwargs
+            **connection_auth
         )
     else:
         deleted = await hub.exec.azurerm.resource.management_lock.delete_at_subscription_level(
             name,
-            **lock_kwargs
+            **connection_auth
         )
 
     if deleted:

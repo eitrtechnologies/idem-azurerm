@@ -350,10 +350,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         }
         return ret
 
-    cache_kwargs = kwargs.copy()
-    cache_kwargs.update(connection_auth)
-
-    deleted = await hub.exec.azurerm.redis.operations.delete(name, resource_group, **cache_kwargs)
+    deleted = await hub.exec.azurerm.redis.operations.delete(name, resource_group, **connection_auth)
 
     if deleted:
         ret['result'] = True

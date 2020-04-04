@@ -511,10 +511,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         }
         return ret
 
-    lb_kwargs = kwargs.copy()
-    lb_kwargs.update(connection_auth)
-
-    deleted = await hub.exec.azurerm.network.load_balancer.delete(name, resource_group, **lb_kwargs)
+    deleted = await hub.exec.azurerm.network.load_balancer.delete(name, resource_group, **connection_auth)
 
     if deleted:
         ret['result'] = True

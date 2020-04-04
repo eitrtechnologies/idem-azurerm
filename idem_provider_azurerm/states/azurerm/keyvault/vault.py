@@ -434,13 +434,10 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         }
         return ret
 
-    vault_kwargs = kwargs.copy()
-    vault_kwargs.update(connection_auth)
-
     deleted = await hub.exec.azurerm.keyvault.vault.delete(
         name,
         resource_group,
-        **vault_kwargs
+        **connection_auth
     )
 
     if deleted:

@@ -338,10 +338,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         }
         return ret
 
-    account_kwargs = kwargs.copy()
-    account_kwargs.update(connection_auth)
-
-    deleted = await hub.exec.azurerm.storage.account.delete(name, resource_group, **account_kwargs)
+    deleted = await hub.exec.azurerm.storage.account.delete(name, resource_group, **connection_auth)
 
     if deleted:
         ret['result'] = True

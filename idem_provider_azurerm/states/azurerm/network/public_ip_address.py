@@ -338,10 +338,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         }
         return ret
 
-    pub_ip_kwargs = kwargs.copy()
-    pub_ip_kwargs.update(connection_auth)
-
-    deleted = await hub.exec.azurerm.network.public_ip_address.delete(name, resource_group, **pub_ip_kwargs)
+    deleted = await hub.exec.azurerm.network.public_ip_address.delete(name, resource_group, **connection_auth)
 
     if deleted:
         ret['result'] = True

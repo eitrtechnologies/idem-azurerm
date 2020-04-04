@@ -321,13 +321,10 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         }
         return ret
 
-    gateway_kwargs = kwargs.copy()
-    gateway_kwargs.update(connection_auth)
-
     deleted = await hub.exec.azurerm.network.local_network_gateway.delete(
         name,
         resource_group,
-        **gateway_kwargs
+        **connection_auth
     )
 
     if deleted:

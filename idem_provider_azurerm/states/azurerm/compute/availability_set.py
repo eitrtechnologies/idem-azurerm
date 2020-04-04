@@ -310,10 +310,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         }
         return ret
 
-    aset_kwargs = kwargs.copy()
-    aset_kwargs.update(connection_auth)
-
-    deleted = await hub.exec.azurerm.compute.availability_set.delete(name, resource_group, **aset_kwargs)
+    deleted = await hub.exec.azurerm.compute.availability_set.delete(name, resource_group, **connection_auth)
 
     if deleted:
         ret['result'] = True

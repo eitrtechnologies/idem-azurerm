@@ -313,10 +313,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         }
         return ret
 
-    nsg_kwargs = kwargs.copy()
-    nsg_kwargs.update(connection_auth)
-
-    deleted = await hub.exec.azurerm.network.network_security_group.delete(name, resource_group, **nsg_kwargs)
+    deleted = await hub.exec.azurerm.network.network_security_group.delete(name, resource_group, **connection_auth)
 
     if deleted:
         ret['result'] = True
@@ -715,14 +712,11 @@ async def security_rule_absent(hub, ctx, name, security_group, resource_group, c
         }
         return ret
 
-    rule_kwargs = kwargs.copy()
-    rule_kwargs.update(connection_auth)
-
     deleted = await hub.exec.azurerm.network.network_security_group.security_rule_delete(
         name,
         security_group,
         resource_group,
-        **rule_kwargs
+        **connection_auth
     )
 
     if deleted:

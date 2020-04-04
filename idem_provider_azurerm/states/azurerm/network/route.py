@@ -299,10 +299,7 @@ async def table_absent(hub, ctx, name, resource_group, connection_auth=None, **k
         }
         return ret
 
-    rt_tbl_kwargs = kwargs.copy()
-    rt_tbl_kwargs.update(connection_auth)
-
-    deleted = await hub.exec.azurerm.network.route.table_delete(name, resource_group, **rt_tbl_kwargs)
+    deleted = await hub.exec.azurerm.network.route.table_delete(name, resource_group, **connection_auth)
 
     if deleted:
         ret['result'] = True
@@ -505,10 +502,7 @@ async def absent(hub, ctx, name, route_table, resource_group, connection_auth=No
         }
         return ret
 
-    route_kwargs = kwargs.copy()
-    route_kwargs.update(connection_auth)
-
-    deleted = await hub.exec.azurerm.network.route.delete(name, route_table, resource_group, **route_kwargs)
+    deleted = await hub.exec.azurerm.network.route.delete(name, route_table, resource_group, **connection_auth)
 
     if deleted:
         ret['result'] = True

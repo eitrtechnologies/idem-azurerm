@@ -85,7 +85,6 @@ Azure Resource Manager (ARM) Virtual Network Gateway State Module
                 - connection_auth: {{ profile }}
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -451,7 +450,7 @@ async def connection_present(hub, ctx, name, resource_group, virtual_network_gat
     return ret
 
 
-async def connection_absent(hub, ctx, name, resource_group, connection_auth=None):
+async def connection_absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -510,13 +509,10 @@ async def connection_absent(hub, ctx, name, resource_group, connection_auth=None
         }
         return ret
 
-    connection_kwargs = kwargs.copy()
-    connection_kwargs.update(connection_auth)
-
     deleted = await hub.exec.azurerm.network.virtual_network_gateway.connection_delete(
         name,
         resource_group,
-        **connection_kwargs
+        **connection_auth
     )
 
     if deleted:
@@ -863,13 +859,10 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         }
         return ret
 
-    gateway_kwargs = kwargs.copy()
-    gateway_kwargs.update(connection_auth)
-
     deleted = await hub.exec.azurerm.network.virtual_network_gateway.delete(
         name,
         resource_group,
-        **gateway_kwargs
+        **connection_auth
     )
 
     if deleted:

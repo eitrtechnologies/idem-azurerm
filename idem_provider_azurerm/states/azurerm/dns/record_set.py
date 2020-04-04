@@ -420,10 +420,7 @@ async def absent(hub, ctx, name, zone_name, resource_group, connection_auth=None
         }
         return ret
 
-    rec_set_kwargs = kwargs.copy()
-    rec_set_kwargs.update(connection_auth)
-
-    deleted = await hub.exec.azurerm.dns.record_set.delete(name, zone_name, resource_group, **rec_set_kwargs)
+    deleted = await hub.exec.azurerm.dns.record_set.delete(name, zone_name, resource_group, **connection_auth)
 
     if deleted:
         ret['result'] = True

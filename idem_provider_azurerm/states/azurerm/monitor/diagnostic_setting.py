@@ -356,13 +356,10 @@ async def absent(hub, ctx, name, resource_uri, connection_auth=None, **kwargs):
         }
         return ret
 
-    setting_kwargs = kwargs.copy()
-    setting_kwargs.update(connection_auth)
-
     deleted = await hub.exec.azurerm.monitor.diagnostic_setting.delete(
         name,
         resource_uri,
-        **setting_kwargs
+        **connection_auth
     )
 
     if deleted:

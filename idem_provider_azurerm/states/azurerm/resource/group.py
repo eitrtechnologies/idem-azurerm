@@ -244,11 +244,7 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
         return ret
 
     group = await hub.exec.azurerm.resource.group.get(name, **connection_auth)
-
-    group_kwargs = kwargs.copy()
-    group_kwargs.update(connection_auth)
-
-    deleted = await hub.exec.azurerm.resource.group.delete(name, **group_kwargs)
+    deleted = await hub.exec.azurerm.resource.group.delete(name, **connection_auth)
 
     if deleted:
         present = False
