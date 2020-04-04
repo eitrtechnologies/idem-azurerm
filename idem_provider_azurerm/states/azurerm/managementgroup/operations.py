@@ -69,8 +69,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-async def present(hub, ctx, name, display_name=None, parent=None, connection_auth=None,
-                  **kwargs):
+async def present(hub, ctx, name, display_name=None, parent=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -178,7 +177,7 @@ async def present(hub, ctx, name, display_name=None, parent=None, connection_aut
     return ret
 
 
-async def absent(hub, ctx, name, connection_auth=None):
+async def absent(hub, ctx, name, connection_auth=None, **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -221,9 +220,12 @@ async def absent(hub, ctx, name, connection_auth=None):
         }
         return ret
 
+    mgroup_kwargs = kwargs.copy()
+    mgroup_kwargs.update(connection_auth)
+
     deleted = await hub.exec.azurerm.managementgroup.operations.delete(
         name=name,
-        **connection_auth
+        **mgroup_kwargs
     )
 
     if deleted:
