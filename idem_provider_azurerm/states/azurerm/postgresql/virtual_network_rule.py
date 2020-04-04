@@ -252,14 +252,11 @@ async def absent(hub, ctx, name, server_name, resource_group, connection_auth=No
         }
         return ret
 
-    rule_kwargs = kwargs.copy()
-    rule_kwargs.update(connection_auth)
-
     deleted = await hub.exec.azurerm.postgresql.virtual_network_rule.delete(
         name=name,
         server_name=server_name,
         resource_group=resource_group,
-        **rule_kwargs
+        **connection_auth
     )
 
     if deleted:
