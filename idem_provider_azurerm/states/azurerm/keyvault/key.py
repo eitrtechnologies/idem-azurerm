@@ -242,7 +242,7 @@ async def present(hub, ctx, name, key_type, vault_url, key_ops=None, enabled=Non
     return ret
 
 
-async def absent(hub, ctx, name, vault_url, connection_auth=None):
+async def absent(hub, ctx, name, vault_url, connection_auth=None, **kwargs):
     '''
     .. versionadded:: VERSION
 

@@ -284,7 +284,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, custom_do
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 

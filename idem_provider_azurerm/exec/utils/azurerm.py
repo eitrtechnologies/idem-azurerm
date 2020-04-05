@@ -143,6 +143,7 @@ async def get_client(hub, client_type, **kwargs):
                   'keyvault': 'KeyVaultManagement',
                   'redis': 'RedisManagement',
                   'postgresql': 'PostgreSQLManagement'}
+                  'loganalytics': 'LogAnalyticsManagement'}
 
     if client_type not in client_map:
         raise Exception(

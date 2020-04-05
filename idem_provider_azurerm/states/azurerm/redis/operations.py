@@ -295,7 +295,7 @@ async def present(hub, ctx, name, resource_group, location, sku, redis_configura
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
