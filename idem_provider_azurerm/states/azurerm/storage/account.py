@@ -70,7 +70,7 @@ log = logging.getLogger(__name__)
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
+            'states.azurerm.resource.group.present',
         ]
     }
 }

@@ -103,8 +103,8 @@ log = logging.getLogger(__name__)
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
-            'azurerm.dns.zone.present',
+            'states.azurerm.resource.group.present',
+            'states.azurerm.dns.zone.present',
         ]
     },
 }

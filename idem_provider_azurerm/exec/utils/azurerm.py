@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 '''
-Azure (ARM) Utilities
+Azure Resource Manager (ARM) Utilities
 
-.. versionadded:: 2019.2.0
+.. versionadded:: 1.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -25,19 +25,13 @@ from __future__ import absolute_import, print_function, unicode_literals
 from operator import itemgetter
 import importlib
 import logging
-import sys
-
-# Import Salt libs
-#import salt.config
 import six
-#import salt.loader
-#import salt.utils.stringutils
-#import salt.version
-#from salt.exceptions import (
-#    SaltInvocationError, SaltSystemExit
-#)
+import sys
+import os
+
 try:
     from six.moves import range as six_range
+    import six
 except ImportError:
     six_range = range
 
@@ -56,29 +50,29 @@ try:
 except ImportError:
     HAS_AZURE = False
 
-#__opts__ = salt.config.minion_config('/etc/salt/minion')
-#__salt__ = salt.loader.minion_mods(__opts__)
+try:
+    from azure.identity import (
+        DefaultAzureCredential,
+        KnownAuthorities,
+    )
+    HAS_AZURE_ID = True
+except ImportError:
+    HAS_AZURE_ID = False
 
 log = logging.getLogger(__name__)
 
 
-#def __virtual__():
-#    if not HAS_AZURE:
-#        return False
-#    else:
-#        return True
-
-
-async def _determine_auth(**kwargs):
+async def determine_auth(hub, resource=None, **kwargs):
     '''
-    Acquire Azure ARM Credentials
+    Acquire Azure RM Credentials (mgmt modules)
     '''
-    #if 'profile' in kwargs:
-    #    azure_credentials = __salt__['config.option'](kwargs['profile'])
-    #    kwargs.update(azure_credentials)
-
     service_principal_creds_kwargs = ['client_id', 'secret', 'tenant']
     user_pass_creds_kwargs = ['username', 'password']
+
+    cred_kwargs = {}
+
+    if resource:
+        cred_kwargs.update({'resource': resource})
 
     try:
         if kwargs.get('cloud_environment') and kwargs.get('cloud_environment').startswith('http'):
@@ -99,7 +93,8 @@ async def _determine_auth(**kwargs):
             credentials = ServicePrincipalCredentials(kwargs['client_id'],
                                                       kwargs['secret'],
                                                       tenant=kwargs['tenant'],
-                                                      cloud_environment=cloud_env)
+                                                      cloud_environment=cloud_env,
+                                                      **cred_kwargs)
     elif set(user_pass_creds_kwargs).issubset(kwargs):
         if not (kwargs['username'] and kwargs['password']):
             raise Exception(
@@ -109,7 +104,8 @@ async def _determine_auth(**kwargs):
         else:
             credentials = UserPassCredentials(kwargs['username'],
                                               kwargs['password'],
-                                              cloud_environment=cloud_env)
+                                              cloud_environment=cloud_env,
+                                              **cred_kwargs)
     else:
         raise Exception(
             'Unable to determine credentials. '
@@ -172,7 +168,7 @@ async def get_client(hub, client_type, **kwargs):
                   'The azure {0} client is not available.'.format(client_type)
         )
 
-    credentials, subscription_id, cloud_env = await _determine_auth(**kwargs)
+    credentials, subscription_id, cloud_env = await hub.exec.utils.azurerm.determine_auth(**kwargs)
 
     if client_type == 'subscription':
         client = Client(
@@ -325,3 +321,43 @@ async def compare_list_of_dicts(hub, old, new, convert_id_to_name=None):
                 return ret
 
     return ret
+
+
+async def get_identity_credentials(hub, **kwargs):
+    '''
+    Acquire Azure RM Credentials from the identity provider (not for mgmt)
+
+    This is accessible on the hub so clients out in the code can use it. Non-management clients
+    can't be consolidated neatly here.
+
+    We basically set environment variables based upon incoming parameters and then pass off to
+    the DefaultAzureCredential object to correctly parse those environment variables. See the
+    `Microsoft Docs on EnvironmentCredential <https://aka.ms/azsdk-python-identity-default-cred-ref>`_
+    for more information.
+    '''
+    kwarg_map = {
+        'tenant': 'AZURE_TENANT_ID',
+        'client_id': 'AZURE_CLIENT_ID',
+        'secret': 'AZURE_CLIENT_SECRET',
+        'client_certificate_path': 'AZURE_CLIENT_CERTIFICATE_PATH',
+        'username': 'AZURE_USERNAME',
+        'password': 'AZURE_PASSWORD',
+    }
+
+    for kw in kwarg_map:
+        if kwargs.get(kw):
+            os.environ[kwarg_map[kw]] = kwargs[kw]
+
+    try:
+        if kwargs.get('cloud_environment') and kwargs.get('cloud_environment').startswith('http'):
+            authority = kwargs['cloud_environment']
+        else:
+            authority = getattr(KnownAuthorities, kwargs.get('cloud_environment', 'AZURE_PUBLIC_CLOUD'))
+        log.debug('AUTHORITY: %s', authority)
+    except AttributeError as exc:
+        log.error('Unknown authority presented for "cloud_environment": %s', exc)
+        authority = KnownAuthorities.AZURE_PUBLIC_CLOUD
+
+    credential = DefaultAzureCredential(authority=authority)
+
+    return credential
