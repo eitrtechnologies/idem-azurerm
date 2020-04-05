@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Log Analytics Workspace State Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: VERSION
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -78,7 +78,7 @@ TREQ = {
 }
 
 
-async def present(hub, ctx, name, resource_group, location, sku=None, retention=None, customer_id=None, etag=None,
+async def present(hub, ctx, name, resource_group, location, sku=None, retention=None, customer_id=None,
                   tags=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: VERSION
@@ -99,8 +99,6 @@ async def present(hub, ctx, name, resource_group, location, sku=None, retention=
 
     :param customer_id: The ID associated with the workspace. Setting this value at creation time allows the workspace
         being created to be linked to an existing workspace.
-
-    :param etag: The ETag of the workspace.
 
     :param tags: A dictionary of strings can be passed as tag metadata to the key vault.
 
@@ -166,11 +164,11 @@ async def present(hub, ctx, name, resource_group, location, sku=None, retention=
                     'new': customer_id
                 }
 
-        if etag:
-            if etag != workspace.get('e_tag'):
+        if kwargs.get('etag'):
+            if kwargs.get('etag') != workspace.get('e_tag'):
                 ret['changes']['e_tag'] = {
                     'old': workspace.get('e_tag'),
-                    'new': etag
+                    'new': kwargs.get('etag')
                 }
 
         if not ret['changes']:
@@ -201,8 +199,8 @@ async def present(hub, ctx, name, resource_group, location, sku=None, retention=
             ret['changes']['new']['customer_id'] = customer_id
         if retention is not None:
             ret['changes']['new']['retention_in_days'] = retention
-        if etag:
-            ret['changes']['new']['e_tag'] = etag
+        if kwargs.get('etag'):
+            ret['changes']['new']['e_tag'] = kwargs.get('etag')
 
     if ctx['test']:
         ret['comment'] = 'Log Analytics Workspace {0} would be created.'.format(name)
@@ -218,7 +216,6 @@ async def present(hub, ctx, name, resource_group, location, sku=None, retention=
         location=location,
         sku=sku,
         retention=retention,
-        etag=etag,
         customer_id=customer_id,
         tags=tags,
         **workspace_kwargs
@@ -237,7 +234,7 @@ async def present(hub, ctx, name, resource_group, location, sku=None, retention=
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: VERSION
 
     Ensure a specified Log Analytics Workspace does not exist.
 
@@ -291,13 +288,10 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         }
         return ret
 
-    workspace_kwargs = kwargs.copy()
-    workspace_kwargs.update(connection_auth)
-
     deleted = await hub.exec.azurerm.log_analytics.workspace.delete(
         name,
         resource_group,
-        **workspace_kwargs
+        **connection_auth
     )
 
     if deleted:

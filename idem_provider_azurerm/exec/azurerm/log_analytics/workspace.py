@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Log Analytics Workspace Execution Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: VERSION
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -59,11 +59,12 @@ try:
 except ImportError:
     pass
 
+__func_alias__ = {"list_": "list"}
+
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, name, resource_group, location, sku=None, retention=None, customer_id=None, etag=None,
-                           **kwargs):
+async def create_or_update(hub, name, resource_group, location, sku=None, retention=None, customer_id=None, **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -83,8 +84,6 @@ async def create_or_update(hub, name, resource_group, location, sku=None, retent
 
     :param customer_id: The ID associated with the workspace. Setting this value at creation time allows the workspace
         being created to be linked to an existing workspace.
-
-    :param etag: The ETag of the workspace.
 
     CLI Example:
 
@@ -107,7 +106,6 @@ async def create_or_update(hub, name, resource_group, location, sku=None, retent
             sku=sku,
             customer_id=customer_id,
             retention=retention,
-            e_tag=etag,
             **kwargs
         )
 
@@ -204,13 +202,13 @@ async def list_(hub, **kwargs):
     .. versionadded:: VERSION
 
     Gets the workspaces in a subscription.
-    
+
     CLI Example:
-    
+
     .. code-block:: bash
-    
+
         azurerm.log_analytics.workspace.list
-    
+
     '''
     result = {}
     logconn = await hub.exec.utils.azurerm.get_client('loganalytics', **kwargs)
@@ -233,10 +231,10 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
     '''
     .. versionadded:: VERSION
 
-    Gets the workspaces in a resource group.  
-                                           
+    Gets the workspaces in a resource group.
+
     :param resource_group: The name of the resource group to get. The name is case insensitive.
-                                                  
+
     CLI Example:
 
     .. code-block:: bash
