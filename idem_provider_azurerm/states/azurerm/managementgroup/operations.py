@@ -115,9 +115,9 @@ async def present(hub, ctx, name, display_name=None, parent=None, connection_aut
 
     if 'error' not in mgroup:
         if parent:
-            if parent != mgroup.get('parent').get('id'):
+            if parent != mgroup.get('parent', {}).get('id'):
                 ret['changes']['parent'] = {
-                    'old': mgroup.get('parent').get('id'),
+                    'old': mgroup.get('parent', {}).get('id'),
                     'new': parent
                 }
 
