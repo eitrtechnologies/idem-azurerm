@@ -58,6 +58,8 @@ try:
 except ImportError:
     pass
 
+__func_alias__ = {"list_": "list"}
+
 log = logging.getLogger(__name__)
 
 
