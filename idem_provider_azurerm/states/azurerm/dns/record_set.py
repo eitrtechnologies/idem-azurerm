@@ -87,7 +87,6 @@ parameters are sensitive, it's recommended to pass them to the states via pillar
                 - connection_auth: {{ profile }}
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -103,8 +102,8 @@ log = logging.getLogger(__name__)
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
-            'azurerm.dns.zone.present',
+            'states.azurerm.resource.group.present',
+            'states.azurerm.dns.zone.present',
         ]
     },
 }
@@ -363,10 +362,12 @@ async def present(hub, ctx, name, zone_name, resource_group, record_type, if_mat
         return ret
 
     ret['comment'] = 'Failed to create record set {0}! ({1})'.format(name, rec_set.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def absent(hub, ctx, name, zone_name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, zone_name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -384,6 +385,7 @@ async def absent(hub, ctx, name, zone_name, resource_group, connection_auth=None
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
     '''
     ret = {
         'name': name,

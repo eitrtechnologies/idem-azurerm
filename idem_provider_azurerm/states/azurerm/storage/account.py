@@ -70,7 +70,7 @@ log = logging.getLogger(__name__)
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
+            'states.azurerm.resource.group.present',
         ]
     }
 }
@@ -284,7 +284,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, custom_do
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -300,7 +300,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
     Example usage:
 
     .. code-block:: yaml
-        Ensure storage account exists:
+        Ensure storage account does not exist:
             azurerm.storage.account.absent:
                 - name: my_account
                 - resource_group: my_rg

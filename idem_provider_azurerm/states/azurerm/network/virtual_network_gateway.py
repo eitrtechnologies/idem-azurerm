@@ -85,31 +85,25 @@ Azure Resource Manager (ARM) Virtual Network Gateway State Module
                 - connection_auth: {{ profile }}
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 import logging
 import re
-
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
 
 log = logging.getLogger(__name__)
 
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
-            'azurerm.network.virtual_network.present',
+            'states.azurerm.resource.group.present',
+            'states.azurerm.network.virtual_network.present',
         ]
     },
     'connection_present': {
         'require': [
-            'azurerm.resource.group.present',
-            'azurerm.network.virtual_network.present',
-            'azurerm.network.virtual_network_gateway.present',
+            'states.azurerm.resource.group.present',
+            'states.azurerm.network.virtual_network.present',
+            'states.azurerm.network.virtual_network_gateway.present',
         ]
     },
 }
@@ -248,6 +242,7 @@ async def connection_present(hub, ctx, name, resource_group, virtual_network_gat
                 - require:
                   - azurearm_resource: Ensure resource group exists
                   - azurearm_network: Ensure virtual network gateway exists
+
     '''
     ret = {
         'name': name,
@@ -450,10 +445,12 @@ async def connection_present(hub, ctx, name, resource_group, virtual_network_gat
         return ret
 
     ret['comment'] = 'Failed to create virtual network gateway connection {0}! ({1})'.format(name, con.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def connection_absent(hub, ctx, name, resource_group, connection_auth=None):
+async def connection_absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -478,6 +475,7 @@ async def connection_absent(hub, ctx, name, resource_group, connection_auth=None
                 - name: connection1
                 - resource_group: group1
                 - connection_auth: {{ profile }}
+
     '''
     ret = {
         'name': name,
@@ -648,6 +646,7 @@ async def present(hub, ctx, name, resource_group, virtual_network, ip_configurat
                 - require:
                   - azurearm_resource: Ensure resource group exists
                   - azurearm_network: Ensure virtual network gateway exists
+
     '''
     ret = {
         'name': name,
@@ -796,10 +795,12 @@ async def present(hub, ctx, name, resource_group, virtual_network, ip_configurat
         return ret
 
     ret['comment'] = 'Failed to create virtual network gateway {0}! ({1})'.format(name, gateway.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -824,6 +825,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
                 - name: gateway1
                 - resource_group: group1
                 - connection_auth: {{ profile }}
+
     '''
     ret = {
         'name': name,

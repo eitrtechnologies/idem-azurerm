@@ -11,6 +11,7 @@ Azure Resource Manager (ARM) Key Vault State Module
     * `azure-common <https://pypi.python.org/pypi/azure-common>`_ >= 1.1.23
     * `azure-mgmt <https://pypi.python.org/pypi/azure-mgmt>`_ >= 4.0.0
     * `azure-mgmt-compute <https://pypi.python.org/pypi/azure-mgmt-compute>`_ >= 4.6.2
+    * `azure-mgmt-keyvault <https://pypi.python.org/pypi/azure-mgmt-keyvault>`_ >= 1.1.0
     * `azure-mgmt-network <https://pypi.python.org/pypi/azure-mgmt-network>`_ >= 4.0.0
     * `azure-mgmt-resource <https://pypi.python.org/pypi/azure-mgmt-resource>`_ >= 2.2.0
     * `azure-mgmt-storage <https://pypi.python.org/pypi/azure-mgmt-storage>`_ >= 2.0.0
@@ -71,7 +72,7 @@ log = logging.getLogger(__name__)
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
+            'states.azurerm.resource.group.present',
         ]
     }
 }
@@ -87,8 +88,6 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
     Ensure a specified keyvault exists.
 
     :param name: The name of the vault.
-
-    :param resource_group: The name of the resource group to which the vault belongs.
 
     :param resource_group: The name of the resource group to which the vault belongs.
 
@@ -157,7 +156,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
     .. code-block:: yaml
 
         Ensure key vault exists:
-            azurerm.key_vault.vault.present:
+            azurerm.keyvault.vault.present:
                 - name: my_vault
                 - resource_group: my_rg
                 - location: my_location
@@ -182,7 +181,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
                 - tags:
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
-    
+
     '''
     ret = {
         'name': name,
@@ -195,7 +194,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
         ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
         return ret
 
-    vault = await hub.exec.azurerm.key_vault.vault.get(
+    vault = await hub.exec.azurerm.keyvault.vault.get(
         name,
         resource_group,
         azurearm_log_level='info',
@@ -206,19 +205,54 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
         tag_changes = await hub.exec.utils.dictdiffer.deep_diff(vault.get('tags', {}), tags or {})
         if tag_changes:
             ret['changes']['tags'] = tag_changes
-    
+
         # Checks for changes in the account_policies parameter
         if len(access_policies or []) == len(vault.get('properties').get('access_policies', [])):
             new_policies_sorted = sorted(access_policies or [], key=itemgetter('object_id'))
             old_policies_sorted = sorted(vault.get('properties').get('access_policies', []), key=itemgetter('object_id'))
-            for index, policy in enumerate(new_policies_sorted):
-                changes = await hub.exec.utils.dictdiffer.deep_diff(old_policies_sorted[index], policy)
-                if changes:
-                    ret['changes']['access_policies'] = {
-                        'old': vault.get('properties').get('access_policies', []),
-                        'new': access_policies or []
-                    }
+            changed = False
+
+            for index, new_policy in enumerate(new_policies_sorted):
+                old_policy = old_policies_sorted[index]
+
+                # Checks for changes with the tenant_id key
+                if (old_policy.get('tenant_id') != new_policy.get('tenant_id')):
+                    changed = True
                     break
+
+                # Checks for changes with the object_id key
+                if (old_policy.get('object_id') != new_policy.get('object_id')):
+                    changed = True
+                    break
+
+                # Checks for changes within the permissions key
+                if new_policy['permissions'].get('keys') is not None:
+                    new_keys = sorted(new_policy['permissions'].get('keys'))
+                    old_keys = sorted(old_policy['permissions'].get('keys', []))
+                    if new_keys != old_keys:
+                        changed = True
+                        break
+
+                if new_policy['permissions'].get('secrets') is not None:
+                    new_secrets = sorted(new_policy['permissions'].get('secrets'))
+                    old_secrets = sorted(old_policy['permissions'].get('secrets', []))
+                    if new_secrets != old_secrets:
+                        changed = True
+                        break
+
+                if new_policy['permissions'].get('certificates') is not None:
+                    new_certificates = sorted(new_policy['permissions'].get('certificates'))
+                    old_certificates = sorted(old_policy['permissions'].get('certificates', []))
+                    if new_certificates != old_certificates:
+                        changed = True
+                        break
+
+            if changed:
+                ret['changes']['access_policies'] = {
+                    'old': vault.get('properties').get('access_policies', []),
+                    'new': access_policies
+                }
+
         else:
             ret['changes']['access_policies'] = {
                 'old': vault.get('properties').get('access_policies', []),
@@ -229,7 +263,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
             ret['changes']['sku'] = {
                 'old': vault.get('properties').get('sku').get('name'),
                 'new': sku
-            } 
+            }
 
         if enabled_for_deployment is not None:
             if enabled_for_deployment != vault.get('properties').get('enabled_for_deployment'):
@@ -301,7 +335,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
         if enabled_for_template_deployment is not None:
             ret['changes']['new']['enabled_for_template_deployment'] = enabled_for_template_deployment
         if enable_soft_delete is not None:
-            ret['changes']['new']['enable_soft_delete'] = enable_soft_delete 
+            ret['changes']['new']['enable_soft_delete'] = enable_soft_delete
         if create_mode:
             ret['changes']['new']['create_mode'] = create_mode
         if enable_purge_protection is not None:
@@ -315,7 +349,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
     vault_kwargs = kwargs.copy()
     vault_kwargs.update(connection_auth)
 
-    vault = await hub.exec.azurerm.key_vault.vault.create_or_update(
+    vault = await hub.exec.azurerm.keyvault.vault.create_or_update(
         name=name,
         resource_group=resource_group,
         location=location,
@@ -344,7 +378,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -362,7 +396,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
     .. code-block:: yaml
 
         Ensure key vault is absent:
-            azurerm.key_vault.vault.absent:
+            azurerm.keyvault.vault.absent:
                 - name: my_vault
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
@@ -379,7 +413,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
         ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
         return ret
 
-    vault = await hub.exec.azurerm.key_vault.vault.get(
+    vault = await hub.exec.azurerm.keyvault.vault.get(
         name,
         resource_group,
         azurearm_log_level='info',
@@ -400,7 +434,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
         }
         return ret
 
-    deleted = await hub.exec.azurerm.key_vault.vault.delete(
+    deleted = await hub.exec.azurerm.keyvault.vault.delete(
         name,
         resource_group,
         **connection_auth

@@ -79,7 +79,6 @@ Azure Resource Manager (ARM) Resource Policy State Module
                 - connection_auth: {{ profile }}
 
 '''
-
 # Import Python libs
 from __future__ import absolute_import
 import json
@@ -93,7 +92,7 @@ log = logging.getLogger(__name__)
 TREQ = {
     'assignment_present': {
         'require': [
-            'azurerm.resource.policy.definition_present',
+            'states.azurerm.resource.policy.definition_present',
         ]
     },
 }
@@ -365,10 +364,12 @@ async def definition_present(hub, ctx, name, policy_rule=None, policy_type=None,
         return ret
 
     ret['comment'] = 'Failed to create policy definition {0}! ({1})'.format(name, policy.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def definition_absent(hub, name, connection_auth=None):
+async def definition_absent(hub, name, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -380,6 +381,7 @@ async def definition_absent(hub, name, connection_auth=None):
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
     '''
     ret = {
         'name': name,
@@ -423,8 +425,8 @@ async def definition_absent(hub, name, connection_auth=None):
     return ret
 
 
-async def assignment_present(hub, ctx, name, scope, definition_name, display_name=None, description=None, assignment_type=None,
-                              parameters=None, connection_auth=None, **kwargs):
+async def assignment_present(hub, ctx, name, scope, definition_name, display_name=None, description=None,
+                             assignment_type=None, parameters=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -574,10 +576,12 @@ async def assignment_present(hub, ctx, name, scope, definition_name, display_nam
         return ret
 
     ret['comment'] = 'Failed to create policy assignment {0}! ({1})'.format(name, policy.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def assignment_absent(hub, ctx, name, scope, connection_auth=None):
+async def assignment_absent(hub, ctx, name, scope, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -592,6 +596,7 @@ async def assignment_absent(hub, ctx, name, scope, connection_auth=None):
     connection_auth
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
     '''
     ret = {
         'name': name,

@@ -85,29 +85,23 @@ Azure Resource Manager (ARM) Network Route State Module
                 - connection_auth: {{ profile }}
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 import logging
 import re
-
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
 
 log = logging.getLogger(__name__)
 
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
-            'azurerm.network.route.table_present',
+            'states.azurerm.resource.group.present',
+            'states.azurerm.network.route.table_present',
         ]
     },
     'table_present': {
         'require': [
-            'azurerm.resource.group.present',
+            'states.azurerm.resource.group.present',
         ]
     },
 }
@@ -251,10 +245,12 @@ async def table_present(hub, ctx, name, resource_group, tags=None, routes=None, 
         return ret
 
     ret['comment'] = 'Failed to create route table {0}! ({1})'.format(name, rt_tbl.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def table_absent(hub, ctx, name, resource_group, connection_auth=None):
+async def table_absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -269,6 +265,7 @@ async def table_absent(hub, ctx, name, resource_group, connection_auth=None):
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
     '''
     ret = {
         'name': name,
@@ -447,10 +444,12 @@ async def present(hub, ctx, name, address_prefix, next_hop_type, route_table, re
         return ret
 
     ret['comment'] = 'Failed to create route {0}! ({1})'.format(name, route.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def absent(hub, ctx, name, route_table, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, route_table, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -468,6 +467,7 @@ async def absent(hub, ctx, name, route_table, resource_group, connection_auth=No
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
     '''
     ret = {
         'name': name,

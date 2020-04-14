@@ -85,30 +85,24 @@ Azure Resource Manager (ARM) Local Network Gateway State Module
                 - connection_auth: {{ profile }}
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 import logging
 import re
-
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
 
 log = logging.getLogger(__name__)
 
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
+            'states.azurerm.resource.group.present',
         ]
     },
 }
 
 
-async def present(hub, ctx, name, resource_group, gateway_ip_address, bgp_settings=None, address_prefixes=None, tags=None,
-            connection_auth=None, **kwargs):
+async def present(hub, ctx, name, resource_group, gateway_ip_address, bgp_settings=None, address_prefixes=None,
+                  tags=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -264,10 +258,12 @@ async def present(hub, ctx, name, resource_group, gateway_ip_address, bgp_settin
         return ret
 
     ret['comment'] = 'Failed to create local network gateway {0}! ({1})'.format(name, gateway.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 

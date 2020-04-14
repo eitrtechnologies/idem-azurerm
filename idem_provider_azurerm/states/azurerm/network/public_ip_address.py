@@ -85,23 +85,17 @@ Azure Resource Manager (ARM) Network Public IP Address State Module
                 - connection_auth: {{ profile }}
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 import logging
 import re
-
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
 
 log = logging.getLogger(__name__)
 
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
+            'states.azurerm.resource.group.present',
         ]
     },
 }
@@ -290,10 +284,12 @@ async def present(hub, ctx, name, resource_group, tags=None, sku=None, public_ip
         return ret
 
     ret['comment'] = 'Failed to create public IP address {0}! ({1})'.format(name, pub_ip.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -308,6 +304,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
     '''
     ret = {
         'name': name,

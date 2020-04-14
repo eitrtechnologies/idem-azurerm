@@ -85,7 +85,6 @@ Azure Resource Manager (ARM) Compute Virtual Machine State Module
                 - connection_auth: {{ profile }}
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -95,9 +94,9 @@ log = logging.getLogger(__name__)
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
-            'azurerm.network.virtual_network.present',
-            'azurerm.network.virtual_network.subnet_present',
+            'states.azurerm.resource.group.present',
+            'states.azurerm.network.virtual_network.present',
+            'states.azurerm.network.virtual_network.subnet_present',
         ]
     },
 }
@@ -214,6 +213,8 @@ async def present(hub, ctx, name, resource_group, tags=None, connection_auth=Non
         return ret
 
     ret['comment'] = 'Failed to create virtual machine {0}! ({1})'.format(name, vm.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
@@ -232,6 +233,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
     '''
     ret = {
         'name': name,
@@ -265,10 +267,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         }
         return ret
 
-    vm_kwargs = kwargs.copy()
-    vm_kwargs.update(connection_auth)
-
-    deleted = await hub.exec.azurerm.compute.virtual_machine.delete(name, resource_group, **vm_kwargs)
+    deleted = await hub.exec.azurerm.compute.virtual_machine.delete(name, resource_group, **connection_auth)
 
     if deleted:
         ret['result'] = True

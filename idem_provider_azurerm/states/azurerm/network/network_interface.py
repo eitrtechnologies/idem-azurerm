@@ -85,34 +85,28 @@ Azure Resource Manager (ARM) Network Interface State Module
                 - connection_auth: {{ profile }}
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 import logging
 import re
-
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
 
 log = logging.getLogger(__name__)
 
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
-            'azurerm.network.virtual_network.present',
-            'azurerm.network.virtual_network.subnet_present',
-            'azurerm.network.network_security_group.present',
+            'states.azurerm.resource.group.present',
+            'states.azurerm.network.virtual_network.present',
+            'states.azurerm.network.virtual_network.subnet_present',
+            'states.azurerm.network.network_security_group.present',
         ]
     },
 }
 
 
-async def present(hub, ctx, name, ip_configurations, subnet, virtual_network, resource_group, tags=None, virtual_machine=None,
-            network_security_group=None, dns_settings=None, mac_address=None, primary=None,
-            enable_accelerated_networking=None, enable_ip_forwarding=None, connection_auth=None, **kwargs):
+async def present(hub, ctx, name, ip_configurations, subnet, virtual_network, resource_group, tags=None,
+                  virtual_machine=None, network_security_group=None, dns_settings=None, mac_address=None, primary=None,
+                  enable_accelerated_networking=None, enable_ip_forwarding=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -363,10 +357,12 @@ async def present(hub, ctx, name, ip_configurations, subnet, virtual_network, re
         return ret
 
     ret['comment'] = 'Failed to create network interface {0}! ({1})'.format(name, iface.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -381,6 +377,17 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure network interface absent:
+            azurerm.network.network_interface.absent:
+                - name: iface1
+                - resource_group: group1
+                - connection_auth: {{ profile }}
+
     '''
     ret = {
         'name': name,

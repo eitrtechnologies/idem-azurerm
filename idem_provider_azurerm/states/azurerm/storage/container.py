@@ -59,8 +59,8 @@ Azure Resource Manager (ARM) Blob Container State Module
                 client_id: ABCDEFAB-1234-ABCD-1234-ABCDEFABCDEF
                 secret: XXXXXXXXXXXXXXXXXXXXXXXX
                 cloud_environment: AZURE_PUBLIC_CLOUD
-'''
 
+'''
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -70,8 +70,8 @@ log = logging.getLogger(__name__)
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
-            'azurerm.storage.account.present',
+            'states.azurerm.resource.group.present',
+            'states.azurerm.storage.account.present',
         ]
     }
 }
@@ -353,7 +353,7 @@ async def immutability_policy_present(hub, ctx, name, account, resource_group,
     return ret
 
 
-async def absent(hub, ctx, name, account, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, account, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -429,7 +429,8 @@ async def absent(hub, ctx, name, account, resource_group, connection_auth=None):
     return ret
 
 
-async def immutability_policy_absent(hub, ctx, name, account, resource_group, if_match=None, connection_auth=None):
+async def immutability_policy_absent(hub, ctx, name, account, resource_group, if_match=None, connection_auth=None,
+                                     **kwargs):
     '''
     .. versionadded:: 1.0.0
 

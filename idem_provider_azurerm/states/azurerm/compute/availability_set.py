@@ -83,7 +83,6 @@ Azure Resource Manager (ARM) Compute Availability Set State Module
                 - connection_auth: {{ profile }}
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -93,14 +92,14 @@ log = logging.getLogger(__name__)
 TREQ = {
     'present': {
         'require': [
-            'azurerm.resource.group.present',
+            'states.azurerm.resource.group.present',
         ]
     },
 }
 
 
-async def present(hub, ctx, name, resource_group, tags=None, platform_update_domain_count=None, platform_fault_domain_count=None,
-            virtual_machines=None, sku=None, connection_auth=None, **kwargs):
+async def present(hub, ctx, name, resource_group, tags=None, platform_update_domain_count=None,
+                  platform_fault_domain_count=None, virtual_machines=None, sku=None, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -257,10 +256,12 @@ async def present(hub, ctx, name, resource_group, tags=None, platform_update_dom
         return ret
 
     ret['comment'] = 'Failed to create availability set {0}! ({1})'.format(name, aset.get('error'))
+    if not ret['result']:
+        ret['changes'] = {}
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -275,6 +276,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None):
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
     '''
     ret = {
         'name': name,
