@@ -77,7 +77,7 @@ TREQ = {
     }
 }
 
-async def present(hub, ctx, server_name, resource_group, policy_state, disabled_alerts=[''], email_addresses=[''],
+async def present(hub, ctx, server_name, resource_group, policy_state, disabled_alerts=None, email_addresses=None,
                   email_account_admins=None, storage_endpoint=None, storage_account_access_key=None,
                   retention_days=None, force_access_key=False, connection_auth=None, **kwargs):
     '''
@@ -156,14 +156,14 @@ async def present(hub, ctx, server_name, resource_group, policy_state, disabled_
                 'new': policy_state
             }
 
-        if disabled_alerts is not None:
+        if disabled_alerts:
             if sorted(disabled_alerts or ['']) != sorted(policy.get('disabled_alerts', [''])):
                 ret['changes']['disabled_alerts'] = {
                     'old': policy.get('disabled_alerts', ['']),
                     'new': (disabled_alerts or [''])
                 }
 
-        if email_addresses is not None:
+        if email_addresses:
             if sorted(email_addresses or ['']) != sorted(policy.get('email_addresses', [''])):
                 ret['changes']['email_addresses'] = {
                     'old': policy.get('email_addresses', ['']),
@@ -221,9 +221,9 @@ async def present(hub, ctx, server_name, resource_group, policy_state, disabled_
             }
         }
 
-        if disabled_alerts is not None:
+        if disabled_alerts:
             ret['changes']['new']['disabled_alerts'] = disabled_alerts
-        if email_addresses is not None:
+        if email_addresses:
             ret['changes']['new']['email_addresses'] = email_addresses
         if email_account_admins is not None:
             ret['changes']['new']['email_account_admins'] = email_account_admins

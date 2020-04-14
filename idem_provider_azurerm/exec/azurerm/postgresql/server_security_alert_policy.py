@@ -62,7 +62,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, server_name, resource_group, policy_state, disabled_alerts=[''], email_addresses=[''],
+async def create_or_update(hub, server_name, resource_group, policy_state, disabled_alerts=None, email_addresses=None,
                            email_account_admins=None, storage_endpoint=None, storage_account_access_key=None,
                            retention_days=None, **kwargs):
     '''
