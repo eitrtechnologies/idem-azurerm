@@ -170,7 +170,7 @@ async def present(hub, ctx, server_name, resource_group, policy_state, disabled_
                     'new': (email_addresses or [''])
                 }
 
-        if storage_endpoint is not None:
+        if storage_endpoint:
             if storage_endpoint != policy.get('storage_endpoint'):
                 ret['changes']['storage_endpoint'] = {
                     'old': policy.get('storage_endpoint'),
@@ -191,7 +191,7 @@ async def present(hub, ctx, server_name, resource_group, policy_state, disabled_
                     'new': retention_days
                 }
 
-        if storage_account_access_key is not None:
+        if storage_account_access_key:
             if force_access_key:
                 ret['changes']['storage_account_access_key'] = {
                     'new': 'REDACTED'
@@ -227,9 +227,9 @@ async def present(hub, ctx, server_name, resource_group, policy_state, disabled_
             ret['changes']['new']['email_addresses'] = email_addresses
         if email_account_admins is not None:
             ret['changes']['new']['email_account_admins'] = email_account_admins
-        if storage_endpoint is not None:
+        if storage_endpoint:
             ret['changes']['new']['storage_endpoint'] = storage_endpoint
-        if storage_account_access_key is not None:
+        if storage_account_access_key:
             ret['changes']['new']['storage_account_access_key'] = 'REDACTED'
         if retention_days is not None:
             ret['changes']['new']['retention_days'] = retention_days
