@@ -72,8 +72,8 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
                            create_interfaces=True, network_resource_group=None, virtual_network=None,
                            subnet=None, network_interfaces=None, os_disk_vhd_uri=None, os_disk_image_uri=None,
                            os_type=None, os_disk_name=None, os_disk_caching=None, image=None, admin_password=None,
-                           disk_enc_secret_url=None, disk_enc_src_vault=None, key_enc_key_url=None,
-                           key_enc_src_vault=None, **kwargs):
+                           enable_disk_enc=False, disk_enc_keyvault=None, disk_enc_volume_type=None,
+                           disk_enc_kek_url=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -90,6 +90,32 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
     #   eviction_policy = deallocate or delete
     #   license_type = Windows_Client or Windows_Server
     #   zones = [ list of zone numbers ]
+
+    Virtual Machine Disk Encryption:
+        If you would like to enable disk encryption within the virtual machine you must set the enable_disk_enc
+        parameter to True. Disk encryption utilizes a VM published by Microsoft.Azure.Security of extension type
+        AzureDiskEncryptionForLinux or AzureDiskEncryption, depending on your virtual machine OS. More information
+        about Disk Encryption and its requirements can be found in the links below.
+
+        Disk Encryption for Windows Virtual Machines:
+        https://docs.microsoft.com/en-us/azure/virtual-machines/windows/disk-encryption-overview
+
+        Disk Encryption for Linux Virtual Machines:
+        https://docs.microsoft.com/en-us/azure/virtual-machines/linux/disk-encryption-overview
+
+        The following parameters may be used to implement virtual machine disk encryption:
+        :param enable_disk_enc: This boolean flag will represent whether disk encryption has been enabled for the
+            virtual machine. This is a required parameter.
+
+        :param disk_enc_keyvault: The resource ID of the key vault containing the disk encryption key, which is a
+            Key Vault Secret. This is a required parameter.
+
+        :param disk_enc_volume_type: The volume type(s) that will be encrypted. Possible values include: 'OS',
+            'Data', and 'All'. This is a required parameter.
+
+        :param disk_enc_kek_url: The Key Identifier URL for a Key Encryption Key (KEK). The KEK is used as an
+            additional layer of security for encryption keys. Azure Disk Encryption will use the KE to wrap the
+            encryption secrets before writing to the Key Vault. This is an optional parameter.
 
     CLI Example:
 
@@ -135,12 +161,6 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
 
     if os_disk_vhd_uri and not isinstance(os_disk_vhd_uri, dict):
         os_disk_vhd_uri = {'id': os_disk_vhd_uri}
-
-    if disk_enc_src_vault and not isinstance(disk_enc_src_vault, dict):
-        disk_enc_src_vault = {'id': disk_enc_src_vault}
-
-    if key_enc_src_vault and not isinstance(key_enc_src_vault, dict):
-        key_enc_src_vault = {'id': key_enc_src_vault}
 
     if not network_interfaces and create_interfaces:
         ipc = {'name': f'{name}-iface0-ip'}
@@ -301,27 +321,6 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
                 { 'image_reference': dict(zip(image_keys, image.split('|'))) }
             )
 
-    if disk_enc_secret_url:
-        if is_valid_resource_id(disk_enc_src_vault['id']):
-            params['storage_profile']['os_disk'].update({
-                'encryption_settings': {
-                    'disk_encryption_key': {
-                        'secret_url': disk_enc_secret_url,
-                        'source_vault': disk_enc_src_vault
-                    },
-                    'enabled': True
-                }
-            })
-
-        if key_enc_key_url:
-            if is_valid_resource_id(key_enc_src_vault['id']):
-                params['storage_profile']['os_disk']['encryption_settings'].update({
-                    'key_encryption_key': {
-                        'key_url': key_enc_key_url,
-                        'source_vault': key_enc_src_vault
-                    }
-                })
-
     try:
         vmmodel = await hub.exec.utils.azurerm.create_object_model(
             'compute',
@@ -360,6 +359,66 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
             network_interfaces.append(iface_details)
 
         result['network_profile']['network_interfaces'] = network_interfaces
+
+        '''
+        Virtual Machine Disk Encryption:
+            If you would like to enable disk encryption within the virtual machine you must set the enable_disk_enc
+            parameter to True. Disk encryption utilizes a VM published by Microsoft.Azure.Security of extension type
+            AzureDiskEncryptionForLinux or AzureDiskEncryption, depending on your virtual machine OS. More information
+            about Disk Encryption and its requirements can be found in the links below.
+
+            Disk Encryption for Windows Virtual Machines:
+            https://docs.microsoft.com/en-us/azure/virtual-machines/windows/disk-encryption-overview
+
+            Disk Encryption for Linux Virtual Machines:
+            https://docs.microsoft.com/en-us/azure/virtual-machines/linux/disk-encryption-overview
+
+            The following parameters may be used to implement virtual machine disk encryption:
+            :param enable_disk_enc: This boolean flag will represent whether disk encryption has been enabled for the
+                virtual machine. This is a required parameter.
+
+            :param disk_enc_keyvault: The resource ID of the key vault containing the disk encryption key, which is a
+                Key Vault Secret. This is a required parameter.
+
+            :param disk_enc_volume_type: The volume type(s) that will be encrypted. Possible values include: 'OS',
+                'Data', and 'All'. This is a required parameter.
+
+            :param disk_enc_kek_url: The Key Identifier URL for a Key Encryption Key (KEK). The KEK is used as an
+                additional layer of security for encryption keys. Azure Disk Encryption will use the KE to wrap the
+                encryption secrets before writing to the Key Vault. This is an optional parameter.
+
+        '''
+        if enable_disk_enc:
+            instance = await hub.exec.azurerm.compute.virtual_machine.get(
+                resource_group=resource_group,
+                name=name,
+            )
+
+            is_linux = True if instance['os_disk']['os_type'] == 'Linux' else False
+            extension_info = {'publisher': 'Microsoft.Azure.Security',
+                              'settings': {'VolumeType': disk_enc_volume_type,
+                                           'KeyVaultResourceId': disk_enc_keyvault}}
+
+            if is_linux:
+                extension_info['type'] = 'AzureDiskEncryptionForLinux'
+                extension_info['version'] = '1.1'
+            else:
+                extension_info['type'] = 'AzureDiskEncryption'
+                extension_info['version'] = '2.2'
+
+            if disk_enc_kek_url:
+                extension_info['settings']['KeyEncryptionKeyURL'] = disk_enc_kek_url
+
+            encryption_info = await hub.exec.azurerm.compute.virtual_machine_extension.create_or_update(
+                name='Azure Disk Encryption',
+                vm_name=name,
+                resource_group=resource_group,
+                location=kwargs['location'],
+                publisher=extension_info['publisher'],
+                extension_type=extension_info['type'],
+                version=extension_info['version'],
+                settings=extension_info['settings']
+            )
 
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
