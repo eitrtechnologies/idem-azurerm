@@ -83,7 +83,6 @@ Azure Resource Manager (ARM) Resource Policy State Module
 from __future__ import absolute_import
 import json
 import logging
-import os
 
 log = logging.getLogger(__name__)
 
@@ -121,25 +120,12 @@ async def definition_present(hub, ctx, name, policy_rule=None, policy_type=None,
         precedence for use if multiple parameters are used. Note that the `name` field in the JSON will override the
         ``name`` parameter in the state.
 
-    START TODO
     :param policy_rule_file:
-        The source of a JSON file defining the entirety of a policy definition. See `Azure Policy Definition
-        documentation <https://docs.microsoft.com/en-us/azure/azure-policy/policy-definition#policy-rule>`_ for
-        details on the structure. One of ``policy_rule``, ``policy_rule_json``, or ``policy_rule_file`` is required,
+        The local source location of a JSON file defining the entirety of a policy definition. See `Azure Policy
+        Definition documentation <https://docs.microsoft.com/en-us/azure/azure-policy/policy-definition#policy-rule>`_
+        for details on the structure. One of ``policy_rule``, ``policy_rule_json``, or ``policy_rule_file`` is required,
         in that order of precedence for use if multiple parameters are used. Note that the `name` field in the JSON
         will override the ``name`` parameter in the state.
-
-    :param skip_verify:
-        Used for the ``policy_rule_file`` parameter. If ``True``, hash verification of remote file sources
-        (``http://``, ``https://``, ``ftp://``) will be skipped, and the ``source_hash`` argument will be ignored.
-
-    :param source_hash:
-        This can be a source hash string or the URI of a file that contains source hash strings.
-
-    :param source_hash_name:
-        When ``source_hash`` refers to a hash file, Salt will try to find the correct hash by matching the
-        filename/URI associated with that hash.
-    END TODO
 
     :param policy_type:
         The type of policy definition. Possible values are NotSpecified, BuiltIn, and Custom. Only used with the
@@ -220,45 +206,13 @@ async def definition_present(hub, ctx, name, policy_rule=None, policy_type=None,
         except Exception as exc:
             ret['comment'] = 'Unable to load policy rule json! ({0})'.format(exc)
             return ret
-    # START TODO
     elif policy_rule_file:
         try:
-            # THIS IS THE PROBLEM... ALLOWING JINJA TEMPLATING OF FILES AND
-            # GETTING THEM FROM A REMOTE SOURCE...
-            # pylint: disable=unused-variable
-            sfn, source_sum, comment_ = __salt__['file.get_managed'](
-                None,
-                template,
-                policy_rule_file,
-                source_hash,
-                source_hash_name,
-                None,
-                None,
-                None,
-                __env__,
-                None,
-                None,
-                skip_verify=skip_verify,
-                **kwargs
-            )
-        except Exception as exc:
-            ret['comment'] = 'Unable to locate policy rule file "{0}"! ({1})'.format(policy_rule_file, exc)
-            return ret
-
-        if not sfn:
-            ret['comment'] = 'Unable to locate policy rule file "{0}"!)'.format(policy_rule_file)
-            return ret
-
-        try:
-            with open(sfn, 'r') as prf:
+            with open(policy_rule_file, 'r') as prf:
                 temp_rule = json.load(prf)
         except Exception as exc:
             ret['comment'] = 'Unable to load policy rule file "{0}"! ({1})'.format(policy_rule_file, exc)
             return ret
-
-        if sfn:
-            os.remove(sfn)
-    # END TODO
 
     policy_name = name
     if policy_rule_json or policy_rule_file:
