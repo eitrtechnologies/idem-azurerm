@@ -95,10 +95,26 @@ TREQ = {
 }
 
 
-async def definition_present(hub, ctx, name, policy_rule=None, policy_type=None, mode=None, display_name=None, description=None,
-                       metadata=None, parameters=None, policy_rule_json=None, policy_rule_file=None,
-                       template='jinja', source_hash=None, source_hash_name=None, skip_verify=False,
-                       connection_auth=None, **kwargs):
+async def definition_present(
+    hub,
+    ctx,
+    name,
+    policy_rule=None,
+    policy_type=None,
+    mode=None,
+    display_name=None,
+    description=None,
+    metadata=None,
+    parameters=None,
+    policy_rule_json=None,
+    policy_rule_file=None,
+    template='jinja',
+    source_hash=None,
+    source_hash_name=None,
+    skip_verify=False,
+    connection_auth=None,
+    **kwargs
+):
     '''
     .. versionadded:: 1.0.0
 
