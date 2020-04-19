@@ -113,8 +113,9 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
             'Data', and 'All'. This is a required parameter.
 
         :param disk_enc_kek_url: The Key Identifier URL for a Key Encryption Key (KEK). The KEK is used as an
-            additional layer of security for encryption keys. Azure Disk Encryption will use the KE to wrap the
-            encryption secrets before writing to the Key Vault. This is an optional parameter.
+            additional layer of security for encryption keys. Azure Disk Encryption will use the KEK to wrap the
+            encryption secrets before writing to the Key Vault. The KEK must be in the same vault as the encryption
+            secrets. This is an optional parameter.
 
     CLI Example:
 
@@ -360,9 +361,14 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
         result['network_profile']['network_interfaces'] = network_interfaces
 
         if enable_disk_enc:
+            # Extract connection auth values
+            auth_kwargs = ('tenant', 'client_id', 'secret', 'subscription_id', 'username', 'password')
+            connection_profile = dict([[x, kwargs[x]] for x in auth_kwargs if x in kwargs])
+
             instance = await hub.exec.azurerm.compute.virtual_machine.get(
                 resource_group=resource_group,
                 name=name,
+                **connection_profile
             )
 
             is_linux = True if instance['storage_profile']['os_disk']['os_type'] == 'Linux' else False
@@ -385,13 +391,7 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
 
             if disk_enc_kek_url:
                 extension_info['settings']['KeyEncryptionKeyURL'] = disk_enc_kek_url
- 
-            # Extract connection auth values
-            auth_kwargs = ['tenant', 'client_id', 'secret', 'subscription_id', 'username', 'password']
-            connection_profile = {}
-            for auth in auth_kwargs:
-                if auth in kwargs:
-                    connection_profile[auth] = kwargs[auth]
+                extension_info['settings']['KekVaultResourceId'] = disk_enc_keyvault
 
             encryption_info = await hub.exec.azurerm.compute.virtual_machine_extension.create_or_update(
                 name='DiskEncryption',
@@ -404,6 +404,8 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
                 settings=extension_info['settings'],
                 **connection_profile
             )
+
+            result['ENCRYPTED_SETTINGS_STUFF'] = encryption_info
 
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
