@@ -48,7 +48,6 @@ Azure Resource Manager (ARM) Compute Virtual Machine Extension Operations Execut
 # Python libs
 from __future__ import absolute_import
 import logging
-import json
 
 # Azure libs
 HAS_LIBS = False
@@ -65,7 +64,7 @@ log = logging.getLogger(__name__)
 
 
 async def create_or_update(hub, name, vm_name, resource_group, location, publisher, extension_type, version, settings,
-                           tags=None, **kwargs):
+                           **kwargs):
     '''
     .. versionadded:: VERSION
 
@@ -86,7 +85,7 @@ async def create_or_update(hub, name, vm_name, resource_group, location, publish
     :param version: Specifies the version of the script handler.
 
     :param settings: A dictionary representing the public settings for the extension. This dictionary will be
-        converted to json.
+        utilized as JSON by the SDK operation..
 
     CLI Example:
 
@@ -99,14 +98,12 @@ async def create_or_update(hub, name, vm_name, resource_group, location, publish
     result = {}
     compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
 
-    public_settings = json.dumps(settings)
-
     try:
         paramsmodel = await hub.exec.utils.azurerm.create_object_model(
             'compute',
             'VirtualMachineExtension',
             location=location,
-            settings=public_settings,
+            settings=settings,
             publisher=publisher,
             virtual_machine_extension_type=extension_type,
             type_handler_version=version,
