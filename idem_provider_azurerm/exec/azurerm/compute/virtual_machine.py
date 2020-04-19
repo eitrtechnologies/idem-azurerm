@@ -378,13 +378,13 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
 
             extension_info = {'publisher': 'Microsoft.Azure.Security',
                               'settings': {'VolumeType': disk_enc_volume_type,
+                                           'EncryptionOperation': 'EnableEncryption',
                                            'KeyVaultResourceId': disk_enc_keyvault,
                                            'KeyVaultURL': disk_enc_keyvault_url}}
 
             if is_linux:
                 extension_info['type'] = 'AzureDiskEncryptionForLinux'
                 extension_info['version'] = '1.1'
-                extension_info['settings']['EncryptionOperation'] = 'EnableEncryption'
             else:
                 extension_info['type'] = 'AzureDiskEncryption'
                 extension_info['version'] = '2.2'
@@ -405,7 +405,7 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
                 **connection_profile
             )
 
-            result['ENCRYPTED_SETTINGS_STUFF'] = encryption_info
+            result['storage_profile']['disk_encryption'] = True
 
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
