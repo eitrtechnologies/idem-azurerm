@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Compute Virtual Machine Execution Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: VERSION
+
 :maintainer: <devops@eitr.tech>
 :maturity: new
 :depends:
@@ -66,15 +68,39 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, name, resource_group, vm_size, admin_username='idem', os_disk_create_option='FromImage',
-                           os_disk_size_gb=30, ssh_public_keys=None, allocate_public_ip=False,
-                           create_interfaces=True, network_resource_group=None, virtual_network=None,
-                           subnet=None, network_interfaces=None, os_disk_vhd_uri=None, os_disk_image_uri=None,
-                           os_type=None, os_disk_name=None, os_disk_caching=None, image=None, admin_password=None,
-                           enable_disk_enc=False, disk_enc_keyvault=None, disk_enc_volume_type=None,
-                           disk_enc_kek_url=None, **kwargs):
+async def create_or_update(
+    hub,
+    name,
+    resource_group,
+    vm_size,
+    admin_username='idem',
+    os_disk_create_option='FromImage',
+    os_disk_size_gb=30,
+    ssh_public_keys=None,
+    allocate_public_ip=False,
+    create_interfaces=True,
+    network_resource_group=None,
+    virtual_network=None,
+    subnet=None,
+    network_interfaces=None,
+    os_disk_vhd_uri=None,
+    os_disk_image_uri=None,
+    os_type=None,
+    os_disk_name=None,
+    os_disk_caching=None,
+    image=None,
+    admin_password=None,
+    enable_disk_enc=False,
+    disk_enc_keyvault=None,
+    disk_enc_volume_type=None,
+    disk_enc_kek_url=None,
+    data_disks=None,
+    **kwargs
+):
     '''
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: VERSION
 
     Create or update a virtual machine.
 
@@ -116,6 +142,32 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
             additional layer of security for encryption keys. Azure Disk Encryption will use the KEK to wrap the
             encryption secrets before writing to the Key Vault. The KEK must be in the same vault as the encryption
             secrets. This is an optional parameter.
+
+    Attaching Data Disks:
+        :param lun: (optional int) Specifies the logical unit number of the data disk. This value is used to identify
+            data disks within the VM and therefore must be unique for each data disk attached to a VM. If not
+            provided, we increment the lun designator based upon the index within the provided list of disks.
+        :param name: (optional str) The disk name. Defaults to "{vm_name}-datadisk{lun}"
+        :param vhd: (optional str or dict) Virtual hard disk to use. If a URI string is provided, it will be nested
+            under a "uri" key in a dictionary as expected by the SDK.
+        :param image: (optional str or dict) The source user image virtual hard disk. The virtual hard disk will be
+            copied before being attached to the virtual machine. If image is provided, the destination virtual hard
+            drive must not exist. If a URI string is provided, it will be nested under a "uri" key in a dictionary as
+            expected by the SDK.
+        :param caching: (optional str - read_only, read_write, or none) Specifies the caching requirements. Defaults to
+            "None" for Standard storage and "ReadOnly" for Premium storage.
+        :param write_accelerator_enabled: (optional bool - True or False) Specifies whether write accelerator should be
+            enabled or disabled on the disk.
+        :param create_option: (optional str - attach, from_image, or empty) Specifies how the virtual machine should be
+            created. The "attach" value is used when you are using a specialized disk to create the virtual machine. The
+            "from_image" value is used when you are using an image to create the virtual machine. If you are using a
+            platform image, you also use the imageReference element. If you are using a marketplace image, you also use
+            the plan element previously described.
+        :param disk_size_gb: (optional int) Specifies the size of an empty data disk in gigabytes. This element can be
+            used to overwrite the size of the disk in a virtual machine image. 
+        :param managed_disk: (optional str or dict) The managed disk parameters. If an ID string is provided, it will
+            be nested under an "id" key in a dictionary as expected by the SDK. If a dictionary is provided, the
+            "storage_account_type" parameter can be passed (accepts (Standard|Premium)_LRS or (Standard|Ultra)SSD_LRS).
 
     CLI Example:
 
@@ -195,6 +247,58 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
 
         network_interfaces.append(nic)
 
+    if not data_disks:
+        data_disks = []
+
+    for lun, data_disk in enumerate(data_disks):
+        if not isinstance(data_disk, dict):
+            log.warning("The data disk at index %s is not a dictionary: %s", lun, data_disk)
+            # drop from the list instead of halting. disks can always be attached after the fact.
+            data_disks.pop(lun)
+            continue
+        # restrict allowable keys
+        allowable = (
+            "lun",
+            "name",
+            "vhd",
+            "image",
+            "caching",
+            "write_accerator_enabled",
+            "create_option",
+            "disk_size_gb",
+            "managed_disk",
+            "to_be_detached",
+        )
+        data_disk = dict([[key, val] for key, val in data_disk.items() if key in allowable])
+
+        # set defaults
+        data_disk.setdefault("lun", lun)
+        data_disk.setdefault("name", f"{name}-datadisk{lun}")
+
+        # attach a vhd
+        if data_disk.get("vhd"):
+            if not isinstance(data_disk["vhd"], dict):
+                data_disk["vhd"] = {"uri": data_disk["vhd"]}
+            data_disk.setdefault("create_option", "attach")
+
+        # attach a managed disk
+        if data_disk.get("managed_disk"):
+            if not isinstance(data_disk["managed_disk"], dict):
+                data_disk["managed_disk"] = {"id": data_disk["managed_disk"]}
+
+        # from an image
+        if data_disk.get("image"):
+            if not isinstance(data_disk["image"], dict):
+                data_disk["image"] = {"uri": data_disk["image"]}
+            data_disk.setdefault("create_option", "from_image")
+
+        # empty data disk if not otherwise set above
+        data_disk.setdefault("create_option", "empty")
+        if data_disk["create_option"] == "empty":
+            data_disk.setdefault("disk_size_gb", 10)
+
+        log.debug("Data disk with lun %s = %s", lun, data_disk)
+
     params.update(
         {
             #'plan': {
@@ -209,17 +313,6 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
             'storage_profile': {
                 'os_disk': {
                     'os_type': os_type,
-                    #'encryption_settings': {
-                    #    'disk_encryption_key': {
-                    #        'secret_url': '',
-                    #        'source_vault': { id: '' }
-                    #    },
-                    #    'key_encryption_key': {
-                    #        'key_url': '',
-                    #        'source_vault': { id: '' }
-                    #    },
-                    #    'enabled': None # True or False
-                    #},
                     'name': os_disk_name,
                     'vhd': os_disk_vhd_uri,
                     'image': os_disk_image_uri,
@@ -230,20 +323,7 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
                     'disk_size_gb': os_disk_size_gb,
                     #'managed_disk': { 'id': None, 'storage_account_type': None } # (Standard|Premium)_LRS or (Standard|Ultra)SSD_LRS
                 },
-                'data_disks': [
-                    #{
-                    #    'lun': None,
-                    #    'name': None,
-                    #    'vhd': { 'uri': '' },
-                    #    'image': { 'uri': '' },
-                    #    'caching': None, # ReadOnly or ReadWrite
-                    #    'write_accelerator_enabled': None, # True or False
-                    #    'create_option': None, # Attach or FromImage
-                    #    'disk_size_gb': None,
-                    #    'managed_disk': { 'id': None, 'storage_account_type': None }, # (Standard|Premium)_LRS or (Standard|Ultra)SSD_LRS
-                    #    'to_be_detached': None # True or False
-                    #}
-                ]
+                'data_disks': data_disks,
             },
             #'additional_capabilities': {
             #    'ultra_ssd_enabled': None
