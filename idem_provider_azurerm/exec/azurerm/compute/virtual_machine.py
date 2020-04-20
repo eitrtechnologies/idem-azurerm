@@ -147,24 +147,32 @@ async def create_or_update(
         :param lun: (optional int) Specifies the logical unit number of the data disk. This value is used to identify
             data disks within the VM and therefore must be unique for each data disk attached to a VM. If not
             provided, we increment the lun designator based upon the index within the provided list of disks.
+
         :param name: (optional str) The disk name. Defaults to "{vm_name}-datadisk{lun}"
+
         :param vhd: (optional str or dict) Virtual hard disk to use. If a URI string is provided, it will be nested
             under a "uri" key in a dictionary as expected by the SDK.
+
         :param image: (optional str or dict) The source user image virtual hard disk. The virtual hard disk will be
             copied before being attached to the virtual machine. If image is provided, the destination virtual hard
             drive must not exist. If a URI string is provided, it will be nested under a "uri" key in a dictionary as
             expected by the SDK.
+
         :param caching: (optional str - read_only, read_write, or none) Specifies the caching requirements. Defaults to
             "None" for Standard storage and "ReadOnly" for Premium storage.
+
         :param write_accelerator_enabled: (optional bool - True or False) Specifies whether write accelerator should be
             enabled or disabled on the disk.
+
         :param create_option: (optional str - attach, from_image, or empty) Specifies how the virtual machine should be
             created. The "attach" value is used when you are using a specialized disk to create the virtual machine. The
             "from_image" value is used when you are using an image to create the virtual machine. If you are using a
             platform image, you also use the imageReference element. If you are using a marketplace image, you also use
             the plan element previously described.
+
         :param disk_size_gb: (optional int) Specifies the size of an empty data disk in gigabytes. This element can be
             used to overwrite the size of the disk in a virtual machine image. 
+
         :param managed_disk: (optional str or dict) The managed disk parameters. If an ID string is provided, it will
             be nested under an "id" key in a dictionary as expected by the SDK. If a dictionary is provided, the
             "storage_account_type" parameter can be passed (accepts (Standard|Premium)_LRS or (Standard|Ultra)SSD_LRS).
@@ -298,6 +306,7 @@ async def create_or_update(
             data_disk.setdefault("disk_size_gb", 10)
 
         log.debug("Data disk with lun %s = %s", lun, data_disk)
+        data_disks[lun] = data_disk
 
     params.update(
         {
