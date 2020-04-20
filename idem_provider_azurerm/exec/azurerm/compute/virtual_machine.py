@@ -45,7 +45,6 @@ Azure Resource Manager (ARM) Compute Virtual Machine Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 '''
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -72,7 +71,8 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
                            create_interfaces=True, network_resource_group=None, virtual_network=None,
                            subnet=None, network_interfaces=None, os_disk_vhd_uri=None, os_disk_image_uri=None,
                            os_type=None, os_disk_name=None, os_disk_caching=None, image=None, admin_password=None,
-                           **kwargs):
+                           enable_disk_enc=False, disk_enc_keyvault=None, disk_enc_volume_type=None,
+                           disk_enc_kek_url=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
 
@@ -90,11 +90,38 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
     #   license_type = Windows_Client or Windows_Server
     #   zones = [ list of zone numbers ]
 
+    Virtual Machine Disk Encryption:
+        If you would like to enable disk encryption within the virtual machine you must set the enable_disk_enc
+        parameter to True. Disk encryption utilizes a VM published by Microsoft.Azure.Security of extension type
+        AzureDiskEncryptionForLinux or AzureDiskEncryption, depending on your virtual machine OS. More information
+        about Disk Encryption and its requirements can be found in the links below.
+
+        Disk Encryption for Windows Virtual Machines:
+        https://docs.microsoft.com/en-us/azure/virtual-machines/windows/disk-encryption-overview
+
+        Disk Encryption for Linux Virtual Machines:
+        https://docs.microsoft.com/en-us/azure/virtual-machines/linux/disk-encryption-overview
+
+        The following parameters may be used to implement virtual machine disk encryption:
+        :param enable_disk_enc: This boolean flag will represent whether disk encryption has been enabled for the
+            virtual machine. This is a required parameter.
+
+        :param disk_enc_keyvault: The resource ID of the key vault containing the disk encryption key, which is a
+            Key Vault Secret. This is a required parameter.
+
+        :param disk_enc_volume_type: The volume type(s) that will be encrypted. Possible values include: 'OS',
+            'Data', and 'All'. This is a required parameter.
+
+        :param disk_enc_kek_url: The Key Identifier URL for a Key Encryption Key (KEK). The KEK is used as an
+            additional layer of security for encryption keys. Azure Disk Encryption will use the KEK to wrap the
+            encryption secrets before writing to the Key Vault. The KEK must be in the same vault as the encryption
+            secrets. This is an optional parameter.
+
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.compute.virtual_machine.create_or_update testvm testgroup
+        azurerm.compute.virtual_machine.create_or_update test_vm test_group
 
     '''
     if 'location' not in kwargs:
@@ -332,6 +359,53 @@ async def create_or_update(hub, name, resource_group, vm_size, admin_username='i
             network_interfaces.append(iface_details)
 
         result['network_profile']['network_interfaces'] = network_interfaces
+
+        if enable_disk_enc:
+            # Extract connection auth values
+            auth_kwargs = ('tenant', 'client_id', 'secret', 'subscription_id', 'username', 'password')
+            connection_profile = dict([[x, kwargs[x]] for x in auth_kwargs if x in kwargs])
+
+            instance = await hub.exec.azurerm.compute.virtual_machine.get(
+                resource_group=resource_group,
+                name=name,
+                **connection_profile
+            )
+
+            is_linux = True if instance['storage_profile']['os_disk']['os_type'] == 'Linux' else False
+
+            disk_enc_keyvault_name = (parse_resource_id(disk_enc_keyvault))['name']
+            disk_enc_keyvault_url = 'https://{0}.vault.azure.net/'.format(disk_enc_keyvault_name)
+
+            extension_info = {'publisher': 'Microsoft.Azure.Security',
+                              'settings': {'VolumeType': disk_enc_volume_type,
+                                           'EncryptionOperation': 'EnableEncryption',
+                                           'KeyVaultResourceId': disk_enc_keyvault,
+                                           'KeyVaultURL': disk_enc_keyvault_url}}
+
+            if is_linux:
+                extension_info['type'] = 'AzureDiskEncryptionForLinux'
+                extension_info['version'] = '1.1'
+            else:
+                extension_info['type'] = 'AzureDiskEncryption'
+                extension_info['version'] = '2.2'
+
+            if disk_enc_kek_url:
+                extension_info['settings']['KeyEncryptionKeyURL'] = disk_enc_kek_url
+                extension_info['settings']['KekVaultResourceId'] = disk_enc_keyvault
+
+            encryption_info = await hub.exec.azurerm.compute.virtual_machine_extension.create_or_update(
+                name='DiskEncryption',
+                vm_name=name,
+                resource_group=resource_group,
+                location=instance['location'],
+                publisher=extension_info['publisher'],
+                extension_type=extension_info['type'],
+                version=extension_info['version'],
+                settings=extension_info['settings'],
+                **connection_profile
+            )
+
+            result['storage_profile']['disk_encryption'] = True
 
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
