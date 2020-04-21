@@ -285,6 +285,9 @@ async def create_or_update(
             secrets. This is an optional parameter.
 
     Attaching Data Disks:
+        Data disks can be attached by passing a list of dictionaries in the data_disks parameter. The dictionaries in
+        the list can have the following parameters.
+
         :param lun: (optional int) Specifies the logical unit number of the data disk. This value is used to identify
             data disks within the VM and therefore must be unique for each data disk attached to a VM. If not
             provided, we increment the lun designator based upon the index within the provided list of disks.
