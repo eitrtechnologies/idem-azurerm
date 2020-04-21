@@ -368,11 +368,11 @@ async def create_or_update(
 
     # network interface creation
     if not network_interfaces and create_interfaces:
-        ipc = {'name': f'{name}-iface0-ip'}
+        ipc = {'name': f'{name}-nic0-cfg0'}
 
         if allocate_public_ip:
             pubip = await hub.exec.azurerm.network.public_ip_address.create_or_update(
-                f'{name}-ip',
+                f'{name}-pip0',
                 resource_group,
                 **kwargs
             )
@@ -384,7 +384,7 @@ async def create_or_update(
                 return result
 
         iface = await hub.exec.azurerm.network.network_interface.create_or_update(
-            f'{name}-iface0',
+            f'{name}-nic0',
             [ipc],
             subnet,
             virtual_network,
@@ -399,6 +399,10 @@ async def create_or_update(
             return result
 
         network_interfaces.append(nic)
+
+    # default os disk name
+    if not os_disk_name:
+        os_disk_name = f"{name}-osdisk0"
 
     # data disks
     if not data_disks:
