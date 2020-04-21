@@ -103,6 +103,8 @@ async def create_or_update(
     admin_password=None,
     max_price=None,
     provision_vm_agent=True,
+    userdata_file=None,
+    userdata=None,
     enable_disk_enc=False,
     disk_enc_keyvault=None,
     disk_enc_volume_type=None,
@@ -209,6 +211,17 @@ async def create_or_update(
     :param provision_vm_agent: Indicates whether virtual machine agent should be provisioned on the virtual machine.
         When this property is not specified in the request body, default behavior is to set it to true. This will ensure
         that VM Agent is installed on the VM so that extensions can be added to the VM later.
+
+    :param userdata_file: This parameter can contain a local or web path for a userdata script. If a local file is used,
+        then the contents of that file will override the contents of the userdata parameter. If a web source is used,
+        then the userdata parameter should contain the command to execute the script file. For instance, if a file
+        location of https://raw.githubusercontent.com/saltstack/salt-bootstrap/stable/bootstrap-salt.sh is used then the
+        userdata parameter would contain "./bootstrap-salt.sh" along with any desired arguments. Note that PowerShell
+        execution policy may cause issues here. For PowerShell files, considered signed scripts or the more insecure
+        "powershell -ExecutionPolicy Unrestricted -File ./bootstrap-salt.ps1" addition to the command.
+
+    :param userdata: This parameter is used to pass text to be executed on a system. The native shell will be used on a
+        given host operating system.
 
     :param max_price: Specifies the maximum price you are willing to pay for a Azure Spot VM/VMSS. This price is in US
         Dollars. This price will be compared with the current Azure Spot price for the VM size. Also, the prices are
@@ -578,37 +591,51 @@ async def create_or_update(
         vm_result = vm.result()
         result = vm_result.as_dict()
 
-        network_interfaces = []
+        # Extract connection auth values for virtual machine extensions
+        auth_kwargs = ('tenant', 'client_id', 'secret', 'subscription_id', 'username', 'password')
+        connection_profile = dict([[x, kwargs[x]] for x in auth_kwargs if x in kwargs])
+        is_linux = True if result['storage_profile']['os_disk']['os_type'] == 'Linux' else False
+        extension_info = {}
 
-        # Give some more details about the sub-objects
-        for iface in result['network_profile']['network_interfaces']:
-            iface_dict = parse_resource_id(
-                iface['id']
-            )
+        # attach custom script extension for userdata
+        if (userdata or userdata_file) and provision_vm_agent:
+            if is_linux:
+                extension_info['publisher'] = 'Microsoft.Azure.Extensions'
+                extension_info['version'] = '2.0'
+                extension_info['type'] = 'CustomScript'
+            else:
+                extension_info['publisher'] = 'Microsoft.Compute'
+                extension_info['version'] = '1.8'
+                extension_info['type'] = 'CustomScriptExtension'
 
-            iface_details = await hub.exec.azurerm.network.network_interface.get(
-                resource_group=iface_dict['resource_group'],
-                name=iface_dict['name'],
-                **kwargs
-            )
+            extension_info['settings'] = {}
+            if userdata_file:
+                if userdata_file.startswith('http'):
+                    extension_info['settings']['fileUris'] = [userdata_file]
+                elif os.path.isfile(userdata_file):
+                    try:
+                        with open(userdata_file, 'r') as udf_:
+                            userdata = udf_.read()
+                    except FileNotFoundError as exc:
+                        log.error('Unable to open userdata file: %s (%s)', userdata, exc)
+            extension_info['settings']['commandToExecute'] = userdata
 
-            network_interfaces.append(iface_details)
+            if userdata:
+                userdata_ret = await hub.exec.azurerm.compute.virtual_machine_extension.create_or_update(
+                    name=f'{name}_custom_userdata_script',
+                    vm_name=name,
+                    resource_group=resource_group,
+                    location=result['location'],
+                    publisher=extension_info['publisher'],
+                    extension_type=extension_info['type'],
+                    version=extension_info['version'],
+                    settings=extension_info['settings'],
+                    **connection_profile
+                )
+                log.debug('Return from userdata extension: %s', userdata_ret)
 
-        result['network_profile']['network_interfaces'] = network_interfaces
-
+        # attach disk encryption extension
         if enable_disk_enc and provision_vm_agent:
-            # Extract connection auth values
-            auth_kwargs = ('tenant', 'client_id', 'secret', 'subscription_id', 'username', 'password')
-            connection_profile = dict([[x, kwargs[x]] for x in auth_kwargs if x in kwargs])
-
-            instance = await hub.exec.azurerm.compute.virtual_machine.get(
-                resource_group=resource_group,
-                name=name,
-                **connection_profile
-            )
-
-            is_linux = True if instance['storage_profile']['os_disk']['os_type'] == 'Linux' else False
-
             disk_enc_keyvault_name = (parse_resource_id(disk_enc_keyvault))['name']
             disk_enc_keyvault_url = 'https://{0}.vault.azure.net/'.format(disk_enc_keyvault_name)
 
@@ -633,7 +660,7 @@ async def create_or_update(
                 name='DiskEncryption',
                 vm_name=name,
                 resource_group=resource_group,
-                location=instance['location'],
+                location=result['location'],
                 publisher=extension_info['publisher'],
                 extension_type=extension_info['type'],
                 version=extension_info['version'],
@@ -643,6 +670,23 @@ async def create_or_update(
 
             result['storage_profile']['disk_encryption'] = True
 
+        # Give some more details about the sub-objects
+        network_interfaces = []
+
+        for iface in result['network_profile']['network_interfaces']:
+            iface_dict = parse_resource_id(
+                iface['id']
+            )
+
+            iface_details = await hub.exec.azurerm.network.network_interface.get(
+                resource_group=iface_dict['resource_group'],
+                name=iface_dict['name'],
+                **kwargs
+            )
+
+            network_interfaces.append(iface_details)
+
+        result['network_profile']['network_interfaces'] = network_interfaces
     except CloudError as exc:
         await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
         result = {'error': str(exc)}
