@@ -77,19 +77,32 @@ async def create_or_update(
     os_disk_create_option='FromImage',
     os_disk_size_gb=30,
     ssh_public_keys=None,
+    disable_password_auth=True,
+    custom_data=None,
+    allow_extensions=True,
+    enable_automatic_updates=None,
+    time_zone=None,
     allocate_public_ip=False,
     create_interfaces=True,
     network_resource_group=None,
     virtual_network=None,
     subnet=None,
     network_interfaces=None,
+    os_managed_disk=None,
     os_disk_vhd_uri=None,
     os_disk_image_uri=None,
     os_type=None,
     os_disk_name=None,
     os_disk_caching=None,
+    os_write_accel=None,
+    os_ephemeral_disk=None,
+    ultra_ssd_enabled=None,
     image=None,
+    boot_diags_enabled=None,
+    diag_storage_uri=None,
     admin_password=None,
+    max_price=None,
+    provision_vm_agent=True,
     enable_disk_enc=False,
     disk_enc_keyvault=None,
     disk_enc_volume_type=None,
@@ -110,11 +123,126 @@ async def create_or_update(
 
     :param vm_size: The size of the virtual machine.
 
-    # These can be passed as kwargs:
-    #   priority = low or regular
-    #   eviction_policy = deallocate or delete
-    #   license_type = Windows_Client or Windows_Server
-    #   zones = [ list of zone numbers ]
+    :param admin_username: Specifies the name of the administrator account.
+
+    :param os_disk_create_option: (attach, from_image, or empty) Specifies how the virtual machine should be created.
+        The "attach" value is used when you are using a specialized disk to create the virtual machine. The "from_image"
+        value is used when you are using an image to create the virtual machine. If you are using a platform image, you
+        also use the image_reference element. If you are using a marketplace image, you also use the plan element.
+
+    :param os_disk_size_gb: Specifies the size of an empty OS disk in gigabytes. This element can be used to overwrite
+        the size of the disk in a virtual machine image.
+
+    :param ssh_public_keys: The list of SSH public keys used to authenticate with Linux based VMs.
+
+    :param disable_password_auth: (only on Linux) Specifies whether password authentication should be disabled when SSH
+        public keys are provided.
+
+    :param custom_data: (only on Linux) Specifies a base-64 encoded string of custom data for cloud-init (not user-data
+        scripts). The base-64 encoded string is decoded to a binary array that is saved as a file on the Virtual
+        Machine. The maximum length of the binary array is 65535 bytes. For using cloud-init for your VM, see `Using
+        cloud-init to customize a Linux VM during creation
+        <https://docs.microsoft.com/en-us/azure/virtual-machines/linux/using-cloud-init>`_
+
+    :param allow_extensions: Specifies whether extension operations should be allowed on the virtual machine. This may
+        only be set to False when no extensions are present on the virtual machine.
+
+    :param enable_automatic_updates: (only on Windows) Indicates whether Automatic Updates is enabled for the Windows
+        virtual machine. Default value is true. For virtual machine scale sets, this property can be updated and updates
+        will take effect on OS reprovisioning.
+
+    :param time_zone: (only on Windows) Specifies the time zone of the virtual machine. e.g. "Pacific Standard Time"
+
+    :param allocate_public_ip: Create and attach a public IP object to the VM.
+
+    :param create_interfaces: Create network interfaces to attach to the VM if none are provided.
+
+    :param network_resource_group: Specify the resource group of the network components referenced in this module.
+
+    :param virtual_network: Virtual network for the subnet which will contain the network interfaces.
+
+    :param subnet: Subnet to which the network interfaces will be attached.
+
+    :param network_interfaces: A list of network interface references ({"id": "/full/path/to/object"}) to attach.
+
+    :param os_managed_disk: A managed disk resource ID or dictionary containing the managed disk parameters. If a
+        dictionary is provided, "storage_account_type" can be passed in additional to the "id". Storage account type for
+        the managed disk can include: 'Standard_LRS', 'Premium_LRS', 'StandardSSD_LRS', 'UltraSSD_LRS'. NOTE:
+        UltraSSD_LRS can only be used with data disks.
+
+    :param os_disk_vhd_uri: The virtual hard disk for the OS ({"uri": "/full/path/to/object"}).
+
+    :param os_disk_image_uri: The source user image virtual hard disk ({"uri": "/full/path/to/object"}). The virtual
+        hard disk will be copied before being attached to the virtual machine. If SourceImage is provided, the
+        destination virtual hard drive must not exist.
+
+    :param os_type: (linux or windows) This property allows you to specify the type of the OS that is included in the
+        disk if creating a VM from user-image or a specialized VHD.
+
+    :param os_disk_name: The OS disk name.
+
+    :param os_disk_caching: (read_only, read_write, or none) Specifies the caching requirements. Defaults
+        to "None" for Standard storage and "ReadOnly" for Premium storage.
+
+    :param os_write_accel: Boolean value specifies whether write accelerator should be enabled or disabled on the disk.
+
+    :param os_ephemeral_disk: Boolean value to enable ephemeral "diff" OS disk. `Ephemeral OS disks
+        <https://docs.microsoft.com/en-us/azure/virtual-machines/linux/ephemeral-os-disks>`_ are created on the local
+        virtual machine (VM) storage and not saved to the remote Azure Storage.
+
+    :param ultra_ssd_enabled: The flag that enables or disables a capability to have one or more managed data disks with
+        UltraSSD_LRS storage account type on the VM or VMSS. Managed disks with storage account type UltraSSD_LRS can be
+        added to a virtual machine or virtual machine scale set only if this property is enabled.
+
+    :param image: A pipe-delimited representation of an image to use, in the format of "publisher|offer|sku|version".
+        Examples - "OpenLogic|CentOS|7.7|latest" or "Canonical|UbuntuServer|18.04-LTS|latest"
+
+    :param boot_diags_enabled: Enables boots diagnostics on the Virtual Machine. Required for use of the
+        diag_storage_uri parameter.
+
+    :param diag_storage_uri: Enables boots diagnostics on the Virtual Machine by passing the URI of the storage account
+        to use for placing the console output and screenshot.
+
+    :param admin_password: Specifies the password of the administrator account. Note that there are minimum length,
+        maximum length, and complexity requirements imposed on this password. See the Azure documentation for details.
+
+    :param provision_vm_agent: Indicates whether virtual machine agent should be provisioned on the virtual machine.
+        When this property is not specified in the request body, default behavior is to set it to true. This will ensure
+        that VM Agent is installed on the VM so that extensions can be added to the VM later.
+
+    :param max_price: Specifies the maximum price you are willing to pay for a Azure Spot VM/VMSS. This price is in US
+        Dollars. This price will be compared with the current Azure Spot price for the VM size. Also, the prices are
+        compared at the time of create/update of Azure Spot VM/VMSS and the operation will only succeed if max_price is
+        greater than the current Azure Spot price. The max_price will also be used for evicting a Azure Spot VM/VMSS if
+        the current Azure Spot price goes beyond the maxPrice after creation of VM/VMSS. Possible values are any decimal
+        value greater than zero (example: 0.01538) or -1 indicates default price to be up-to on-demand. You can set the
+        max_price to -1 to indicate that the Azure Spot VM/VMSS should not be evicted for price reasons. Also, the
+        default max price is -1 if it is not provided by you.
+
+    :param availability_set: Specifies information about the availability set that the virtual machine should be
+        assigned to. Virtual machines specified in the same availability set are allocated to different nodes to
+        maximize availability. For more information about availability sets, see `Manage the availability of virtual
+        machines <https://docs.microsoft.com/azure/virtual-machines/virtual-machines-windows-manage-availability>`_.
+        Currently, a VM can only be added to availability set at creation time. An existing VM cannot be added to an
+        availability set. (resource ID path)
+
+    :param virtual_machine_scale_set: Specifies information about the virtual machine scale set that the virtual machine
+        should be assigned to. Virtual machines specified in the same virtual machine scale set are allocated to
+        different nodes to maximize availability. Currently, a VM can only be added to virtual machine scale set at
+        creation time. An existing VM cannot be added to a virtual machine scale set. This property cannot exist along
+        with a non-null availability_set reference. (resource ID path)
+
+    :param proximity_placement_group: Specifies information about the proximity placement group that the virtual machine
+        should be assigned to.
+
+    :param priority: (low or regular) Specifies the priority for the virtual machine.
+
+    :param eviction_policy: (deallocate or delete) Specifies the eviction policy for the Azure Spot virtual machine.
+
+    :param license_type: (Windows_Client or Windows_Server) Specifies that the image or disk that is being used was
+        licensed on-premises. This element is only used for images that contain the Windows Server operating system.
+
+    :param zones: A list of the virtual machine zones.
 
     Virtual Machine Disk Encryption:
         If you would like to enable disk encryption within the virtual machine you must set the enable_disk_enc
@@ -167,11 +295,11 @@ async def create_or_update(
         :param create_option: (optional str - attach, from_image, or empty) Specifies how the virtual machine should be
             created. The "attach" value is used when you are using a specialized disk to create the virtual machine. The
             "from_image" value is used when you are using an image to create the virtual machine. If you are using a
-            platform image, you also use the imageReference element. If you are using a marketplace image, you also use
-            the plan element previously described.
+            platform image, you also use the image_reference element. If you are using a marketplace image, you also use
+            the plan element.
 
         :param disk_size_gb: (optional int) Specifies the size of an empty data disk in gigabytes. This element can be
-            used to overwrite the size of the disk in a virtual machine image. 
+            used to overwrite the size of the disk in a virtual machine image.
 
         :param managed_disk: (optional str or dict) The managed disk parameters. If an ID string is provided, it will
             be nested under an "id" key in a dictionary as expected by the SDK. If a dictionary is provided, the
@@ -216,12 +344,16 @@ async def create_or_update(
     if 'host' in params and not isinstance(params['host'], dict):
         params.update({'host': {'id': params['host']}})
 
+    if os_managed_disk and not isinstance(os_managed_disk, dict):
+        os_managed_disk = {'id': os_managed_disk}
+
     if os_disk_image_uri and not isinstance(os_disk_image_uri, dict):
-        os_disk_image_uri = {'id': os_disk_image_uri}
+        os_disk_image_uri = {'uri': os_disk_image_uri}
 
     if os_disk_vhd_uri and not isinstance(os_disk_vhd_uri, dict):
-        os_disk_vhd_uri = {'id': os_disk_vhd_uri}
+        os_disk_vhd_uri = {'uri': os_disk_vhd_uri}
 
+    # network interface creation
     if not network_interfaces and create_interfaces:
         ipc = {'name': f'{name}-iface0-ip'}
 
@@ -255,6 +387,7 @@ async def create_or_update(
 
         network_interfaces.append(nic)
 
+    # data disks
     if not data_disks:
         data_disks = []
 
@@ -308,16 +441,17 @@ async def create_or_update(
         log.debug("Data disk with lun %s = %s", lun, data_disk)
         data_disks[lun] = data_disk
 
+    # main configuration parameters
     params.update(
         {
-            #'plan': {
-            #    'name' None,
-            #    'publisher': None,
-            #    'product': None,
-            #    'promotion_code': None
+            #"plan": {
+            #    "name" None,
+            #    "publisher": None,
+            #    "product": None,
+            #    "promotion_code": None
             #},
             'hardware_profile': {
-                'vm_size': vm_size.lower()
+                'vm_size': vm_size.lower(),
             },
             'storage_profile': {
                 'os_disk': {
@@ -325,42 +459,35 @@ async def create_or_update(
                     'name': os_disk_name,
                     'vhd': os_disk_vhd_uri,
                     'image': os_disk_image_uri,
-                    'caching': os_disk_caching, # ReadOnly or ReadWrite
-                    #'write_accelerator_enabled': None, # True or False
-                    #'diff_disk_settings': { 'option': None }, # Local or None
-                    'create_option': os_disk_create_option, # Attach or FromImage
+                    'caching': os_disk_caching,
+                    'write_accelerator_enabled': os_write_accel,
+                    'create_option': os_disk_create_option,
                     'disk_size_gb': os_disk_size_gb,
-                    #'managed_disk': { 'id': None, 'storage_account_type': None } # (Standard|Premium)_LRS or (Standard|Ultra)SSD_LRS
+                    'managed_disk': os_managed_disk,
                 },
                 'data_disks': data_disks,
             },
-            #'additional_capabilities': {
-            #    'ultra_ssd_enabled': None
-            #},
             'os_profile': {
                 'computer_name': name,
                 'admin_username': admin_username,
                 'admin_password': admin_password,
-            #    'custom_data': None,
-            #    'windows_configuration': None,
-            #    'secrets': None,
-            #    'allow_extension_operations': None,
-            #    'require_guest_provision_signal': None
+                'custom_data': custom_data,
+            #    "secrets": None,
+                'allow_extension_operations': allow_extensions,
             },
             'network_profile': {
-                'network_interfaces': network_interfaces
+                'network_interfaces': network_interfaces,
             },
-            #'diagnostics_profiles': {
-            #    'boot_diagnostics': {
-            #        'enabled': None, # True or False
-            #        'storage_uri': # storage account URI
-            #    }
+            'diagnostics_profiles': {
+                'boot_diagnostics': {
+                    'enabled': boot_diags_enabled,
+                    'storage_uri': diag_storage_uri,
+                }
+            },
+            #"identity": {
+            #    "type": None, # SystemAssigned or UserAssigned
+            #    "user_assigned_identities": None # VirtualMachineIdentityUserAssignedIdentitiesValue
             #},
-            #'identity': {
-            #    'type': None, # SystemAssigned or UserAssigned
-            #    'user_assigned_identities': None # VirtualMachineIdentityUserAssignedIdentitiesValue
-            #},
-            #'billing_profile': { max_price: None }
         }
     )
 
@@ -391,7 +518,7 @@ async def create_or_update(
         params['os_profile'].update(
             {
                 'linux_configuration': {
-                    'disable_password_authentication': True,
+                    'disable_password_authentication': disable_password_auth,
                     'ssh': {
                         'public_keys': pubkeys
                     }
@@ -409,6 +536,26 @@ async def create_or_update(
             params['storage_profile'].update(
                 { 'image_reference': dict(zip(image_keys, image.split('|'))) }
             )
+
+    if not provision_vm_agent:
+        if 'linux_configuration' in params['os_profile']:
+            params['os_profile']['linux_configuration']['provision_vm_agent'] = provision_vm_agent
+        elif 'windows_configuration' in params['os_profile']:
+            params['os_profile']['windows_configuration']['provision_vm_agent'] = provision_vm_agent
+        elif os_type:
+            if 'linux' in os_type.lower():
+                params['os_profile']['linux_configuration'] = {'provision_vm_agent': provision_vm_agent}
+            elif 'windows' in os_type.lower():
+                params['os_profile']['windows_configuration'] = {'provision_vm_agent': provision_vm_agent}
+
+    if os_ephemeral_disk:
+        params['storage_profile']['diff_disk_settings'] = {'option': 'local'}
+
+    if max_price:
+        params['billing_profile'] = {'max_price': max_price}
+
+    if ultra_ssd_enabled:
+        params['additional_capabilities'] = {'ultra_ssd_enabled': ultra_ssd_enabled}
 
     try:
         vmmodel = await hub.exec.utils.azurerm.create_object_model(
@@ -449,7 +596,7 @@ async def create_or_update(
 
         result['network_profile']['network_interfaces'] = network_interfaces
 
-        if enable_disk_enc:
+        if enable_disk_enc and provision_vm_agent:
             # Extract connection auth values
             auth_kwargs = ('tenant', 'client_id', 'secret', 'subscription_id', 'username', 'password')
             connection_profile = dict([[x, kwargs[x]] for x in auth_kwargs if x in kwargs])
