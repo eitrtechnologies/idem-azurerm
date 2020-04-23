@@ -498,7 +498,7 @@ async def create_or_update(
             'network_profile': {
                 'network_interfaces': network_interfaces,
             },
-            'diagnostics_profiles': {
+            'diagnostics_profile': {
                 'boot_diagnostics': {
                     'enabled': boot_diags_enabled,
                     'storage_uri': diag_storage_uri,
