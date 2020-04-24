@@ -89,15 +89,6 @@ Azure Resource Manager (ARM) Compute Virtual Machine State Module
 from __future__ import absolute_import
 import logging
 
-# Azure libs
-HAS_LIBS = False
-try:
-    from msrestazure.tools import parse_resource_id
-    HAS_LIBS = True
-except ImportError:
-    pass
-
-
 log = logging.getLogger(__name__)
 
 TREQ = {
@@ -227,22 +218,9 @@ async def present(hub, ctx, name, resource_group, tags=None, connection_auth=Non
     return ret
 
 
-async def absent(
-    hub,
-    ctx,
-    name,
-    resource_group,
-    cleanup_osdisks=False,
-    cleanup_datadisks=False,
-    cleanup_interfaces=False,
-    cleanup_public_ips=False,
-    connection_auth=None,
-    **kwargs
-):
+async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
     .. versionadded:: 1.0.0
-
-    .. versionchanged:: 2.0.0
 
     Ensure a virtual machine does not exist in a resource group.
 
@@ -251,18 +229,6 @@ async def absent(
 
     :param resource_group:
         Name of the resource group containing the virtual machine.
-
-    :param cleanup_osdisks:
-        Enable deletion of the operating system disk attached to the virtual machine.
-
-    :param cleanup_datadisks:
-        Enable deletion of ALL of the data disks attached to the virtual machine.
-
-    :param cleanup_interfaces:
-        Enable deletion of ALL of the network interfaces attached to the virtual machine.
-
-    :param cleanup_public_ips:
-        Enable deletion of ALL of the public IP addresses directly attached to the virtual machine.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
@@ -304,97 +270,6 @@ async def absent(
     deleted = await hub.exec.azurerm.compute.virtual_machine.delete(name, resource_group, **connection_auth)
 
     if deleted:
-        if cleanup_osdisks:
-            vm["cleanup_osdisks"] = True
-            os_disk = vm["storage_profile"]["os_disk"]
-            if os_disk.get("managed_disk", {}).get("id"):
-                disk_link = os_disk["managed_disk"]["id"]
-                try:
-                    disk_dict = parse_resource_id(disk_link)
-                    disk_name = disk_dict["name"]
-                    disk_group = disk_dict["resource_group"]
-                except KeyError as exc:
-                    log.error("This isn't a valid disk resource: %s", os_disk)
-
-                deleted_disk = await hub.exec.azurerm.compute.disk.delete(
-                    disk_name,
-                    disk_group,
-                    azurearm_log_level='info',
-                    **connection_auth
-                )
-
-                if not deleted_disk:
-                    log.error("Unable to delete disk: %s", disk_link)
-
-        if cleanup_datadisks:
-            vm["cleanup_datadisks"] = True
-            for disk in vm["storage_profile"].get("data_disks", []):
-                if disk.get("managed_disk", {}).get("id"):
-                    disk_link = disk["managed_disk"]["id"]
-                    try:
-                        disk_dict = parse_resource_id(disk_link)
-                        disk_name = disk_dict["name"]
-                        disk_group = disk_dict["resource_group"]
-                    except KeyError as exc:
-                        log.error("This isn't a valid disk resource: %s", os_disk)
-                        continue
-
-                    deleted_disk = await hub.exec.azurerm.compute.disk.delete(
-                        disk_name,
-                        disk_group,
-                        azurearm_log_level='info',
-                        **connection_auth
-                    )
-
-                    if not deleted_disk:
-                        log.error("Unable to delete disk: %s", disk_link)
-
-        if cleanup_interfaces:
-            vm["cleanup_interfaces"] = True
-            for nic_link in vm.get("network_profile", {}).get("network_interfaces", []):
-                try:
-                    nic_dict = parse_resource_id(nic_link["id"])
-                    nic_name = nic_dict["name"]
-                    nic_group = nic_dict["resource_group"]
-                except KeyError as exc:
-                    log.error("This isn't a valid network interface subresource: %s", nic_link)
-                    continue
-
-                nic = await hub.exec.azurerm.network.network_interface.get(
-                    nic_name,
-                    nic_group,
-                    azurearm_log_level='info',
-                    **connection_auth
-                )
-
-                deleted_nic = await hub.exec.azurerm.network.network_interface.delete(
-                    nic_name,
-                    nic_group,
-                    azurearm_log_level='info',
-                    **connection_auth
-                )
-
-                if cleanup_public_ips:
-                    vm["cleanup_public_ips"] = True
-                    for ipc in nic.get("ip_configurations", []):
-                        if "public_ip_address" not in ipc:
-                            continue
-
-                        try:
-                            pip_dict = parse_resource_id(ipc["public_ip_address"]["id"])
-                            pip_name = pip_dict["name"]
-                            pip_group = pip_dict["resource_group"]
-                        except KeyError as exc:
-                            log.error("This isn't a valid public IP subresource: %s", ipc.get("public_ip_address"))
-                            continue
-
-                        deleted_pip = await hub.exec.azurerm.network.public_ip_address.delete(
-                            pip_name,
-                            pip_group,
-                            azurearm_log_level='info',
-                            **connection_auth
-                        )
-
         ret['result'] = True
         ret['comment'] = 'Virtual machine {0} has been deleted.'.format(name)
         ret['changes'] = {
