@@ -582,7 +582,7 @@ async def create_or_update(
     if max_price:
         params['billing_profile'] = {'max_price': max_price}
 
-    if ultra_ssd_enabled:
+    if ultra_ssd_enabled is not None:
         params['additional_capabilities'] = {'ultra_ssd_enabled': ultra_ssd_enabled}
 
     try:
