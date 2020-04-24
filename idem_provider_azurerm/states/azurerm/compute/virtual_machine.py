@@ -403,6 +403,8 @@ async def present(
         new_vm = False
 
         tag_changes = await hub.exec.utils.dictdiffer.deep_diff(vm.get('tags', {}), tags or {})
+        if tag_changes:
+            ret['changes']['tags'] = tag_changes
 
         if vm_size:
             if vm_size.lower() != vm['hardware_profile']['vm_size'].lower():
@@ -411,23 +413,65 @@ async def present(
                     'new': vm_size.lower()
                 }
 
-        '''
         if boot_diags_enabled is not None:
             if boot_diags_enabled != vm.get('diagnostics_profile', {}).get('boot_diagnostics', {}).get('enabled', False):
                 ret['changes']['boot_diags_enabled'] = {
-                    'old': vm.get('diagnostics_profiles', {}).get('boot_diagnostics', {}).get('enabled', False),
+                    'old': vm.get('diagnostics_profile', {}).get('boot_diagnostics', {}).get('enabled', False),
                     'new': boot_diags_enabled
                 }
-                if diag_storage_uri:
-                    if diag_storage_uri != vm.get('diagnostics_profiles', {}).get('boot_diagnostics', {}).get('storage_uri', None):
-                    ret['changes']['diag_storage_uri'] = {
-                        'old': vm.get('diagnostics_profiles', {}).get('boot_diagnostics', {}).get('storage_uri', None),
-                        'new': diag_storage_uri
+
+        if diag_storage_uri:
+            if diag_storage_uri != vm.get('diagnostics_profile', {}).get('boot_diagnostics', {}).get('storage_uri', None):
+                ret['changes']['diag_storage_uri'] = {
+                    'old': vm.get('diagnostics_profile', {}).get('boot_diagnostics', {}).get('storage_uri', None),
+                    'new': diag_storage_uri
+                }
+
+        if max_price:
+            if max_price != vm.get('billing_profile', {}).get('max_price', None):
+                ret['changes']['max_price'] = {
+                    'old': vm.get('billing_profile', {}).get('max_price', None),
+                    'new': max_price
+                }
+
+        if allow_extensions is not None:
+            if allow_extensions != vm.get('os_profile', {}).get('allow_extension_operations', True):
+                ret['changes']['allow_extensions'] = {
+                    'old': vm.get('os_profile', {}).get('allow_extension_operations', True),
+                    'new': allow_extensions
+                }
+
+        if os_write_accel is not None:
+            if os_write_accel != vm.get('storage_profile', {}).get('os_disk', {}).get('write_accelerator_enabled', None):
+                ret['changes']['os_write_accel'] = {
+                    'old': vm.get('storage_profile', {}).get('os_disk', {}).get('write_accelerator_enabled', None),
+                    'new': os_write_accel
+                }
+
+        if os_disk_caching is not None:
+            if os_disk_caching != vm.get('storage_profile', {}).get('os_disk', {}).get('caching', None):
+                ret['changes']['os_disk_caching'] = {
+                    'old': vm.get('storage_profile', {}).get('os_disk', {}).get('caching', None),
+                    'new': os_disk_caching
+                }
+
+        '''
+        # Look into this further
+        if provision_vm_agent is not None:
+            if vm.get('os_profile', {}).get('linux_configuration', {}):
+                if provision_vm_agent != vm.get('os_profile', {}).get('linux_configuration', {}).get('provision_vm_agent', True):
+                    ret['changes']['provision_vm_agent'] = {
+                        'old': vm.get('os_profile', {}).get('linux_configuration', {}).get('provision_vm_agent', True),
+                        'new': provision_vm_agent
+                    }
+            if vm.get('os_profile', {}).get('windows_configuration', {}):
+                if provision_vm_agent != vm.get('os_profile', {}).get('windows_configuration', {}).get('provision_vm_agent', True):
+                    ret['changes']['provision_vm_agent'] = {
+                        'old': vm.get('os_profile', {}).get('windows_configuration', {}).get('provision_vm_agent', True),
+                        'new': provision_vm_agent
                     }
         '''
 
-        if tag_changes:
-            ret['changes']['tags'] = tag_changes
 
         if not ret['changes']:
             ret['result'] = True
