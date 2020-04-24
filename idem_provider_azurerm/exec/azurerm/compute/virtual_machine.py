@@ -568,6 +568,14 @@ async def create_or_update(
             elif 'windows' in os_type.lower():
                 params['os_profile']['windows_configuration'] = {'provision_vm_agent': provision_vm_agent}
 
+    if enable_automatic_updates or time_zone:
+        if 'windows_configuration' not in params['os_profile']:
+            params['os_profile']['windows_configuration'] = {}
+        if enable_automatic_updates:
+            params['os_profile']['windows_configuration']['enable_automatic_updates'] = enable_automatic_updates
+        if time_zone:
+            params['os_profile']['windows_configuration']['time_zone'] = time_zone
+
     if os_ephemeral_disk:
         params['storage_profile']['diff_disk_settings'] = {'option': 'local'}
 
