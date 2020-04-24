@@ -568,7 +568,7 @@ async def create_or_update(
             elif 'windows' in os_type.lower():
                 params['os_profile']['windows_configuration'] = {'provision_vm_agent': provision_vm_agent}
 
-    if enable_automatic_updates or time_zone:
+    if time_zone or enable_automatic_updates is not None:
         if 'windows_configuration' not in params['os_profile']:
             params['os_profile']['windows_configuration'] = {}
         if enable_automatic_updates:
