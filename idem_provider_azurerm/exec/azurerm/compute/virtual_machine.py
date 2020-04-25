@@ -93,6 +93,8 @@ async def create_or_update(
     os_disk_image_uri=None,
     os_type=None,
     os_disk_name=None,
+    os_disk_simplename=None,
+    data_disk_simplenames=None,
     os_disk_caching=None,
     os_write_accel=None,
     os_ephemeral_disk=None,
@@ -181,7 +183,16 @@ async def create_or_update(
     :param os_type: (linux or windows) This property allows you to specify the type of the OS that is included in the
         disk if creating a VM from user-image or a specialized VHD.
 
-    :param os_disk_name: The OS disk name.
+    :param os_disk_name: The OS disk name. Note that setting this may cause conflicts upon re-deployment of a virtual
+        machine if the old OS disk isn't cleaned up. Use `os_disk_create_option="attach"` to attach a named disk.
+
+    :param os_disk_simplename: If set to `True`, a "simple" name is used for the OS disk name instead of the randomized
+        name used by default in Azure. Note that setting this may cause conflicts upon re-deployment of a virtual
+        machine if the old OS disk isn't cleaned up. Use `os_disk_create_option="attach"` to attach a named disk.
+
+    :param data_disk_simplenames: If set to `True`, a "simple" name is used for data disk names instead of the
+        randomized names used by default in Azure. Note that setting this may cause conflicts upon re-deployment of a
+        virtual machine if the old disk isn't cleaned up. Use `create_option="attach"` to attach a named disk.
 
     :param os_disk_caching: (read_only, read_write, or none) Specifies the caching requirements. Defaults
         to "None" for Standard storage and "ReadOnly" for Premium storage.
@@ -404,7 +415,7 @@ async def create_or_update(
         network_interfaces.append(nic)
 
     # default os disk name
-    if not os_disk_name:
+    if not os_disk_name and os_disk_simplename:
         os_disk_name = f"{name}-osdisk0"
 
     # data disks
@@ -434,7 +445,8 @@ async def create_or_update(
 
         # set defaults
         data_disk.setdefault("lun", lun)
-        data_disk.setdefault("name", f"{name}-datadisk{lun}")
+        if data_disk_simplenames:
+            data_disk.setdefault("name", f"{name}-datadisk{lun}")
 
         # attach a vhd
         if data_disk.get("vhd"):
