@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Compute Virtual Machine State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: VERSION
+
 :maintainer: <devops@eitr.tech>
 :maturity: new
 :depends:
@@ -150,6 +152,8 @@ async def present(
     **kwargs):
     '''
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: VERSION
 
     Ensure a virtual machine exists.
 
@@ -455,8 +459,6 @@ async def present(
                     'new': os_disk_caching
                 }
 
-        '''
-        # Look into this further
         if provision_vm_agent is not None:
             if vm.get('os_profile', {}).get('linux_configuration', {}):
                 if provision_vm_agent != vm.get('os_profile', {}).get('linux_configuration', {}).get('provision_vm_agent', True):
@@ -470,8 +472,20 @@ async def present(
                         'old': vm.get('os_profile', {}).get('windows_configuration', {}).get('provision_vm_agent', True),
                         'new': provision_vm_agent
                     }
-        '''
 
+        if time_zone:
+            if time_zone != vm.get('os_profile', {}).get('windows_configuration', {}).get('time_zone', True):
+                ret['changes']['time_zone'] = {
+                    'old': vm.get('os_profile', {}).get('windows_configuration', {}).get('time_zone', True),
+                    'new': time_zone
+                }
+
+        if enable_automatic_updates is not None:
+            if enable_automatic_updates != vm.get('os_profile', {}).get('windows_configuration', {}).get('enable_automatic_updates', True):
+                ret['changes']['enable_automatic_updates'] = {
+                    'old': vm.get('os_profile', {}).get('windows_configuration', {}).get('enable_automatic_updates', True),
+                    'new': enable_automatic_updates
+                }
 
         if not ret['changes']:
             ret['result'] = True
