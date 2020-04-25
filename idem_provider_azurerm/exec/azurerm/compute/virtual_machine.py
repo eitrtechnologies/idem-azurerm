@@ -662,9 +662,12 @@ async def create_or_update(
                 log.debug('Return from userdata extension: %s', userdata_ret)
 
         # attach disk encryption extension
-        if enable_disk_enc and provision_vm_agent:
-            disk_enc_keyvault_name = (parse_resource_id(disk_enc_keyvault))['name']
-            disk_enc_keyvault_url = 'https://{0}.vault.azure.net/'.format(disk_enc_keyvault_name)
+        if enable_disk_enc and provision_vm_agent and disk_enc_keyvault and disk_enc_volume_type:
+            try:
+                disk_enc_keyvault_name = (parse_resource_id(disk_enc_keyvault))['name']
+                disk_enc_keyvault_url = 'https://{0}.vault.azure.net/'.format(disk_enc_keyvault_name)
+            except KeyError as exc:
+                log.error("This isn't a valid Key Vault resource ID: %s", disk_enc_keyvault)
 
             extension_info = {'publisher': 'Microsoft.Azure.Security',
                               'settings': {'VolumeType': disk_enc_volume_type,
