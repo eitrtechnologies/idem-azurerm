@@ -42,11 +42,16 @@ try:
         UserPassCredentials,
         ServicePrincipalCredentials,
     )
+    from msrestazure.azure_active_directory import MSIAuthentication
     from msrestazure.azure_cloud import (
         MetadataEndpointError,
         get_cloud_from_metadata_endpoint,
     )
     from msrestazure.azure_exceptions import CloudError
+    from requests.exceptions import (
+        ConnectionError,
+        HTTPError,
+    )
     HAS_AZURE = True
 except ImportError:
     HAS_AZURE = False
@@ -107,6 +112,14 @@ async def determine_auth(hub, resource=None, **kwargs):
                                               kwargs['password'],
                                               cloud_environment=cloud_env,
                                               **cred_kwargs)
+    elif 'subscription_id' in kwargs:
+        try:
+            credentials = MSIAuthentication(cloud_environment=cloud_env, **cred_kwargs)
+        except (ConnectionError, HTTPError) as exc:
+            raise Exception(
+                "Fell through to MSI authentication and was unable to authenticate."
+                "Please check your credentials and try again. ({0})".format(exc)
+            )
     else:
         raise Exception(
             'Unable to determine credentials. '
