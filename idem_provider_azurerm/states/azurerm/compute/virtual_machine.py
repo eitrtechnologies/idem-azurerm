@@ -147,6 +147,7 @@ async def present(
     boot_diags_enabled=None,
     diag_storage_uri=None,
     admin_password=None,
+    force_admin_password=False,
     max_price=None,
     provision_vm_agent=True,
     userdata_file=None,
@@ -254,6 +255,11 @@ async def present(
 
     :param admin_password: Specifies the password of the administrator account. Note that there are minimum length,
         maximum length, and complexity requirements imposed on this password. See the Azure documentation for details.
+
+    :param force_admin_password: A Boolean flag that represents whether or not the admin password should be updated.
+        If it is set to True, then the admin password will be updated if the virtual machine already exists. If it is
+        set to False, then the password will not be updated unless other parameters also need to be updated.
+        Defaults to False.
 
     :param provision_vm_agent: Indicates whether virtual machine agent should be provisioned on the virtual machine.
         When this property is not specified in the request body, default behavior is to set it to true. This will ensure
@@ -468,6 +474,13 @@ async def present(
                     'new': os_disk_caching
                 }
 
+        if ultra_ssd_enabled is not None:
+            if ultra_ssd_enabled != vm.get('additional_capabilities', {}).get('ultra_ssd_enabled', None):
+                ret['changes']['ultra_ssd_enabled'] = {
+                    'old': vm.get('additional_capabilities', {}).get('ultra_ssd_enabled', None),
+                    'new': ultra_ssd_enabled
+                }
+
         if provision_vm_agent is not None:
             if vm.get('os_profile', {}).get('linux_configuration', {}):
                 if provision_vm_agent != vm.get('os_profile', {}).get('linux_configuration', {}).get('provision_vm_agent', True):
@@ -495,6 +508,42 @@ async def present(
                     'old': vm.get('os_profile', {}).get('windows_configuration', {}).get('enable_automatic_updates', True),
                     'new': enable_automatic_updates
                 }
+
+        if enable_disk_enc:
+            extensions = vm.get('resources', [])
+            disk_enc_exists = False
+            for extension in extensions:
+                if (extension.get('virtual_machine_extension_type') == 'AzureDiskEncryptionForLinux' or
+                    extension.get('virtual_machine_extension_type') == 'AzureDiskEncryption'):
+                    disk_enc_exists = True
+                    break
+
+            if not disk_enc_exists:
+                ret['changes']['enable_disk_enc'] = {
+                    'old': False,
+                    'new': True
+                }
+                if disk_enc_keyvault:
+                    ret['changes']['disk_enc_keyvault'] = {
+                        'new': disk_enc_keyvault
+                    }
+                if disk_enc_volume_type:
+                    ret['changes']['disk_enc_volume_type'] = {
+                        'new': disk_enc_volume_type
+                    }
+                if disk_enc_kek_url:
+                    ret['changes']['disk_enc_kek_url'] = {
+                        'new': disk_enc_kek_url
+                    }
+
+        if admin_password and force_admin_password:
+            ret['changes']['admin_password'] = {
+                'new': 'REDACTED'
+            }
+        elif ret['changes']:
+            ret['changes']['admin_password'] = {
+                'new': 'REDACTED'
+            }
 
         if not ret['changes']:
             ret['result'] = True
