@@ -698,7 +698,8 @@ async def create_or_update(
 
                 result['storage_profile']['disk_encryption'] = True
             except KeyError as exc:
-                log.error("Disk encryption could not be enabled using the given parameters")
+                log.error("An error occured while trying to enable disk encryption: {0}".format(str(exc)))
+                result['storage_profile']['disk_encryption'] = False
 
         # Give some more details about the sub-objects
         network_interfaces = []
