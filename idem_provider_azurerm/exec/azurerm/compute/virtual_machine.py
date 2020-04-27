@@ -666,39 +666,39 @@ async def create_or_update(
             try:
                 disk_enc_keyvault_name = (parse_resource_id(disk_enc_keyvault))['name']
                 disk_enc_keyvault_url = 'https://{0}.vault.azure.net/'.format(disk_enc_keyvault_name)
+
+                extension_info = {'publisher': 'Microsoft.Azure.Security',
+                                  'settings': {'VolumeType': disk_enc_volume_type,
+                                               'EncryptionOperation': 'EnableEncryption',
+                                               'KeyVaultResourceId': disk_enc_keyvault,
+                                               'KeyVaultURL': disk_enc_keyvault_url}}
+
+                if is_linux:
+                    extension_info['type'] = 'AzureDiskEncryptionForLinux'
+                    extension_info['version'] = '1.1'
+                else:
+                    extension_info['type'] = 'AzureDiskEncryption'
+                    extension_info['version'] = '2.2'
+
+                if disk_enc_kek_url:
+                    extension_info['settings']['KeyEncryptionKeyURL'] = disk_enc_kek_url
+                    extension_info['settings']['KekVaultResourceId'] = disk_enc_keyvault
+
+                encryption_info = await hub.exec.azurerm.compute.virtual_machine_extension.create_or_update(
+                    name='DiskEncryption',
+                    vm_name=name,
+                    resource_group=resource_group,
+                    location=result['location'],
+                    publisher=extension_info['publisher'],
+                    extension_type=extension_info['type'],
+                    version=extension_info['version'],
+                    settings=extension_info['settings'],
+                    **connection_profile
+                )
+
+                result['storage_profile']['disk_encryption'] = True
             except KeyError as exc:
-                log.error("This isn't a valid Key Vault resource ID: %s", disk_enc_keyvault)
-
-            extension_info = {'publisher': 'Microsoft.Azure.Security',
-                              'settings': {'VolumeType': disk_enc_volume_type,
-                                           'EncryptionOperation': 'EnableEncryption',
-                                           'KeyVaultResourceId': disk_enc_keyvault,
-                                           'KeyVaultURL': disk_enc_keyvault_url}}
-
-            if is_linux:
-                extension_info['type'] = 'AzureDiskEncryptionForLinux'
-                extension_info['version'] = '1.1'
-            else:
-                extension_info['type'] = 'AzureDiskEncryption'
-                extension_info['version'] = '2.2'
-
-            if disk_enc_kek_url:
-                extension_info['settings']['KeyEncryptionKeyURL'] = disk_enc_kek_url
-                extension_info['settings']['KekVaultResourceId'] = disk_enc_keyvault
-
-            encryption_info = await hub.exec.azurerm.compute.virtual_machine_extension.create_or_update(
-                name='DiskEncryption',
-                vm_name=name,
-                resource_group=resource_group,
-                location=result['location'],
-                publisher=extension_info['publisher'],
-                extension_type=extension_info['type'],
-                version=extension_info['version'],
-                settings=extension_info['settings'],
-                **connection_profile
-            )
-
-            result['storage_profile']['disk_encryption'] = True
+                log.error("Disk encryption could not be enabled using the given parameters")
 
         # Give some more details about the sub-objects
         network_interfaces = []
