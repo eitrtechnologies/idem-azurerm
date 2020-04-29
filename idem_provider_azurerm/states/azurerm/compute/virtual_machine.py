@@ -422,16 +422,16 @@ async def present(
     if 'error' not in vm:
         new_vm = False
 
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(vm.get('tags', {}), tags or {})
-        if tag_changes:
-            ret['changes']['tags'] = tag_changes
+        if tags:
+            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(vm.get('tags', {}), tags or {})
+            if tag_changes:
+                ret['changes']['tags'] = tag_changes
 
-        if vm_size:
-            if vm_size.lower() != vm['hardware_profile']['vm_size'].lower():
-                ret['changes']['vm_size'] = {
-                    'old': vm['hardware_profile']['vm_size'].lower(),
-                    'new': vm_size.lower()
-                }
+        if vm_size.lower() != vm['hardware_profile']['vm_size'].lower():
+            ret['changes']['vm_size'] = {
+                'old': vm['hardware_profile']['vm_size'].lower(),
+                'new': vm_size.lower()
+            }
 
         if boot_diags_enabled is not None:
             if boot_diags_enabled != vm.get('diagnostics_profile', {}).get('boot_diagnostics', {}).get('enabled', False):
@@ -441,16 +441,16 @@ async def present(
                 }
 
         if diag_storage_uri:
-            if diag_storage_uri != vm.get('diagnostics_profile', {}).get('boot_diagnostics', {}).get('storage_uri', None):
+            if diag_storage_uri != vm.get('diagnostics_profile', {}).get('boot_diagnostics', {}).get('storage_uri'):
                 ret['changes']['diag_storage_uri'] = {
-                    'old': vm.get('diagnostics_profile', {}).get('boot_diagnostics', {}).get('storage_uri', None),
+                    'old': vm.get('diagnostics_profile', {}).get('boot_diagnostics', {}).get('storage_uri'),
                     'new': diag_storage_uri
                 }
 
         if max_price:
-            if max_price != vm.get('billing_profile', {}).get('max_price', None):
+            if max_price != vm.get('billing_profile', {}).get('max_price'):
                 ret['changes']['max_price'] = {
-                    'old': vm.get('billing_profile', {}).get('max_price', None),
+                    'old': vm.get('billing_profile', {}).get('max_price'),
                     'new': max_price
                 }
 
@@ -462,37 +462,37 @@ async def present(
                 }
 
         if os_write_accel is not None:
-            if os_write_accel != vm.get('storage_profile', {}).get('os_disk', {}).get('write_accelerator_enabled', None):
+            if os_write_accel != vm.get('storage_profile', {}).get('os_disk', {}).get('write_accelerator_enabled'):
                 ret['changes']['os_write_accel'] = {
-                    'old': vm.get('storage_profile', {}).get('os_disk', {}).get('write_accelerator_enabled', None),
+                    'old': vm.get('storage_profile', {}).get('os_disk', {}).get('write_accelerator_enabled'),
                     'new': os_write_accel
                 }
 
         if os_disk_caching is not None:
-            if os_disk_caching != vm.get('storage_profile', {}).get('os_disk', {}).get('caching', None):
+            if os_disk_caching != vm.get('storage_profile', {}).get('os_disk', {}).get('caching'):
                 ret['changes']['os_disk_caching'] = {
-                    'old': vm.get('storage_profile', {}).get('os_disk', {}).get('caching', None),
+                    'old': vm.get('storage_profile', {}).get('os_disk', {}).get('caching'),
                     'new': os_disk_caching
                 }
 
         if ultra_ssd_enabled is not None:
-            if ultra_ssd_enabled != vm.get('additional_capabilities', {}).get('ultra_ssd_enabled', None):
+            if ultra_ssd_enabled != vm.get('additional_capabilities', {}).get('ultra_ssd_enabled'):
                 ret['changes']['ultra_ssd_enabled'] = {
-                    'old': vm.get('additional_capabilities', {}).get('ultra_ssd_enabled', None),
+                    'old': vm.get('additional_capabilities', {}).get('ultra_ssd_enabled'),
                     'new': ultra_ssd_enabled
                 }
 
         if provision_vm_agent is not None:
             if vm.get('os_profile', {}).get('linux_configuration', {}):
-                if provision_vm_agent != vm.get('os_profile', {}).get('linux_configuration', {}).get('provision_vm_agent', True):
+                if provision_vm_agent != vm['os_profile']['linux_configuration'].get('provision_vm_agent', True):
                     ret['changes']['provision_vm_agent'] = {
-                        'old': vm.get('os_profile', {}).get('linux_configuration', {}).get('provision_vm_agent', True),
+                        'old': vm['os_profile']['linux_configuration'].get('provision_vm_agent', True),
                         'new': provision_vm_agent
                     }
             if vm.get('os_profile', {}).get('windows_configuration', {}):
-                if provision_vm_agent != vm.get('os_profile', {}).get('windows_configuration', {}).get('provision_vm_agent', True):
+                if provision_vm_agent != vm['os_profile']['windows_configuration'].get('provision_vm_agent', True):
                     ret['changes']['provision_vm_agent'] = {
-                        'old': vm.get('os_profile', {}).get('windows_configuration', {}).get('provision_vm_agent', True),
+                        'old': vm['os_profile']['windows_configuration'].get('provision_vm_agent', True),
                         'new': provision_vm_agent
                     }
 
@@ -555,18 +555,92 @@ async def present(
             ret['result'] = None
             ret['comment'] = 'Virtual machine {0} would be updated.'.format(name)
             return ret
-
-    if ctx['test']:
-        ret['comment'] = 'Virtual machine {0} would be created.'.format(name)
-        ret['result'] = None
+    else:
         ret['changes'] = {
             'old': {},
             'new': {
                 'name': name,
-                'tags': tags,
-                **kwargs
+                'resource_group': resource_group,
+                'vm_size': vm_size,
+                'os_disk_create_option': os_disk_create_option,
+                'os_disk_size_gb': os_disk_size_gb,
             }
         }
+
+        if ssh_public_keys:
+            ret['changes']['new']['ssh_public_keys'] = ssh_public_keys
+        if disable_password_auth is not None:
+            ret['changes']['new']['disable_password_auth'] = disable_password_auth
+        if custom_data:
+            ret['changes']['new']['custom_data'] = custom_data
+        if allow_extensions is not None:
+            ret['changes']['new']['allow_extensions'] = allow_extensions
+        if enable_automatic_updates is not None:
+            ret['changes']['new']['enable_automatic_updates'] = enable_automatic_updates
+        if time_zone:
+            ret['changes']['new']['time_zone'] = time_zone
+        if allocate_public_ip is not None:
+            ret['changes']['new']['allocate_public_ip'] = allocate_public_ip
+        if create_interfaces is not None:
+            ret['changes']['new']['create_interfaces'] = create_interfaces
+        if network_resource_group:
+            ret['changes']['new']['network_resource_group'] = network_resource_group
+        if virtual_network:
+            ret['changes']['new']['virtual_network'] = virtual_network
+        if subnet:
+            ret['changes']['new']['subnet'] = subnet
+        if network_interfaces:
+            ret['changes']['new']['network_interfaces'] = network_interfaces
+        if os_managed_disk:
+            ret['changes']['new']['os_managed_disk'] = os_managed_disk
+        if os_disk_vhd_uri:
+            ret['changes']['new']['os_disk_vhd_uri'] = os_disk_vhd_uri
+        if os_disk_image_uri:
+            ret['changes']['new']['os_disk_image_uri'] = os_disk_image_uri
+        if os_type:
+            ret['changes']['new']['os_type'] = os_type
+        if os_disk_name:
+            ret['changes']['new']['os_disk_name'] = os_disk_name
+        if os_disk_caching:
+            ret['changes']['new']['os_disk_caching'] = os_disk_caching
+        if os_write_accel is not None:
+            ret['changes']['new']['os_write_accel'] = os_write_accel
+        if os_ephemeral_disk is not None:
+            ret['changes']['new']['os_ephemeral_disk'] = os_ephemeral_disk
+        if ultra_ssd_enabled is not None:
+            ret['changes']['new']['ultra_ssd_enabled'] = ultra_ssd_enabled
+        if image:
+            ret['changes']['new']['image'] = image
+        if boot_diags_enabled is not None:
+            ret['changes']['new']['boot_diags_enabled'] = boot_diags_enabled
+        if diag_storage_uri:
+            ret['changes']['new']['diag_storage_uri'] = diag_storage_uri
+        if admin_password:
+            ret['changes']['new']['admin_password'] = admin_password
+        if max_price:
+            ret['changes']['new']['max_price'] = max_price
+        if provision_vm_agent is not None:
+            ret['changes']['new']['provision_vm_agent'] = provision_vm_agent
+        if userdata_file:
+            ret['changes']['new']['userdata_file'] = userdata_file
+        if userdata:
+            ret['changes']['new']['userdata'] = userdata
+        if enable_disk_enc is not None:
+            ret['changes']['new']['enable_disk_enc'] = enable_disk_enc
+        if disk_enc_keyvault:
+            ret['changes']['new']['disk_enc_keyvault'] = disk_enc_keyvault
+        if disk_enc_volume_type:
+            ret['changes']['new']['disk_enc_volume_type'] = disk_enc_volume_type
+        if disk_enc_kek_url:
+            ret['changes']['new']['disk_enc_kek_url'] = disk_enc_kek_url
+        if data_disks:
+            ret['changes']['new']['data_disks'] = data_disks
+        if tags is not None:
+            ret['changes']['new']['tags'] = tags
+
+    if ctx['test']:
+        ret['result'] = None
+        ret['comment'] = 'Virtual machine {0} would be created.'.format(name)
         return ret
 
     vm_kwargs = kwargs.copy()
