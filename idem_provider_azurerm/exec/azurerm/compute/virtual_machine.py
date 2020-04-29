@@ -662,40 +662,44 @@ async def create_or_update(
                 log.debug('Return from userdata extension: %s', userdata_ret)
 
         # attach disk encryption extension
-        if enable_disk_enc and provision_vm_agent:
-            disk_enc_keyvault_name = (parse_resource_id(disk_enc_keyvault))['name']
-            disk_enc_keyvault_url = 'https://{0}.vault.azure.net/'.format(disk_enc_keyvault_name)
+        if enable_disk_enc and provision_vm_agent and disk_enc_keyvault and disk_enc_volume_type:
+            try:
+                disk_enc_keyvault_name = (parse_resource_id(disk_enc_keyvault))['name']
+                disk_enc_keyvault_url = 'https://{0}.vault.azure.net/'.format(disk_enc_keyvault_name)
 
-            extension_info = {'publisher': 'Microsoft.Azure.Security',
-                              'settings': {'VolumeType': disk_enc_volume_type,
-                                           'EncryptionOperation': 'EnableEncryption',
-                                           'KeyVaultResourceId': disk_enc_keyvault,
-                                           'KeyVaultURL': disk_enc_keyvault_url}}
+                extension_info = {'publisher': 'Microsoft.Azure.Security',
+                                  'settings': {'VolumeType': disk_enc_volume_type,
+                                               'EncryptionOperation': 'EnableEncryption',
+                                               'KeyVaultResourceId': disk_enc_keyvault,
+                                               'KeyVaultURL': disk_enc_keyvault_url}}
 
-            if is_linux:
-                extension_info['type'] = 'AzureDiskEncryptionForLinux'
-                extension_info['version'] = '1.1'
-            else:
-                extension_info['type'] = 'AzureDiskEncryption'
-                extension_info['version'] = '2.2'
+                if is_linux:
+                    extension_info['type'] = 'AzureDiskEncryptionForLinux'
+                    extension_info['version'] = '1.1'
+                else:
+                    extension_info['type'] = 'AzureDiskEncryption'
+                    extension_info['version'] = '2.2'
 
-            if disk_enc_kek_url:
-                extension_info['settings']['KeyEncryptionKeyURL'] = disk_enc_kek_url
-                extension_info['settings']['KekVaultResourceId'] = disk_enc_keyvault
+                if disk_enc_kek_url:
+                    extension_info['settings']['KeyEncryptionKeyURL'] = disk_enc_kek_url
+                    extension_info['settings']['KekVaultResourceId'] = disk_enc_keyvault
 
-            encryption_info = await hub.exec.azurerm.compute.virtual_machine_extension.create_or_update(
-                name='DiskEncryption',
-                vm_name=name,
-                resource_group=resource_group,
-                location=result['location'],
-                publisher=extension_info['publisher'],
-                extension_type=extension_info['type'],
-                version=extension_info['version'],
-                settings=extension_info['settings'],
-                **connection_profile
-            )
+                encryption_info = await hub.exec.azurerm.compute.virtual_machine_extension.create_or_update(
+                    name='DiskEncryption',
+                    vm_name=name,
+                    resource_group=resource_group,
+                    location=result['location'],
+                    publisher=extension_info['publisher'],
+                    extension_type=extension_info['type'],
+                    version=extension_info['version'],
+                    settings=extension_info['settings'],
+                    **connection_profile
+                )
 
-            result['storage_profile']['disk_encryption'] = True
+                result['storage_profile']['disk_encryption'] = True
+            except KeyError as exc:
+                log.error("An error occured while trying to enable disk encryption: {0}".format(str(exc)))
+                result['storage_profile']['disk_encryption'] = False
 
         # Give some more details about the sub-objects
         network_interfaces = []
