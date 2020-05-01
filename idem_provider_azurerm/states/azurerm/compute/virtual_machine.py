@@ -423,10 +423,9 @@ async def present(
     if 'error' not in vm:
         new_vm = False
 
-        if tags:
-            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(vm.get('tags', {}), tags or {})
-            if tag_changes:
-                ret['changes']['tags'] = tag_changes
+        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(vm.get('tags', {}), tags or {})
+        if tag_changes:
+            ret['changes']['tags'] = tag_changes
 
         if vm_size.lower() != vm['hardware_profile']['vm_size'].lower():
             ret['changes']['vm_size'] = {
