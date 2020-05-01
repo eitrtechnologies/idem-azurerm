@@ -90,6 +90,7 @@ Azure Resource Manager (ARM) Compute Virtual Machine State Module
 # Python libs
 from __future__ import absolute_import
 import logging
+import operator
 
 # Azure libs
 HAS_LIBS = False
@@ -509,6 +510,31 @@ async def present(
                     'old': vm.get('os_profile', {}).get('windows_configuration', {}).get('enable_automatic_updates', True),
                     'new': enable_automatic_updates
                 }
+
+        if data_disks is not None:
+            existing_disks = vm.get('storage_profile', {}).get('data_disks', [])
+
+            if len(existing_disks) != len(data_disks):
+                ret['changes']['data_disks'] = {
+                    'old': existing_disks,
+                    'new': data_disks
+                }
+            else:
+                for idx, disk in enumerate(data_disks):
+                    for key in disk:
+                        if isinstance(disk[key], dict) and isinstance(existing_disks[idx].get(key), dict):
+                            for k in disk[key]:
+                                if disk[key][k] != existing_disks[idx][key].get(k):
+                                    ret['changes']['data_disks'] = {
+                                        'old': existing_disks,
+                                        'new': data_disks
+                                    }
+                        else:
+                            if disk[key] != existing_disks[idx].get(key):
+                                ret['changes']['data_disks'] = {
+                                    'old': existing_disks,
+                                    'new': data_disks
+                                }
 
         if enable_disk_enc:
             extensions = vm.get('resources', [])
