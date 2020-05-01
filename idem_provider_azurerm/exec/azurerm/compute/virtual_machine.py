@@ -77,9 +77,9 @@ async def create_or_update(
     os_disk_create_option='FromImage',
     os_disk_size_gb=30,
     ssh_public_keys=None,
-    disable_password_auth=True,
+    disable_password_auth=None,
     custom_data=None,
-    allow_extensions=True,
+    allow_extensions=None,
     enable_automatic_updates=None,
     time_zone=None,
     allocate_public_ip=False,
@@ -221,7 +221,8 @@ async def create_or_update(
 
     :param provision_vm_agent: Indicates whether virtual machine agent should be provisioned on the virtual machine.
         When this property is not specified in the request body, default behavior is to set it to true. This will ensure
-        that VM Agent is installed on the VM so that extensions can be added to the VM later.
+        that VM Agent is installed on the VM so that extensions can be added to the VM later. If attempting to set this
+        value, os_type should also be set in order to ensure the proper OS configuration is used.
 
     :param userdata_file: This parameter can contain a local or web path for a userdata script. If a local file is used,
         then the contents of that file will override the contents of the userdata parameter. If a web source is used,
@@ -569,6 +570,14 @@ async def create_or_update(
                 { 'image_reference': dict(zip(image_keys, image.split('|'))) }
             )
 
+    if time_zone or enable_automatic_updates is not None:
+        if 'windows_configuration' not in params['os_profile']:
+            params['os_profile']['windows_configuration'] = {}
+        if enable_automatic_updates:
+            params['os_profile']['windows_configuration']['enable_automatic_updates'] = enable_automatic_updates
+        if time_zone:
+            params['os_profile']['windows_configuration']['time_zone'] = time_zone
+
     if not provision_vm_agent:
         if 'linux_configuration' in params['os_profile']:
             params['os_profile']['linux_configuration']['provision_vm_agent'] = provision_vm_agent
@@ -579,14 +588,6 @@ async def create_or_update(
                 params['os_profile']['linux_configuration'] = {'provision_vm_agent': provision_vm_agent}
             elif 'windows' in os_type.lower():
                 params['os_profile']['windows_configuration'] = {'provision_vm_agent': provision_vm_agent}
-
-    if time_zone or enable_automatic_updates is not None:
-        if 'windows_configuration' not in params['os_profile']:
-            params['os_profile']['windows_configuration'] = {}
-        if enable_automatic_updates:
-            params['os_profile']['windows_configuration']['enable_automatic_updates'] = enable_automatic_updates
-        if time_zone:
-            params['os_profile']['windows_configuration']['time_zone'] = time_zone
 
     if os_ephemeral_disk:
         params['storage_profile']['diff_disk_settings'] = {'option': 'local'}
