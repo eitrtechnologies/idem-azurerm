@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) PostgreSQL Database Operations State Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -81,7 +81,7 @@ TREQ = {
 async def present(hub, ctx, name, server_name, resource_group, charset=None, collation=None, connection_auth=None,
                   **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Ensures that the specified database exists within the given PostgreSQL database.
 
@@ -199,7 +199,7 @@ async def present(hub, ctx, name, server_name, resource_group, charset=None, col
 
 async def absent(hub, ctx, name, server_name, resource_group, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Ensures that the specified database does not exist within the given PostgreSQL server.
 

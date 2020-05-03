@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Log Analytics Workspace State Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -81,7 +81,7 @@ TREQ = {
 async def present(hub, ctx, name, resource_group, location, sku=None, retention=None, customer_id=None,
                   tags=None, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Ensure a specified log analytics workspace exists.
 
@@ -234,7 +234,7 @@ async def present(hub, ctx, name, resource_group, location, sku=None, retention=
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Ensure a specified Log Analytics Workspace does not exist.
 

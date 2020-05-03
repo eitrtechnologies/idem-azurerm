@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) PostgreSQL Server Operations State Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -81,7 +81,7 @@ async def present(hub, ctx, name, resource_group, location, sku=None, version=No
                   storage_profile=None, login=None, login_password=None, create_mode='Default', force_password=False,
                   tags=None, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Ensure a specified PostgreSQL Server exists.
 
@@ -292,7 +292,7 @@ async def present(hub, ctx, name, resource_group, location, sku=None, version=No
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Ensure a specified PostgreSQL Server does not exist.
 

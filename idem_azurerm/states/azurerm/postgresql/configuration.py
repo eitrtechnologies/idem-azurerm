@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) PostgreSQL Server Configuration Operations State Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -80,7 +80,7 @@ TREQ = {
 
 async def present(hub, ctx, name, server_name, resource_group, value=None, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Ensures that a specific configuration setting exists with the given value for a specific PostgreSQL server. A list
         of configuration settings that can be updated for the given server can be found by using the list_by_server

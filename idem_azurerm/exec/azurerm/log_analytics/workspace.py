@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Log Analytics Workspace Execution Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -66,7 +66,7 @@ log = logging.getLogger(__name__)
 
 async def create_or_update(hub, name, resource_group, location, sku=None, retention=None, customer_id=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Create or update a workspace.
 
@@ -132,7 +132,7 @@ async def create_or_update(hub, name, resource_group, location, sku=None, retent
 
 async def delete(hub, name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Deletes a workspace instance.
 
@@ -165,7 +165,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
 async def get(hub, name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Gets a workspace instance.
 
@@ -199,7 +199,7 @@ async def get(hub, name, resource_group, **kwargs):
 
 async def list_(hub, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Gets the workspaces in a subscription.
 
@@ -229,7 +229,7 @@ async def list_(hub, **kwargs):
 
 async def list_by_resource_group(hub, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Gets the workspaces in a resource group.
 
@@ -263,7 +263,7 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
 
 async def list_intelligence_packs(hub, name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Lists all the intelligence packs possible and whether they are enabled or disabled for a given workspace.
 

@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Key Execution Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -72,7 +72,7 @@ log = logging.getLogger(__name__)
 
 async def get_key_client(hub, vault_url, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Load the key client and return a KeyClient object.
 
@@ -128,7 +128,7 @@ def _key_properties_as_dict(key_properties):
 
 async def backup_key(hub, name, vault_url, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Back up a key in a protected form useable only by Azure Key Vault. Requires key/backup permission. This is intended
         to allow copying a key from one vault to another. Both vaults must be owned by the same Azure subscription.
@@ -163,7 +163,7 @@ async def backup_key(hub, name, vault_url, **kwargs):
 
 async def begin_delete_key(hub, name, vault_url, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Delete all versions of a key and its cryptographic material. Requires keys/delete permission. When this method
         returns Key Vault has begun deleting the key. Deletion may take several seconds in a vault with soft-delete
@@ -197,7 +197,7 @@ async def begin_delete_key(hub, name, vault_url, **kwargs):
 
 async def begin_recover_deleted_key(hub, name, vault_url, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Recover a deleted key to its latest version. Possible only in a vault with soft-delete enabled. Requires
         keys/recover permission. When this method returns Key Vault has begun recovering the key. Recovery may take
@@ -233,7 +233,7 @@ async def begin_recover_deleted_key(hub, name, vault_url, **kwargs):
 async def create_ec_key(hub, name, vault_url, key_ops=None, enabled=None, expires_on=None, not_before=None, tags=None,
                         **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Create a new elliptic curve key or, if name is already in use, create a new version of the key. Requires the
         keys/create permission. Key properties can be specified as keyword arguments.
@@ -285,7 +285,7 @@ async def create_ec_key(hub, name, vault_url, key_ops=None, enabled=None, expire
 async def create_key(hub, name, key_type, vault_url, key_ops=None, enabled=None, expires_on=None, not_before=None, tags=None,
                      **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Create a key or, if name is already in use, create a new version of the key. Requires keys/create permission.
         Key properties can be specified as keyword arguments.
@@ -342,7 +342,7 @@ async def create_key(hub, name, key_type, vault_url, key_ops=None, enabled=None,
 
 async def create_rsa_key(hub, name, vault_url, key_ops=None, enabled=None, expires_on=None, not_before=None, tags=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Create a new RSA key or, if name is already in use, create a new version of the key. Requires the keys/create
         permission. Key properties can be specified as keyword arguments.
@@ -393,7 +393,7 @@ async def create_rsa_key(hub, name, vault_url, key_ops=None, enabled=None, expir
 
 async def get_deleted_key(hub, name, vault_url, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Get a deleted key. Possible only in a vault with soft-delete enabled. Requires keys/get permission.
 
@@ -425,7 +425,7 @@ async def get_deleted_key(hub, name, vault_url, **kwargs):
 
 async def get_key(hub, name, vault_url, version=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Get a key's attributes and, if it's an asymmetric key, its public material. Requires keys/get permission.
 
@@ -461,7 +461,7 @@ async def get_key(hub, name, vault_url, version=None, **kwargs):
 
 async def import_key(hub, name, vault_url, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Import a key created externally. Requires keys/import permission. If name is already in use, the key will be
         imported as a new version. Parameters used to build a JSONWebKey object will be passed to this module. More
@@ -547,7 +547,7 @@ async def import_key(hub, name, vault_url, **kwargs):
 
 async def list_(hub, vault_url, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     List identifiers and properties of all keys in the vault. Requires keys/list permission.
 
@@ -576,7 +576,7 @@ async def list_(hub, vault_url, **kwargs):
 
 async def list_properties_of_key_versions(hub, name, vault_url, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     List the identifiers and properties of a key's versions. Requires keys/list permission.
 
@@ -609,7 +609,7 @@ async def list_properties_of_key_versions(hub, name, vault_url, **kwargs):
 
 async def list_deleted_keys(hub, vault_url, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     List all deleted keys, including the public part of each. Possible only in a vault with soft-delete enabled.
         Requires keys/list permission.
@@ -639,7 +639,7 @@ async def list_deleted_keys(hub, vault_url, **kwargs):
 
 async def purge_deleted_key(hub, name, vault_url, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Permanently deletes a deleted key. Only possible in a vault with soft-delete enabled. Performs an irreversible
         deletion of the specified key, without possibility for recovery. The operation is not available if the
@@ -674,7 +674,7 @@ async def purge_deleted_key(hub, name, vault_url, **kwargs):
 
 async def restore_key_backup(hub, backup, vault_url, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Restore a key backup to the vault. This imports all versions of the key, with its name, attributes, and access
         control policies. If the key's name is already in use, restoring it will fail. Also, the target vault must be
@@ -709,7 +709,7 @@ async def restore_key_backup(hub, backup, vault_url, **kwargs):
 async def update_key_properties(hub, name, vault_url, version=None, enabled=None, expires_on=None, not_before=None,
                                 tags=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Change a key's properties (not its cryptographic material). Requires keys/update permission. Key properties that
         need to be updated can be specified as keyword arguments.

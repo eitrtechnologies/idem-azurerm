@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Management Group State Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -71,7 +71,7 @@ log = logging.getLogger(__name__)
 
 async def present(hub, ctx, name, display_name=None, parent=None, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Ensures that the specified management group is present.
 
@@ -179,7 +179,7 @@ async def present(hub, ctx, name, display_name=None, parent=None, connection_aut
 
 async def absent(hub, ctx, name, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Ensure a specified management group does not exist.
 

@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) PostgreSQL Server Security Alert Policy Operations State Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -81,7 +81,7 @@ async def present(hub, ctx, server_name, resource_group, policy_state, disabled_
                   email_account_admins=None, storage_endpoint=None, storage_account_access_key=None,
                   retention_days=None, force_access_key=False, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Ensures that the specified server security alert policy exists within the given PostgreSQL server.
 

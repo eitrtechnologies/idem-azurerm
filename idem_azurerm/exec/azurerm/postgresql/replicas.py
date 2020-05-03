@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) PostgreSQL Server Replicas Operations Execution Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -64,7 +64,7 @@ log = logging.getLogger(__name__)
 
 async def list_by_server(hub, server_name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     List all the replicas for a given server.
 

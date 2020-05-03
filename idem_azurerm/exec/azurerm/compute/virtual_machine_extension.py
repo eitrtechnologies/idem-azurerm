@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Compute Virtual Machine Extension Operations Execution Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -66,7 +66,7 @@ log = logging.getLogger(__name__)
 async def create_or_update(hub, name, vm_name, resource_group, location, publisher, extension_type, version, settings,
                            **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     The operation to create or update the extension.
 
@@ -132,7 +132,7 @@ async def create_or_update(hub, name, vm_name, resource_group, location, publish
 
 async def delete(hub, name, vm_name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     The operation to delete the extension.
 
@@ -170,7 +170,7 @@ async def delete(hub, name, vm_name, resource_group, **kwargs):
 
 async def get(hub, name, vm_name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     The operation to get the extension.
 
@@ -207,7 +207,7 @@ async def get(hub, name, vm_name, resource_group, **kwargs):
 
 async def list_(hub, vm_name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     The operation to get all extensions of a Virtual Machine.
 

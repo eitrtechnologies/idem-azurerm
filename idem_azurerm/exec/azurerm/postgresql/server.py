@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) PostgreSQL Server Operations Execution Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -69,7 +69,7 @@ log = logging.getLogger(__name__)
 async def create(hub, name, resource_group, location, sku=None, version=None, ssl_enforcement=None,
                  storage_profile=None, login=None, login_password=None, create_mode='Default', tags=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Creates a new server, or will overwrite an existing server.
 
@@ -165,7 +165,7 @@ async def create(hub, name, resource_group, location, sku=None, version=None, ss
 
 async def delete(hub, name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Deletes a server.
 
@@ -200,7 +200,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
 async def get(hub, name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Gets information about a server.
 
@@ -234,7 +234,7 @@ async def get(hub, name, resource_group, **kwargs):
 
 async def list_(hub, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     List all the servers in a given subscription.
 
@@ -264,7 +264,7 @@ async def list_(hub, **kwargs):
 
 async def list_by_resource_group(hub, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     List all the servers in a given resource group.
 
@@ -298,7 +298,7 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
 
 async def restart(hub, name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Restarts a server.
 
@@ -334,7 +334,7 @@ async def restart(hub, name, resource_group, **kwargs):
 async def update(hub, name, resource_group, sku=None, version=None, ssl_enforcement=None, storage_profile=None,
                  login_password=None, tags=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Creates a new server, or will overwrite an existing server.
 

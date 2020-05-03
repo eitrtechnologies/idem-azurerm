@@ -4,7 +4,7 @@ Azure Resource Manager (ARM) Compute Virtual Machine State Module
 
 .. versionadded:: 1.0.0
 
-.. versionchanged:: VERSION
+.. versionchanged:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -164,7 +164,7 @@ async def present(
     '''
     .. versionadded:: 1.0.0
 
-    .. versionchanged:: VERSION
+    .. versionchanged:: 2.0.0
 
     Ensure a virtual machine exists.
 

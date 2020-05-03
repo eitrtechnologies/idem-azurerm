@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Compute Virtual Machine Extension Image Operations Execution Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -63,7 +63,7 @@ log = logging.getLogger(__name__)
 
 async def get(hub, location, publisher, extension_type, version, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Gets a virtual machine extension image.
 
@@ -104,7 +104,7 @@ async def get(hub, location, publisher, extension_type, version, **kwargs):
 
 async def list_types(hub, location, publisher, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Gets a list of virtual machine extension image types.
 
@@ -140,7 +140,7 @@ async def list_types(hub, location, publisher, **kwargs):
 
 async def list_versions(hub, location, publisher, extension_type, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Gets a list of virtual machine extension image versions.
 

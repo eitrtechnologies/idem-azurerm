@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) PostgreSQL Virtual Network Rule Operations State Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -81,7 +81,7 @@ TREQ = {
 async def present(hub, ctx, name, server_name, resource_group, subnet_id, ignore_missing_endpoint=None,
                   connection_auth=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Ensures that the specified virtual network rule exists within the given PostgreSQL server.
 
@@ -194,7 +194,7 @@ async def present(hub, ctx, name, server_name, resource_group, subnet_id, ignore
 
 async def absent(hub, ctx, name, server_name, resource_group, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Ensures that the specified virtual network rule does not exist within the given PostgreSQL server.
 

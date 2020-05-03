@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) PostgreSQL Server Firewall Rule Operations Execution Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -65,7 +65,7 @@ log = logging.getLogger(__name__)
 
 async def create_or_update(hub, name, server_name, resource_group, start_ip_address, end_ip_address, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Creates a new firewall rule or updates an existing firewall rule.
 
@@ -109,7 +109,7 @@ async def create_or_update(hub, name, server_name, resource_group, start_ip_addr
 
 async def delete(hub, name, server_name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Deletes a server firewall rule.
 
@@ -147,7 +147,7 @@ async def delete(hub, name, server_name, resource_group, **kwargs):
 
 async def get(hub, name, server_name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Gets information about a server firewall rule.
 
@@ -184,7 +184,7 @@ async def get(hub, name, server_name, resource_group, **kwargs):
 
 async def list_by_server(hub, server_name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     List all the firewall rules in a given server.
 

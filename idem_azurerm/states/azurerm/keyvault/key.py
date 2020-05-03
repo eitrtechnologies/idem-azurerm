@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Key State Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -82,7 +82,7 @@ TREQ = {
 async def present(hub, ctx, name, key_type, vault_url, key_ops=None, enabled=None, expires_on=None, not_before=None,
                   tags=None, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Ensure the specified key exists within the given key vault. Requires keys/create permission. Key properties can be
         specified as keyword arguments.
@@ -244,7 +244,7 @@ async def present(hub, ctx, name, key_type, vault_url, key_ops=None, enabled=Non
 
 async def absent(hub, ctx, name, vault_url, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Ensure the specified key does not exist within the given key vault.
 

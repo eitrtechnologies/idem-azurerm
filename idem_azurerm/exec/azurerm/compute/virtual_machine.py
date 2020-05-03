@@ -4,7 +4,7 @@ Azure Resource Manager (ARM) Compute Virtual Machine Execution Module
 
 .. versionadded:: 1.0.0
 
-.. versionchanged:: VERSION
+.. versionchanged:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -117,7 +117,7 @@ async def create_or_update(
     '''
     .. versionadded:: 1.0.0
 
-    .. versionchanged:: VERSION
+    .. versionchanged:: 2.0.0
 
     Create or update a virtual machine.
 

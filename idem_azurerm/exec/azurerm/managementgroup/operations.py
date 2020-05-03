@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Management Group Operations Execution Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -69,7 +69,7 @@ log = logging.getLogger(__name__)
 
 async def get_api_client(hub, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Load the ManagementGroupsAPI client and returns the client object.
 
@@ -81,7 +81,7 @@ async def get_api_client(hub, **kwargs):
 
 async def create_or_update(hub, name, display_name=None, parent=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Create or update a management group. If a management group is already created and a subsequent create request is
         issued with different properties, the management group properties will be updated.
@@ -147,7 +147,7 @@ async def create_or_update(hub, name, display_name=None, parent=None, **kwargs):
 
 async def delete(hub, name, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Delete management group. If a management group contains child resources, the request will fail.
 
@@ -177,7 +177,7 @@ async def delete(hub, name, **kwargs):
 
 async def get(hub, name, expand=None, recurse=None, filter=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Get the details of the specified management group.
 
@@ -215,7 +215,7 @@ async def get(hub, name, expand=None, recurse=None, filter=None, **kwargs):
 
 async def list_(hub, skip_token=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     List management groups for the authenticated user.
 

@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) PostgreSQL Server Security Alert Policy Operations Execution Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -66,7 +66,7 @@ async def create_or_update(hub, server_name, resource_group, policy_state, disab
                            email_account_admins=None, storage_endpoint=None, storage_account_access_key=None,
                            retention_days=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Creates or updates a threat detection policy.
 
@@ -138,7 +138,7 @@ async def create_or_update(hub, server_name, resource_group, policy_state, disab
 
 async def get(hub, server_name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Get a server's security alert policy.
 

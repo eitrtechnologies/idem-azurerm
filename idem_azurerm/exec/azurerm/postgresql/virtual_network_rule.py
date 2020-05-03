@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) PostgreSQL Virtual Network Rule Operations Execution Module
 
-.. versionadded:: VERSION
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -64,7 +64,7 @@ log = logging.getLogger(__name__)
 
 async def create_or_update(hub, name, server_name, resource_group, subnet_id, ignore_missing_endpoint=None, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Creates or updates an existing virtual network rule.
 
@@ -110,7 +110,7 @@ async def create_or_update(hub, name, server_name, resource_group, subnet_id, ig
 
 async def delete(hub, name, server_name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Deletes the virtual network rule with the given name.
 
@@ -148,7 +148,7 @@ async def delete(hub, name, server_name, resource_group, **kwargs):
 
 async def get(hub, name, server_name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Gets a virtual network rule.
 
@@ -185,7 +185,7 @@ async def get(hub, name, server_name, resource_group, **kwargs):
 
 async def list_by_server(hub, server_name, resource_group, **kwargs):
     '''
-    .. versionadded:: VERSION
+    .. versionadded:: 2.0.0
 
     Gets a list of virtual network rules in a server.
 
