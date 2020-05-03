@@ -4,8 +4,10 @@ Azure Resource Manager (ARM) Utilities
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 2.0.0
+
 :maintainer: <devops@eitr.tech>
-:maturity: new
+:maturity: stable
 :depends:
     * `azure <https://pypi.python.org/pypi/azure>`_ >= 2.0.0rc6
     * `azure-common <https://pypi.python.org/pypi/azure-common>`_ >= 1.1.4
@@ -186,7 +188,7 @@ async def get_client(hub, client_type, **kwargs):
             base_url=cloud_env.endpoints.resource_manager,
         )
 
-    client.config.add_user_agent('Salt/{0}'.format('SOMEVERSIONHERE'))
+    client.config.add_user_agent("idem-azurerm/2.0.0")
 
     return client
 
