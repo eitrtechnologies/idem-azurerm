@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Redis Operations State Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -81,7 +81,7 @@ async def present(hub, ctx, name, resource_group, location, sku, redis_configura
                  tenant_settings=None, shard_count=None, minimum_tls_version=None, subnet_id=None, static_ip=None,
                  zones=None, tags=None, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensure a redis cache exists in the resource group.
 
@@ -297,7 +297,7 @@ async def present(hub, ctx, name, resource_group, location, sku, redis_configura
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensure a Redis cache does not exist in the specified resource group.
 

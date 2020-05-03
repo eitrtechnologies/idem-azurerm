@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Redis Operations Execution Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -67,7 +67,7 @@ log = logging.getLogger(__name__)
 
 async def check_name_availability(hub, name, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Checks that the redis cache name is valid and is not already in use.
 
@@ -102,7 +102,7 @@ async def create(hub, name, resource_group, location, sku, redis_configuration=N
                  tenant_settings=None, shard_count=None, minimum_tls_version=None, subnet_id=None, static_ip=None,
                  zones=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Create or replace (overwrite/recreate, with potential downtime) an existing Redis cache.
 
@@ -188,7 +188,7 @@ async def create(hub, name, resource_group, location, sku, redis_configuration=N
 
 async def delete(hub, name, resource_group, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Deletes a Redis cache.
 
@@ -221,7 +221,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
 async def export_data(hub, name, resource_group, prefix, container, format=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Export data from the redis cache to blobs in a container.
 
@@ -275,7 +275,7 @@ async def export_data(hub, name, resource_group, prefix, container, format=None,
 
 async def force_reboot(hub, name, resource_group, reboot_type, shard_id=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Reboot specified Redis node(s). This operation requires write permission to the cache resource.
         There can be potential data loss.
@@ -317,7 +317,7 @@ async def force_reboot(hub, name, resource_group, reboot_type, shard_id=None, **
 
 async def get(hub, name, resource_group, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Gets a Redis cache (resource description).
 
@@ -351,7 +351,7 @@ async def get(hub, name, resource_group, **kwargs):
 
 async def import_data(hub, name, resource_group, files, format=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Import data into Redis cache.
 
@@ -391,7 +391,7 @@ async def import_data(hub, name, resource_group, files, format=None, **kwargs):
 
 async def list_(hub, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Gets all Redis caches in the specified subscription.
 
@@ -421,7 +421,7 @@ async def list_(hub, **kwargs):
 
 async def list_by_resource_group(hub, resource_group, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Lists all Redis caches in a resource group.
 
@@ -455,7 +455,7 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
 
 async def list_keys(hub, name, resource_group, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Retrieve a Redis cache's access keys. This operation requires write permission to the cache resource.
 
@@ -489,7 +489,7 @@ async def list_keys(hub, name, resource_group, **kwargs):
 
 async def list_upgrade_notifications(hub, name, resource_group, history, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Gets any upgrade notifications for a Redis cache.
 
@@ -526,7 +526,7 @@ async def list_upgrade_notifications(hub, name, resource_group, history, **kwarg
 
 async def regenerate_key(hub, name, resource_group, key_type, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Regenerate Redis cache's access keys. This operation requires write permission to the cache resource.
 
@@ -564,7 +564,7 @@ async def regenerate_key(hub, name, resource_group, key_type, **kwargs):
 async def update(hub, name, resource_group, sku=None, redis_configuration=None, enable_non_ssl_port=False,
                  tenant_settings=None, shard_count=None, minimum_tls_version=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Update an existing Redis cache.
 
