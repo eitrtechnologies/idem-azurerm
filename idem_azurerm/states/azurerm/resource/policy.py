@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Resource Policy State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 2.0.0
+
 :maintainer: <devops@eitr.tech>
 :maturity: new
 :depends:
@@ -117,6 +119,8 @@ async def definition_present(
 ):
     '''
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 2.0.0
 
     Ensure a security policy definition exists.
 
