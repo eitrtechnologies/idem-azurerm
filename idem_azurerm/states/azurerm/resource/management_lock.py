@@ -121,7 +121,7 @@ async def present_by_scope(hub, ctx, name, scope, lock_level, notes=None, owners
     lock = await hub.exec.azurerm.resource.management_lock.get_by_scope(
         name,
         scope,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -249,7 +249,7 @@ async def absent_by_scope(hub, ctx, name, scope, connection_auth=None, **kwargs)
     lock = await hub.exec.azurerm.resource.management_lock.get_by_scope(
         name,
         scope,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -352,7 +352,7 @@ async def present_at_resource_level(hub, ctx, name, lock_level, resource_group, 
         resource_type,
         resource_provider_namespace,
         parent_resource_path,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -502,7 +502,7 @@ async def absent_at_resource_level(hub, ctx, name, resource_group, resource, res
         resource_type,
         resource_provider_namespace,
         parent_resource_path=parent_resource_path,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -595,13 +595,13 @@ async def present(hub, ctx, name, lock_level, resource_group=None, notes=None, o
         lock = await hub.exec.azurerm.resource.management_lock.get_at_resource_group_level(
             name,
             resource_group,
-            azurearm_log_level='info',
+            azurerm_log_level='info',
             **connection_auth
         )
     else:
         lock = await hub.exec.azurerm.resource.management_lock.get_at_subscription_level(
             name,
-            azurearm_log_level='info',
+            azurerm_log_level='info',
             **connection_auth
         )
 
@@ -738,13 +738,13 @@ async def absent(hub, ctx, name, resource_group=None, connection_auth=None, **kw
         lock = await hub.exec.azurerm.resource.management_lock.get_at_resource_group_level(
             name,
             resource_group,
-            azurearm_log_level='info',
+            azurerm_log_level='info',
             **connection_auth
         )
     else:
         lock = await hub.exec.azurerm.resource.management_lock.get_at_subscription_level(
             name,
-            azurearm_log_level='info',
+            azurerm_log_level='info',
             **connection_auth
         )
 

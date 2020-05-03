@@ -188,10 +188,6 @@ async def present(hub, ctx, name, ip_configurations, subnet, virtual_network, re
                 - enable_ip_forwarding: False
                 - network_security_group: nsg1
                 - connection_auth: {{ profile }}
-                - require:
-                  - azurearm_network: Ensure subnet exists
-                  - azurearm_network: Ensure network security group exists
-                  - azurearm_network: Ensure another public IP exists
 
     '''
     ret = {
@@ -208,7 +204,7 @@ async def present(hub, ctx, name, ip_configurations, subnet, virtual_network, re
     iface = await hub.exec.azurerm.network.network_interface.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -403,7 +399,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     iface = await hub.exec.azurerm.network.network_interface.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

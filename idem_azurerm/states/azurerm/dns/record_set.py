@@ -252,7 +252,7 @@ async def present(hub, ctx, name, zone_name, resource_group, record_type, if_mat
         zone_name,
         resource_group,
         record_type,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -402,7 +402,7 @@ async def absent(hub, ctx, name, zone_name, resource_group, connection_auth=None
         name,
         zone_name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

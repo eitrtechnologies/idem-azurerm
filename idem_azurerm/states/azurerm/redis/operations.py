@@ -156,7 +156,7 @@ async def present(hub, ctx, name, resource_group, location, sku, redis_configura
     cache = await hub.exec.azurerm.redis.operations.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

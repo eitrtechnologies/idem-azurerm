@@ -109,7 +109,7 @@ async def present(hub, ctx, name, display_name=None, parent=None, connection_aut
 
     mgroup = await hub.exec.azurerm.managementgroup.operations.get(
         name=name,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -202,7 +202,7 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
 
     mgroup = await hub.exec.azurerm.managementgroup.operations.get(
         name=name,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

@@ -127,7 +127,7 @@ async def present(hub, ctx, name, server_name, resource_group, start_ip_address,
         name=name,
         server_name=server_name,
         resource_group=resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -236,7 +236,7 @@ async def absent(hub, ctx, name, server_name, resource_group, connection_auth=No
         name=name,
         server_name=server_name,
         resource_group=resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

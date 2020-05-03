@@ -169,8 +169,6 @@ async def present(hub, ctx, name, resource_group, tags=None, security_rules=None
                 - tags:
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
-                - require:
-                  - azurearm_resource: Ensure resource group exists
 
     '''
     ret = {
@@ -187,7 +185,7 @@ async def present(hub, ctx, name, resource_group, tags=None, security_rules=None
     nsg = await hub.exec.azurerm.network.network_security_group.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -295,7 +293,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     nsg = await hub.exec.azurerm.network.network_security_group.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -420,8 +418,6 @@ async def security_rule_present(hub, ctx, name, access, direction, priority, pro
                   - '80'
                   - '443'
                 - connection_auth: {{ profile }}
-                - require:
-                  - azurearm_network: Ensure network security group exists
 
     '''
     ret = {
@@ -460,7 +456,7 @@ async def security_rule_present(hub, ctx, name, access, direction, priority, pro
         name,
         security_group,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -694,7 +690,7 @@ async def security_rule_absent(hub, ctx, name, security_group, resource_group, c
         name,
         security_group,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

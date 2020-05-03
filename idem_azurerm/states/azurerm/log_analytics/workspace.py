@@ -133,7 +133,7 @@ async def present(hub, ctx, name, resource_group, location, sku=None, retention=
     workspace = await hub.exec.azurerm.log_analytics.workspace.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -270,7 +270,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     workspace = await hub.exec.azurerm.log_analytics.workspace.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

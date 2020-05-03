@@ -137,7 +137,7 @@ async def present(hub, ctx, name, key_type, vault_url, key_ops=None, enabled=Non
     key = await hub.exec.azurerm.keyvault.key.get_key(
         name=name,
         vault_url=vault_url,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -280,7 +280,7 @@ async def absent(hub, ctx, name, vault_url, connection_auth=None, **kwargs):
     key = await hub.exec.azurerm.keyvault.key.get_key(
         name=name,
         vault_url=vault_url,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

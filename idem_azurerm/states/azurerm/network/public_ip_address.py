@@ -160,8 +160,6 @@ async def present(hub, ctx, name, resource_group, tags=None, sku=None, public_ip
                 - tags:
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
-                - require:
-                  - azurearm_resource: Ensure resource group exists
 
     '''
     ret = {
@@ -181,7 +179,7 @@ async def present(hub, ctx, name, resource_group, tags=None, sku=None, public_ip
     pub_ip = await hub.exec.azurerm.network.public_ip_address.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -320,7 +318,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     pub_ip = await hub.exec.azurerm.network.public_ip_address.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

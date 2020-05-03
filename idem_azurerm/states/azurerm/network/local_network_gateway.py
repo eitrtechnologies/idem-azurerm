@@ -170,7 +170,7 @@ async def present(hub, ctx, name, resource_group, gateway_ip_address, bgp_settin
     gateway = await hub.exec.azurerm.network.local_network_gateway.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -303,7 +303,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     gateway = await hub.exec.azurerm.network.local_network_gateway.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

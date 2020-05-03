@@ -197,7 +197,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
     vault = await hub.exec.azurerm.keyvault.vault.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -416,7 +416,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     vault = await hub.exec.azurerm.keyvault.vault.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

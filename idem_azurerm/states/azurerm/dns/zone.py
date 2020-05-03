@@ -167,7 +167,7 @@ async def present(hub, ctx, name, resource_group, etag=None, if_match=None, if_n
         ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
         return ret
 
-    zone = await hub.exec.azurerm.dns.zone.get(name, resource_group, azurearm_log_level='info', **connection_auth)
+    zone = await hub.exec.azurerm.dns.zone.get(name, resource_group, azurerm_log_level='info', **connection_auth)
 
     if 'error' not in zone:
         tag_changes = await hub.exec.utils.dictdiffer.deep_diff(zone.get('tags', {}), tags or {})
@@ -296,7 +296,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     zone = await hub.exec.azurerm.dns.zone.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

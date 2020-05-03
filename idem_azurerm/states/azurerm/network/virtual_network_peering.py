@@ -163,9 +163,6 @@ async def present(hub, ctx, name, remote_virtual_network, virtual_network, resou
                 - allow_gateway_transit: False
                 - use_remote_gateways: False
                 - connection_auth: {{ profile }}
-                - require:
-                  - azurearm_network: Ensure virtual network exists
-                  - azurearm_network: Ensure remote virtual network exists
 
     '''
     ret = {
@@ -183,7 +180,7 @@ async def present(hub, ctx, name, remote_virtual_network, virtual_network, resou
         name,
         virtual_network,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -260,7 +257,7 @@ async def present(hub, ctx, name, remote_virtual_network, virtual_network, resou
             name=remote_name,
             virtual_network=remote_virtual_network,
             resource_group=remote_vnet_group,
-            azurearm_log_level='info',
+            azurerm_log_level='info',
             **connection_auth
         )
 
@@ -336,7 +333,7 @@ async def absent(hub, ctx, name, virtual_network, resource_group, connection_aut
         name,
         virtual_network,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

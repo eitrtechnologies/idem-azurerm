@@ -155,7 +155,7 @@ async def present(hub, ctx, name, resource_group, location, sku=None, version=No
     server = await hub.exec.azurerm.postgresql.server.get(
         name=name,
         resource_group=resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -328,7 +328,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     server = await hub.exec.azurerm.postgresql.server.get(
         name=name,
         resource_group=resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

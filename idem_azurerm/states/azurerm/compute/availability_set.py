@@ -147,8 +147,6 @@ async def present(hub, ctx, name, resource_group, tags=None, platform_update_dom
                 - tags:
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
-                - require:
-                  - azurearm_resource: Ensure resource group exists
 
     '''
     ret = {
@@ -168,7 +166,7 @@ async def present(hub, ctx, name, resource_group, tags=None, platform_update_dom
     aset = await hub.exec.azurerm.compute.availability_set.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -292,7 +290,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     aset = await hub.exec.azurerm.compute.availability_set.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

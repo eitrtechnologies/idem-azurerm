@@ -149,8 +149,6 @@ async def present(hub, ctx, name, address_prefixes, resource_group, dns_servers=
                 - tags:
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
-                - require:
-                  - azurearm_resource: Ensure resource group exists
 
     '''
     ret = {
@@ -167,7 +165,7 @@ async def present(hub, ctx, name, address_prefixes, resource_group, dns_servers=
     vnet = await hub.exec.azurerm.network.virtual_network.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -289,7 +287,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     vnet = await hub.exec.azurerm.network.virtual_network.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -364,10 +362,6 @@ async def subnet_present(hub, ctx, name, address_prefix, virtual_network, resour
                 - security_group: nsg1
                 - route_table: rt1
                 - connection_auth: {{ profile }}
-                - require:
-                  - azurearm_network: Ensure virtual network exists
-                  - azurearm_network: Ensure network security group exists
-                  - azurearm_network: Ensure route table exists
 
     '''
     ret = {
@@ -385,7 +379,7 @@ async def subnet_present(hub, ctx, name, address_prefix, virtual_network, resour
         name,
         virtual_network,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -501,7 +495,7 @@ async def subnet_absent(hub, ctx, name, virtual_network, resource_group, connect
         name,
         virtual_network,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

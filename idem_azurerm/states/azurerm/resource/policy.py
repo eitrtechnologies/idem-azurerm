@@ -242,7 +242,7 @@ async def definition_present(
         metadata = temp_rule.get('properties', {}).get('metadata')
         parameters = temp_rule.get('properties', {}).get('parameters')
 
-    policy = await hub.exec.azurerm.resource.policy.definition_get(name, azurearm_log_level='info', **connection_auth)
+    policy = await hub.exec.azurerm.resource.policy.definition_get(name, azurerm_log_level='info', **connection_auth)
 
     if 'error' not in policy:
         if policy_type and policy_type.lower() != policy.get('policy_type', '').lower():
@@ -368,7 +368,7 @@ async def definition_absent(hub, name, connection_auth=None, **kwargs):
         ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
         return ret
 
-    policy = await hub.exec.azurerm.resource.policy.definition_get(name, azurearm_log_level='info', **connection_auth)
+    policy = await hub.exec.azurerm.resource.policy.definition_get(name, azurerm_log_level='info', **connection_auth)
 
     if 'error' in policy:
         ret['result'] = True
@@ -459,7 +459,7 @@ async def assignment_present(hub, ctx, name, scope, definition_name, display_nam
     policy = await hub.exec.azurerm.resource.policy.assignment_get(
         name,
         scope,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -586,7 +586,7 @@ async def assignment_absent(hub, ctx, name, scope, connection_auth=None, **kwarg
     policy = await hub.exec.azurerm.resource.policy.assignment_get(
         name,
         scope,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

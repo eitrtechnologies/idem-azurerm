@@ -414,7 +414,7 @@ async def present(
     vm = await hub.exec.azurerm.compute.virtual_machine.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -789,7 +789,7 @@ async def absent(
     vm = await hub.exec.azurerm.compute.virtual_machine.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -825,7 +825,7 @@ async def absent(
                 deleted_disk = await hub.exec.azurerm.compute.disk.delete(
                     disk_name,
                     disk_group,
-                    azurearm_log_level='info',
+                    azurerm_log_level='info',
                     **connection_auth
                 )
 
@@ -848,7 +848,7 @@ async def absent(
                     deleted_disk = await hub.exec.azurerm.compute.disk.delete(
                         disk_name,
                         disk_group,
-                        azurearm_log_level='info',
+                        azurerm_log_level='info',
                         **connection_auth
                     )
 
@@ -869,14 +869,14 @@ async def absent(
                 nic = await hub.exec.azurerm.network.network_interface.get(
                     nic_name,
                     nic_group,
-                    azurearm_log_level='info',
+                    azurerm_log_level='info',
                     **connection_auth
                 )
 
                 deleted_nic = await hub.exec.azurerm.network.network_interface.delete(
                     nic_name,
                     nic_group,
-                    azurearm_log_level='info',
+                    azurerm_log_level='info',
                     **connection_auth
                 )
 
@@ -897,7 +897,7 @@ async def absent(
                         deleted_pip = await hub.exec.azurerm.network.public_ip_address.delete(
                             pip_name,
                             pip_group,
-                            azurearm_log_level='info',
+                            azurerm_log_level='info',
                             **connection_auth
                         )
 

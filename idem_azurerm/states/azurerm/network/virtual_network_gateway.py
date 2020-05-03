@@ -213,9 +213,6 @@ async def connection_present(hub, ctx, name, resource_group, virtual_network_gat
                 - tags:
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
-                - require:
-                  - azurearm_resource: Ensure resource group exists
-                  - azurearm_network: Ensure virtual network gateway exists
 
         Ensure virtual network gateway IPSec connection exists:
             azurerm.network.virtual_network_gateway.connection_present:
@@ -239,9 +236,6 @@ async def connection_present(hub, ctx, name, resource_group, virtual_network_gat
                 - tags:
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
-                - require:
-                  - azurearm_resource: Ensure resource group exists
-                  - azurearm_network: Ensure virtual network gateway exists
 
     '''
     ret = {
@@ -258,7 +252,7 @@ async def connection_present(hub, ctx, name, resource_group, virtual_network_gat
     connection = await hub.exec.azurerm.network.virtual_network_gateway.connection_get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -491,7 +485,7 @@ async def connection_absent(hub, ctx, name, resource_group, connection_auth=None
     connection = await hub.exec.azurerm.network.virtual_network_gateway.connection_get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -613,9 +607,6 @@ async def present(hub, ctx, name, resource_group, virtual_network, ip_configurat
                 - tags:
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
-                - require:
-                  - azurearm_resource: Ensure resource group exists
-                  - azurearm_network: Ensure virtual network exists
 
         Ensure virtual network gateway exists:
             azurerm.network.virtual_network_gateway.present:
@@ -643,9 +634,6 @@ async def present(hub, ctx, name, resource_group, virtual_network, ip_configurat
                 - address_prefixes:
                     - '10.0.0.0/8'
                     - '192.168.0.0/16'
-                - require:
-                  - azurearm_resource: Ensure resource group exists
-                  - azurearm_network: Ensure virtual network gateway exists
 
     '''
     ret = {
@@ -662,7 +650,7 @@ async def present(hub, ctx, name, resource_group, virtual_network, ip_configurat
     gateway = await hub.exec.azurerm.network.virtual_network_gateway.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -841,7 +829,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     gateway = await hub.exec.azurerm.network.virtual_network_gateway.get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

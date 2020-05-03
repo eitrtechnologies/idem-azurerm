@@ -126,7 +126,7 @@ async def present(hub, ctx, name, server_name, resource_group, value=None, conne
         name=name,
         server_name=server_name,
         resource_group=resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

@@ -154,8 +154,6 @@ async def table_present(hub, ctx, name, resource_group, tags=None, routes=None, 
                 - tags:
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
-                - require:
-                  - azurearm_resource: Ensure resource group exists
 
     '''
     ret = {
@@ -172,7 +170,7 @@ async def table_present(hub, ctx, name, resource_group, tags=None, routes=None, 
     rt_tbl = await hub.exec.azurerm.network.route.table_get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -281,7 +279,7 @@ async def table_absent(hub, ctx, name, resource_group, connection_auth=None, **k
     rt_tbl = await hub.exec.azurerm.network.route.table_get(
         name,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -357,8 +355,6 @@ async def present(hub, ctx, name, address_prefix, next_hop_type, route_table, re
                 - address_prefix: '192.168.0.0/16'
                 - next_hop_type: vnetlocal
                 - connection_auth: {{ profile }}
-                - require:
-                  - azurearm_network: Ensure route table exists
 
     '''
     ret = {
@@ -376,7 +372,7 @@ async def present(hub, ctx, name, address_prefix, next_hop_type, route_table, re
         name,
         route_table,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -484,7 +480,7 @@ async def absent(hub, ctx, name, route_table, resource_group, connection_auth=No
         name,
         route_table,
         resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

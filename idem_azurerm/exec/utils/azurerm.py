@@ -193,15 +193,15 @@ async def get_client(hub, client_type, **kwargs):
 
 async def log_cloud_error(hub, client, message, **kwargs):
     '''
-    Log an azurearm cloud error exception
+    Log an Azure cloud error exception
     '''
     try:
-        cloud_logger = getattr(log, kwargs.get('azurearm_log_level'))
+        cloud_logger = getattr(log, kwargs.get('azurerm_log_level'))
     except (AttributeError, TypeError):
         cloud_logger = getattr(log, 'error')
 
     cloud_logger(
-         'An AzureARM %s CloudError has occurred: %s',
+         'An Azure %s CloudError has occurred: %s',
          client.capitalize(),
          message
     )

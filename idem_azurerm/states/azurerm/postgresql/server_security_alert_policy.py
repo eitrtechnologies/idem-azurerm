@@ -145,7 +145,7 @@ async def present(hub, ctx, server_name, resource_group, policy_state, disabled_
     policy = await hub.exec.azurerm.postgresql.server_security_alert_policy.get(
         server_name=server_name,
         resource_group=resource_group,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 

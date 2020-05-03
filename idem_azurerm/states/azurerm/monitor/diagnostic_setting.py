@@ -161,7 +161,7 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
     setting = await hub.exec.azurerm.monitor.diagnostic_setting.get(
         name,
         resource_uri,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
@@ -338,7 +338,7 @@ async def absent(hub, ctx, name, resource_uri, connection_auth=None, **kwargs):
     setting = await hub.exec.azurerm.monitor.diagnostic_setting.get(
         name,
         resource_uri,
-        azurearm_log_level='info',
+        azurerm_log_level='info',
         **connection_auth
     )
 
