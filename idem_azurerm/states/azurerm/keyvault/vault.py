@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Key Vault State Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -83,7 +83,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
                   enabled_for_disk_encryption=None, enabled_for_template_deployment=None, tags=None,
                   connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensure a specified keyvault exists.
 
@@ -380,7 +380,7 @@ async def present(hub, ctx, name, resource_group, location, tenant_id, sku, acce
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensure a specified key vault does not exist.
 

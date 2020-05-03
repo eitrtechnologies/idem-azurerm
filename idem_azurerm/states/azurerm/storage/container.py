@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Blob Container State Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -80,7 +80,7 @@ TREQ = {
 async def present(hub, ctx, name, account, resource_group, public_access=None, metadata=None, tags=None,
                   connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensure a blob container exists.
 
@@ -226,7 +226,7 @@ async def immutability_policy_present(hub, ctx, name, account, resource_group,
                                       immutability_period, if_match=None, tags=None,
                                       connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensures that the immutability policy of a specified blob container exists. The container must be of account kind
         'StorageV2' in order to utilize an immutability policy.
@@ -355,7 +355,7 @@ async def immutability_policy_present(hub, ctx, name, account, resource_group,
 
 async def absent(hub, ctx, name, account, resource_group, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensures a specified blob container does not exist.
 
@@ -432,7 +432,7 @@ async def absent(hub, ctx, name, account, resource_group, connection_auth=None, 
 async def immutability_policy_absent(hub, ctx, name, account, resource_group, if_match=None, connection_auth=None,
                                      **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensures that the immutability policy of a specified blob container does not exist.
 

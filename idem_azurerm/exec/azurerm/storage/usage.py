@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Usage Operations Execution Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -65,7 +65,7 @@ log = logging.getLogger(__name__)
 
 async def list_(hub, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Gets the current usage count and the limit for the resources under the subscription.
 
@@ -95,7 +95,7 @@ async def list_(hub, **kwargs):
 
 async def list_by_location(hub, location, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Gets the current usage count and the limit for the resources of the location under the subscription.
 

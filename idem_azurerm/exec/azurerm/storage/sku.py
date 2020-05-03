@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) SKU Operations Execution Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -65,7 +65,7 @@ log = logging.getLogger(__name__)
 
 async def list_(hub, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Lists the available SKUs supported by Microsoft.Storage for given subscription.
 

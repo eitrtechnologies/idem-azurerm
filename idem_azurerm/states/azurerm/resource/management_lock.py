@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Management Lock State Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -70,7 +70,7 @@ log = logging.getLogger(__name__)
 
 async def present_by_scope(hub, ctx, name, scope, lock_level, notes=None, owners=None, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensure a management lock exists by scope.
 
@@ -209,7 +209,7 @@ async def present_by_scope(hub, ctx, name, scope, lock_level, notes=None, owners
 
 async def absent_by_scope(hub, ctx, name, scope, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensure a management lock does not exist by scope.
 
@@ -290,7 +290,7 @@ async def present_at_resource_level(hub, ctx, name, lock_level, resource_group, 
                                     resource_provider_namespace, parent_resource_path=None, notes=None, owners=None,
                                     connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensure a management lock exists at resource level.
 
@@ -450,7 +450,7 @@ async def present_at_resource_level(hub, ctx, name, lock_level, resource_group, 
 async def absent_at_resource_level(hub, ctx, name, resource_group, resource, resource_type, resource_provider_namespace,
                           parent_resource_path=None, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensure a management lock does not exist at the resource level.
 
@@ -546,7 +546,7 @@ async def absent_at_resource_level(hub, ctx, name, resource_group, resource, res
 async def present(hub, ctx, name, lock_level, resource_group=None, notes=None, owners=None, connection_auth=None,
                   **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensure a management lock exists. By default this module ensures that the management lock exists at the
         subscription level. If you would like to ensure that the management lock exists at the resource group level
@@ -699,7 +699,7 @@ async def present(hub, ctx, name, lock_level, resource_group=None, notes=None, o
 
 async def absent(hub, ctx, name, resource_group=None, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensure a management lock does not exist. By default this module ensures that the management lock does not exist at
         the subscription level. If you would like to ensure that the management lock does not exist at the resource

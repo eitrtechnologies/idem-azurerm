@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Diagnostic Setting State Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -73,7 +73,7 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
                   service_bus_rule_id=None, event_hub_authorization_rule_id=None, event_hub_name=None,
                   connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensure a diagnostic setting exists. At least one destination for the diagnostic setting logs is required. Any
         combination of the following destinations is acceptable:
@@ -302,7 +302,7 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
 
 async def absent(hub, ctx, name, resource_uri, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensure a diagnostic setting does not exist for the specified resource uri.
 

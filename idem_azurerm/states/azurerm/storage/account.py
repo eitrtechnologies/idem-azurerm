@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Storage Account State Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -80,7 +80,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, custom_do
                   network_rule_set=None, access_tier=None, https_traffic_only=None, is_hns_enabled=None,
                   tags=None, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensure a storage account exists in the resource group.
 
@@ -286,7 +286,7 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, custom_do
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Ensure a storage account does not exist in the resource group.
 

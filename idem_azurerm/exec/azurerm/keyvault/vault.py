@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Key Vault Execution Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -67,7 +67,7 @@ log = logging.getLogger(__name__)
 
 async def check_name_availability(hub, name, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Checks that the vault name is valid and is not already in use.
 
@@ -101,7 +101,7 @@ async def create_or_update(hub, name, resource_group, location, tenant_id, sku, 
                            enabled_for_deployment=None, enabled_for_disk_encryption=None,
                            enabled_for_template_deployment=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Create or update a key vault in the specified subscription.
 
@@ -232,7 +232,7 @@ async def create_or_update(hub, name, resource_group, location, tenant_id, sku, 
 
 async def delete(hub, name, resource_group, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Deletes the specified Azure key vault.
 
@@ -265,7 +265,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
 async def get(hub, name, resource_group, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Gets the specified Azure key vault.
 
@@ -299,7 +299,7 @@ async def get(hub, name, resource_group, **kwargs):
 
 async def get_deleted(hub, name, location, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Gets the deleted Azure key vault.
 
@@ -333,7 +333,7 @@ async def get_deleted(hub, name, location, **kwargs):
 
 async def list_(hub, top=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     The List operation gets information about the vaults associated with the subscription.
 
@@ -367,7 +367,7 @@ async def list_(hub, top=None, **kwargs):
 
 async def list_by_resource_group(hub, resource_group, top=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     The List operation gets information about the vaults associated with the subscription
         and within the specified resource group.
@@ -405,7 +405,7 @@ async def list_by_resource_group(hub, resource_group, top=None, **kwargs):
 
 async def list_by_subscription(hub, top=None, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     The List operation gets information about the vaults associated with the subscription.
 
@@ -439,7 +439,7 @@ async def list_by_subscription(hub, top=None, **kwargs):
 
 async def list_deleted(hub, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Gets information about the deleted vaults in a subscription.
 
@@ -469,7 +469,7 @@ async def list_deleted(hub, **kwargs):
 
 async def purge_deleted(hub, name, location, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Permanently deletes (purges) the specified Azure key vault.
 
@@ -502,7 +502,7 @@ async def purge_deleted(hub, name, location, **kwargs):
 
 async def update_access_policy(hub, name, resource_group, operation_kind, access_policies, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Update access policies in a key vault in the specified subscription.
 

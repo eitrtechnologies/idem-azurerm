@@ -2,7 +2,7 @@
 '''
 Azure Resource Manager (ARM) Storage Account Operations Execution Module
 
-.. versionadded:: 1.0.0
+.. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :maturity: new
@@ -65,7 +65,7 @@ log = logging.getLogger(__name__)
 
 async def check_name_availability(hub, name, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Checks that the storage account name is valid and is not already in use.
 
@@ -98,7 +98,7 @@ async def create(hub, name, resource_group, sku, kind, location, custom_domain=N
                  network_rule_set=None, access_tier=None, https_traffic_only=False, is_hns_enabled=False,
                  **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Asynchronously creates a new storage account with the specified parameters. If an account is already created and a
         subsequent create request is issued with different properties, the account properties will be updated. If an
@@ -187,7 +187,7 @@ async def create(hub, name, resource_group, sku, kind, location, custom_domain=N
 
 async def delete(hub, name, resource_group, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Delete a storage account.
 
@@ -220,7 +220,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
 async def get_properties(hub, name, resource_group, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Returns the properties for the specified storage account including but not limited to name, SKU name, location,
         and account status. The ListKeys operation should be used to retrieve storage keys.
@@ -254,7 +254,7 @@ async def get_properties(hub, name, resource_group, **kwargs):
 
 async def list_(hub, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Lists all the storage accounts available under the subscription. Note that storage keys are not returned; use the
         ListKeys operation for this.
@@ -286,7 +286,7 @@ async def list_(hub, **kwargs):
 async def list_account_sas(hub, name, resource_group, services, resource_types, permissions, shared_access_expiry_time,
                            **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     List SAS credentials of a storage account.
 
@@ -349,7 +349,7 @@ async def list_account_sas(hub, name, resource_group, services, resource_types, 
 
 async def list_by_resource_group(hub, resource_group, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Lists all the storage accounts available under the given resource group. Note that storage keys are not returned;
         use the ListKeys operation for this.
@@ -383,7 +383,7 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
 
 async def list_keys(hub, name, resource_group, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Lists the access keys or Kerberos keys (if active directory enabled) for the specified storage account.
 
@@ -417,7 +417,7 @@ async def list_keys(hub, name, resource_group, **kwargs):
 async def list_service_sas(hub, name, resource_group, canonicalized_resource, permissions, shared_access_expiry_time,
                            **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     List service SAS credentials of a specific resource.
 
@@ -474,7 +474,7 @@ async def list_service_sas(hub, name, resource_group, canonicalized_resource, pe
 
 async def regenerate_key(hub, name, resource_group, key_name, **kwargs):
     '''
-    .. versionadded:: 1.0.0
+    .. versionadded:: 2.0.0
 
     Regenerates one of the access keys or Kerberos keys for the specified storage account.
 
