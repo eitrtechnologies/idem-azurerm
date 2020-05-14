@@ -1,6 +1,8 @@
-pop==10.1
-idem==5.1
-takara==1.1
+pop==13
+acct==1.2
+idem==7
+pop-config==6
+takara==1.2
 azure-common==1.1.23
 azure-core==1.3.0
 azure-identity==1.3.0
