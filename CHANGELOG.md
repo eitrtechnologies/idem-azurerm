@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2020-05-14
+
+### Added
+
+- [#61](https://github.com/eitrtechnologies/idem-azurerm/pull/61) - Added pre-commit to enforce black formatting and
+  ran black to reformat code
+- [#60](https://github.com/eitrtechnologies/idem-azurerm/pull/61) - Added support for passing credentials through the
+  [acct](https://gitlab.com/saltstack/pop/acct) plugin
+- [#58](https://github.com/eitrtechnologies/idem-azurerm/pull/58) - Added code of conduct
+
+### Changed
+
+### Fixed
+
+### Deprecated
+
+### Removed
+
 ## [2.0.0] - 2020-05-04
 
 ### Added
@@ -64,5 +82,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release of execution and state modules from Salt along with some additional functionality ported from
   salt-cloud for virtual machines.
 
+[2.1.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/eitrtechnologies/idem-azurerm/releases/tag/v1.0.0
