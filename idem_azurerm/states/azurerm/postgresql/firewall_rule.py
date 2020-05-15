@@ -120,8 +120,11 @@ async def present(hub, ctx, name, server_name, resource_group, start_ip_address,
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     rule = await hub.exec.azurerm.postgresql.firewall_rule.get(
         name=name,
@@ -229,8 +232,11 @@ async def absent(hub, ctx, name, server_name, resource_group, connection_auth=No
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     rule = await hub.exec.azurerm.postgresql.firewall_rule.get(
         name=name,

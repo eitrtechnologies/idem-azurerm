@@ -155,8 +155,11 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     setting = await hub.exec.azurerm.monitor.diagnostic_setting.get(
         name,
@@ -332,8 +335,11 @@ async def absent(hub, ctx, name, resource_uri, connection_auth=None, **kwargs):
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     setting = await hub.exec.azurerm.monitor.diagnostic_setting.get(
         name,

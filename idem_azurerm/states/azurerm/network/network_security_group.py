@@ -179,8 +179,11 @@ async def present(hub, ctx, name, resource_group, tags=None, security_rules=None
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     nsg = await hub.exec.azurerm.network.network_security_group.get(
         name,
@@ -287,8 +290,11 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     nsg = await hub.exec.azurerm.network.network_security_group.get(
         name,
@@ -428,8 +434,11 @@ async def security_rule_present(hub, ctx, name, access, direction, priority, pro
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     exclusive_params = [
         ('source_port_ranges', 'source_port_range'),
@@ -683,8 +692,11 @@ async def security_rule_absent(hub, ctx, name, security_group, resource_group, c
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     rule = await hub.exec.azurerm.network.network_security_group.security_rule_get(
         name,
