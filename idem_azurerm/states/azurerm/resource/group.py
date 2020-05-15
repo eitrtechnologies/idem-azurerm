@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Resource Group State Module
 
 .. versionadded:: 1.0.0
@@ -78,7 +78,7 @@ Azure Resource Manager (ARM) Resource Group State Module
                 - name: other_rg
                 - connection_auth: {{ profile }}
 
-'''
+"""
 # Import Python libs
 from __future__ import absolute_import
 import json
@@ -87,8 +87,10 @@ import logging
 log = logging.getLogger(__name__)
 
 
-async def present(hub, ctx, name, location, managed_by=None, tags=None, connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub, ctx, name, location, managed_by=None, tags=None, connection_auth=None, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a resource group exists.
@@ -123,54 +125,52 @@ async def present(hub, ctx, name, location, managed_by=None, tags=None, connecti
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     group = {}
 
-    present = await hub.exec.azurerm.resource.group.check_existence(name, **connection_auth)
+    present = await hub.exec.azurerm.resource.group.check_existence(
+        name, **connection_auth
+    )
 
     if present:
         group = await hub.exec.azurerm.resource.group.get(name, **connection_auth)
-        ret['changes'] = await hub.exec.utils.dictdiffer.deep_diff(group.get('tags', {}), tags or {})
+        ret["changes"] = await hub.exec.utils.dictdiffer.deep_diff(
+            group.get("tags", {}), tags or {}
+        )
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Resource group {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Resource group {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['comment'] = 'Resource group {0} tags would be updated.'.format(name)
-            ret['result'] = None
-            ret['changes'] = {
-                'old': group.get('tags', {}),
-                'new': tags
-            }
+        if ctx["test"]:
+            ret["comment"] = "Resource group {0} tags would be updated.".format(name)
+            ret["result"] = None
+            ret["changes"] = {"old": group.get("tags", {}), "new": tags}
             return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Resource group {0} would be created.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'location': location,
-                'managed_by': managed_by,
-                'tags': tags,
-            }
+    elif ctx["test"]:
+        ret["comment"] = "Resource group {0} would be created.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "location": location,
+                "managed_by": managed_by,
+                "tags": tags,
+            },
         }
         return ret
 
@@ -178,31 +178,28 @@ async def present(hub, ctx, name, location, managed_by=None, tags=None, connecti
     group_kwargs.update(connection_auth)
 
     group = await hub.exec.azurerm.resource.group.create_or_update(
-        name,
-        location,
-        managed_by=managed_by,
-        tags=tags,
-        **group_kwargs
+        name, location, managed_by=managed_by, tags=tags, **group_kwargs
     )
-    present = await hub.exec.azurerm.resource.group.check_existence(name, **connection_auth)
+    present = await hub.exec.azurerm.resource.group.check_existence(
+        name, **connection_auth
+    )
 
     if present:
-        ret['result'] = True
-        ret['comment'] = 'Resource group {0} has been created.'.format(name)
-        ret['changes'] = {
-            'old': {},
-            'new': group
-        }
+        ret["result"] = True
+        ret["comment"] = "Resource group {0} has been created.".format(name)
+        ret["changes"] = {"old": {}, "new": group}
         return ret
 
-    ret['comment'] = 'Failed to create resource group {0}! ({1})'.format(name, group.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create resource group {0}! ({1})".format(
+        name, group.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
 async def absent(hub, ctx, name, connection_auth=None, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Ensure a resource group does not exist in the current subscription.
@@ -214,38 +211,37 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     group = {}
 
-    present = await hub.exec.azurerm.resource.group.check_existence(name, **connection_auth)
+    present = await hub.exec.azurerm.resource.group.check_existence(
+        name, **connection_auth
+    )
 
     if not present:
-        ret['result'] = True
-        ret['comment'] = 'Resource group {0} is already absent.'.format(name)
+        ret["result"] = True
+        ret["comment"] = "Resource group {0} is already absent.".format(name)
         return ret
 
-    elif ctx['test']:
+    elif ctx["test"]:
         group = await hub.exec.azurerm.resource.group.get(name, **connection_auth)
 
-        ret['comment'] = 'Resource group {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': group,
-            'new': {},
+        ret["comment"] = "Resource group {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": group,
+            "new": {},
         }
         return ret
 
@@ -255,16 +251,15 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
     if deleted:
         present = False
     else:
-        present = await hub.exec.azurerm.resource.group.check_existence(name, **connection_auth)
+        present = await hub.exec.azurerm.resource.group.check_existence(
+            name, **connection_auth
+        )
 
     if not present:
-        ret['result'] = True
-        ret['comment'] = 'Resource group {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': group,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Resource group {0} has been deleted.".format(name)
+        ret["changes"] = {"old": group, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete resource group {0}!'.format(name)
+    ret["comment"] = "Failed to delete resource group {0}!".format(name)
     return ret

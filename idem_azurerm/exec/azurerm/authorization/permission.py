@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Authorization Permissions Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ to every function in order to work properly.
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -56,6 +56,7 @@ try:
     import azure.mgmt.authorization.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -63,9 +64,16 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def permissions_list_for_resource(hub, name, resource_group, resource_provider_namespace, resource_type,
-                                  parent_resource_path=None, **kwargs):
-    '''
+async def permissions_list_for_resource(
+    hub,
+    name,
+    resource_group,
+    resource_provider_namespace,
+    resource_type,
+    parent_resource_path=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Gets all permissions the caller has for a resource.
@@ -87,12 +95,12 @@ async def permissions_list_for_resource(hub, name, resource_group, resource_prov
         azurerm.authorization.permission.list_for_resource testname testgroup testnamespace \
                   testtype testpath
 
-    '''
+    """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
 
     if parent_resource_path is None:
-        parent_resource_path = ''
+        parent_resource_path = ""
 
     try:
         perms = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -102,20 +110,22 @@ async def permissions_list_for_resource(hub, name, resource_group, resource_prov
                 resource_provider_namespace=resource_provider_namespace,
                 resource_type=resource_type,
                 parent_resource_path=parent_resource_path,
-                **kwargs
+                **kwargs,
             )
         )
 
         result = perms
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error(
+            "authorization", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
 
     return result
 
 
 async def permissions_list_for_resource_group(hub, name, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets all permissions the caller has for a resource group.
@@ -128,21 +138,22 @@ async def permissions_list_for_resource_group(hub, name, **kwargs):
 
         azurerm.authorization.permission.list_for_resource_group testname
 
-    '''
+    """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
 
     try:
         perms = await hub.exec.utils.azurerm.paged_object_to_list(
             authconn.permissions.list_for_resource_group(
-                resource_group_name=name,
-                **kwargs
+                resource_group_name=name, **kwargs
             )
         )
 
         result = perms
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error(
+            "authorization", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
 
     return result

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Network Public IP Address State Module
 
 .. versionadded:: 1.0.0
@@ -84,7 +84,7 @@ Azure Resource Manager (ARM) Network Public IP Address State Module
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -93,18 +93,25 @@ import re
 log = logging.getLogger(__name__)
 
 TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-        ]
-    },
+    "present": {"require": ["states.azurerm.resource.group.present",]},
 }
 
 
-async def present(hub, ctx, name, resource_group, tags=None, sku=None, public_ip_allocation_method=None,
-            public_ip_address_version=None, dns_settings=None, idle_timeout_in_minutes=None, connection_auth=None,
-            **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    resource_group,
+    tags=None,
+    sku=None,
+    public_ip_allocation_method=None,
+    public_ip_address_version=None,
+    dns_settings=None,
+    idle_timeout_in_minutes=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a public IP address exists.
@@ -161,107 +168,112 @@ async def present(hub, ctx, name, resource_group, tags=None, sku=None, public_ip
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     if sku:
-        sku = {'name': sku.capitalize()}
+        sku = {"name": sku.capitalize()}
 
     pub_ip = await hub.exec.azurerm.network.public_ip_address.get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' not in pub_ip:
+    if "error" not in pub_ip:
         # tag changes
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(pub_ip.get('tags', {}), tags or {})
+        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            pub_ip.get("tags", {}), tags or {}
+        )
         if tag_changes:
-            ret['changes']['tags'] = tag_changes
+            ret["changes"]["tags"] = tag_changes
 
         # dns_settings changes
         if dns_settings:
             if not isinstance(dns_settings, dict):
-                ret['comment'] = 'DNS settings must be provided as a dictionary!'
+                ret["comment"] = "DNS settings must be provided as a dictionary!"
                 return ret
 
             for key in dns_settings:
-                if dns_settings[key] != pub_ip.get('dns_settings', {}).get(key):
-                    ret['changes']['dns_settings'] = {
-                        'old': pub_ip.get('dns_settings'),
-                        'new': dns_settings
+                if dns_settings[key] != pub_ip.get("dns_settings", {}).get(key):
+                    ret["changes"]["dns_settings"] = {
+                        "old": pub_ip.get("dns_settings"),
+                        "new": dns_settings,
                     }
                     break
 
         # sku changes
         if sku:
-            sku_changes = await hub.exec.utils.dictdiffer.deep_diff(pub_ip.get('sku', {}), sku)
+            sku_changes = await hub.exec.utils.dictdiffer.deep_diff(
+                pub_ip.get("sku", {}), sku
+            )
             if sku_changes:
-                ret['changes']['sku'] = sku_changes
+                ret["changes"]["sku"] = sku_changes
 
         # public_ip_allocation_method changes
         if public_ip_allocation_method:
-            if public_ip_allocation_method.capitalize() != pub_ip.get('public_ip_allocation_method'):
-                ret['changes']['public_ip_allocation_method'] = {
-                    'old': pub_ip.get('public_ip_allocation_method'),
-                    'new': public_ip_allocation_method
+            if public_ip_allocation_method.capitalize() != pub_ip.get(
+                "public_ip_allocation_method"
+            ):
+                ret["changes"]["public_ip_allocation_method"] = {
+                    "old": pub_ip.get("public_ip_allocation_method"),
+                    "new": public_ip_allocation_method,
                 }
 
         # public_ip_address_version changes
         if public_ip_address_version:
-            if public_ip_address_version.lower() != pub_ip.get('public_ip_address_version', '').lower():
-                ret['changes']['public_ip_address_version'] = {
-                    'old': pub_ip.get('public_ip_address_version'),
-                    'new': public_ip_address_version
+            if (
+                public_ip_address_version.lower()
+                != pub_ip.get("public_ip_address_version", "").lower()
+            ):
+                ret["changes"]["public_ip_address_version"] = {
+                    "old": pub_ip.get("public_ip_address_version"),
+                    "new": public_ip_address_version,
                 }
 
         # idle_timeout_in_minutes changes
-        if idle_timeout_in_minutes and (int(idle_timeout_in_minutes) != pub_ip.get('idle_timeout_in_minutes')):
-            ret['changes']['idle_timeout_in_minutes'] = {
-                'old': pub_ip.get('idle_timeout_in_minutes'),
-                'new': idle_timeout_in_minutes
+        if idle_timeout_in_minutes and (
+            int(idle_timeout_in_minutes) != pub_ip.get("idle_timeout_in_minutes")
+        ):
+            ret["changes"]["idle_timeout_in_minutes"] = {
+                "old": pub_ip.get("idle_timeout_in_minutes"),
+                "new": idle_timeout_in_minutes,
             }
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Public IP address {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Public IP address {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Public IP address {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Public IP address {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'tags': tags,
-                'dns_settings': dns_settings,
-                'sku': sku,
-                'public_ip_allocation_method': public_ip_allocation_method,
-                'public_ip_address_version': public_ip_address_version,
-                'idle_timeout_in_minutes': idle_timeout_in_minutes,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "tags": tags,
+                "dns_settings": dns_settings,
+                "sku": sku,
+                "public_ip_allocation_method": public_ip_allocation_method,
+                "public_ip_address_version": public_ip_address_version,
+                "idle_timeout_in_minutes": idle_timeout_in_minutes,
+            },
         }
 
-    if ctx['test']:
-        ret['comment'] = 'Public IP address {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Public IP address {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     pub_ip_kwargs = kwargs.copy()
@@ -276,22 +288,24 @@ async def present(hub, ctx, name, resource_group, tags=None, sku=None, public_ip
         public_ip_allocation_method=public_ip_allocation_method,
         public_ip_address_version=public_ip_address_version,
         idle_timeout_in_minutes=idle_timeout_in_minutes,
-        **pub_ip_kwargs
+        **pub_ip_kwargs,
     )
 
-    if 'error' not in pub_ip:
-        ret['result'] = True
-        ret['comment'] = 'Public IP address {0} has been created.'.format(name)
+    if "error" not in pub_ip:
+        ret["result"] = True
+        ret["comment"] = "Public IP address {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create public IP address {0}! ({1})'.format(name, pub_ip.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create public IP address {0}! ({1})".format(
+        name, pub_ip.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Ensure a public IP address does not exist in the resource group.
@@ -306,52 +320,45 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     pub_ip = await hub.exec.azurerm.network.public_ip_address.get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' in pub_ip:
-        ret['result'] = True
-        ret['comment'] = 'Public IP address {0} was not found.'.format(name)
+    if "error" in pub_ip:
+        ret["result"] = True
+        ret["comment"] = "Public IP address {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Public IP address {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': pub_ip,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Public IP address {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": pub_ip,
+            "new": {},
         }
         return ret
 
-    deleted = await hub.exec.azurerm.network.public_ip_address.delete(name, resource_group, **connection_auth)
+    deleted = await hub.exec.azurerm.network.public_ip_address.delete(
+        name, resource_group, **connection_auth
+    )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Public IP address {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': pub_ip,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Public IP address {0} has been deleted.".format(name)
+        ret["changes"] = {"old": pub_ip, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete public IP address {0}!'.format(name)
+    ret["comment"] = "Failed to delete public IP address {0}!".format(name)
     return ret

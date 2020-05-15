@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Virtual Network Gateway State Module
 
 .. versionadded:: 1.0.0
@@ -84,7 +84,7 @@ Azure Resource Manager (ARM) Virtual Network Gateway State Module
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -93,28 +93,45 @@ import re
 log = logging.getLogger(__name__)
 
 TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-            'states.azurerm.network.virtual_network.present',
+    "present": {
+        "require": [
+            "states.azurerm.resource.group.present",
+            "states.azurerm.network.virtual_network.present",
         ]
     },
-    'connection_present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-            'states.azurerm.network.virtual_network.present',
-            'states.azurerm.network.virtual_network_gateway.present',
+    "connection_present": {
+        "require": [
+            "states.azurerm.resource.group.present",
+            "states.azurerm.network.virtual_network.present",
+            "states.azurerm.network.virtual_network_gateway.present",
         ]
     },
 }
 
 
-async def connection_present(hub, ctx, name, resource_group, virtual_network_gateway, connection_type, virtual_network_gateway2=None,
-                       local_network_gateway2=None, peer=None, connection_protocol=None, shared_key=None,
-                       enable_bgp=None, ipsec_policies=None, use_policy_based_traffic_selectors=None,
-                       routing_weight=None, express_route_gateway_bypass=None, authorization_key=None, tags=None,
-                       connection_auth=None, **kwargs):
-    '''
+async def connection_present(
+    hub,
+    ctx,
+    name,
+    resource_group,
+    virtual_network_gateway,
+    connection_type,
+    virtual_network_gateway2=None,
+    local_network_gateway2=None,
+    peer=None,
+    connection_protocol=None,
+    shared_key=None,
+    enable_bgp=None,
+    ipsec_policies=None,
+    use_policy_based_traffic_selectors=None,
+    routing_weight=None,
+    express_route_gateway_bypass=None,
+    authorization_key=None,
+    tags=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a virtual network gateway connection exists.
@@ -237,176 +254,197 @@ async def connection_present(hub, ctx, name, resource_group, virtual_network_gat
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     connection = await hub.exec.azurerm.network.virtual_network_gateway.connection_get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' not in connection:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(connection.get('tags', {}), tags or {})
+    if "error" not in connection:
+        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            connection.get("tags", {}), tags or {}
+        )
         if tag_changes:
-            ret['changes']['tags'] = tag_changes
+            ret["changes"]["tags"] = tag_changes
 
-        if connection_protocol and connection_protocol != connection.get('connection_protocol'):
-            ret['changes']['connection_protocol'] = {
-                'old': connection.get('connection_protocol'),
-                'new': connection_protocol
+        if connection_protocol and connection_protocol != connection.get(
+            "connection_protocol"
+        ):
+            ret["changes"]["connection_protocol"] = {
+                "old": connection.get("connection_protocol"),
+                "new": connection_protocol,
             }
 
-        if connection_type == 'IPSec':
+        if connection_type == "IPSec":
             if ipsec_policies:
                 if not isinstance(ipsec_policies, list):
-                    ret['comment'] = 'ipsec_policies must be provided as a list containing a single dictionary!'
+                    ret[
+                        "comment"
+                    ] = "ipsec_policies must be provided as a list containing a single dictionary!"
                     return ret
 
                 try:
                     policy = ipsec_policies[0]
                 except IndexError:
-                    ret['comment'] = 'ipsec_policies must be provided as a list containing a single dictionary!'
+                    ret[
+                        "comment"
+                    ] = "ipsec_policies must be provided as a list containing a single dictionary!"
                     return ret
 
                 if not isinstance(policy, dict):
-                    ret['comment'] = 'ipsec_policies must be provided as a list containing a single dictionary!'
+                    ret[
+                        "comment"
+                    ] = "ipsec_policies must be provided as a list containing a single dictionary!"
                     return ret
 
-                if len(connection.get('ipsec_policies', [])) == 1:
-                    connection_policy = connection.get('ipsec_policies')[0]
+                if len(connection.get("ipsec_policies", [])) == 1:
+                    connection_policy = connection.get("ipsec_policies")[0]
 
                     for key in policy.keys():
                         if policy[key] != connection_policy.get(key):
-                            ret['changes']['ipsec_policies'] = {
-                                'old': connection.get('ipsec_policies', []),
-                                'new': ipsec_policies
+                            ret["changes"]["ipsec_policies"] = {
+                                "old": connection.get("ipsec_policies", []),
+                                "new": ipsec_policies,
                             }
                             break
 
                 else:
-                    ret['changes']['ipsec_policies'] = {
-                        'old': connection.get('ipsec_policies', []),
-                        'new': ipsec_policies
+                    ret["changes"]["ipsec_policies"] = {
+                        "old": connection.get("ipsec_policies", []),
+                        "new": ipsec_policies,
                     }
 
             # Checking boolean parameter
             if use_policy_based_traffic_selectors is not None:
-                if use_policy_based_traffic_selectors != connection.get('use_policy_based_traffic_selectors'):
-                    ret['changes']['use_policy_based_traffic_selectors'] = {
-                        'old': connection.get('use_policy_based_traffic_selectors'),
-                        'new': use_policy_based_traffic_selectors
+                if use_policy_based_traffic_selectors != connection.get(
+                    "use_policy_based_traffic_selectors"
+                ):
+                    ret["changes"]["use_policy_based_traffic_selectors"] = {
+                        "old": connection.get("use_policy_based_traffic_selectors"),
+                        "new": use_policy_based_traffic_selectors,
                     }
 
-        if connection_type == 'Vnet2Vnet' or connection_type == 'IPSec':
+        if connection_type == "Vnet2Vnet" or connection_type == "IPSec":
             # Checking boolean parameter
-            if enable_bgp is not None and enable_bgp != connection.get('enable_bgp'):
-                ret['changes']['enable_bgp'] = {
-                    'old': connection.get('enable_bgp'),
-                    'new': enable_bgp
+            if enable_bgp is not None and enable_bgp != connection.get("enable_bgp"):
+                ret["changes"]["enable_bgp"] = {
+                    "old": connection.get("enable_bgp"),
+                    "new": enable_bgp,
                 }
 
-            if shared_key and shared_key != connection.get('shared_key'):
-                ret['changes']['shared_key'] = {
-                    'old': connection.get('shared_key'),
-                    'new': shared_key
+            if shared_key and shared_key != connection.get("shared_key"):
+                ret["changes"]["shared_key"] = {
+                    "old": connection.get("shared_key"),
+                    "new": shared_key,
                 }
 
-        if connection_type == 'ExpressRoute':
-            if peer and peer != connection.get('peer'):
-                ret['changes']['peer'] = {
-                    'old': connection.get('peer'),
-                    'new': peer
+        if connection_type == "ExpressRoute":
+            if peer and peer != connection.get("peer"):
+                ret["changes"]["peer"] = {"old": connection.get("peer"), "new": peer}
+
+            if authorization_key and authorization_key != connection.get(
+                "authorization_key"
+            ):
+                ret["changes"]["authorization_key"] = {
+                    "old": connection.get("authorization_key"),
+                    "new": enable_bgp,
                 }
 
-            if authorization_key and authorization_key != connection.get('authorization_key'):
-                ret['changes']['authorization_key'] = {
-                    'old': connection.get('authorization_key'),
-                    'new': enable_bgp
-                }
-
-            if routing_weight is not None and routing_weight != connection.get('routing_weight'):
-                ret['changes']['routing_weight'] = {
-                    'old': connection.get('routing_weight'),
-                    'new': routing_weight
+            if routing_weight is not None and routing_weight != connection.get(
+                "routing_weight"
+            ):
+                ret["changes"]["routing_weight"] = {
+                    "old": connection.get("routing_weight"),
+                    "new": routing_weight,
                 }
 
             # Checking boolean parameter
             if express_route_gateway_bypass is not None:
-                if express_route_gateway_bypass != connection.get('express_route_gateway_bypass'):
-                    ret['changes']['express_route_gateway_bypass'] = {
-                        'old': connection.get('express_route_gateway_bypass'),
-                        'new': express_route_gateway_bypass
+                if express_route_gateway_bypass != connection.get(
+                    "express_route_gateway_bypass"
+                ):
+                    ret["changes"]["express_route_gateway_bypass"] = {
+                        "old": connection.get("express_route_gateway_bypass"),
+                        "new": express_route_gateway_bypass,
                     }
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Virtual network gateway connection {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret[
+                "comment"
+            ] = "Virtual network gateway connection {0} is already present.".format(
+                name
+            )
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Virtual network gateway connection {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret[
+                "comment"
+            ] = "Virtual network gateway connection {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'resource_group': resource_group,
-                'virtual_network_gateway': virtual_network_gateway,
-                'connection_type': connection_type,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "resource_group": resource_group,
+                "virtual_network_gateway": virtual_network_gateway,
+                "connection_type": connection_type,
+            },
         }
 
         if tags:
-            ret['changes']['new']['tags'] = tags
+            ret["changes"]["new"]["tags"] = tags
         if enable_bgp is not None:
-            ret['changes']['new']['enable_bgp'] = enable_bgp
+            ret["changes"]["new"]["enable_bgp"] = enable_bgp
         if connection_protocol:
-            ret['changes']['new']['connection_protocol'] = connection_protocol
+            ret["changes"]["new"]["connection_protocol"] = connection_protocol
         if shared_key:
-            ret['changes']['new']['shared_key'] = shared_key
+            ret["changes"]["new"]["shared_key"] = shared_key
         if local_network_gateway2:
-            ret['changes']['new']['local_network_gateway2'] = local_network_gateway2
+            ret["changes"]["new"]["local_network_gateway2"] = local_network_gateway2
         if ipsec_policies:
-            ret['changes']['new']['ipsec_policies'] = ipsec_policies
+            ret["changes"]["new"]["ipsec_policies"] = ipsec_policies
         if virtual_network_gateway2:
-            ret['changes']['new']['virtual_network_gateway2'] = virtual_network_gateway2
+            ret["changes"]["new"]["virtual_network_gateway2"] = virtual_network_gateway2
         if express_route_gateway_bypass is not None:
-            ret['changes']['new']['express_route_gateway_bypass'] = express_route_gateway_bypass
+            ret["changes"]["new"][
+                "express_route_gateway_bypass"
+            ] = express_route_gateway_bypass
         if use_policy_based_traffic_selectors is not None:
-            ret['changes']['new']['use_policy_based_traffic_selectors'] = use_policy_based_traffic_selectors
+            ret["changes"]["new"][
+                "use_policy_based_traffic_selectors"
+            ] = use_policy_based_traffic_selectors
         if authorization_key:
-            ret['changes']['new']['authorization_key'] = authorization_key
+            ret["changes"]["new"]["authorization_key"] = authorization_key
         if peer:
-            ret['changes']['new']['peer'] = peer
+            ret["changes"]["new"]["peer"] = peer
         if routing_weight is not None:
-            ret['changes']['new']['routing_weight'] = routing_weight
+            ret["changes"]["new"]["routing_weight"] = routing_weight
 
-    if ctx['test']:
-        ret['comment'] = 'Virtual network gateway connection {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret[
+            "comment"
+        ] = "Virtual network gateway connection {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     connection_kwargs = kwargs.copy()
     connection_kwargs.update(connection_auth)
 
-    if connection_type == 'IPSec':
+    if connection_type == "IPSec":
         con = await hub.exec.azurerm.network.virtual_network_gateway.connection_create_or_update(
             name=name,
             resource_group=resource_group,
@@ -419,10 +457,10 @@ async def connection_present(hub, ctx, name, resource_group, virtual_network_gat
             local_network_gateway2=local_network_gateway2,
             use_policy_based_traffic_selectors=use_policy_based_traffic_selectors,
             tags=tags,
-            **connection_kwargs
+            **connection_kwargs,
         )
 
-    if connection_type == 'Vnet2Vnet':
+    if connection_type == "Vnet2Vnet":
         con = await hub.exec.azurerm.network.virtual_network_gateway.connection_create_or_update(
             name=name,
             resource_group=resource_group,
@@ -433,22 +471,30 @@ async def connection_present(hub, ctx, name, resource_group, virtual_network_gat
             shared_key=shared_key,
             virtual_network_gateway2=virtual_network_gateway2,
             tags=tags,
-            **connection_kwargs
+            **connection_kwargs,
         )
 
-    if 'error' not in con:
-        ret['result'] = True
-        ret['comment'] = 'Virtual network gateway connection {0} has been created.'.format(name)
+    if "error" not in con:
+        ret["result"] = True
+        ret[
+            "comment"
+        ] = "Virtual network gateway connection {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create virtual network gateway connection {0}! ({1})'.format(name, con.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret[
+        "comment"
+    ] = "Failed to create virtual network gateway connection {0}! ({1})".format(
+        name, con.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
-async def connection_absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
-    '''
+async def connection_absent(
+    hub, ctx, name, resource_group, connection_auth=None, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a virtual network gateway connection does not exist in the specified resource group.
@@ -473,65 +519,77 @@ async def connection_absent(hub, ctx, name, resource_group, connection_auth=None
                 - resource_group: group1
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     connection = await hub.exec.azurerm.network.virtual_network_gateway.connection_get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' in connection:
-        ret['result'] = True
-        ret['comment'] = 'Virtual network gateway connection {0} was not found.'.format(name)
+    if "error" in connection:
+        ret["result"] = True
+        ret["comment"] = "Virtual network gateway connection {0} was not found.".format(
+            name
+        )
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Virtual network gateway connection {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': connection,
-            'new': {},
+    elif ctx["test"]:
+        ret[
+            "comment"
+        ] = "Virtual network gateway connection {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": connection,
+            "new": {},
         }
         return ret
 
     deleted = await hub.exec.azurerm.network.virtual_network_gateway.connection_delete(
-        name,
-        resource_group,
-        **connection_auth
+        name, resource_group, **connection_auth
     )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Virtual network gateway connection {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': connection,
-            'new': {}
-        }
+        ret["result"] = True
+        ret[
+            "comment"
+        ] = "Virtual network gateway connection {0} has been deleted.".format(name)
+        ret["changes"] = {"old": connection, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete virtal network gateway connection {0}!'.format(name)
+    ret["comment"] = "Failed to delete virtal network gateway connection {0}!".format(
+        name
+    )
     return ret
 
 
-async def present(hub, ctx, name, resource_group, virtual_network, ip_configurations, gateway_type=None, vpn_type=None, sku=None,
-            enable_bgp=None, active_active=None, bgp_settings=None, address_prefixes=None, tags=None,
-            connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    resource_group,
+    virtual_network,
+    ip_configurations,
+    gateway_type=None,
+    vpn_type=None,
+    sku=None,
+    enable_bgp=None,
+    active_active=None,
+    bgp_settings=None,
+    address_prefixes=None,
+    tags=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a virtual network gateway exists.
@@ -641,130 +699,135 @@ async def present(hub, ctx, name, resource_group, virtual_network, ip_configurat
                     - '10.0.0.0/8'
                     - '192.168.0.0/16'
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     gateway = await hub.exec.azurerm.network.virtual_network_gateway.get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' not in gateway:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(gateway.get('tags', {}), tags or {})
+    if "error" not in gateway:
+        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            gateway.get("tags", {}), tags or {}
+        )
         if tag_changes:
-            ret['changes']['tags'] = tag_changes
+            ret["changes"]["tags"] = tag_changes
 
         if ip_configurations:
             comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(
-                gateway.get('ip_configurations', []),
+                gateway.get("ip_configurations", []),
                 ip_configurations,
-                ['public_ip_address', 'subnet']
+                ["public_ip_address", "subnet"],
             )
 
-            if comp_ret.get('comment'):
-                ret['comment'] = '"ip_configurations" {0}'.format(comp_ret['comment'])
+            if comp_ret.get("comment"):
+                ret["comment"] = '"ip_configurations" {0}'.format(comp_ret["comment"])
                 return ret
 
-            if comp_ret.get('changes'):
-                ret['changes']['ip_configurations'] = comp_ret['changes']
+            if comp_ret.get("changes"):
+                ret["changes"]["ip_configurations"] = comp_ret["changes"]
 
         # Checking boolean parameter
-        if active_active is not None and active_active != gateway.get('active_active'):
-            ret['changes']['active_active'] = {
-                'old': gateway.get('active_active'),
-                'new': active_active
+        if active_active is not None and active_active != gateway.get("active_active"):
+            ret["changes"]["active_active"] = {
+                "old": gateway.get("active_active"),
+                "new": active_active,
             }
 
         # Checking boolean parameter
-        if enable_bgp is not None and enable_bgp != gateway.get('enable_bgp'):
-            ret['changes']['enable_bgp'] = {
-                'old': gateway.get('enable_bgp'),
-                'new': enable_bgp
+        if enable_bgp is not None and enable_bgp != gateway.get("enable_bgp"):
+            ret["changes"]["enable_bgp"] = {
+                "old": gateway.get("enable_bgp"),
+                "new": enable_bgp,
             }
 
         if sku:
-            sku_changes = await hub.exec.utils.dictdiffer.deep_diff(gateway.get('sku', {}), sku)
+            sku_changes = await hub.exec.utils.dictdiffer.deep_diff(
+                gateway.get("sku", {}), sku
+            )
             if sku_changes:
-                ret['changes']['sku'] = sku_changes
+                ret["changes"]["sku"] = sku_changes
 
         if bgp_settings:
             if not isinstance(bgp_settings, dict):
-                ret['comment'] = 'BGP settings must be provided as a dictionary!'
+                ret["comment"] = "BGP settings must be provided as a dictionary!"
                 return ret
 
             for key in bgp_settings:
-                if bgp_settings[key] != gateway.get('bgp_settings', {}).get(key):
-                    ret['changes']['bgp_settings'] = {
-                        'old': gateway.get('bgp_settings'),
-                        'new': bgp_settings
+                if bgp_settings[key] != gateway.get("bgp_settings", {}).get(key):
+                    ret["changes"]["bgp_settings"] = {
+                        "old": gateway.get("bgp_settings"),
+                        "new": bgp_settings,
                     }
                     break
 
         addr_changes = set(address_prefixes or []).symmetric_difference(
-            set(gateway.get('custom_routes', {}).get('address_prefixes', [])))
+            set(gateway.get("custom_routes", {}).get("address_prefixes", []))
+        )
         if addr_changes:
-            ret['changes']['custom_routes'] = {
-                'address_prefixes': {
-                    'old': gateway.get('custom_routes', {}).get('address_prefixes', []),
-                    'new': address_prefixes,
+            ret["changes"]["custom_routes"] = {
+                "address_prefixes": {
+                    "old": gateway.get("custom_routes", {}).get("address_prefixes", []),
+                    "new": address_prefixes,
                 }
             }
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Virtual network gateway {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Virtual network gateway {0} is already present.".format(
+                name
+            )
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Virtual network gateway {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Virtual network gateway {0} would be updated.".format(
+                name
+            )
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'resource_group': resource_group,
-                'virtual_network': virtual_network,
-                'ip_configurations': ip_configurations,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "resource_group": resource_group,
+                "virtual_network": virtual_network,
+                "ip_configurations": ip_configurations,
+            },
         }
 
         if tags:
-            ret['changes']['new']['tags'] = tags
+            ret["changes"]["new"]["tags"] = tags
         if gateway_type:
-            ret['changes']['new']['gateway_type'] = gateway_type
+            ret["changes"]["new"]["gateway_type"] = gateway_type
         if vpn_type:
-            ret['changes']['new']['vpn_type'] = vpn_type
+            ret["changes"]["new"]["vpn_type"] = vpn_type
         if sku:
-            ret['changes']['new']['sku'] = sku
+            ret["changes"]["new"]["sku"] = sku
         if enable_bgp is not None:
-            ret['changes']['new']['enable_bgp'] = enable_bgp
+            ret["changes"]["new"]["enable_bgp"] = enable_bgp
         if bgp_settings:
-            ret['changes']['new']['bgp_settings'] = bgp_settings
+            ret["changes"]["new"]["bgp_settings"] = bgp_settings
         if active_active is not None:
-            ret['changes']['new']['active_active'] = active_active
+            ret["changes"]["new"]["active_active"] = active_active
         if address_prefixes:
-            ret['changes']['new']['custom_routes'] = {'address_prefixes': address_prefixes}
+            ret["changes"]["new"]["custom_routes"] = {
+                "address_prefixes": address_prefixes
+            }
 
-    if ctx['test']:
-        ret['comment'] = 'Virtual network gateway {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Virtual network gateway {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     gateway_kwargs = kwargs.copy()
@@ -782,23 +845,25 @@ async def present(hub, ctx, name, resource_group, virtual_network, ip_configurat
         enable_bgp=enable_bgp,
         bgp_settings=bgp_settings,
         active_active=active_active,
-        custom_routes={'address_prefixes': address_prefixes},
-        **gateway_kwargs
+        custom_routes={"address_prefixes": address_prefixes},
+        **gateway_kwargs,
     )
 
-    if 'error' not in gateway:
-        ret['result'] = True
-        ret['comment'] = 'Virtual network gateway {0} has been created.'.format(name)
+    if "error" not in gateway:
+        ret["result"] = True
+        ret["comment"] = "Virtual network gateway {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create virtual network gateway {0}! ({1})'.format(name, gateway.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create virtual network gateway {0}! ({1})".format(
+        name, gateway.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Ensure a virtual network gateway object does not exist in the specified resource group.
@@ -823,56 +888,51 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
                 - resource_group: group1
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     gateway = await hub.exec.azurerm.network.virtual_network_gateway.get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' in gateway:
-        ret['result'] = True
-        ret['comment'] = 'Virtual network gateway object {0} was not found.'.format(name)
+    if "error" in gateway:
+        ret["result"] = True
+        ret["comment"] = "Virtual network gateway object {0} was not found.".format(
+            name
+        )
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Virtual network gateway object {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': gateway,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Virtual network gateway object {0} would be deleted.".format(
+            name
+        )
+        ret["result"] = None
+        ret["changes"] = {
+            "old": gateway,
+            "new": {},
         }
         return ret
 
     deleted = await hub.exec.azurerm.network.virtual_network_gateway.delete(
-        name,
-        resource_group,
-        **connection_auth
+        name, resource_group, **connection_auth
     )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Virtual network gateway object {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': gateway,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Virtual network gateway object {0} has been deleted.".format(
+            name
+        )
+        ret["changes"] = {"old": gateway, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete virtal network gateway object {0}!'.format(name)
+    ret["comment"] = "Failed to delete virtal network gateway object {0}!".format(name)
     return ret

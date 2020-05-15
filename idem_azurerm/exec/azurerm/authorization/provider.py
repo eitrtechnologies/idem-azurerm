@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Authorization Provider Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ to every function in order to work properly.
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -56,6 +56,7 @@ try:
     import azure.mgmt.authorization.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -63,8 +64,10 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def operations_metadata_get(hub, resource_provider_namespace, api_version='2015-07-01', **kwargs):
-    '''
+async def operations_metadata_get(
+    hub, resource_provider_namespace, api_version="2015-07-01", **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Gets provider operations metadata for the specified resource provider.
@@ -79,26 +82,28 @@ async def operations_metadata_get(hub, resource_provider_namespace, api_version=
 
         azurerm.authorization.provider.operations_metadata_get testnamespace
 
-    '''
+    """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
     try:
         data = authconn.provider_operations_metadata.get(
             resource_provider_namespace=resource_provider_namespace,
             api_version=api_version,
-            **kwargs
+            **kwargs,
         )
 
         result = data.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error(
+            "authorization", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
 
     return result
 
 
-async def operations_metadata_list(hub, api_version='2015-07-01', **kwargs):
-    '''
+async def operations_metadata_list(hub, api_version="2015-07-01", **kwargs):
+    """
     .. versionadded:: 1.0.0
 
     Gets provider operations metadata for all resource providers.
@@ -111,22 +116,23 @@ async def operations_metadata_list(hub, api_version='2015-07-01', **kwargs):
 
         azurerm.authorization.provider.operations_metadata_list
 
-    '''
+    """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
 
     try:
         providers = await hub.exec.utils.azurerm.paged_object_to_list(
             authconn.provider_operations_metadata.list(
-                api_version=api_version,
-                **kwargs
+                api_version=api_version, **kwargs
             )
         )
 
         for provider in providers:
-            result[provider['name']] = provider
+            result[provider["name"]] = provider
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error(
+            "authorization", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
 
     return result

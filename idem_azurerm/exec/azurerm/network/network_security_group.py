@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Network Security Group Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Network Security Group Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -62,6 +62,7 @@ try:
     from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -71,8 +72,10 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def default_security_rule_get(hub, name, security_group, resource_group, **kwargs):
-    '''
+async def default_security_rule_get(
+    hub, name, security_group, resource_group, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Get details about a default security rule within a security group.
@@ -91,37 +94,33 @@ async def default_security_rule_get(hub, name, security_group, resource_group, *
 
         azurerm.network.network_security_group.default_security_rule_get DenyAllOutBound testnsg testgroup
 
-    '''
+    """
     result = {}
 
     default_rules = default_security_rules_list(
-        security_group=security_group,
-        resource_group=resource_group,
-        **kwargs
+        security_group=security_group, resource_group=resource_group, **kwargs
     )
 
-    if isinstance(default_rules, dict) and 'error' in default_rules:
+    if isinstance(default_rules, dict) and "error" in default_rules:
         return default_rules
 
     try:
         for default_rule in default_rules:
-            if default_rule['name'] == name:
+            if default_rule["name"] == name:
                 result = default_rule
         if not result:
             result = {
-                'error': 'Unable to find {0} in {1}!'.format(name, security_group)
+                "error": "Unable to find {0} in {1}!".format(name, security_group)
             }
     except KeyError as exc:
-        log.error(
-            'Unable to find {0} in {1}!'.format(name, security_group)
-        )
-        result = {'error': str(exc)}
+        log.error("Unable to find {0} in {1}!".format(name, security_group))
+        result = {"error": str(exc)}
 
     return result
 
 
 async def default_security_rules_list(hub, security_group, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List default security rules within a security group.
@@ -137,31 +136,27 @@ async def default_security_rules_list(hub, security_group, resource_group, **kwa
 
         azurerm.network.network_security_group.default_security_rules_list testnsg testgroup
 
-    '''
+    """
     result = {}
 
     secgroup = network_security_group_get(
-        security_group=security_group,
-        resource_group=resource_group,
-        **kwargs
+        security_group=security_group, resource_group=resource_group, **kwargs
     )
 
-    if 'error' in secgroup:
+    if "error" in secgroup:
         return secgroup
 
     try:
-        result = secgroup['default_security_rules']
+        result = secgroup["default_security_rules"]
     except KeyError as exc:
-        log.error(
-            'No default security rules found for {0}!'.format(security_group)
-        )
-        result = {'error': str(exc)}
+        log.error("No default security rules found for {0}!".format(security_group))
+        result = {"error": str(exc)}
 
     return result
 
 
 async def security_rules_list(hub, security_group, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List security rules within a network security group.
@@ -177,27 +172,41 @@ async def security_rules_list(hub, security_group, resource_group, **kwargs):
 
         azurerm.network.network_security_group.security_rules_list testnsg testgroup
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         secrules = netconn.security_rules.list(
             network_security_group_name=security_group,
-            resource_group_name=resource_group
+            resource_group_name=resource_group,
         )
         result = await hub.exec.utils.azurerm.paged_object_to_list(secrules)
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def security_rule_create_or_update(hub, name, access, direction, priority, protocol, security_group,
-                                         resource_group, source_address_prefix=None, destination_address_prefix=None,
-                                         source_port_range=None, destination_port_range=None,
-                                         source_address_prefixes=None, destination_address_prefixes=None,
-                                         source_port_ranges=None, destination_port_ranges=None, **kwargs):
-    '''
+async def security_rule_create_or_update(
+    hub,
+    name,
+    access,
+    direction,
+    priority,
+    protocol,
+    security_group,
+    resource_group,
+    source_address_prefix=None,
+    destination_address_prefix=None,
+    source_port_range=None,
+    destination_port_range=None,
+    source_address_prefixes=None,
+    destination_address_prefixes=None,
+    source_port_ranges=None,
+    destination_port_ranges=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Create or update a security rule within a specified network security group.
@@ -264,32 +273,34 @@ async def security_rule_create_or_update(hub, name, access, direction, priority,
                   testnsg testgroup source_address_prefix='*' destination_address_prefix=internet \
                   source_port_range='*' destination_port_range='1-1024'
 
-    '''
+    """
     exclusive_params = [
-        ('source_port_ranges', 'source_port_range'),
-        ('source_address_prefixes', 'source_address_prefix'),
-        ('destination_port_ranges', 'destination_port_range'),
-        ('destination_address_prefixes', 'destination_address_prefix'),
+        ("source_port_ranges", "source_port_range"),
+        ("source_address_prefixes", "source_address_prefix"),
+        ("destination_port_ranges", "destination_port_range"),
+        ("destination_address_prefixes", "destination_address_prefix"),
     ]
 
     for params in exclusive_params:
         # pylint: disable=eval-used
         if not eval(params[0]) and not eval(params[1]):
             log.error(
-                'Either the {0} or {1} parameter must be provided!'.format(params[0], params[1])
+                "Either the {0} or {1} parameter must be provided!".format(
+                    params[0], params[1]
+                )
             )
             return False
         # pylint: disable=eval-used
         if eval(params[0]):
             # pylint: disable=exec-used
-            exec('{0} = None'.format(params[1]))
+            exec("{0} = None".format(params[1]))
 
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     try:
         rulemodel = await hub.exec.utils.azurerm.create_object_model(
-            'network',
-            'SecurityRule',
+            "network",
+            "SecurityRule",
             name=name,
             access=access,
             direction=direction,
@@ -303,10 +314,12 @@ async def security_rule_create_or_update(hub, name, access, direction, priority,
             destination_port_range=destination_port_range,
             destination_address_prefixes=destination_address_prefixes,
             destination_address_prefix=destination_address_prefix,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
@@ -314,22 +327,26 @@ async def security_rule_create_or_update(hub, name, access, direction, priority,
             resource_group_name=resource_group,
             network_security_group_name=security_group,
             security_rule_name=name,
-            security_rule_parameters=rulemodel
+            security_rule_parameters=rulemodel,
         )
         secrule.wait()
         secrule_result = secrule.result()
         result = secrule_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
-async def security_rule_delete(hub, security_rule, security_group, resource_group, **kwargs):
-    '''
+async def security_rule_delete(
+    hub, security_rule, security_group, resource_group, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Delete a security rule within a specified security group.
@@ -348,25 +365,27 @@ async def security_rule_delete(hub, security_rule, security_group, resource_grou
 
         azurerm.network.network_security_group.security_rule_delete testrule1 testnsg testgroup
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         secrule = netconn.security_rules.delete(
             network_security_group_name=security_group,
             resource_group_name=resource_group,
-            security_rule_name=security_rule
+            security_rule_name=security_rule,
         )
         secrule.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
 
-async def security_rule_get(hub, security_rule, security_group, resource_group, **kwargs):
-    '''
+async def security_rule_get(
+    hub, security_rule, security_group, resource_group, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Get a security rule within a specified network security group.
@@ -385,24 +404,24 @@ async def security_rule_get(hub, security_rule, security_group, resource_group, 
 
         azurerm.network.network_security_group.security_rule_get testrule1 testnsg testgroup
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         secrule = netconn.security_rules.get(
             network_security_group_name=security_group,
             resource_group_name=resource_group,
-            security_rule_name=security_rule
+            security_rule_name=security_rule,
         )
         result = secrule.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def create_or_update(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Create or update a network security group.
@@ -418,47 +437,49 @@ async def create_or_update(hub, name, resource_group, **kwargs):
 
         azurerm.network.network_security_group.create_or_update testnsg testgroup
 
-    '''
-    if 'location' not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(
-            resource_group, **kwargs
-        )
+    """
+    if "location" not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
 
-        if 'error' in rg_props:
-            log.error(
-                'Unable to determine location from resource group specified.'
-            )
+        if "error" in rg_props:
+            log.error("Unable to determine location from resource group specified.")
             return False
-        kwargs['location'] = rg_props['location']
+        kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     try:
-        secgroupmodel = await hub.exec.utils.azurerm.create_object_model('network', 'NetworkSecurityGroup', **kwargs)
+        secgroupmodel = await hub.exec.utils.azurerm.create_object_model(
+            "network", "NetworkSecurityGroup", **kwargs
+        )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         secgroup = netconn.network_security_groups.create_or_update(
             resource_group_name=resource_group,
             network_security_group_name=name,
-            parameters=secgroupmodel
+            parameters=secgroupmodel,
         )
         secgroup.wait()
         secgroup_result = secgroup.result()
         result = secgroup_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def delete(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Delete a network security group within a resource group.
@@ -474,24 +495,23 @@ async def delete(hub, name, resource_group, **kwargs):
 
         azurerm.network.network_security_group.delete testnsg testgroup
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         secgroup = netconn.network_security_groups.delete(
-            resource_group_name=resource_group,
-            network_security_group_name=name
+            resource_group_name=resource_group, network_security_group_name=name
         )
         secgroup.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
 
 async def get(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get details about a network security group within a resource group.
@@ -507,23 +527,22 @@ async def get(hub, name, resource_group, **kwargs):
 
         azurerm.network.network_security_group.get testnsg testgroup
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         secgroup = netconn.network_security_groups.get(
-            resource_group_name=resource_group,
-            network_security_group_name=name
+            resource_group_name=resource_group, network_security_group_name=name
         )
         result = secgroup.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_(hub, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all network security groups within a resource group.
@@ -537,26 +556,24 @@ async def list_(hub, resource_group, **kwargs):
 
         azurerm.network.network_security_groups.list testgroup
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         secgroups = await hub.exec.utils.azurerm.paged_object_to_list(
-            netconn.network_security_groups.list(
-                resource_group_name=resource_group
-            )
+            netconn.network_security_groups.list(resource_group_name=resource_group)
         )
         for secgroup in secgroups:
-            result[secgroup['name']] = secgroup
+            result[secgroup["name"]] = secgroup
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_all(hub, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all network security groups within a subscription.
@@ -567,17 +584,17 @@ async def list_all(hub, **kwargs):
 
         azurerm.network.network_security_groups.list_all
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         secgroups = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.network_security_groups.list_all()
         )
         for secgroup in secgroups:
-            result[secgroup['name']] = secgroup
+            result[secgroup["name"]] = secgroup
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

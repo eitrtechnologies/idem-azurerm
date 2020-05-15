@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Compute Virtual Machine Execution Module
 
 .. versionadded:: 1.0.0
@@ -46,7 +46,7 @@ Azure Resource Manager (ARM) Compute Virtual Machine Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -59,6 +59,7 @@ try:
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
     from msrestazure.tools import is_valid_resource_id, parse_resource_id
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -73,8 +74,8 @@ async def create_or_update(
     name,
     resource_group,
     vm_size,
-    admin_username='idem',
-    os_disk_create_option='FromImage',
+    admin_username="idem",
+    os_disk_create_option="FromImage",
     os_disk_size_gb=30,
     ssh_public_keys=None,
     disable_password_auth=None,
@@ -112,9 +113,9 @@ async def create_or_update(
     disk_enc_volume_type=None,
     disk_enc_kek_url=None,
     data_disks=None,
-    **kwargs
+    **kwargs,
 ):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     .. versionchanged:: 2.0.0
@@ -339,78 +340,90 @@ async def create_or_update(
 
         azurerm.compute.virtual_machine.create_or_update test_vm test_group
 
-    '''
-    if 'location' not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(
-            resource_group, **kwargs
-        )
+    """
+    if "location" not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
 
-        if 'error' in rg_props:
-            log.error(
-                'Unable to determine location from resource group specified.'
-            )
+        if "error" in rg_props:
+            log.error("Unable to determine location from resource group specified.")
             return False
-        kwargs['location'] = rg_props['location']
+        kwargs["location"] = rg_props["location"]
 
     if not network_interfaces:
         network_interfaces = []
 
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
 
     params = kwargs.copy()
 
     # This section creates dictionaries if required in order to properly create SubResource objects
-    if 'availability_set' in params and not isinstance(params['availability_set'], dict):
-        params.update({'availability_set': {'id': params['availability_set']}})
+    if "availability_set" in params and not isinstance(
+        params["availability_set"], dict
+    ):
+        params.update({"availability_set": {"id": params["availability_set"]}})
 
-    if 'virtual_machine_scale_set' in params and not isinstance(params['virtual_machine_scale_set'], dict):
-        params.update({'virtual_machine_scale_set': {'id': params['virtual_machine_scale_set']}})
+    if "virtual_machine_scale_set" in params and not isinstance(
+        params["virtual_machine_scale_set"], dict
+    ):
+        params.update(
+            {"virtual_machine_scale_set": {"id": params["virtual_machine_scale_set"]}}
+        )
 
-    if 'proximity_placement_group' in params and not isinstance(params['proximity_placement_group'], dict):
-        params.update({'proximity_placement_group': {'id': params['proximity_placement_group']}})
+    if "proximity_placement_group" in params and not isinstance(
+        params["proximity_placement_group"], dict
+    ):
+        params.update(
+            {"proximity_placement_group": {"id": params["proximity_placement_group"]}}
+        )
 
-    if 'host' in params and not isinstance(params['host'], dict):
-        params.update({'host': {'id': params['host']}})
+    if "host" in params and not isinstance(params["host"], dict):
+        params.update({"host": {"id": params["host"]}})
 
     if os_managed_disk and not isinstance(os_managed_disk, dict):
-        os_managed_disk = {'id': os_managed_disk}
+        os_managed_disk = {"id": os_managed_disk}
 
     if os_disk_image_uri and not isinstance(os_disk_image_uri, dict):
-        os_disk_image_uri = {'uri': os_disk_image_uri}
+        os_disk_image_uri = {"uri": os_disk_image_uri}
 
     if os_disk_vhd_uri and not isinstance(os_disk_vhd_uri, dict):
-        os_disk_vhd_uri = {'uri': os_disk_vhd_uri}
+        os_disk_vhd_uri = {"uri": os_disk_vhd_uri}
 
     # network interface creation
     if not network_interfaces and create_interfaces:
-        ipc = {'name': f'{name}-nic0-cfg0'}
+        ipc = {"name": f"{name}-nic0-cfg0"}
 
         if allocate_public_ip:
             pubip = await hub.exec.azurerm.network.public_ip_address.create_or_update(
-                f'{name}-pip0',
-                resource_group,
-                **kwargs
+                f"{name}-pip0", resource_group, **kwargs
             )
 
             try:
-                ipc.update({'public_ip_address': {'id': pubip['id']}})
+                ipc.update({"public_ip_address": {"id": pubip["id"]}})
             except KeyError as exc:
-                result = {'error': 'The public IP address could not be created. ({0})'.format(str(exc))}
+                result = {
+                    "error": "The public IP address could not be created. ({0})".format(
+                        str(exc)
+                    )
+                }
                 return result
 
         iface = await hub.exec.azurerm.network.network_interface.create_or_update(
-            f'{name}-nic0',
+            f"{name}-nic0",
             [ipc],
             subnet,
             virtual_network,
             network_resource_group or resource_group,
-            **kwargs
+            **kwargs,
         )
 
         try:
-            nic = {'id': iface['id']}
+            nic = {"id": iface["id"]}
         except KeyError as exc:
-            result = {'error': 'The network interface could not be created. ({0})'.format(str(exc))}
+            result = {
+                "error": "The network interface could not be created. ({0})".format(
+                    str(exc)
+                )
+            }
             return result
 
         network_interfaces.append(nic)
@@ -425,7 +438,9 @@ async def create_or_update(
 
     for lun, data_disk in enumerate(data_disks):
         if not isinstance(data_disk, dict):
-            log.warning("The data disk at index %s is not a dictionary: %s", lun, data_disk)
+            log.warning(
+                "The data disk at index %s is not a dictionary: %s", lun, data_disk
+            )
             # drop from the list instead of halting. disks can always be attached after the fact.
             data_disks.pop(lun)
             continue
@@ -442,7 +457,9 @@ async def create_or_update(
             "managed_disk",
             "to_be_detached",
         )
-        data_disk = dict([[key, val] for key, val in data_disk.items() if key in allowable])
+        data_disk = dict(
+            [[key, val] for key, val in data_disk.items() if key in allowable]
+        )
 
         # set defaults
         data_disk.setdefault("lun", lun)
@@ -477,50 +494,46 @@ async def create_or_update(
     # main configuration parameters
     params.update(
         {
-            #"plan": {
+            # "plan": {
             #    "name" None,
             #    "publisher": None,
             #    "product": None,
             #    "promotion_code": None
-            #},
-            'hardware_profile': {
-                'vm_size': vm_size.lower(),
-            },
-            'storage_profile': {
-                'os_disk': {
-                    'os_type': os_type,
-                    'name': os_disk_name,
-                    'vhd': os_disk_vhd_uri,
-                    'image': os_disk_image_uri,
-                    'caching': os_disk_caching,
-                    'write_accelerator_enabled': os_write_accel,
-                    'create_option': os_disk_create_option,
-                    'disk_size_gb': os_disk_size_gb,
-                    'managed_disk': os_managed_disk,
+            # },
+            "hardware_profile": {"vm_size": vm_size.lower(),},
+            "storage_profile": {
+                "os_disk": {
+                    "os_type": os_type,
+                    "name": os_disk_name,
+                    "vhd": os_disk_vhd_uri,
+                    "image": os_disk_image_uri,
+                    "caching": os_disk_caching,
+                    "write_accelerator_enabled": os_write_accel,
+                    "create_option": os_disk_create_option,
+                    "disk_size_gb": os_disk_size_gb,
+                    "managed_disk": os_managed_disk,
                 },
-                'data_disks': data_disks,
+                "data_disks": data_disks,
             },
-            'os_profile': {
-                'computer_name': name,
-                'admin_username': admin_username,
-                'admin_password': admin_password,
-                'custom_data': custom_data,
-            #    "secrets": None,
-                'allow_extension_operations': allow_extensions,
+            "os_profile": {
+                "computer_name": name,
+                "admin_username": admin_username,
+                "admin_password": admin_password,
+                "custom_data": custom_data,
+                #    "secrets": None,
+                "allow_extension_operations": allow_extensions,
             },
-            'network_profile': {
-                'network_interfaces': network_interfaces,
-            },
-            'diagnostics_profile': {
-                'boot_diagnostics': {
-                    'enabled': boot_diags_enabled,
-                    'storage_uri': diag_storage_uri,
+            "network_profile": {"network_interfaces": network_interfaces,},
+            "diagnostics_profile": {
+                "boot_diagnostics": {
+                    "enabled": boot_diags_enabled,
+                    "storage_uri": diag_storage_uri,
                 }
             },
-            #"identity": {
+            # "identity": {
             #    "type": None, # SystemAssigned or UserAssigned
             #    "user_assigned_identities": None # VirtualMachineIdentityUserAssignedIdentitiesValue
-            #},
+            # },
         }
     )
 
@@ -529,90 +542,94 @@ async def create_or_update(
         for pubkey in ssh_public_keys:
             if os.path.isfile(pubkey):
                 try:
-                    with open(pubkey, 'r') as pubkey_file:
+                    with open(pubkey, "r") as pubkey_file:
                         pubkeys.append(
                             {
-                                'key_data': pubkey_file.read(),
-                                'path': f'/home/{admin_username}/.ssh/authorized_keys'
+                                "key_data": pubkey_file.read(),
+                                "path": f"/home/{admin_username}/.ssh/authorized_keys",
                             }
                         )
                 except FileNotFoundError as exc:
                     log.error(
-                        'Unable to open ssh public key file: %s (%s)', pubkey, exc
+                        "Unable to open ssh public key file: %s (%s)", pubkey, exc
                     )
             else:
                 pubkeys.append(
                     {
-                        'key_data': pubkey,
-                        'path': f'/home/{admin_username}/.ssh/authorized_keys'
+                        "key_data": pubkey,
+                        "path": f"/home/{admin_username}/.ssh/authorized_keys",
                     }
                 )
 
-        params['os_profile'].update(
+        params["os_profile"].update(
             {
-                'linux_configuration': {
-                    'disable_password_authentication': disable_password_auth,
-                    'ssh': {
-                        'public_keys': pubkeys
-                    }
+                "linux_configuration": {
+                    "disable_password_authentication": disable_password_auth,
+                    "ssh": {"public_keys": pubkeys},
                 }
             }
         )
 
     if image:
         if is_valid_resource_id(image):
-            params['storage_profile'].update(
-                { 'image_reference': { 'id': image }}
-            )
-        elif '|' in image:
-            image_keys = ['publisher', 'offer', 'sku', 'version']
-            params['storage_profile'].update(
-                { 'image_reference': dict(zip(image_keys, image.split('|'))) }
+            params["storage_profile"].update({"image_reference": {"id": image}})
+        elif "|" in image:
+            image_keys = ["publisher", "offer", "sku", "version"]
+            params["storage_profile"].update(
+                {"image_reference": dict(zip(image_keys, image.split("|")))}
             )
 
     if time_zone or enable_automatic_updates is not None:
-        if 'windows_configuration' not in params['os_profile']:
-            params['os_profile']['windows_configuration'] = {}
+        if "windows_configuration" not in params["os_profile"]:
+            params["os_profile"]["windows_configuration"] = {}
         if enable_automatic_updates:
-            params['os_profile']['windows_configuration']['enable_automatic_updates'] = enable_automatic_updates
+            params["os_profile"]["windows_configuration"][
+                "enable_automatic_updates"
+            ] = enable_automatic_updates
         if time_zone:
-            params['os_profile']['windows_configuration']['time_zone'] = time_zone
+            params["os_profile"]["windows_configuration"]["time_zone"] = time_zone
 
     if not provision_vm_agent:
-        if 'linux_configuration' in params['os_profile']:
-            params['os_profile']['linux_configuration']['provision_vm_agent'] = provision_vm_agent
-        elif 'windows_configuration' in params['os_profile']:
-            params['os_profile']['windows_configuration']['provision_vm_agent'] = provision_vm_agent
+        if "linux_configuration" in params["os_profile"]:
+            params["os_profile"]["linux_configuration"][
+                "provision_vm_agent"
+            ] = provision_vm_agent
+        elif "windows_configuration" in params["os_profile"]:
+            params["os_profile"]["windows_configuration"][
+                "provision_vm_agent"
+            ] = provision_vm_agent
         elif os_type:
-            if 'linux' in os_type.lower():
-                params['os_profile']['linux_configuration'] = {'provision_vm_agent': provision_vm_agent}
-            elif 'windows' in os_type.lower():
-                params['os_profile']['windows_configuration'] = {'provision_vm_agent': provision_vm_agent}
+            if "linux" in os_type.lower():
+                params["os_profile"]["linux_configuration"] = {
+                    "provision_vm_agent": provision_vm_agent
+                }
+            elif "windows" in os_type.lower():
+                params["os_profile"]["windows_configuration"] = {
+                    "provision_vm_agent": provision_vm_agent
+                }
 
     if os_ephemeral_disk:
-        params['storage_profile']['diff_disk_settings'] = {'option': 'local'}
+        params["storage_profile"]["diff_disk_settings"] = {"option": "local"}
 
     if max_price:
-        params['billing_profile'] = {'max_price': max_price}
+        params["billing_profile"] = {"max_price": max_price}
 
     if ultra_ssd_enabled is not None:
-        params['additional_capabilities'] = {'ultra_ssd_enabled': ultra_ssd_enabled}
+        params["additional_capabilities"] = {"ultra_ssd_enabled": ultra_ssd_enabled}
 
     try:
         vmmodel = await hub.exec.utils.azurerm.create_object_model(
-            'compute',
-            'VirtualMachine',
-            **params
+            "compute", "VirtualMachine", **params
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         vm = compconn.virtual_machines.create_or_update(
-            resource_group_name=resource_group,
-            vm_name=name,
-            parameters=vmmodel
+            resource_group_name=resource_group, vm_name=name, parameters=vmmodel
         )
 
         vm.wait()
@@ -620,117 +637,152 @@ async def create_or_update(
         result = vm_result.as_dict()
 
         # Extract connection auth values for virtual machine extensions
-        auth_kwargs = ('tenant', 'client_id', 'secret', 'subscription_id', 'username', 'password')
+        auth_kwargs = (
+            "tenant",
+            "client_id",
+            "secret",
+            "subscription_id",
+            "username",
+            "password",
+        )
         connection_profile = dict([[x, kwargs[x]] for x in auth_kwargs if x in kwargs])
-        is_linux = True if result['storage_profile']['os_disk']['os_type'] == 'Linux' else False
+        is_linux = (
+            True
+            if result["storage_profile"]["os_disk"]["os_type"] == "Linux"
+            else False
+        )
         extension_info = {}
 
         # attach custom script extension for userdata
         if (userdata or userdata_file) and provision_vm_agent:
             if is_linux:
-                extension_info['publisher'] = 'Microsoft.Azure.Extensions'
-                extension_info['version'] = '2.0'
-                extension_info['type'] = 'CustomScript'
+                extension_info["publisher"] = "Microsoft.Azure.Extensions"
+                extension_info["version"] = "2.0"
+                extension_info["type"] = "CustomScript"
             else:
-                extension_info['publisher'] = 'Microsoft.Compute'
-                extension_info['version'] = '1.8'
-                extension_info['type'] = 'CustomScriptExtension'
+                extension_info["publisher"] = "Microsoft.Compute"
+                extension_info["version"] = "1.8"
+                extension_info["type"] = "CustomScriptExtension"
 
-            extension_info['settings'] = {}
+            extension_info["settings"] = {}
             if userdata_file:
-                if userdata_file.startswith('http'):
-                    extension_info['settings']['fileUris'] = [userdata_file]
+                if userdata_file.startswith("http"):
+                    extension_info["settings"]["fileUris"] = [userdata_file]
                 elif os.path.isfile(userdata_file):
                     try:
-                        with open(userdata_file, 'r') as udf_:
+                        with open(userdata_file, "r") as udf_:
                             userdata = udf_.read()
                     except FileNotFoundError as exc:
-                        log.error('Unable to open userdata file: %s (%s)', userdata, exc)
-            extension_info['settings']['commandToExecute'] = userdata
+                        log.error(
+                            "Unable to open userdata file: %s (%s)", userdata, exc
+                        )
+            extension_info["settings"]["commandToExecute"] = userdata
 
             if userdata:
                 userdata_ret = await hub.exec.azurerm.compute.virtual_machine_extension.create_or_update(
-                    name=f'{name}_custom_userdata_script',
+                    name=f"{name}_custom_userdata_script",
                     vm_name=name,
                     resource_group=resource_group,
-                    location=result['location'],
-                    publisher=extension_info['publisher'],
-                    extension_type=extension_info['type'],
-                    version=extension_info['version'],
-                    settings=extension_info['settings'],
-                    **connection_profile
+                    location=result["location"],
+                    publisher=extension_info["publisher"],
+                    extension_type=extension_info["type"],
+                    version=extension_info["version"],
+                    settings=extension_info["settings"],
+                    **connection_profile,
                 )
-                log.debug('Return from userdata extension: %s', userdata_ret)
+                log.debug("Return from userdata extension: %s", userdata_ret)
 
         # attach disk encryption extension
-        if enable_disk_enc and provision_vm_agent and disk_enc_keyvault and disk_enc_volume_type:
+        if (
+            enable_disk_enc
+            and provision_vm_agent
+            and disk_enc_keyvault
+            and disk_enc_volume_type
+        ):
             try:
-                disk_enc_keyvault_name = (parse_resource_id(disk_enc_keyvault))['name']
-                disk_enc_keyvault_url = 'https://{0}.vault.azure.net/'.format(disk_enc_keyvault_name)
-
-                extension_info = {'publisher': 'Microsoft.Azure.Security',
-                                  'settings': {'VolumeType': disk_enc_volume_type,
-                                               'EncryptionOperation': 'EnableEncryption',
-                                               'KeyVaultResourceId': disk_enc_keyvault,
-                                               'KeyVaultURL': disk_enc_keyvault_url}}
-
-                if is_linux:
-                    extension_info['type'] = 'AzureDiskEncryptionForLinux'
-                    extension_info['version'] = '1.1'
-                else:
-                    extension_info['type'] = 'AzureDiskEncryption'
-                    extension_info['version'] = '2.2'
-
-                if disk_enc_kek_url:
-                    extension_info['settings']['KeyEncryptionKeyURL'] = disk_enc_kek_url
-                    extension_info['settings']['KekVaultResourceId'] = disk_enc_keyvault
-
-                encryption_info = await hub.exec.azurerm.compute.virtual_machine_extension.create_or_update(
-                    name='DiskEncryption',
-                    vm_name=name,
-                    resource_group=resource_group,
-                    location=result['location'],
-                    publisher=extension_info['publisher'],
-                    extension_type=extension_info['type'],
-                    version=extension_info['version'],
-                    settings=extension_info['settings'],
-                    **connection_profile
+                disk_enc_keyvault_name = (parse_resource_id(disk_enc_keyvault))["name"]
+                disk_enc_keyvault_url = "https://{0}.vault.azure.net/".format(
+                    disk_enc_keyvault_name
                 )
 
-                result['storage_profile']['disk_encryption'] = True
+                extension_info = {
+                    "publisher": "Microsoft.Azure.Security",
+                    "settings": {
+                        "VolumeType": disk_enc_volume_type,
+                        "EncryptionOperation": "EnableEncryption",
+                        "KeyVaultResourceId": disk_enc_keyvault,
+                        "KeyVaultURL": disk_enc_keyvault_url,
+                    },
+                }
+
+                if is_linux:
+                    extension_info["type"] = "AzureDiskEncryptionForLinux"
+                    extension_info["version"] = "1.1"
+                else:
+                    extension_info["type"] = "AzureDiskEncryption"
+                    extension_info["version"] = "2.2"
+
+                if disk_enc_kek_url:
+                    extension_info["settings"]["KeyEncryptionKeyURL"] = disk_enc_kek_url
+                    extension_info["settings"]["KekVaultResourceId"] = disk_enc_keyvault
+
+                encryption_info = await hub.exec.azurerm.compute.virtual_machine_extension.create_or_update(
+                    name="DiskEncryption",
+                    vm_name=name,
+                    resource_group=resource_group,
+                    location=result["location"],
+                    publisher=extension_info["publisher"],
+                    extension_type=extension_info["type"],
+                    version=extension_info["version"],
+                    settings=extension_info["settings"],
+                    **connection_profile,
+                )
+
+                result["storage_profile"]["disk_encryption"] = True
             except KeyError as exc:
-                log.error("An error occured while trying to enable disk encryption: {0}".format(str(exc)))
-                result['storage_profile']['disk_encryption'] = False
+                log.error(
+                    "An error occured while trying to enable disk encryption: {0}".format(
+                        str(exc)
+                    )
+                )
+                result["storage_profile"]["disk_encryption"] = False
 
         # Give some more details about the sub-objects
         network_interfaces = []
 
-        for iface in result['network_profile']['network_interfaces']:
-            iface_dict = parse_resource_id(
-                iface['id']
-            )
+        for iface in result["network_profile"]["network_interfaces"]:
+            iface_dict = parse_resource_id(iface["id"])
 
             iface_details = await hub.exec.azurerm.network.network_interface.get(
-                resource_group=iface_dict['resource_group'],
-                name=iface_dict['name'],
-                **kwargs
+                resource_group=iface_dict["resource_group"],
+                name=iface_dict["name"],
+                **kwargs,
             )
 
             network_interfaces.append(iface_details)
 
-        result['network_profile']['network_interfaces'] = network_interfaces
+        result["network_profile"]["network_interfaces"] = network_interfaces
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
-async def delete(hub, name, resource_group, cleanup_disks=False, cleanup_data_disks=False, cleanup_interfaces=False,
-                 **kwargs):
-    '''
+async def delete(
+    hub,
+    name,
+    resource_group,
+    cleanup_disks=False,
+    cleanup_data_disks=False,
+    cleanup_interfaces=False,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Delete a virtual machine.
@@ -745,87 +797,84 @@ async def delete(hub, name, resource_group, cleanup_disks=False, cleanup_data_di
 
         azurerm.compute.virtual_machine.delete testvm testgroup
 
-    '''
+    """
     result = False
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
 
     vm = await hub.exec.azurerm.compute.virtual_machine.get(
-        resource_group=resource_group,
-        name=name,
-        **kwargs
+        resource_group=resource_group, name=name, **kwargs
     )
 
     try:
         poller = compconn.virtual_machines.delete(
-            resource_group_name=resource_group,
-            vm_name=name
+            resource_group_name=resource_group, vm_name=name
         )
 
         poller.wait()
 
         if cleanup_disks:
             os_disk = parse_resource_id(
-                vm['storage_profile']['os_disk'].get('managed_disk', {}).get('id')
+                vm["storage_profile"]["os_disk"].get("managed_disk", {}).get("id")
             )
 
             os_disk_ret = await hub.exec.azurerm.compute.disk.delete(
-                resource_group=os_disk['resource_group'],
-                name=os_disk['name'],
-                **kwargs
+                resource_group=os_disk["resource_group"], name=os_disk["name"], **kwargs
             )
 
         if cleanup_data_disks:
-            for disk in vm['storage_profile']['data_disks']:
-                disk_dict = parse_resource_id(
-                    disk.get('managed_disk', {}).get('id')
-                )
+            for disk in vm["storage_profile"]["data_disks"]:
+                disk_dict = parse_resource_id(disk.get("managed_disk", {}).get("id"))
 
                 data_disk_ret = await hub.exec.azurerm.compute.disk.delete(
-                    resource_group=disk_dict['resource_group'],
-                    name=disk_dict['name'],
-                    **kwargs
+                    resource_group=disk_dict["resource_group"],
+                    name=disk_dict["name"],
+                    **kwargs,
                 )
 
         if cleanup_interfaces:
-            for iface in vm['network_profile']['network_interfaces']:
-                iface_dict = parse_resource_id(
-                    iface['id']
-                )
+            for iface in vm["network_profile"]["network_interfaces"]:
+                iface_dict = parse_resource_id(iface["id"])
 
                 iface_details = await hub.exec.azurerm.network.network_interface.get(
-                    resource_group=iface_dict['resource_group'],
-                    name=iface_dict['name'],
-                    **kwargs
+                    resource_group=iface_dict["resource_group"],
+                    name=iface_dict["name"],
+                    **kwargs,
                 )
 
                 iface_ret = await hub.exec.azurerm.network.network_interface.delete(
-                    resource_group=iface_dict['resource_group'],
-                    name=iface_dict['name'],
-                    **kwargs
+                    resource_group=iface_dict["resource_group"],
+                    name=iface_dict["name"],
+                    **kwargs,
                 )
 
-                for ipc in iface_details['ip_configurations']:
-                    if ipc.get('public_ip_address'):
-                        ip_dict = parse_resource_id(
-                            ipc['public_ip_address']['id']
-                        )
+                for ipc in iface_details["ip_configurations"]:
+                    if ipc.get("public_ip_address"):
+                        ip_dict = parse_resource_id(ipc["public_ip_address"]["id"])
 
                         ip_ret = await hub.exec.azurerm.network.public_ip_address.delete(
-                            resource_group=ip_dict['resource_group'],
-                            name=ip_dict['name'],
-                            **kwargs
+                            resource_group=ip_dict["resource_group"],
+                            name=ip_dict["name"],
+                            **kwargs,
                         )
 
         result = True
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
 
     return result
 
 
-async def capture(hub, name, destination_name, resource_group, prefix='capture-', overwrite=False, **kwargs):
-    '''
+async def capture(
+    hub,
+    name,
+    destination_name,
+    resource_group,
+    prefix="capture-",
+    overwrite=False,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Captures the VM by copying virtual hard disks of the VM and outputs
@@ -848,13 +897,13 @@ async def capture(hub, name, destination_name, resource_group, prefix='capture-'
 
         azurerm.compute.virtual_machine.capture testvm testcontainer testgroup
 
-    '''
+    """
     # pylint: disable=invalid-name
     VirtualMachineCaptureParameters = getattr(
-        azure.mgmt.compute.models, 'VirtualMachineCaptureParameters'
+        azure.mgmt.compute.models, "VirtualMachineCaptureParameters"
     )
 
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.capture(
@@ -863,21 +912,21 @@ async def capture(hub, name, destination_name, resource_group, prefix='capture-'
             parameters=VirtualMachineCaptureParameters(
                 vhd_prefix=prefix,
                 destination_container_name=destination_name,
-                overwrite_vhds=overwrite
-            )
+                overwrite_vhds=overwrite,
+            ),
         )
         vm.wait()
         vm_result = vm.result()
         result = vm_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Retrieves information about the model view or the instance view of a
@@ -894,27 +943,27 @@ async def get(hub, name, resource_group, **kwargs):
 
         azurerm.compute.virtual_machine.get testvm testgroup
 
-    '''
-    expand = kwargs.get('expand')
+    """
+    expand = kwargs.get("expand")
 
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.get(
-            resource_group_name=resource_group,
-            vm_name=name,
-            expand=expand
+            resource_group_name=resource_group, vm_name=name, expand=expand
         )
         result = vm.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def convert_to_managed_disks(hub, name, resource_group, **kwargs):  # pylint: disable=invalid-name
-    '''
+async def convert_to_managed_disks(
+    hub, name, resource_group, **kwargs
+):  # pylint: disable=invalid-name
+    """
     .. versionadded:: 1.0.0
 
     Converts virtual machine disks from blob-based to managed disks. Virtual
@@ -931,26 +980,25 @@ async def convert_to_managed_disks(hub, name, resource_group, **kwargs):  # pyli
 
         azurerm.compute.virtual_machine.convert_to_managed_disks testvm testgroup
 
-    '''
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    """
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.convert_to_managed_disks(
-            resource_group_name=resource_group,
-            vm_name=name
+            resource_group_name=resource_group, vm_name=name
         )
         vm.wait()
         vm_result = vm.result()
         result = vm_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def deallocate(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Power off a virtual machine and deallocate compute resources.
@@ -966,26 +1014,25 @@ async def deallocate(hub, name, resource_group, **kwargs):
 
         azurerm.compute.virtual_machine.deallocate testvm testgroup
 
-    '''
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    """
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     result = False
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.deallocate(
-            resource_group_name=resource_group,
-            vm_name=name
+            resource_group_name=resource_group, vm_name=name
         )
         vm.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def generalize(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Set the state of a virtual machine to 'generalized'.
@@ -1001,23 +1048,22 @@ async def generalize(hub, name, resource_group, **kwargs):
 
         azurerm.compute.virtual_machine.generalize testvm testgroup
 
-    '''
+    """
     result = False
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
         compconn.virtual_machines.generalize(
-            resource_group_name=resource_group,
-            vm_name=name
+            resource_group_name=resource_group, vm_name=name
         )
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
 
     return result
 
 
 async def list_(hub, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all virtual machines within a resource group.
@@ -1031,26 +1077,24 @@ async def list_(hub, resource_group, **kwargs):
 
         azurerm.compute.virtual_machine.list testgroup
 
-    '''
+    """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
         vms = await hub.exec.utils.azurerm.paged_object_to_list(
-            compconn.virtual_machines.list(
-                resource_group_name=resource_group
-            )
+            compconn.virtual_machines.list(resource_group_name=resource_group)
         )
         for vm in vms:  # pylint: disable=invalid-name
-            result[vm['name']] = vm
+            result[vm["name"]] = vm
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_all(hub, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all virtual machines within a subscription.
@@ -1061,24 +1105,26 @@ async def list_all(hub, **kwargs):
 
         azurerm.compute.virtual_machine.list_all
 
-    '''
+    """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
         vms = await hub.exec.utils.azurerm.paged_object_to_list(
             compconn.virtual_machines.list_all()
         )
         for vm in vms:  # pylint: disable=invalid-name
-            result[vm['name']] = vm
+            result[vm["name"]] = vm
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def list_available_sizes(hub, name, resource_group, **kwargs):  # pylint: disable=invalid-name
-    '''
+async def list_available_sizes(
+    hub, name, resource_group, **kwargs
+):  # pylint: disable=invalid-name
+    """
     .. versionadded:: 1.0.0
 
     Lists all available virtual machine sizes to which the specified virtual
@@ -1095,27 +1141,26 @@ async def list_available_sizes(hub, name, resource_group, **kwargs):  # pylint: 
 
         azurerm.compute.virtual_machine.list_available_sizes testvm testgroup
 
-    '''
+    """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
         sizes = await hub.exec.utils.azurerm.paged_object_to_list(
             compconn.virtual_machines.list_available_sizes(
-                resource_group_name=resource_group,
-                vm_name=name
+                resource_group_name=resource_group, vm_name=name
             )
         )
         for size in sizes:
-            result[size['name']] = size
+            result[size["name"]] = size
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def power_off(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Power off (stop) a virtual machine.
@@ -1131,26 +1176,25 @@ async def power_off(hub, name, resource_group, **kwargs):
 
         azurerm.compute.virtual_machine.power_off testvm testgroup
 
-    '''
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    """
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.power_off(
-            resource_group_name=resource_group,
-            vm_name=name
+            resource_group_name=resource_group, vm_name=name
         )
         vm.wait()
         vm_result = vm.result()
         result = vm_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def restart(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Restart a virtual machine.
@@ -1166,26 +1210,25 @@ async def restart(hub, name, resource_group, **kwargs):
 
         azurerm.compute.virtual_machine.restart testvm testgroup
 
-    '''
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    """
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.restart(
-            resource_group_name=resource_group,
-            vm_name=name
+            resource_group_name=resource_group, vm_name=name
         )
         vm.wait()
         vm_result = vm.result()
         result = vm_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def start(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Power on (start) a virtual machine.
@@ -1201,26 +1244,25 @@ async def start(hub, name, resource_group, **kwargs):
 
         azurerm.compute.virtual_machine.start testvm testgroup
 
-    '''
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    """
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.start(
-            resource_group_name=resource_group,
-            vm_name=name
+            resource_group_name=resource_group, vm_name=name
         )
         vm.wait()
         vm_result = vm.result()
         result = vm_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def redeploy(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Redeploy a virtual machine.
@@ -1236,19 +1278,18 @@ async def redeploy(hub, name, resource_group, **kwargs):
 
         azurerm.compute.virtual_machine.redeploy testvm testgroup
 
-    '''
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    """
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.redeploy(
-            resource_group_name=resource_group,
-            vm_name=name
+            resource_group_name=resource_group, vm_name=name
         )
         vm.wait()
         vm_result = vm.result()
         result = vm_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

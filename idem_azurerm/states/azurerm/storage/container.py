@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Blob Container State Module
 
 .. versionadded:: 2.0.0
@@ -60,7 +60,7 @@ Azure Resource Manager (ARM) Blob Container State Module
                 secret: XXXXXXXXXXXXXXXXXXXXXXXX
                 cloud_environment: AZURE_PUBLIC_CLOUD
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -68,18 +68,28 @@ import logging
 log = logging.getLogger(__name__)
 
 TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-            'states.azurerm.storage.account.present',
+    "present": {
+        "require": [
+            "states.azurerm.resource.group.present",
+            "states.azurerm.storage.account.present",
         ]
     }
 }
 
 
-async def present(hub, ctx, name, account, resource_group, public_access=None, metadata=None, tags=None,
-                  connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    account,
+    resource_group,
+    public_access=None,
+    metadata=None,
+    tags=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Ensure a blob container exists.
@@ -117,76 +127,74 @@ async def present(hub, ctx, name, account, resource_group, public_access=None, m
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     container = await hub.exec.azurerm.storage.container.get(
-        name,
-        account,
-        resource_group,
-        **connection_auth
+        name, account, resource_group, **connection_auth
     )
     existed = False
 
-    if 'error' not in container:
+    if "error" not in container:
         existed = True
 
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(container.get('tags', {}), tags or {})
+        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            container.get("tags", {}), tags or {}
+        )
         if tag_changes:
-            ret['changes']['tags'] = tag_changes
+            ret["changes"]["tags"] = tag_changes
 
-        metadata_changes = await hub.exec.utils.dictdiffer.deep_diff(container.get('metadata', {}), metadata or {})
+        metadata_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            container.get("metadata", {}), metadata or {}
+        )
         if metadata_changes:
-            ret['changes']['metadata'] = metadata_changes
+            ret["changes"]["metadata"] = metadata_changes
 
-        if public_access and public_access != container.get('public_access'):
-            ret['changes']['public_access'] = {
-                'old': container.get('public_access'),
-                'new': public_access
+        if public_access and public_access != container.get("public_access"):
+            ret["changes"]["public_access"] = {
+                "old": container.get("public_access"),
+                "new": public_access,
             }
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Blob container {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Blob container {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Blob container {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Blob container {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'account': account,
-                'resource_group': resource_group,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "account": account,
+                "resource_group": resource_group,
+            },
         }
 
         if tags:
-            ret['changes']['new']['tags'] = tags
+            ret["changes"]["new"]["tags"] = tags
         if public_access:
-            ret['changes']['new']['public_access'] = public_access
+            ret["changes"]["new"]["public_access"] = public_access
         if metadata:
-            ret['changes']['new']['metadata'] = metadata
+            ret["changes"]["new"]["metadata"] = metadata
 
-    if ctx['test']:
-        ret['comment'] = 'Blob container {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Blob container {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     container_kwargs = kwargs.copy()
@@ -200,7 +208,7 @@ async def present(hub, ctx, name, account, resource_group, public_access=None, m
             tags=tags,
             public_access=public_access,
             metadata=metadata,
-            **container_kwargs
+            **container_kwargs,
         )
 
     else:
@@ -211,24 +219,35 @@ async def present(hub, ctx, name, account, resource_group, public_access=None, m
             tags=tags,
             public_access=public_access,
             metadata=metadata,
-            **container_kwargs
-    )
+            **container_kwargs,
+        )
 
-    if 'error' not in container:
-        ret['result'] = True
-        ret['comment'] = 'Blob container {0} has been created.'.format(name)
+    if "error" not in container:
+        ret["result"] = True
+        ret["comment"] = "Blob container {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create blob container {0}! ({1})'.format(name, container.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create blob container {0}! ({1})".format(
+        name, container.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
-async def immutability_policy_present(hub, ctx, name, account, resource_group,
-                                      immutability_period, if_match=None, tags=None,
-                                      connection_auth=None, **kwargs):
-    '''
+async def immutability_policy_present(
+    hub,
+    ctx,
+    name,
+    account,
+    resource_group,
+    immutability_period,
+    if_match=None,
+    tags=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Ensures that the immutability policy of a specified blob container exists. The container must be of account kind
@@ -269,69 +288,78 @@ async def immutability_policy_present(hub, ctx, name, account, resource_group,
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     policy = await hub.exec.azurerm.storage.container.get_immutability_policy(
-        name,
-        account,
-        resource_group,
-        if_match,
-        **connection_auth
+        name, account, resource_group, if_match, **connection_auth
     )
 
-    if 'error' not in policy:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(policy.get('tags', {}), tags or {})
+    if "error" not in policy:
+        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            policy.get("tags", {}), tags or {}
+        )
         if tag_changes:
-            ret['changes']['tags'] = tag_changes
+            ret["changes"]["tags"] = tag_changes
 
-        if immutability_period != policy.get('immutability_period_since_creation_in_days'):
-            ret['changes']['immutability_period_since_creation_in_days'] = {
-                'old': policy.get('immutability_period_since_creation_in_days'),
-                'new': immutability_period
+        if immutability_period != policy.get(
+            "immutability_period_since_creation_in_days"
+        ):
+            ret["changes"]["immutability_period_since_creation_in_days"] = {
+                "old": policy.get("immutability_period_since_creation_in_days"),
+                "new": immutability_period,
             }
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'The immutability policy of the blob container {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret[
+                "comment"
+            ] = "The immutability policy of the blob container {0} is already present.".format(
+                name
+            )
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'The immutability policy of the blob container {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret[
+                "comment"
+            ] = "The immutability policy of the blob container {0} would be updated.".format(
+                name
+            )
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'account': account,
-                'resource_group': resource_group,
-                'immutability_period_since_creation_in_days': immutability_period,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "account": account,
+                "resource_group": resource_group,
+                "immutability_period_since_creation_in_days": immutability_period,
+            },
         }
 
         if tags:
-            ret['changes']['new']['tags'] = tags
+            ret["changes"]["new"]["tags"] = tags
         if if_match:
-            ret['changes']['new']['if_match'] = if_match
+            ret["changes"]["new"]["if_match"] = if_match
 
-    if ctx['test']:
-        ret['comment'] = 'The immutability policy of the blob container {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret[
+            "comment"
+        ] = "The immutability policy of the blob container {0} would be created.".format(
+            name
+        )
+        ret["result"] = None
         return ret
 
     policy_kwargs = kwargs.copy()
@@ -344,23 +372,32 @@ async def immutability_policy_present(hub, ctx, name, account, resource_group,
         tags=tags,
         if_match=if_match,
         immutability_period=immutability_period,
-        **policy_kwargs
+        **policy_kwargs,
     )
 
-    if 'error' not in policy:
-        ret['result'] = True
-        ret['comment'] = 'The immutability policy of the blob container {0} has been created.'.format(name)
+    if "error" not in policy:
+        ret["result"] = True
+        ret[
+            "comment"
+        ] = "The immutability policy of the blob container {0} has been created.".format(
+            name
+        )
         return ret
 
-    ret['comment'] = 'Failed to create the immutability policy of the blob container {0}! ({1})'.format(name,
-                                                                                                  policy.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret[
+        "comment"
+    ] = "Failed to create the immutability policy of the blob container {0}! ({1})".format(
+        name, policy.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
-async def absent(hub, ctx, name, account, resource_group, connection_auth=None, **kwargs):
-    '''
+async def absent(
+    hub, ctx, name, account, resource_group, connection_auth=None, **kwargs
+):
+    """
     .. versionadded:: 2.0.0
 
     Ensures a specified blob container does not exist.
@@ -387,60 +424,61 @@ async def absent(hub, ctx, name, account, resource_group, connection_auth=None, 
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     container = await hub.exec.azurerm.storage.container.get(
-        name,
-        account,
-        resource_group,
-        **connection_auth
+        name, account, resource_group, **connection_auth
     )
 
-    if 'error' in container:
-        ret['result'] = True
-        ret['comment'] = 'Blob container {0} was not found.'.format(name)
+    if "error" in container:
+        ret["result"] = True
+        ret["comment"] = "Blob container {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Blob container {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': container,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Blob container {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": container,
+            "new": {},
         }
         return ret
 
-    deleted = await hub.exec.azurerm.storage.container.delete(name, account, resource_group, **connection_auth)
+    deleted = await hub.exec.azurerm.storage.container.delete(
+        name, account, resource_group, **connection_auth
+    )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Blob container {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': container,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Blob container {0} has been deleted.".format(name)
+        ret["changes"] = {"old": container, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete blob container {0}!'.format(name)
+    ret["comment"] = "Failed to delete blob container {0}!".format(name)
     return ret
 
 
-async def immutability_policy_absent(hub, ctx, name, account, resource_group, if_match=None, connection_auth=None,
-                                     **kwargs):
-    '''
+async def immutability_policy_absent(
+    hub,
+    ctx,
+    name,
+    account,
+    resource_group,
+    if_match=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Ensures that the immutability policy of a specified blob container does not exist.
@@ -472,57 +510,64 @@ async def immutability_policy_absent(hub, ctx, name, account, resource_group, if
                 - if_match: '"my_etag"'
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     policy = await hub.exec.azurerm.storage.container.get_immutability_policy(
-        name,
-        account,
-        resource_group,
-        if_match,
-        **connection_auth
+        name, account, resource_group, if_match, **connection_auth
     )
 
-    if 'error' in policy:
-        ret['result'] = True
-        ret['comment'] = 'The immutability policy of the blob container {0} was not found.'.format(name)
+    if "error" in policy:
+        ret["result"] = True
+        ret[
+            "comment"
+        ] = "The immutability policy of the blob container {0} was not found.".format(
+            name
+        )
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'The immutability policy of the blob container {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': policy,
-            'new': {},
+    elif ctx["test"]:
+        ret[
+            "comment"
+        ] = "The immutability policy of the blob container {0} would be deleted.".format(
+            name
+        )
+        ret["result"] = None
+        ret["changes"] = {
+            "old": policy,
+            "new": {},
         }
         return ret
 
     if not if_match:
-        if_match = policy.get('etag')
+        if_match = policy.get("etag")
 
-    deleted = await hub.exec.azurerm.storage.container.delete_immutability_policy(name, account, resource_group,
-                                                                                  if_match, **connection_auth)
+    deleted = await hub.exec.azurerm.storage.container.delete_immutability_policy(
+        name, account, resource_group, if_match, **connection_auth
+    )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'The immutability policy of the blob container {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': policy,
-            'new': {}
-        }
+        ret["result"] = True
+        ret[
+            "comment"
+        ] = "The immutability policy of the blob container {0} has been deleted.".format(
+            name
+        )
+        ret["changes"] = {"old": policy, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete the immutability policy of the blob container {0}!'.format(name)
+    ret[
+        "comment"
+    ] = "Failed to delete the immutability policy of the blob container {0}!".format(
+        name
+    )
     return ret

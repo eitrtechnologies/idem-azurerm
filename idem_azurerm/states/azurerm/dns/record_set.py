@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) DNS Record Set State Module
 
 .. versionadded:: 1.0.0
@@ -86,12 +86,13 @@ parameters are sensitive, it's recommended to pass them to the states via pillar
                 - record_type: A
                 - connection_auth: {{ profile }}
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
 
 import six
+
 try:
     from six.moves import range as six_range
 except ImportError:
@@ -100,20 +101,41 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-            'states.azurerm.dns.zone.present',
+    "present": {
+        "require": [
+            "states.azurerm.resource.group.present",
+            "states.azurerm.dns.zone.present",
         ]
     },
 }
 
 
-async def present(hub, ctx, name, zone_name, resource_group, record_type, if_match=None, if_none_match=None, etag=None, metadata=None,
-            ttl=None, arecords=None, aaaa_records=None, mx_records=None, ns_records=None, ptr_records=None,
-            srv_records=None, txt_records=None, cname_record=None, soa_record=None, caa_records=None,
-            connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    zone_name,
+    resource_group,
+    record_type,
+    if_match=None,
+    if_none_match=None,
+    etag=None,
+    metadata=None,
+    ttl=None,
+    arecords=None,
+    aaaa_records=None,
+    mx_records=None,
+    ns_records=None,
+    ptr_records=None,
+    srv_records=None,
+    txt_records=None,
+    cname_record=None,
+    soa_record=None,
+    caa_records=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a record set exists in a DNS zone.
@@ -222,32 +244,29 @@ async def present(hub, ctx, name, zone_name, resource_group, record_type, if_mat
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     record_vars = [
-        'arecords',
-        'aaaa_records',
-        'mx_records',
-        'ns_records',
-        'ptr_records',
-        'srv_records',
-        'txt_records',
-        'cname_record',
-        'soa_record',
-        'caa_records'
+        "arecords",
+        "aaaa_records",
+        "mx_records",
+        "ns_records",
+        "ptr_records",
+        "srv_records",
+        "txt_records",
+        "cname_record",
+        "soa_record",
+        "caa_records",
     ]
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     rec_set = await hub.exec.azurerm.dns.record_set.get(
@@ -255,39 +274,51 @@ async def present(hub, ctx, name, zone_name, resource_group, record_type, if_mat
         zone_name,
         resource_group,
         record_type,
-        azurerm_log_level='info',
-        **connection_auth
+        azurerm_log_level="info",
+        **connection_auth,
     )
 
-    if 'error' not in rec_set:
-        metadata_changes = await hub.exec.utils.dictdiffer.deep_diff(rec_set.get('metadata', {}), metadata or {})
+    if "error" not in rec_set:
+        metadata_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            rec_set.get("metadata", {}), metadata or {}
+        )
         if metadata_changes:
-            ret['changes']['metadata'] = metadata_changes
+            ret["changes"]["metadata"] = metadata_changes
 
         for record_str in record_vars:
             # pylint: disable=eval-used
             record = eval(record_str)
             if record:
                 if not ttl:
-                    ret['comment'] = 'TTL is required when specifying record information!'
+                    ret[
+                        "comment"
+                    ] = "TTL is required when specifying record information!"
                     return ret
                 if not rec_set.get(record_str):
-                    ret['changes'] = {'new': {record_str: record}}
+                    ret["changes"] = {"new": {record_str: record}}
                     continue
-                if record_str[-1] != 's':
+                if record_str[-1] != "s":
                     if not isinstance(record, dict):
-                        ret['comment'] = '{0} record information must be specified as a dictionary!'.format(record_str)
-                        return ret
-                    for k, v in record.items():
-                        if v != rec_set[record_str].get(k):
-                            ret['changes'] = {'new': {record_str: record}}
-                elif record_str[-1] == 's':
-                    if not isinstance(record, list):
-                        ret['comment'] = '{0} record information must be specified as a list of dictionaries!'.format(
+                        ret[
+                            "comment"
+                        ] = "{0} record information must be specified as a dictionary!".format(
                             record_str
                         )
                         return ret
-                    local, remote = [sorted(config) for config in (record, rec_set[record_str])]
+                    for k, v in record.items():
+                        if v != rec_set[record_str].get(k):
+                            ret["changes"] = {"new": {record_str: record}}
+                elif record_str[-1] == "s":
+                    if not isinstance(record, list):
+                        ret[
+                            "comment"
+                        ] = "{0} record information must be specified as a list of dictionaries!".format(
+                            record_str
+                        )
+                        return ret
+                    local, remote = [
+                        sorted(config) for config in (record, rec_set[record_str])
+                    ]
                     for idx in six_range(0, len(local)):
                         for key in local[idx]:
                             local_val = local[idx][key]
@@ -297,40 +328,40 @@ async def present(hub, ctx, name, zone_name, resource_group, record_type, if_mat
                             if isinstance(remote_val, six.string_types):
                                 remote_val = remote_val.lower()
                             if local_val != remote_val:
-                                ret['changes'] = {'new': {record_str: record}}
+                                ret["changes"] = {"new": {record_str: record}}
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Record set {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Record set {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Record set {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Record set {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'zone_name': zone_name,
-                'resource_group': resource_group,
-                'record_type': record_type,
-                'etag': etag,
-                'metadata': metadata,
-                'ttl': ttl,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "zone_name": zone_name,
+                "resource_group": resource_group,
+                "record_type": record_type,
+                "etag": etag,
+                "metadata": metadata,
+                "ttl": ttl,
+            },
         }
         for record in record_vars:
             # pylint: disable=eval-used
             if eval(record):
                 # pylint: disable=eval-used
-                ret['changes']['new'][record] = eval(record)
+                ret["changes"]["new"][record] = eval(record)
 
-    if ctx['test']:
-        ret['comment'] = 'Record set {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Record set {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     rec_set_kwargs = kwargs.copy()
@@ -356,22 +387,26 @@ async def present(hub, ctx, name, zone_name, resource_group, record_type, if_mat
         cname_record=cname_record,
         soa_record=soa_record,
         caa_records=caa_records,
-        **rec_set_kwargs
+        **rec_set_kwargs,
     )
 
-    if 'error' not in rec_set:
-        ret['result'] = True
-        ret['comment'] = 'Record set {0} has been created.'.format(name)
+    if "error" not in rec_set:
+        ret["result"] = True
+        ret["comment"] = "Record set {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create record set {0}! ({1})'.format(name, rec_set.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create record set {0}! ({1})".format(
+        name, rec_set.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
-async def absent(hub, ctx, name, zone_name, resource_group, connection_auth=None, **kwargs):
-    '''
+async def absent(
+    hub, ctx, name, zone_name, resource_group, connection_auth=None, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a record set does not exist in the DNS zone.
@@ -389,53 +424,47 @@ async def absent(hub, ctx, name, zone_name, resource_group, connection_auth=None
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     rec_set = await hub.exec.azurerm.dns.record_set.get(
-        name,
-        zone_name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, zone_name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' in rec_set:
-        ret['result'] = True
-        ret['comment'] = 'Record set {0} was not found in zone {1}.'.format(name, zone_name)
+    if "error" in rec_set:
+        ret["result"] = True
+        ret["comment"] = "Record set {0} was not found in zone {1}.".format(
+            name, zone_name
+        )
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Record set {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': rec_set,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Record set {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": rec_set,
+            "new": {},
         }
         return ret
 
-    deleted = await hub.exec.azurerm.dns.record_set.delete(name, zone_name, resource_group, **connection_auth)
+    deleted = await hub.exec.azurerm.dns.record_set.delete(
+        name, zone_name, resource_group, **connection_auth
+    )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Record set {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': rec_set,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Record set {0} has been deleted.".format(name)
+        ret["changes"] = {"old": rec_set, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete record set {0}!'.format(name)
+    ret["comment"] = "Failed to delete record set {0}!".format(name)
     return ret

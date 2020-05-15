@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) PostgreSQL Virtual Network Rule Operations State Module
 
 .. versionadded:: 2.0.0
@@ -61,7 +61,7 @@ Azure Resource Manager (ARM) PostgreSQL Virtual Network Rule Operations State Mo
                 secret: XXXXXXXXXXXXXXXXXXXXXXXX
                 cloud_environment: AZURE_PUBLIC_CLOUD
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -69,18 +69,27 @@ import logging
 log = logging.getLogger(__name__)
 
 TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-            'states.azurerm.postgresql.server.present',
+    "present": {
+        "require": [
+            "states.azurerm.resource.group.present",
+            "states.azurerm.postgresql.server.present",
         ]
     }
 }
 
 
-async def present(hub, ctx, name, server_name, resource_group, subnet_id, ignore_missing_endpoint=None,
-                  connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    server_name,
+    resource_group,
+    subnet_id,
+    ignore_missing_endpoint=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Ensures that the specified virtual network rule exists within the given PostgreSQL server.
@@ -112,64 +121,65 @@ async def present(hub, ctx, name, server_name, resource_group, subnet_id, ignore
                 - subnet_id: my_id
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     rule = await hub.exec.azurerm.postgresql.virtual_network_rule.get(
         name=name,
         server_name=server_name,
         resource_group=resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        azurerm_log_level="info",
+        **connection_auth,
     )
 
-    if 'error' not in rule:
+    if "error" not in rule:
         if ignore_missing_endpoint is not None:
-            if ignore_missing_endpoint != rule.get('ignore_missing_vnet_service_endpoint'):
-                ret['changes']['ignore_missing_vnet_service_endpoint'] = {
-                    'old': rule.get('ignore_missing_vnet_service_endpoint'),
-                    'new': ignore_missing_endpoint
+            if ignore_missing_endpoint != rule.get(
+                "ignore_missing_vnet_service_endpoint"
+            ):
+                ret["changes"]["ignore_missing_vnet_service_endpoint"] = {
+                    "old": rule.get("ignore_missing_vnet_service_endpoint"),
+                    "new": ignore_missing_endpoint,
                 }
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Virtual Network Rule {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Virtual Network Rule {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Virtual Network Rule {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Virtual Network Rule {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'server_name': server_name,
-                'resource_group': resource_group,
-                'subnet_id': subnet_id,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "server_name": server_name,
+                "resource_group": resource_group,
+                "subnet_id": subnet_id,
+            },
         }
 
         if ignore_missing_endpoint is not None:
-            ret['changes']['new']['ignore_missing_vnet_service_endpoint'] = ignore_missing_endpoint
+            ret["changes"]["new"][
+                "ignore_missing_vnet_service_endpoint"
+            ] = ignore_missing_endpoint
 
-    if ctx['test']:
-        ret['comment'] = 'Virtual Network Rule {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Virtual Network Rule {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     rule_kwargs = kwargs.copy()
@@ -181,22 +191,26 @@ async def present(hub, ctx, name, server_name, resource_group, subnet_id, ignore
         resource_group=resource_group,
         subnet_id=subnet_id,
         ignore_missing_endpoint=ignore_missing_endpoint,
-        **rule_kwargs
+        **rule_kwargs,
     )
 
-    if 'error' not in rule:
-        ret['result'] = True
-        ret['comment'] = 'Virtual Network Rule {0} has been created.'.format(name)
+    if "error" not in rule:
+        ret["result"] = True
+        ret["comment"] = "Virtual Network Rule {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create Virtual Network Rule {0}! ({1})'.format(name, rule.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create Virtual Network Rule {0}! ({1})".format(
+        name, rule.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
-async def absent(hub, ctx, name, server_name, resource_group, connection_auth=None, **kwargs):
-    '''
+async def absent(
+    hub, ctx, name, server_name, resource_group, connection_auth=None, **kwargs
+):
+    """
     .. versionadded:: 2.0.0
 
     Ensures that the specified virtual network rule does not exist within the given PostgreSQL server.
@@ -221,40 +235,37 @@ async def absent(hub, ctx, name, server_name, resource_group, connection_auth=No
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     rule = await hub.exec.azurerm.postgresql.virtual_network_rule.get(
         name=name,
         server_name=server_name,
         resource_group=resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        azurerm_log_level="info",
+        **connection_auth,
     )
 
-    if 'error' in rule:
-        ret['result'] = True
-        ret['comment'] = 'Virtual Network Rule {0} was not found.'.format(name)
+    if "error" in rule:
+        ret["result"] = True
+        ret["comment"] = "Virtual Network Rule {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Virtual Network Rule {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': rule,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Virtual Network Rule {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": rule,
+            "new": {},
         }
         return ret
 
@@ -262,17 +273,14 @@ async def absent(hub, ctx, name, server_name, resource_group, connection_auth=No
         name=name,
         server_name=server_name,
         resource_group=resource_group,
-        **connection_auth
+        **connection_auth,
     )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Virtual Network Rule {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': rule,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Virtual Network Rule {0} has been deleted.".format(name)
+        ret["changes"] = {"old": rule, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete Virtual Network Rule {0}!'.format(name)
+    ret["comment"] = "Failed to delete Virtual Network Rule {0}!".format(name)
     return ret

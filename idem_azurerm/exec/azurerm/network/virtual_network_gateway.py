@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Virtual Network Gateway Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Virtual Network Gateway Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -62,6 +62,7 @@ try:
     from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -71,8 +72,10 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def connection_create_or_update(hub, name, resource_group, virtual_network_gateway, connection_type, **kwargs):
-    '''
+async def connection_create_or_update(
+    hub, name, resource_group, virtual_network_gateway, connection_type, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Creates or updates a virtual network gateway connection in the specified resource group.
@@ -103,109 +106,104 @@ async def connection_create_or_update(hub, name, resource_group, virtual_network
         azurerm.network.virtual_network_gateway.connection_create_or_update test_name test_group
                   test_vnet_gw test_connection_type
 
-    '''
-    if 'location' not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(
-            resource_group, **kwargs
-        )
+    """
+    if "location" not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
 
-        if 'error' in rg_props:
-            log.error(
-                'Unable to determine location from resource group specified.'
-            )
+        if "error" in rg_props:
+            log.error("Unable to determine location from resource group specified.")
             return False
-        kwargs['location'] = rg_props['location']
+        kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     # Converts the Resource ID of virtual_network_gateway into a VirtualNetworkGateway Object.
     # This endpoint will be where the connection originates.
     if not is_valid_resource_id(virtual_network_gateway):
-        log.error(
-            'Invalid Resource ID was specified as virtual_network_gateway!'
-        )
+        log.error("Invalid Resource ID was specified as virtual_network_gateway!")
         return False
 
     vnetgw1_parsed_id = parse_resource_id(virtual_network_gateway)
 
     try:
-        vnetgw1_rg = vnetgw1_parsed_id['resource_group']
-        vnetgw1_name = vnetgw1_parsed_id['resource_name']
+        vnetgw1_rg = vnetgw1_parsed_id["resource_group"]
+        vnetgw1_name = vnetgw1_parsed_id["resource_name"]
     except KeyError as esc:
         log.error(
-            'Invalid Resource ID was specified as virtual_network_gateway! (%s)',
-            esc
+            "Invalid Resource ID was specified as virtual_network_gateway! (%s)", esc
         )
         return False
 
     vnetgw1 = virtual_network_gateway_get(
-        name=vnetgw1_name,
-        resource_group=vnetgw1_rg,
-        **kwargs
+        name=vnetgw1_name, resource_group=vnetgw1_rg, **kwargs
     )
 
-    if 'error' in vnetgw1:
-        log.error(
-            'Unable to find the resource specified in virtual_network_gateway!'
-        )
+    if "error" in vnetgw1:
+        log.error("Unable to find the resource specified in virtual_network_gateway!")
         return False
     else:
-        virtual_network_gateway = {'id': str(vnetgw1['id'])}
+        virtual_network_gateway = {"id": str(vnetgw1["id"])}
 
     # Check the Resource ID path of virtual_network_gateway2
     # We can't guarantee the validity of the object, so we hope you have the path correct...
-    if kwargs.get('virtual_network_gateway2') and not is_valid_resource_id(kwargs['virtual_network_gateway2']):
-        log.error(
-            'Invalid Resource ID was specified as virtual_network_gateway2!'
-        )
+    if kwargs.get("virtual_network_gateway2") and not is_valid_resource_id(
+        kwargs["virtual_network_gateway2"]
+    ):
+        log.error("Invalid Resource ID was specified as virtual_network_gateway2!")
         return False
 
     # Check the Resource ID path of local_network_gateway2
     # We can't guarantee the validity of the object, so we hope you have the path correct...
-    if kwargs.get('local_network_gateway2') and not is_valid_resource_id(kwargs['local_network_gateway2']):
-        log.error(
-            'Invalid Resource ID was specified as local_network_gateway2!'
-        )
+    if kwargs.get("local_network_gateway2") and not is_valid_resource_id(
+        kwargs["local_network_gateway2"]
+    ):
+        log.error("Invalid Resource ID was specified as local_network_gateway2!")
         return False
 
-    if kwargs.get('virtual_network_gateway2'):
-        kwargs['virtual_network_gateway2'] = {'id': kwargs.get('virtual_network_gateway2')}
+    if kwargs.get("virtual_network_gateway2"):
+        kwargs["virtual_network_gateway2"] = {
+            "id": kwargs.get("virtual_network_gateway2")
+        }
 
-    if kwargs.get('local_network_gateway2'):
-        kwargs['local_network_gateway2'] = {'id': kwargs.get('local_network_gateway2')}
+    if kwargs.get("local_network_gateway2"):
+        kwargs["local_network_gateway2"] = {"id": kwargs.get("local_network_gateway2")}
 
     try:
         connectionmodel = await hub.exec.utils.azurerm.create_object_model(
-            'network',
-            'VirtualNetworkGatewayConnection',
+            "network",
+            "VirtualNetworkGatewayConnection",
             virtual_network_gateway1=virtual_network_gateway,
             connection_type=connection_type,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         connection = netconn.virtual_network_gateway_connections.create_or_update(
             resource_group_name=resource_group,
             virtual_network_gateway_connection_name=name,
-            parameters=connectionmodel
+            parameters=connectionmodel,
         )
         connection.wait()
         connection_result = connection.result()
         result = connection_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def connection_get(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets the details of a specified virtual network gateway connection.
@@ -220,24 +218,24 @@ async def connection_get(hub, name, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.connection_get test_name test_group
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         connection = netconn.virtual_network_gateway_connections.get(
             resource_group_name=resource_group,
-            virtual_network_gateway_connection_name=name
+            virtual_network_gateway_connection_name=name,
         )
 
         result = connection.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def connection_delete(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Deletes the specified virtual network gateway connection.
@@ -252,24 +250,24 @@ async def connection_delete(hub, name, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.connection_delete test_name test_group
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         connection = netconn.virtual_network_gateway_connections.delete(
             resource_group_name=resource_group,
-            virtual_network_gateway_connection_name=name
+            virtual_network_gateway_connection_name=name,
         )
         connection.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
 
 async def connection_set_shared_key(hub, name, resource_group, value, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Sets the shared key for a virtual network gateway connection object.
@@ -287,28 +285,28 @@ async def connection_set_shared_key(hub, name, resource_group, value, **kwargs):
         azurerm.network.virtual_network_gateway.connection_set_shared_key test_name \
                   test_group test_value
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     try:
         key = netconn.virtual_network_gateway_connections.set_shared_key(
             resource_group_name=resource_group,
             virtual_network_gateway_connection_name=name,
-            value=value
+            value=value,
         )
 
         key.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def connection_get_shared_key(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets information about the specified virtual network gateway connection shared key
@@ -324,24 +322,26 @@ async def connection_get_shared_key(hub, name, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.connection_get_shared_key test_name test_group
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         key = netconn.virtual_network_gateway_connections.get_shared_key(
             resource_group_name=resource_group,
-            virtual_network_gateway_connection_name=name
+            virtual_network_gateway_connection_name=name,
         )
 
         result = key.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def connection_reset_shared_key(hub, name, resource_group, key_length=128, **kwargs):
-    '''
+async def connection_reset_shared_key(
+    hub, name, resource_group, key_length=128, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Resets the virtual network gateway connection shared key for passed virtual network
@@ -361,27 +361,27 @@ async def connection_reset_shared_key(hub, name, resource_group, key_length=128,
         azurerm.network.virtual_network_gateway.connection_set_shared_key test_name \
                   test_group test_key_length
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         rkey = netconn.virtual_network_gateway_connections.reset_shared_key(
             resource_group_name=resource_group,
             virtual_network_gateway_connection_name=name,
-            key_length=key_length
+            key_length=key_length,
         )
 
         rkey.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def connections_list(hub, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Lists all the virtual network gateway connections within a specified resource group.
@@ -394,9 +394,9 @@ async def connections_list(hub, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.connections_list test_group
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         connections = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.virtual_network_gateway_connections.list(
@@ -405,16 +405,16 @@ async def connections_list(hub, resource_group, **kwargs):
         )
 
         for connection in connections:
-            result[connection['name']] = connection
+            result[connection["name"]] = connection
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_(hub, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Lists all virtual network gateways within a resource group.
@@ -427,27 +427,27 @@ async def list_(hub, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.list test_group
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         gateways = await hub.exec.utils.azurerm.paged_object_to_list(
-            netconn.virtual_network_gateways.list(
-                resource_group_name=resource_group
-            )
+            netconn.virtual_network_gateways.list(resource_group_name=resource_group)
         )
 
         for gateway in gateways:
-            result[gateway['name']] = gateway
+            result[gateway["name"]] = gateway
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def create_or_update(hub, name, resource_group, virtual_network, ip_configurations, **kwargs):
-    '''
+async def create_or_update(
+    hub, name, resource_group, virtual_network, ip_configurations, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Creates or updates a virtual network gateway in the specified resource group.
@@ -475,74 +475,74 @@ async def create_or_update(hub, name, resource_group, virtual_network, ip_config
         azurerm.network.virtual_network_gateway.create_or_update test_name test_group \
                   test_vnet test_ip_configs
 
-    '''
-    if 'location' not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(
-            resource_group, **kwargs
-        )
+    """
+    if "location" not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
 
-        if 'error' in rg_props:
-            log.error(
-                'Unable to determine location from resource group specified.'
-            )
+        if "error" in rg_props:
+            log.error("Unable to determine location from resource group specified.")
             return False
-        kwargs['location'] = rg_props['location']
+        kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     # Loop through IP Configurations and build each dictionary to pass to model creation.
     if isinstance(ip_configurations, list):
         subnet = subnet_get(
-            name='GatewaySubnet',
+            name="GatewaySubnet",
             virtual_network=virtual_network,
             resource_group=resource_group,
-            **kwargs
+            **kwargs,
         )
-        if 'error' not in subnet:
-            subnet = {'id': str(subnet['id'])}
+        if "error" not in subnet:
+            subnet = {"id": str(subnet["id"])}
             for ipconfig in ip_configurations:
-                if 'name' in ipconfig:
-                    ipconfig['subnet'] = subnet
-                    if ipconfig.get('public_ip_address'):
+                if "name" in ipconfig:
+                    ipconfig["subnet"] = subnet
+                    if ipconfig.get("public_ip_address"):
                         pub_ip = public_ip_address_get(
-                            name=ipconfig['public_ip_address'],
+                            name=ipconfig["public_ip_address"],
                             resource_group=resource_group,
-                            **kwargs
+                            **kwargs,
                         )
-                        if 'error' not in pub_ip:
-                            ipconfig['public_ip_address'] = {'id': str(pub_ip['id'])}
+                        if "error" not in pub_ip:
+                            ipconfig["public_ip_address"] = {"id": str(pub_ip["id"])}
 
     try:
         gatewaymodel = await hub.exec.utils.azurerm.create_object_model(
-            'network',
-            'VirtualNetworkGateway',
+            "network",
+            "VirtualNetworkGateway",
             ip_configurations=ip_configurations,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         gateway = netconn.virtual_network_gateways.create_or_update(
             resource_group_name=resource_group,
             virtual_network_gateway_name=name,
-            parameters=gatewaymodel
+            parameters=gatewaymodel,
         )
         gateway.wait()
         gateway_result = gateway.result()
         result = gateway_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def get(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets the details of a specific virtual network gateway within a specified resource group.
@@ -557,24 +557,23 @@ async def get(hub, name, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.get test_name test_group
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         gateway = netconn.virtual_network_gateways.get(
-            resource_group_name=resource_group,
-            virtual_network_gateway_name=name
+            resource_group_name=resource_group, virtual_network_gateway_name=name
         )
 
         result = gateway.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def delete(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Deletes the specified virtual network gateway.
@@ -589,24 +588,23 @@ async def delete(hub, name, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.delete test_name test_group
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         gateway = netconn.virtual_network_gateways.delete(
-            resource_group_name=resource_group,
-            virtual_network_gateway_name=name
+            resource_group_name=resource_group, virtual_network_gateway_name=name
         )
         gateway.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
 
 async def list_connections(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Lists all connections associated with a virtual network gateway.
@@ -621,27 +619,26 @@ async def list_connections(hub, name, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.list_connections test_name test_group
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         connections = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.virtual_network_gateways.list_connections(
-                resource_group_name=resource_group,
-                virtual_network_gateway_name=name
+                resource_group_name=resource_group, virtual_network_gateway_name=name
             )
         )
         for connection in connections:
-            result[connection['name']] = connection
+            result[connection["name"]] = connection
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def reset(hub, name, resource_group, gateway_vip=None, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Resets the virtual network gateway in the specified resource group.
@@ -659,26 +656,26 @@ async def reset(hub, name, resource_group, gateway_vip=None, **kwargs):
 
         azurerm.network.virtual_network_gateway.reset test_name test_group
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         reset = netconn.virtual_network_gateways.reset(
             resource_group_name=resource_group,
             virtual_network_gateway_name=name,
-            gateway_vip=gateway_vip
+            gateway_vip=gateway_vip,
         )
         reset.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def reset_vpn_client_shared_key(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Resets the VPN client shared key of the virtual network gateway in the specified resource group.
@@ -693,27 +690,34 @@ async def reset_vpn_client_shared_key(hub, name, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.reset_vpn_client_shared_key test_name test_group
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         reset = netconn.virtual_network_gateways.reset_vpn_client_shared_key(
-            resource_group_name=resource_group,
-            virtual_network_gateway_name=name
+            resource_group_name=resource_group, virtual_network_gateway_name=name
         )
 
         reset_result = reset.result()
         result = reset_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def generatevpnclientpackage(hub, name, resource_group, processor_architecture, authentication_method,
-                                   radius_server_auth_certificate=None, client_root_certificates=None, **kwargs):
-    '''
+async def generatevpnclientpackage(
+    hub,
+    name,
+    resource_group,
+    processor_architecture,
+    authentication_method,
+    radius_server_auth_certificate=None,
+    client_root_certificates=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Generates VPN client package for P2S client of the virtual network
@@ -740,20 +744,22 @@ async def generatevpnclientpackage(hub, name, resource_group, processor_architec
 
         azurerm.network.virtual_network_gateway.generatevpnclientpackage test_name test_group test_params
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     try:
         pkgmodel = await hub.exec.utils.azurerm.create_object_model(
-            'network',
-            'VpnClientParameters',
+            "network",
+            "VpnClientParameters",
             processor_architecture=processor_architecture,
             authentication_method=authentication_method,
             radius_server_auth_certificate=radius_server_auth_certificate,
-            client_root_certificates=client_root_certificates
+            client_root_certificates=client_root_certificates,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
@@ -761,22 +767,32 @@ async def generatevpnclientpackage(hub, name, resource_group, processor_architec
             resource_group_name=resource_group,
             virtual_network_gateway_name=name,
             parameters=pkgmodel,
-            **kwargs
+            **kwargs,
         )
 
         result = pkg
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
-async def generate_vpn_profile(hub, name, resource_group, processor_architecture, authentication_method,
-                               radius_server_auth_certificate=None, client_root_certificates=None, **kwargs):
-    '''
+async def generate_vpn_profile(
+    hub,
+    name,
+    resource_group,
+    processor_architecture,
+    authentication_method,
+    radius_server_auth_certificate=None,
+    client_root_certificates=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Generates VPN profile for P2S client of the virtual network gateway in the
@@ -803,20 +819,22 @@ async def generate_vpn_profile(hub, name, resource_group, processor_architecture
 
         azurerm.network.virtual_network_gateway.generate_vpn_profile test_name test_group test_params
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     try:
         profilemodel = await hub.exec.utils.azurerm.create_object_model(
-            'network',
-            'VpnClientParameters',
+            "network",
+            "VpnClientParameters",
             processor_architecture=processor_architecture,
             authentication_method=authentication_method,
             radius_server_auth_certificate=radius_server_auth_certificate,
-            client_root_certificates=client_root_certificates
+            client_root_certificates=client_root_certificates,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
@@ -824,21 +842,23 @@ async def generate_vpn_profile(hub, name, resource_group, processor_architecture
             resource_group_name=resource_group,
             virtual_network_gateway_name=name,
             parameters=profilemodel,
-            **kwargs
+            **kwargs,
         )
 
         result = profile
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def get_vpn_profile_package_url(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets pre-generated VPN profile for P2S client of the virtual network gateway in the
@@ -854,24 +874,23 @@ async def get_vpn_profile_package_url(hub, name, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.get_vpn_profile_package_url test_name test_group
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         url = netconn.virtual_network_gateways.get_vpn_profile_package_url(
-            resource_group_name=resource_group,
-            virtual_network_gateway_name=name
+            resource_group_name=resource_group, virtual_network_gateway_name=name
         )
 
         result = url.result()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get_bgp_peer_status(hub, name, resource_group, peer=None, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets the status of all BGP peers.
@@ -888,28 +907,28 @@ async def get_bgp_peer_status(hub, name, resource_group, peer=None, **kwargs):
 
         azurerm.network.virtual_network_gateway.get_bgp_peer_status test_name test_group test_peer
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         peers = netconn.virtual_network_gateways.get_bgp_peer_status(
             resource_group_name=resource_group,
             virtual_network_gateway_name=name,
-            peer=peer
+            peer=peer,
         )
 
         peers_result = peers.result().as_dict()
-        for bgp_peer in peers_result['value']:
-            result['BGP peer'] = bgp_peer
+        for bgp_peer in peers_result["value"]:
+            result["BGP peer"] = bgp_peer
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def supported_vpn_devices(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets a xml format representation for supported vpn devices.
@@ -924,24 +943,23 @@ async def supported_vpn_devices(hub, name, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.supported_vpn_devices test_name test_group
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         devices = netconn.virtual_network_gateways.supported_vpn_devices(
-            resource_group_name=resource_group,
-            virtual_network_gateway_name=name
+            resource_group_name=resource_group, virtual_network_gateway_name=name
         )
 
         result = devices
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get_learned_routes(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets a list of routes that the virtual network gateway has learned, including routes learned from BGP peers.
@@ -956,27 +974,26 @@ async def get_learned_routes(hub, name, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.get_learned_routes test_name test_group
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         routes = netconn.virtual_network_gateways.get_learned_routes(
-            resource_group_name=resource_group,
-            virtual_network_gateway_name=name
+            resource_group_name=resource_group, virtual_network_gateway_name=name
         )
 
         routes_result = routes.result().as_dict()
-        for route in routes_result['value']:
-            result['route_list'] = route
+        for route in routes_result["value"]:
+            result["route_list"] = route
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get_advertised_routes(hub, name, resource_group, peer, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets a list of routes the virtual network gateway is advertising to a specified peer.
@@ -992,30 +1009,41 @@ async def get_advertised_routes(hub, name, resource_group, peer, **kwargs):
 
         azurerm.network.virtual_network_gateway.get_learned_routes test_name test_group test_peer
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         routes = netconn.virtual_network_gateways.get_advertised_routes(
             resource_group_name=resource_group,
             virtual_network_gateway_name=name,
-            peer=peer
+            peer=peer,
         )
 
         routes_result = routes.result().as_dict()
-        for route in routes_result['value']:
-            result['route_list'] = route
+        for route in routes_result["value"]:
+            result["route_list"] = route
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def set_vpnclient_ipsec_parameters(hub, name, resource_group, sa_life_time_seconds, sa_data_size_kilobytes,
-                                         ipsec_encryption, ipsec_integrity, ike_encryption, ike_integrity, dh_group,
-                                         pfs_group, **kwargs):
-    '''
+async def set_vpnclient_ipsec_parameters(
+    hub,
+    name,
+    resource_group,
+    sa_life_time_seconds,
+    sa_data_size_kilobytes,
+    ipsec_encryption,
+    ipsec_integrity,
+    ike_encryption,
+    ike_integrity,
+    dh_group,
+    pfs_group,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Sets the vpnclient ipsec policy for P2S client of virtual network gateway in the
@@ -1058,13 +1086,13 @@ async def set_vpnclient_ipsec_parameters(hub, name, resource_group, sa_life_time
         azurerm.network.virtual_network_gateway.set_vpnclient_ipsec_parameters \
                   test_name test_group test_vpnclient_ipsec_params
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         paramsmodel = await hub.exec.utils.azurerm.create_object_model(
-            'network',
-            'VpnClientIPsecParameters',
+            "network",
+            "VpnClientIPsecParameters",
             sa_life_time_seconds=sa_life_time_seconds,
             sa_data_size_kilobytes=sa_data_size_kilobytes,
             ipsec_encryption=ipsec_encryption,
@@ -1072,10 +1100,12 @@ async def set_vpnclient_ipsec_parameters(hub, name, resource_group, sa_life_time
             ike_encryption=ike_encryption,
             ike_integrity=ike_integrity,
             dh_group=dh_group,
-            pfs_group=pfs_group
+            pfs_group=pfs_group,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
@@ -1083,20 +1113,20 @@ async def set_vpnclient_ipsec_parameters(hub, name, resource_group, sa_life_time
             resource_group_name=resource_group,
             virtual_network_gateway_name=name,
             vpnclient_ipsec_params=paramsmodel,
-            **kwargs
+            **kwargs,
         )
 
         params_result = params.result()
         result = params_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get_vpnclient_ipsec_parameters(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets information about the vpnclient ipsec policy for P2S client of virtual network
@@ -1111,25 +1141,26 @@ async def get_vpnclient_ipsec_parameters(hub, name, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.get_vpnclient_ipsec_parameters test_name test_group
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         policy = netconn.virtual_network_gateways.get_vpnclient_ipsec_parameters(
-            resource_group_name=resource_group,
-            virtual_network_gateway_name=name
+            resource_group_name=resource_group, virtual_network_gateway_name=name
         )
 
         policy_result = policy.result()
         result = policy_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def vpn_device_configuration_script(hub, name, resource_group, vendor, device_family, firmware_version, **kwargs):
-    '''
+async def vpn_device_configuration_script(
+    hub, name, resource_group, vendor, device_family, firmware_version, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Gets a xml format representation for vpn device configuration script.
@@ -1151,19 +1182,21 @@ async def vpn_device_configuration_script(hub, name, resource_group, vendor, dev
         azurerm.network.virtual_network_gateway.vpn_device_configuration_script test_name test_group \
                   test_vendor test_device_fam test_version
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     try:
         scriptmodel = await hub.exec.utils.azurerm.create_object_model(
-            'network',
-            'VpnDeviceScriptParameters',
+            "network",
+            "VpnDeviceScriptParameters",
             vendor=vendor,
             device_family=device_family,
             firmware_version=firmware_version,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
@@ -1171,14 +1204,16 @@ async def vpn_device_configuration_script(hub, name, resource_group, vendor, dev
             resource_group_name=resource_group,
             virtual_network_gateway_connection_name=name,
             parameters=scriptmodel,
-            **kwargs
+            **kwargs,
         )
 
         result = script
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result

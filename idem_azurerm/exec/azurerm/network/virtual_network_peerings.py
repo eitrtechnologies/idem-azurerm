@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Virtual Network Peering Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Virtual Network Peering Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -62,6 +62,7 @@ try:
     from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -72,7 +73,7 @@ log = logging.getLogger(__name__)
 
 
 async def list_(hub, virtual_network, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all peerings associated with a virtual network.
@@ -87,28 +88,27 @@ async def list_(hub, virtual_network, resource_group, **kwargs):
 
         azurerm.network.virtual_network_peering.list testnet testgroup
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         peerings = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.virtual_network_peerings.list(
-                resource_group_name=resource_group,
-                virtual_network_name=virtual_network
+                resource_group_name=resource_group, virtual_network_name=virtual_network
             )
         )
 
         for peering in peerings:
-            result[peering['name']] = peering
+            result[peering["name"]] = peering
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def delete(hub, name, virtual_network, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Delete a virtual network peering object.
@@ -127,25 +127,25 @@ async def delete(hub, name, virtual_network, resource_group, **kwargs):
 
         azurerm.network.virtual_network_peering.delete peer1 testnet testgroup
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         peering = netconn.virtual_network_peerings.delete(
             resource_group_name=resource_group,
             virtual_network_name=virtual_network,
-            virtual_network_peering_name=name
+            virtual_network_peering_name=name,
         )
         peering.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
 
 async def get(hub, name, virtual_network, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get details about a specific virtual network peering object.
@@ -164,26 +164,33 @@ async def get(hub, name, virtual_network, resource_group, **kwargs):
 
         azurerm.network.virtual_network_peering.get peer1 testnet testgroup
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         peering = netconn.virtual_network_peerings.get(
             resource_group_name=resource_group,
             virtual_network_name=virtual_network,
-            virtual_network_peering_name=name
+            virtual_network_peering_name=name,
         )
 
         result = peering.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def create_or_update(hub, name, remote_virtual_network, virtual_network, resource_group, remote_vnet_group=None,
-                           **kwargs):
-    '''
+async def create_or_update(
+    hub,
+    name,
+    remote_virtual_network,
+    virtual_network,
+    resource_group,
+    remote_vnet_group=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Create or update a virtual network peering object.
@@ -208,27 +215,29 @@ async def create_or_update(hub, name, remote_virtual_network, virtual_network, r
         azurerm.network.virtual_network_peering.create_or_update peer1 \
                   remotenet testnet testgroup remote_vnet_group=remotegroup
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     # Use Remote Virtual Network name to link to the ID of an existing object
     remote_vnet = virtual_network_get(
         name=remote_virtual_network,
         resource_group=(remote_vnet_group or resource_group),
-        **kwargs
+        **kwargs,
     )
-    if 'error' not in remote_vnet:
-        remote_virtual_network = {'id': str(remote_vnet['id'])}
+    if "error" not in remote_vnet:
+        remote_virtual_network = {"id": str(remote_vnet["id"])}
 
     try:
         peermodel = await hub.exec.utils.azurerm.create_object_model(
-            'network',
-            'VirtualNetworkPeering',
+            "network",
+            "VirtualNetworkPeering",
             remote_virtual_network=remote_virtual_network,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
@@ -236,15 +245,17 @@ async def create_or_update(hub, name, remote_virtual_network, virtual_network, r
             resource_group_name=resource_group,
             virtual_network_name=virtual_network,
             virtual_network_peering_name=name,
-            virtual_network_peering_parameters=peermodel
+            virtual_network_peering_parameters=peermodel,
         )
         peering.wait()
         peer_result = peering.result()
         result = peer_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result

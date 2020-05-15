@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) PostgreSQL Database Operations Execution Module
 
 .. versionadded:: 2.0.0
@@ -45,7 +45,7 @@ Azure Resource Manager (ARM) PostgreSQL Database Operations Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -56,6 +56,7 @@ try:
     import azure.mgmt.rdbms.postgresql.models  # pylint: disable=unused-import
     from msrestazure.azure_exceptions import CloudError
     from msrest.exceptions import ValidationError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -63,8 +64,10 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, name, server_name, resource_group, charset=None, collation=None, **kwargs):
-    '''
+async def create_or_update(
+    hub, name, server_name, resource_group, charset=None, collation=None, **kwargs
+):
+    """
     .. versionadded:: 2.0.0
 
     Creates a new database or updates an existing database.
@@ -85,9 +88,9 @@ async def create_or_update(hub, name, server_name, resource_group, charset=None,
 
         azurerm.postgresql.database.create_or_update test_name test_server test_group test_charset test_collation
 
-    '''
+    """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
         database = postconn.databases.create_or_update(
@@ -101,14 +104,14 @@ async def create_or_update(hub, name, server_name, resource_group, charset=None,
         database.wait()
         result = database.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def delete(hub, name, server_name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Deletes a database.
@@ -125,9 +128,9 @@ async def delete(hub, name, server_name, resource_group, **kwargs):
 
         azurerm.postgresql.database.delete test_name test_server test_group
 
-    '''
+    """
     result = False
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
         database = postconn.databases.delete(
@@ -139,14 +142,14 @@ async def delete(hub, name, server_name, resource_group, **kwargs):
         database.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get(hub, name, server_name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Gets information about a database.
@@ -163,9 +166,9 @@ async def get(hub, name, server_name, resource_group, **kwargs):
 
         azurerm.postgresql.database.get test_name test_server test_group
 
-    '''
+    """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
         database = postconn.databases.get(
@@ -176,14 +179,14 @@ async def get(hub, name, server_name, resource_group, **kwargs):
 
         result = database.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_by_server(hub, server_name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     List all the databases in a given server.
@@ -198,22 +201,21 @@ async def list_by_server(hub, server_name, resource_group, **kwargs):
 
         azurerm.postgresql.database.list_by_server test_server test_group
 
-    '''
+    """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
         databases = await hub.exec.utils.azurerm.paged_object_to_list(
             postconn.databases.list_by_server(
-                server_name=server_name,
-                resource_group_name=resource_group
+                server_name=server_name, resource_group_name=resource_group
             )
         )
 
         for database in databases:
-            result[database['name']] = database
+            result[database["name"]] = database
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

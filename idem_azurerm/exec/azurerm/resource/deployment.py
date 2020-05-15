@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Resource Deployment Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Resource Deployment Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -57,6 +57,7 @@ try:
     import azure.mgmt.resource.resources.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -67,7 +68,7 @@ log = logging.getLogger(__name__)
 
 
 async def operation_get(hub, operation, deployment, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get a deployment operation within a deployment.
@@ -84,25 +85,25 @@ async def operation_get(hub, operation, deployment, resource_group, **kwargs):
 
         azurerm.resource.deployment.operation_get testoperation testdeploy testgroup
 
-    '''
-    resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
+    """
+    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
     try:
         operation = resconn.deployment_operations.get(
             resource_group_name=resource_group,
             deployment_name=deployment,
-            operation_id=operation
+            operation_id=operation,
         )
 
         result = operation.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def operations_list(hub, name, resource_group, result_limit=10, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all deployment operations within a deployment.
@@ -119,29 +120,29 @@ async def operations_list(hub, name, resource_group, result_limit=10, **kwargs):
 
         azurerm.resource.deployment.operations_list testdeploy testgroup
 
-    '''
+    """
     result = {}
-    resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
     try:
         operations = await hub.exec.utils.azurerm.paged_object_to_list(
             resconn.deployment_operations.list(
                 resource_group_name=resource_group,
                 deployment_name=name,
-                top=result_limit
+                top=result_limit,
             )
         )
 
         for oper in operations:
-            result[oper['operation_id']] = oper
+            result[oper["operation_id"]] = oper
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def delete(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Delete a deployment.
@@ -156,24 +157,23 @@ async def delete(hub, name, resource_group, **kwargs):
 
         azurerm.resource.deployment.delete testdeploy testgroup
 
-    '''
+    """
     result = False
-    resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
     try:
         deploy = resconn.deployments.delete(
-            deployment_name=name,
-            resource_group_name=resource_group
+            deployment_name=name, resource_group_name=resource_group
         )
         deploy.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
 
     return result
 
 
 async def check_existence(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Check the existence of a deployment.
@@ -188,25 +188,32 @@ async def check_existence(hub, name, resource_group, **kwargs):
 
         azurerm.resource.deployment.check_existence testdeploy testgroup
 
-    '''
+    """
     result = False
-    resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
     try:
         result = resconn.deployments.check_existence(
-            deployment_name=name,
-            resource_group_name=resource_group
+            deployment_name=name, resource_group_name=resource_group
         )
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
 
     return result
 
 
-async def create_or_update(hub, name, resource_group, deploy_mode='incremental',
-                                debug_setting='none', deploy_params=None,
-                                parameters_link=None, deploy_template=None,
-                                template_link=None, **kwargs):
-    '''
+async def create_or_update(
+    hub,
+    name,
+    resource_group,
+    deploy_mode="incremental",
+    debug_setting="none",
+    deploy_params=None,
+    parameters_link=None,
+    deploy_template=None,
+    template_link=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Deploys resources to a resource group.
@@ -248,39 +255,39 @@ async def create_or_update(hub, name, resource_group, deploy_mode='incremental',
 
         azurerm.resource.deployment.create_or_update testdeploy testgroup
 
-    '''
-    resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
+    """
+    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
 
-    prop_kwargs = {'mode': deploy_mode}
-    prop_kwargs['debug_setting'] = {'detail_level': debug_setting}
+    prop_kwargs = {"mode": deploy_mode}
+    prop_kwargs["debug_setting"] = {"detail_level": debug_setting}
 
     if deploy_params:
-        prop_kwargs['parameters'] = deploy_params
+        prop_kwargs["parameters"] = deploy_params
     else:
         if isinstance(parameters_link, dict):
-            prop_kwargs['parameters_link'] = parameters_link
+            prop_kwargs["parameters_link"] = parameters_link
         else:
-            prop_kwargs['parameters_link'] = {'uri': parameters_link}
+            prop_kwargs["parameters_link"] = {"uri": parameters_link}
 
     if deploy_template:
-        prop_kwargs['template'] = deploy_template
+        prop_kwargs["template"] = deploy_template
     else:
         if isinstance(template_link, dict):
-            prop_kwargs['template_link'] = template_link
+            prop_kwargs["template_link"] = template_link
         else:
-            prop_kwargs['template_link'] = {'uri': template_link}
+            prop_kwargs["template_link"] = {"uri": template_link}
 
     deploy_kwargs = kwargs.copy()
     deploy_kwargs.update(prop_kwargs)
 
     try:
         deploy_model = await hub.exec.utils.azurerm.create_object_model(
-            'resource.resources',
-            'DeploymentProperties',
-            **deploy_kwargs
+            "resource.resources", "DeploymentProperties", **deploy_kwargs
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
@@ -293,30 +300,32 @@ async def create_or_update(hub, name, resource_group, deploy_mode='incremental',
             parameters_link=parameters_link,
             deploy_template=deploy_template,
             template_link=template_link,
-            **kwargs
+            **kwargs,
         )
-        if 'error' in validate:
+        if "error" in validate:
             result = validate
         else:
             deploy = resconn.deployments.create_or_update(
                 deployment_name=name,
                 resource_group_name=resource_group,
-                properties=deploy_model
+                properties=deploy_model,
             )
             deploy.wait()
             deploy_result = deploy.result()
             result = deploy_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def get(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get details about a specific deployment.
@@ -331,23 +340,22 @@ async def get(hub, name, resource_group, **kwargs):
 
         azurerm.resource.deployment.get testdeploy testgroup
 
-    '''
-    resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
+    """
+    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
     try:
         deploy = resconn.deployments.get(
-            deployment_name=name,
-            resource_group_name=resource_group
+            deployment_name=name, resource_group_name=resource_group
         )
         result = deploy.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def cancel(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Cancel a deployment if in 'Accepted' or 'Running' state.
@@ -362,29 +370,33 @@ async def cancel(hub, name, resource_group, **kwargs):
 
         azurerm.resource.deployment.cancel testdeploy testgroup
 
-    '''
-    resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
+    """
+    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
     try:
         resconn.deployments.cancel(
-            deployment_name=name,
-            resource_group_name=resource_group
+            deployment_name=name, resource_group_name=resource_group
         )
-        result = {'result': True}
+        result = {"result": True}
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {
-            'error': str(exc),
-            'result': False
-        }
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc), "result": False}
 
     return result
 
 
-async def validate(hub, name, resource_group, deploy_mode=None,
-                        debug_setting=None, deploy_params=None,
-                        parameters_link=None, deploy_template=None,
-                        template_link=None, **kwargs):
-    '''
+async def validate(
+    hub,
+    name,
+    resource_group,
+    deploy_mode=None,
+    debug_setting=None,
+    deploy_params=None,
+    parameters_link=None,
+    deploy_template=None,
+    template_link=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Validates whether the specified template is syntactically correct and will be accepted by Azure Resource Manager.
@@ -426,39 +438,39 @@ async def validate(hub, name, resource_group, deploy_mode=None,
 
         azurerm.resource.deployment.validate testdeploy testgroup
 
-    '''
-    resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
+    """
+    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
 
-    prop_kwargs = {'mode': deploy_mode}
-    prop_kwargs['debug_setting'] = {'detail_level': debug_setting}
+    prop_kwargs = {"mode": deploy_mode}
+    prop_kwargs["debug_setting"] = {"detail_level": debug_setting}
 
     if deploy_params:
-        prop_kwargs['parameters'] = deploy_params
+        prop_kwargs["parameters"] = deploy_params
     else:
         if isinstance(parameters_link, dict):
-            prop_kwargs['parameters_link'] = parameters_link
+            prop_kwargs["parameters_link"] = parameters_link
         else:
-            prop_kwargs['parameters_link'] = {'uri': parameters_link}
+            prop_kwargs["parameters_link"] = {"uri": parameters_link}
 
     if deploy_template:
-        prop_kwargs['template'] = deploy_template
+        prop_kwargs["template"] = deploy_template
     else:
         if isinstance(template_link, dict):
-            prop_kwargs['template_link'] = template_link
+            prop_kwargs["template_link"] = template_link
         else:
-            prop_kwargs['template_link'] = {'uri': template_link}
+            prop_kwargs["template_link"] = {"uri": template_link}
 
     deploy_kwargs = kwargs.copy()
     deploy_kwargs.update(prop_kwargs)
 
     try:
         deploy_model = await hub.exec.utils.azurerm.create_object_model(
-            'resource.resources',
-            'DeploymentProperties',
-            **deploy_kwargs
+            "resource.resources", "DeploymentProperties", **deploy_kwargs
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
@@ -469,20 +481,22 @@ async def validate(hub, name, resource_group, deploy_mode=None,
         deploy = resconn.deployments.validate(
             deployment_name=name,
             resource_group_name=resource_group,
-            properties=deploy_model
+            properties=deploy_model,
         )
         result = deploy.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def export_template(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Exports the template used for the specified deployment.
@@ -497,23 +511,22 @@ async def export_template(hub, name, resource_group, **kwargs):
 
         azurerm.resource.deployment.export_template testdeploy testgroup
 
-    '''
-    resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
+    """
+    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
     try:
         deploy = resconn.deployments.export_template(
-            deployment_name=name,
-            resource_group_name=resource_group
+            deployment_name=name, resource_group_name=resource_group
         )
         result = deploy.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_(hub, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all deployments within a resource group.
@@ -524,9 +537,9 @@ async def list_(hub, resource_group, **kwargs):
 
         azurerm.resource.deployment.list testgroup
 
-    '''
+    """
     result = {}
-    resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
     try:
         deployments = await hub.exec.utils.azurerm.paged_object_to_list(
             resconn.deployments.list_by_resource_group(
@@ -535,9 +548,9 @@ async def list_(hub, resource_group, **kwargs):
         )
 
         for deploy in deployments:
-            result[deploy['name']] = deploy
+            result[deploy["name"]] = deploy
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Management Group Operations Execution Module
 
 .. versionadded:: 2.0.0
@@ -45,7 +45,7 @@ Azure Resource Manager (ARM) Management Group Operations Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -53,11 +53,14 @@ import logging
 # Azure libs
 HAS_LIBS = False
 try:
-    import azure.mgmt.managementgroups.models # pylint: disable=unused-import
+    import azure.mgmt.managementgroups.models  # pylint: disable=unused-import
     from azure.mgmt.managementgroups import ManagementGroupsAPI
-    from azure.mgmt.managementgroups.models.error_response_py3 import ErrorResponseException
+    from azure.mgmt.managementgroups.models.error_response_py3 import (
+        ErrorResponseException,
+    )
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -68,19 +71,23 @@ log = logging.getLogger(__name__)
 
 
 async def get_api_client(hub, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Load the ManagementGroupsAPI client and returns the client object.
 
-    '''
-    credentials, subscription_id, cloud_env = await hub.exec.utils.azurerm.determine_auth(**kwargs)
+    """
+    (
+        credentials,
+        subscription_id,
+        cloud_env,
+    ) = await hub.exec.utils.azurerm.determine_auth(**kwargs)
     client = ManagementGroupsAPI(credentials=credentials, base_url=None)
     return client
 
 
 async def create_or_update(hub, name, display_name=None, parent=None, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Create or update a management group. If a management group is already created and a subsequent create request is
@@ -100,53 +107,56 @@ async def create_or_update(hub, name, display_name=None, parent=None, **kwargs):
 
         azurerm.managementgroup.operations.create_or_update test_name test_display test_parent
 
-    '''
+    """
     result = {}
     manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
 
     if parent:
-        parent = {'id': parent}
+        parent = {"id": parent}
 
     try:
         group_details = await hub.exec.utils.azurerm.create_object_model(
-            'managementgroups',
-            'CreateManagementGroupDetails',
-            parent=parent
+            "managementgroups", "CreateManagementGroupDetails", parent=parent
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         group_request = await hub.exec.utils.azurerm.create_object_model(
-            'managementgroups',
-            'CreateManagementGroupRequest',
+            "managementgroups",
+            "CreateManagementGroupRequest",
             display_name=display_name,
             details=group_details,
-            **kwargs
+            **kwargs,
         )
 
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         mgroup = manconn.management_groups.create_or_update(
-            group_id=name,
-            create_management_group_request=group_request,
+            group_id=name, create_management_group_request=group_request,
         )
 
         result = mgroup.result()
     except ErrorResponseException as exc:
-        result = {'error': str(exc)}
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def delete(hub, name, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Delete management group. If a management group contains child resources, the request will fail.
@@ -159,24 +169,22 @@ async def delete(hub, name, **kwargs):
 
         azurerm.managementgroup.operations.delete test_name test
 
-    '''
+    """
     result = False
     manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
 
     try:
-        mgroup = manconn.management_groups.delete(
-            group_id=name,
-        )
+        mgroup = manconn.management_groups.delete(group_id=name,)
 
         result = True
     except ErrorResponseException as exc:
-        result = {'error': str(exc)}
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get(hub, name, expand=None, recurse=None, filter=None, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Get the details of the specified management group.
@@ -195,26 +203,24 @@ async def get(hub, name, expand=None, recurse=None, filter=None, **kwargs):
 
         azurerm.managementgroup.operations.get test_name test_expand test_recurse
 
-    '''
+    """
     result = {}
     manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
 
     try:
         mgroup = manconn.management_groups.get(
-            group_id=name,
-            expand=expand,
-            recurse=recurse,
+            group_id=name, expand=expand, recurse=recurse,
         )
 
         result = mgroup.as_dict()
     except ErrorResponseException as exc:
-        result = {'error': str(exc)}
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_(hub, skip_token=None, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     List management groups for the authenticated user.
@@ -229,20 +235,18 @@ async def list_(hub, skip_token=None, **kwargs):
 
         azurerm.managementgroup.operations.list test_token
 
-    '''
+    """
     result = {}
     manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
 
     try:
         mgroups = await hub.exec.utils.azurerm.paged_object_to_list(
-            manconn.management_groups.list(
-                skip_token=skip_token,
-            )
+            manconn.management_groups.list(skip_token=skip_token,)
         )
 
         for mgroup in mgroups:
-            result[mgroup['display_name']] = mgroup
+            result[mgroup["display_name"]] = mgroup
     except ErrorResponseException as exc:
-        result = {'error': str(exc)}
+        result = {"error": str(exc)}
 
     return result

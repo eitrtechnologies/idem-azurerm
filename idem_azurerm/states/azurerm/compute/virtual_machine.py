@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Compute Virtual Machine State Module
 
 .. versionadded:: 1.0.0
@@ -86,7 +86,7 @@ Azure Resource Manager (ARM) Compute Virtual Machine State Module
                 - resource_group: idem
                 - connection_auth: {{ profile }}
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -96,6 +96,7 @@ import operator
 HAS_LIBS = False
 try:
     from msrestazure.tools import parse_resource_id
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -104,11 +105,11 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-            'states.azurerm.network.virtual_network.present',
-            'states.azurerm.network.virtual_network.subnet_present',
+    "present": {
+        "require": [
+            "states.azurerm.resource.group.present",
+            "states.azurerm.network.virtual_network.present",
+            "states.azurerm.network.virtual_network.subnet_present",
         ]
     },
 }
@@ -120,8 +121,8 @@ async def present(
     name,
     resource_group,
     vm_size,
-    admin_username='idem',
-    os_disk_create_option='FromImage',
+    admin_username="idem",
+    os_disk_create_option="FromImage",
     os_disk_size_gb=30,
     ssh_public_keys=None,
     disable_password_auth=None,
@@ -160,8 +161,9 @@ async def present(
     data_disks=None,
     tags=None,
     connection_auth=None,
-    **kwargs):
-    '''
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     .. versionchanged:: 2.0.0
@@ -399,276 +401,307 @@ async def present(
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     vm = await hub.exec.azurerm.compute.virtual_machine.get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     new_vm = True
 
-    if 'error' not in vm:
+    if "error" not in vm:
         new_vm = False
 
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(vm.get('tags', {}), tags or {})
+        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            vm.get("tags", {}), tags or {}
+        )
         if tag_changes:
-            ret['changes']['tags'] = tag_changes
+            ret["changes"]["tags"] = tag_changes
 
-        if vm_size.lower() != vm['hardware_profile']['vm_size'].lower():
-            ret['changes']['vm_size'] = {
-                'old': vm['hardware_profile']['vm_size'].lower(),
-                'new': vm_size.lower()
+        if vm_size.lower() != vm["hardware_profile"]["vm_size"].lower():
+            ret["changes"]["vm_size"] = {
+                "old": vm["hardware_profile"]["vm_size"].lower(),
+                "new": vm_size.lower(),
             }
 
         if boot_diags_enabled is not None:
-            if boot_diags_enabled != vm.get('diagnostics_profile', {}).get('boot_diagnostics', {}).get('enabled', False):
-                ret['changes']['boot_diags_enabled'] = {
-                    'old': vm.get('diagnostics_profile', {}).get('boot_diagnostics', {}).get('enabled', False),
-                    'new': boot_diags_enabled
+            if boot_diags_enabled != vm.get("diagnostics_profile", {}).get(
+                "boot_diagnostics", {}
+            ).get("enabled", False):
+                ret["changes"]["boot_diags_enabled"] = {
+                    "old": vm.get("diagnostics_profile", {})
+                    .get("boot_diagnostics", {})
+                    .get("enabled", False),
+                    "new": boot_diags_enabled,
                 }
 
         if diag_storage_uri:
-            if diag_storage_uri != vm.get('diagnostics_profile', {}).get('boot_diagnostics', {}).get('storage_uri'):
-                ret['changes']['diag_storage_uri'] = {
-                    'old': vm.get('diagnostics_profile', {}).get('boot_diagnostics', {}).get('storage_uri'),
-                    'new': diag_storage_uri
+            if diag_storage_uri != vm.get("diagnostics_profile", {}).get(
+                "boot_diagnostics", {}
+            ).get("storage_uri"):
+                ret["changes"]["diag_storage_uri"] = {
+                    "old": vm.get("diagnostics_profile", {})
+                    .get("boot_diagnostics", {})
+                    .get("storage_uri"),
+                    "new": diag_storage_uri,
                 }
 
         if max_price:
-            if max_price != vm.get('billing_profile', {}).get('max_price'):
-                ret['changes']['max_price'] = {
-                    'old': vm.get('billing_profile', {}).get('max_price'),
-                    'new': max_price
+            if max_price != vm.get("billing_profile", {}).get("max_price"):
+                ret["changes"]["max_price"] = {
+                    "old": vm.get("billing_profile", {}).get("max_price"),
+                    "new": max_price,
                 }
 
         if allow_extensions is not None:
-            if allow_extensions != vm.get('os_profile', {}).get('allow_extension_operations', True):
-                ret['changes']['allow_extensions'] = {
-                    'old': vm.get('os_profile', {}).get('allow_extension_operations', True),
-                    'new': allow_extensions
+            if allow_extensions != vm.get("os_profile", {}).get(
+                "allow_extension_operations", True
+            ):
+                ret["changes"]["allow_extensions"] = {
+                    "old": vm.get("os_profile", {}).get(
+                        "allow_extension_operations", True
+                    ),
+                    "new": allow_extensions,
                 }
 
         if os_write_accel is not None:
-            if os_write_accel != vm.get('storage_profile', {}).get('os_disk', {}).get('write_accelerator_enabled'):
-                ret['changes']['os_write_accel'] = {
-                    'old': vm.get('storage_profile', {}).get('os_disk', {}).get('write_accelerator_enabled'),
-                    'new': os_write_accel
+            if os_write_accel != vm.get("storage_profile", {}).get("os_disk", {}).get(
+                "write_accelerator_enabled"
+            ):
+                ret["changes"]["os_write_accel"] = {
+                    "old": vm.get("storage_profile", {})
+                    .get("os_disk", {})
+                    .get("write_accelerator_enabled"),
+                    "new": os_write_accel,
                 }
 
         if os_disk_caching is not None:
-            if os_disk_caching != vm.get('storage_profile', {}).get('os_disk', {}).get('caching'):
-                ret['changes']['os_disk_caching'] = {
-                    'old': vm.get('storage_profile', {}).get('os_disk', {}).get('caching'),
-                    'new': os_disk_caching
+            if os_disk_caching != vm.get("storage_profile", {}).get("os_disk", {}).get(
+                "caching"
+            ):
+                ret["changes"]["os_disk_caching"] = {
+                    "old": vm.get("storage_profile", {})
+                    .get("os_disk", {})
+                    .get("caching"),
+                    "new": os_disk_caching,
                 }
 
         if ultra_ssd_enabled is not None:
-            if ultra_ssd_enabled != vm.get('additional_capabilities', {}).get('ultra_ssd_enabled'):
-                ret['changes']['ultra_ssd_enabled'] = {
-                    'old': vm.get('additional_capabilities', {}).get('ultra_ssd_enabled'),
-                    'new': ultra_ssd_enabled
+            if ultra_ssd_enabled != vm.get("additional_capabilities", {}).get(
+                "ultra_ssd_enabled"
+            ):
+                ret["changes"]["ultra_ssd_enabled"] = {
+                    "old": vm.get("additional_capabilities", {}).get(
+                        "ultra_ssd_enabled"
+                    ),
+                    "new": ultra_ssd_enabled,
                 }
 
         if provision_vm_agent is not None:
-            if vm.get('os_profile', {}).get('linux_configuration', {}):
-                if provision_vm_agent != vm['os_profile']['linux_configuration'].get('provision_vm_agent', True):
-                    ret['changes']['provision_vm_agent'] = {
-                        'old': vm['os_profile']['linux_configuration'].get('provision_vm_agent', True),
-                        'new': provision_vm_agent
+            if vm.get("os_profile", {}).get("linux_configuration", {}):
+                if provision_vm_agent != vm["os_profile"]["linux_configuration"].get(
+                    "provision_vm_agent", True
+                ):
+                    ret["changes"]["provision_vm_agent"] = {
+                        "old": vm["os_profile"]["linux_configuration"].get(
+                            "provision_vm_agent", True
+                        ),
+                        "new": provision_vm_agent,
                     }
-            if vm.get('os_profile', {}).get('windows_configuration', {}):
-                if provision_vm_agent != vm['os_profile']['windows_configuration'].get('provision_vm_agent', True):
-                    ret['changes']['provision_vm_agent'] = {
-                        'old': vm['os_profile']['windows_configuration'].get('provision_vm_agent', True),
-                        'new': provision_vm_agent
+            if vm.get("os_profile", {}).get("windows_configuration", {}):
+                if provision_vm_agent != vm["os_profile"]["windows_configuration"].get(
+                    "provision_vm_agent", True
+                ):
+                    ret["changes"]["provision_vm_agent"] = {
+                        "old": vm["os_profile"]["windows_configuration"].get(
+                            "provision_vm_agent", True
+                        ),
+                        "new": provision_vm_agent,
                     }
 
         if time_zone:
-            if time_zone != vm.get('os_profile', {}).get('windows_configuration', {}).get('time_zone', True):
-                ret['changes']['time_zone'] = {
-                    'old': vm.get('os_profile', {}).get('windows_configuration', {}).get('time_zone', True),
-                    'new': time_zone
+            if time_zone != vm.get("os_profile", {}).get(
+                "windows_configuration", {}
+            ).get("time_zone", True):
+                ret["changes"]["time_zone"] = {
+                    "old": vm.get("os_profile", {})
+                    .get("windows_configuration", {})
+                    .get("time_zone", True),
+                    "new": time_zone,
                 }
 
         if enable_automatic_updates is not None:
-            if enable_automatic_updates != vm.get('os_profile', {}).get('windows_configuration', {}).get('enable_automatic_updates', True):
-                ret['changes']['enable_automatic_updates'] = {
-                    'old': vm.get('os_profile', {}).get('windows_configuration', {}).get('enable_automatic_updates', True),
-                    'new': enable_automatic_updates
+            if enable_automatic_updates != vm.get("os_profile", {}).get(
+                "windows_configuration", {}
+            ).get("enable_automatic_updates", True):
+                ret["changes"]["enable_automatic_updates"] = {
+                    "old": vm.get("os_profile", {})
+                    .get("windows_configuration", {})
+                    .get("enable_automatic_updates", True),
+                    "new": enable_automatic_updates,
                 }
 
         if data_disks is not None:
-            existing_disks = vm.get('storage_profile', {}).get('data_disks', [])
+            existing_disks = vm.get("storage_profile", {}).get("data_disks", [])
 
             if len(existing_disks) != len(data_disks):
-                ret['changes']['data_disks'] = {
-                    'old': existing_disks,
-                    'new': data_disks
+                ret["changes"]["data_disks"] = {
+                    "old": existing_disks,
+                    "new": data_disks,
                 }
             else:
                 for idx, disk in enumerate(data_disks):
                     for key in disk:
-                        if isinstance(disk[key], dict) and isinstance(existing_disks[idx].get(key), dict):
+                        if isinstance(disk[key], dict) and isinstance(
+                            existing_disks[idx].get(key), dict
+                        ):
                             for k in disk[key]:
                                 if disk[key][k] != existing_disks[idx][key].get(k):
-                                    ret['changes']['data_disks'] = {
-                                        'old': existing_disks,
-                                        'new': data_disks
+                                    ret["changes"]["data_disks"] = {
+                                        "old": existing_disks,
+                                        "new": data_disks,
                                     }
                         else:
                             if disk[key] != existing_disks[idx].get(key):
-                                ret['changes']['data_disks'] = {
-                                    'old': existing_disks,
-                                    'new': data_disks
+                                ret["changes"]["data_disks"] = {
+                                    "old": existing_disks,
+                                    "new": data_disks,
                                 }
 
         if enable_disk_enc:
-            extensions = vm.get('resources', [])
+            extensions = vm.get("resources", [])
             disk_enc_exists = False
             for extension in extensions:
-                if (extension.get('virtual_machine_extension_type') == 'AzureDiskEncryptionForLinux' or
-                    extension.get('virtual_machine_extension_type') == 'AzureDiskEncryption'):
+                if (
+                    extension.get("virtual_machine_extension_type")
+                    == "AzureDiskEncryptionForLinux"
+                    or extension.get("virtual_machine_extension_type")
+                    == "AzureDiskEncryption"
+                ):
                     disk_enc_exists = True
                     break
 
             if not disk_enc_exists:
-                ret['changes']['enable_disk_enc'] = {
-                    'old': False,
-                    'new': True
-                }
+                ret["changes"]["enable_disk_enc"] = {"old": False, "new": True}
                 if disk_enc_keyvault:
-                    ret['changes']['disk_enc_keyvault'] = {
-                        'new': disk_enc_keyvault
-                    }
+                    ret["changes"]["disk_enc_keyvault"] = {"new": disk_enc_keyvault}
                 if disk_enc_volume_type:
-                    ret['changes']['disk_enc_volume_type'] = {
-                        'new': disk_enc_volume_type
+                    ret["changes"]["disk_enc_volume_type"] = {
+                        "new": disk_enc_volume_type
                     }
                 if disk_enc_kek_url:
-                    ret['changes']['disk_enc_kek_url'] = {
-                        'new': disk_enc_kek_url
-                    }
+                    ret["changes"]["disk_enc_kek_url"] = {"new": disk_enc_kek_url}
 
         if admin_password and force_admin_password:
-            ret['changes']['admin_password'] = {
-                'new': 'REDACTED'
-            }
-        elif ret['changes']:
-            ret['changes']['admin_password'] = {
-                'new': 'REDACTED'
-            }
+            ret["changes"]["admin_password"] = {"new": "REDACTED"}
+        elif ret["changes"]:
+            ret["changes"]["admin_password"] = {"new": "REDACTED"}
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Virtual machine {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Virtual machine {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Virtual machine {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Virtual machine {0} would be updated.".format(name)
             return ret
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'resource_group': resource_group,
-                'vm_size': vm_size,
-                'os_disk_create_option': os_disk_create_option,
-                'os_disk_size_gb': os_disk_size_gb,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "resource_group": resource_group,
+                "vm_size": vm_size,
+                "os_disk_create_option": os_disk_create_option,
+                "os_disk_size_gb": os_disk_size_gb,
+            },
         }
 
         if ssh_public_keys:
-            ret['changes']['new']['ssh_public_keys'] = ssh_public_keys
+            ret["changes"]["new"]["ssh_public_keys"] = ssh_public_keys
         if disable_password_auth is not None:
-            ret['changes']['new']['disable_password_auth'] = disable_password_auth
+            ret["changes"]["new"]["disable_password_auth"] = disable_password_auth
         if custom_data:
-            ret['changes']['new']['custom_data'] = custom_data
+            ret["changes"]["new"]["custom_data"] = custom_data
         if allow_extensions is not None:
-            ret['changes']['new']['allow_extensions'] = allow_extensions
+            ret["changes"]["new"]["allow_extensions"] = allow_extensions
         if enable_automatic_updates is not None:
-            ret['changes']['new']['enable_automatic_updates'] = enable_automatic_updates
+            ret["changes"]["new"]["enable_automatic_updates"] = enable_automatic_updates
         if time_zone:
-            ret['changes']['new']['time_zone'] = time_zone
+            ret["changes"]["new"]["time_zone"] = time_zone
         if allocate_public_ip is not None:
-            ret['changes']['new']['allocate_public_ip'] = allocate_public_ip
+            ret["changes"]["new"]["allocate_public_ip"] = allocate_public_ip
         if create_interfaces is not None:
-            ret['changes']['new']['create_interfaces'] = create_interfaces
+            ret["changes"]["new"]["create_interfaces"] = create_interfaces
         if network_resource_group:
-            ret['changes']['new']['network_resource_group'] = network_resource_group
+            ret["changes"]["new"]["network_resource_group"] = network_resource_group
         if virtual_network:
-            ret['changes']['new']['virtual_network'] = virtual_network
+            ret["changes"]["new"]["virtual_network"] = virtual_network
         if subnet:
-            ret['changes']['new']['subnet'] = subnet
+            ret["changes"]["new"]["subnet"] = subnet
         if network_interfaces:
-            ret['changes']['new']['network_interfaces'] = network_interfaces
+            ret["changes"]["new"]["network_interfaces"] = network_interfaces
         if os_managed_disk:
-            ret['changes']['new']['os_managed_disk'] = os_managed_disk
+            ret["changes"]["new"]["os_managed_disk"] = os_managed_disk
         if os_disk_vhd_uri:
-            ret['changes']['new']['os_disk_vhd_uri'] = os_disk_vhd_uri
+            ret["changes"]["new"]["os_disk_vhd_uri"] = os_disk_vhd_uri
         if os_disk_image_uri:
-            ret['changes']['new']['os_disk_image_uri'] = os_disk_image_uri
+            ret["changes"]["new"]["os_disk_image_uri"] = os_disk_image_uri
         if os_type:
-            ret['changes']['new']['os_type'] = os_type
+            ret["changes"]["new"]["os_type"] = os_type
         if os_disk_name:
-            ret['changes']['new']['os_disk_name'] = os_disk_name
+            ret["changes"]["new"]["os_disk_name"] = os_disk_name
         if os_disk_caching:
-            ret['changes']['new']['os_disk_caching'] = os_disk_caching
+            ret["changes"]["new"]["os_disk_caching"] = os_disk_caching
         if os_write_accel is not None:
-            ret['changes']['new']['os_write_accel'] = os_write_accel
+            ret["changes"]["new"]["os_write_accel"] = os_write_accel
         if os_ephemeral_disk is not None:
-            ret['changes']['new']['os_ephemeral_disk'] = os_ephemeral_disk
+            ret["changes"]["new"]["os_ephemeral_disk"] = os_ephemeral_disk
         if ultra_ssd_enabled is not None:
-            ret['changes']['new']['ultra_ssd_enabled'] = ultra_ssd_enabled
+            ret["changes"]["new"]["ultra_ssd_enabled"] = ultra_ssd_enabled
         if image:
-            ret['changes']['new']['image'] = image
+            ret["changes"]["new"]["image"] = image
         if boot_diags_enabled is not None:
-            ret['changes']['new']['boot_diags_enabled'] = boot_diags_enabled
+            ret["changes"]["new"]["boot_diags_enabled"] = boot_diags_enabled
         if diag_storage_uri:
-            ret['changes']['new']['diag_storage_uri'] = diag_storage_uri
+            ret["changes"]["new"]["diag_storage_uri"] = diag_storage_uri
         if admin_password:
-            ret['changes']['new']['admin_password'] = admin_password
+            ret["changes"]["new"]["admin_password"] = admin_password
         if max_price:
-            ret['changes']['new']['max_price'] = max_price
+            ret["changes"]["new"]["max_price"] = max_price
         if provision_vm_agent is not None:
-            ret['changes']['new']['provision_vm_agent'] = provision_vm_agent
+            ret["changes"]["new"]["provision_vm_agent"] = provision_vm_agent
         if userdata_file:
-            ret['changes']['new']['userdata_file'] = userdata_file
+            ret["changes"]["new"]["userdata_file"] = userdata_file
         if userdata:
-            ret['changes']['new']['userdata'] = userdata
+            ret["changes"]["new"]["userdata"] = userdata
         if enable_disk_enc is not None:
-            ret['changes']['new']['enable_disk_enc'] = enable_disk_enc
+            ret["changes"]["new"]["enable_disk_enc"] = enable_disk_enc
         if disk_enc_keyvault:
-            ret['changes']['new']['disk_enc_keyvault'] = disk_enc_keyvault
+            ret["changes"]["new"]["disk_enc_keyvault"] = disk_enc_keyvault
         if disk_enc_volume_type:
-            ret['changes']['new']['disk_enc_volume_type'] = disk_enc_volume_type
+            ret["changes"]["new"]["disk_enc_volume_type"] = disk_enc_volume_type
         if disk_enc_kek_url:
-            ret['changes']['new']['disk_enc_kek_url'] = disk_enc_kek_url
+            ret["changes"]["new"]["disk_enc_kek_url"] = disk_enc_kek_url
         if data_disks:
-            ret['changes']['new']['data_disks'] = data_disks
+            ret["changes"]["new"]["data_disks"] = data_disks
         if tags is not None:
-            ret['changes']['new']['tags'] = tags
+            ret["changes"]["new"]["tags"] = tags
 
-    if ctx['test']:
-        ret['result'] = None
-        ret['comment'] = 'Virtual machine {0} would be created.'.format(name)
+    if ctx["test"]:
+        ret["result"] = None
+        ret["comment"] = "Virtual machine {0} would be created.".format(name)
         return ret
 
     vm_kwargs = kwargs.copy()
@@ -716,23 +749,22 @@ async def present(
         disk_enc_kek_url=disk_enc_kek_url,
         data_disks=data_disks,
         tags=tags,
-        **vm_kwargs
+        **vm_kwargs,
     )
 
     if new_vm:
-        ret['changes'] = {
-            'old': {},
-            'new': vm
-        }
+        ret["changes"] = {"old": {}, "new": vm}
 
-    if 'error' not in vm:
-        ret['result'] = True
-        ret['comment'] = 'Virtual machine {0} has been created.'.format(name)
+    if "error" not in vm:
+        ret["result"] = True
+        ret["comment"] = "Virtual machine {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create virtual machine {0}! ({1})'.format(name, vm.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create virtual machine {0}! ({1})".format(
+        name, vm.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
@@ -746,9 +778,9 @@ async def absent(
     cleanup_interfaces=False,
     cleanup_public_ips=False,
     connection_auth=None,
-    **kwargs
+    **kwargs,
 ):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     .. versionchanged:: 2.0.0
@@ -777,43 +809,39 @@ async def absent(
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     vm = await hub.exec.azurerm.compute.virtual_machine.get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' in vm:
-        ret['result'] = True
-        ret['comment'] = 'Virtual machine {0} was not found.'.format(name)
+    if "error" in vm:
+        ret["result"] = True
+        ret["comment"] = "Virtual machine {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Virtual machine {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': vm,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Virtual machine {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": vm,
+            "new": {},
         }
         return ret
 
-    deleted = await hub.exec.azurerm.compute.virtual_machine.delete(name, resource_group, **connection_auth)
+    deleted = await hub.exec.azurerm.compute.virtual_machine.delete(
+        name, resource_group, **connection_auth
+    )
 
     if deleted:
         if cleanup_osdisks:
@@ -829,10 +857,7 @@ async def absent(
                     log.error("This isn't a valid disk resource: %s", os_disk)
 
                 deleted_disk = await hub.exec.azurerm.compute.disk.delete(
-                    disk_name,
-                    disk_group,
-                    azurerm_log_level='info',
-                    **connection_auth
+                    disk_name, disk_group, azurerm_log_level="info", **connection_auth
                 )
 
                 if not deleted_disk:
@@ -854,8 +879,8 @@ async def absent(
                     deleted_disk = await hub.exec.azurerm.compute.disk.delete(
                         disk_name,
                         disk_group,
-                        azurerm_log_level='info',
-                        **connection_auth
+                        azurerm_log_level="info",
+                        **connection_auth,
                     )
 
                     if not deleted_disk:
@@ -869,21 +894,17 @@ async def absent(
                     nic_name = nic_dict["name"]
                     nic_group = nic_dict["resource_group"]
                 except KeyError as exc:
-                    log.error("This isn't a valid network interface subresource: %s", nic_link)
+                    log.error(
+                        "This isn't a valid network interface subresource: %s", nic_link
+                    )
                     continue
 
                 nic = await hub.exec.azurerm.network.network_interface.get(
-                    nic_name,
-                    nic_group,
-                    azurerm_log_level='info',
-                    **connection_auth
+                    nic_name, nic_group, azurerm_log_level="info", **connection_auth
                 )
 
                 deleted_nic = await hub.exec.azurerm.network.network_interface.delete(
-                    nic_name,
-                    nic_group,
-                    azurerm_log_level='info',
-                    **connection_auth
+                    nic_name, nic_group, azurerm_log_level="info", **connection_auth
                 )
 
                 if cleanup_public_ips:
@@ -897,23 +918,23 @@ async def absent(
                             pip_name = pip_dict["name"]
                             pip_group = pip_dict["resource_group"]
                         except KeyError as exc:
-                            log.error("This isn't a valid public IP subresource: %s", ipc.get("public_ip_address"))
+                            log.error(
+                                "This isn't a valid public IP subresource: %s",
+                                ipc.get("public_ip_address"),
+                            )
                             continue
 
                         deleted_pip = await hub.exec.azurerm.network.public_ip_address.delete(
                             pip_name,
                             pip_group,
-                            azurerm_log_level='info',
-                            **connection_auth
+                            azurerm_log_level="info",
+                            **connection_auth,
                         )
 
-        ret['result'] = True
-        ret['comment'] = 'Virtual machine {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': vm,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Virtual machine {0} has been deleted.".format(name)
+        ret["changes"] = {"old": vm, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete virtual machine {0}!'.format(name)
+    ret["comment"] = "Failed to delete virtual machine {0}!".format(name)
     return ret

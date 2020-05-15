@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Resource Tenant Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Resource Tenant Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -57,6 +57,7 @@ try:
     import azure.mgmt.resource.resources.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -67,7 +68,7 @@ log = logging.getLogger(__name__)
 
 
 async def list_(hub, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all tenants for your account.
@@ -78,16 +79,18 @@ async def list_(hub, **kwargs):
 
         azurerm.resource.tenant.list
 
-    '''
+    """
     result = {}
-    subconn = await hub.exec.utils.azurerm.get_client('subscription', **kwargs)
+    subconn = await hub.exec.utils.azurerm.get_client("subscription", **kwargs)
     try:
-        tenants = await hub.exec.utils.azurerm.paged_object_to_list(subconn.tenants.list())
+        tenants = await hub.exec.utils.azurerm.paged_object_to_list(
+            subconn.tenants.list()
+        )
 
         for tenant in tenants:
-            result[tenant['tenant_id']] = tenant
+            result[tenant["tenant_id"]] = tenant
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

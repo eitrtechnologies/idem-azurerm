@@ -3,6 +3,6 @@ CONFIG = {}
 GLOBAL = {}
 SUBS = {}
 DYNE = {
-    'states': ['states'],
-    'exec': ['exec'],
-    }
+    "states": ["states"],
+    "exec": ["exec"],
+}

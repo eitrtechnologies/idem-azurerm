@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Network Route Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Network Route Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -62,6 +62,7 @@ try:
     from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -70,7 +71,7 @@ log = logging.getLogger(__name__)
 
 
 async def filter_rule_delete(hub, name, route_filter, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Delete a route filter rule.
@@ -88,25 +89,25 @@ async def filter_rule_delete(hub, name, route_filter, resource_group, **kwargs):
 
         azurerm.network.route.filter_rule_delete test-rule test-filter testgroup
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         rule = netconn.route_filter_rules.delete(
             resource_group_name=resource_group,
             route_filter_name=route_filter,
-            rule_name=name
+            rule_name=name,
         )
         rule.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
 
 async def filter_rule_get(hub, name, route_filter, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get details about a specific route filter rule.
@@ -124,26 +125,28 @@ async def filter_rule_get(hub, name, route_filter, resource_group, **kwargs):
 
         azurerm.network.route.filter_rule_get test-rule test-filter testgroup
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         rule = netconn.route_filter_rules.get(
             resource_group_name=resource_group,
             route_filter_name=route_filter,
-            rule_name=name
+            rule_name=name,
         )
 
         result = rule.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def filter_rule_create_or_update(hub, name, access, communities, route_filter, resource_group, **kwargs):
-    '''
+async def filter_rule_create_or_update(
+    hub, name, access, communities, route_filter, resource_group, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Create or update a rule within a specified route filter.
@@ -166,37 +169,33 @@ async def filter_rule_create_or_update(hub, name, access, communities, route_fil
         azurerm.network.route.filter_rule_create_or_update \
                   test-rule allow "['12076:51006']" test-filter testgroup
 
-    '''
+    """
     if not isinstance(communities, list):
-        log.error(
-            'The communities parameter must be a list of strings!'
-        )
+        log.error("The communities parameter must be a list of strings!")
         return False
 
-    if 'location' not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(
-            resource_group, **kwargs
-        )
+    if "location" not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
 
-        if 'error' in rg_props:
-            log.error(
-                'Unable to determine location from resource group specified.'
-            )
+        if "error" in rg_props:
+            log.error("Unable to determine location from resource group specified.")
             return False
-        kwargs['location'] = rg_props['location']
+        kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     try:
         rule_model = await hub.exec.utils.azurerm.create_object_model(
-            'network',
-            'RouteFilterRule',
+            "network",
+            "RouteFilterRule",
             access=access,
             communities=communities,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
@@ -204,25 +203,27 @@ async def filter_rule_create_or_update(hub, name, access, communities, route_fil
             resource_group_name=resource_group,
             route_filter_name=route_filter,
             rule_name=name,
-            route_filter_rule_parameters=rule_model
+            route_filter_rule_parameters=rule_model,
         )
         rule.wait()
         rule_result = rule.result()
         result = rule_result.as_dict()
     except CloudError as exc:
         message = str(exc)
-        if kwargs.get('subscription_id') == str(message).strip():
-            message = 'Subscription not authorized for this operation!'
-        await hub.exec.utils.azurerm.log_cloud_error('network', message, **kwargs)
-        result = {'error': message}
+        if kwargs.get("subscription_id") == str(message).strip():
+            message = "Subscription not authorized for this operation!"
+        await hub.exec.utils.azurerm.log_cloud_error("network", message, **kwargs)
+        result = {"error": message}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def filter_rules_list(hub, route_filter, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all routes within a route filter.
@@ -238,28 +239,27 @@ async def filter_rules_list(hub, route_filter, resource_group, **kwargs):
 
         azurerm.network.route.filter_rules_list test-filter testgroup
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         rules = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.route_filter_rules.list_by_route_filter(
-                resource_group_name=resource_group,
-                route_filter_name=route_filter
+                resource_group_name=resource_group, route_filter_name=route_filter
             )
         )
 
         for rule in rules:
-            result[rule['name']] = rule
+            result[rule["name"]] = rule
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def filter_delete(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Delete a route filter.
@@ -275,24 +275,23 @@ async def filter_delete(hub, name, resource_group, **kwargs):
 
         azurerm.network.route.filter_delete test-filter testgroup
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         route_filter = netconn.route_filters.delete(
-            route_filter_name=name,
-            resource_group_name=resource_group
+            route_filter_name=name, resource_group_name=resource_group
         )
         route_filter.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
 
 async def filter_get(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get details about a specific route filter.
@@ -308,27 +307,25 @@ async def filter_get(hub, name, resource_group, **kwargs):
 
         azurerm.network.route.filter_get test-filter testgroup
 
-    '''
-    expand = kwargs.get('expand')
+    """
+    expand = kwargs.get("expand")
 
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     try:
         route_filter = netconn.route_filters.get(
-            route_filter_name=name,
-            resource_group_name=resource_group,
-            expand=expand
+            route_filter_name=name, resource_group_name=resource_group, expand=expand
         )
         result = route_filter.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def filter_create_or_update(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Create or update a route filter within a specified resource group.
@@ -344,47 +341,49 @@ async def filter_create_or_update(hub, name, resource_group, **kwargs):
 
         azurerm.network.route.filter_create_or_update test-filter testgroup
 
-    '''
-    if 'location' not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(
-            resource_group, **kwargs
-        )
+    """
+    if "location" not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
 
-        if 'error' in rg_props:
-            log.error(
-                'Unable to determine location from resource group specified.'
-            )
+        if "error" in rg_props:
+            log.error("Unable to determine location from resource group specified.")
             return False
-        kwargs['location'] = rg_props['location']
+        kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     try:
-        rt_filter_model = await hub.exec.utils.azurerm.create_object_model('network', 'RouteFilter', **kwargs)
+        rt_filter_model = await hub.exec.utils.azurerm.create_object_model(
+            "network", "RouteFilter", **kwargs
+        )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         rt_filter = netconn.route_filters.create_or_update(
             resource_group_name=resource_group,
             route_filter_name=name,
-            route_filter_parameters=rt_filter_model
+            route_filter_parameters=rt_filter_model,
         )
         rt_filter.wait()
         rt_result = rt_filter.result()
         result = rt_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def filters_list(hub, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all route filters within a resource group.
@@ -398,9 +397,9 @@ async def filters_list(hub, resource_group, **kwargs):
 
         azurerm.network.route.filters_list testgroup
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         filters = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.route_filters.list_by_resource_group(
@@ -409,16 +408,16 @@ async def filters_list(hub, resource_group, **kwargs):
         )
 
         for route_filter in filters:
-            result[route_filter['name']] = route_filter
+            result[route_filter["name"]] = route_filter
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def filters_list_all(hub, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all route filters within a subscription.
@@ -429,23 +428,25 @@ async def filters_list_all(hub, **kwargs):
 
         azurerm.network.route.filters_list_all
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
-        filters = await hub.exec.utils.azurerm.paged_object_to_list(netconn.route_filters.list())
+        filters = await hub.exec.utils.azurerm.paged_object_to_list(
+            netconn.route_filters.list()
+        )
 
         for route_filter in filters:
-            result[route_filter['name']] = route_filter
+            result[route_filter["name"]] = route_filter
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def delete(hub, name, route_table, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Delete a route from a route table.
@@ -463,25 +464,25 @@ async def delete(hub, name, route_table, resource_group, **kwargs):
 
         azurerm.network.route.delete test-rt test-rt-table testgroup
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         route = netconn.routes.delete(
             resource_group_name=resource_group,
             route_table_name=route_table,
-            route_name=name
+            route_name=name,
         )
         route.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
 
 async def get(hub, name, route_table, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get details about a specific route.
@@ -499,27 +500,35 @@ async def get(hub, name, route_table, resource_group, **kwargs):
 
         azurerm.network.route.get test-rt test-rt-table testgroup
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         route = netconn.routes.get(
             resource_group_name=resource_group,
             route_table_name=route_table,
-            route_name=name
+            route_name=name,
         )
 
         result = route.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def create_or_update(hub, name, address_prefix, next_hop_type, route_table, resource_group,
-                           next_hop_ip_address=None, **kwargs):
-    '''
+async def create_or_update(
+    hub,
+    name,
+    address_prefix,
+    next_hop_type,
+    route_table,
+    resource_group,
+    next_hop_ip_address=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Create or update a route within a specified route table.
@@ -545,20 +554,22 @@ async def create_or_update(hub, name, address_prefix, next_hop_type, route_table
 
         azurerm.network.route.create_or_update test-rt '10.0.0.0/8' test-rt-table testgroup
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     try:
         rt_model = await hub.exec.utils.azurerm.create_object_model(
-            'network',
-            'Route',
+            "network",
+            "Route",
             address_prefix=address_prefix,
             next_hop_type=next_hop_type,
             next_hop_ip_address=next_hop_ip_address,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
@@ -566,22 +577,24 @@ async def create_or_update(hub, name, address_prefix, next_hop_type, route_table
             resource_group_name=resource_group,
             route_table_name=route_table,
             route_name=name,
-            route_parameters=rt_model
+            route_parameters=rt_model,
         )
         route.wait()
         rt_result = route.result()
         result = rt_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def routes_list(hub, route_table, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all routes within a route table.
@@ -597,28 +610,27 @@ async def routes_list(hub, route_table, resource_group, **kwargs):
 
         azurerm.network.routes_list test-rt-table testgroup
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         routes = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.routes.list(
-                resource_group_name=resource_group,
-                route_table_name=route_table
+                resource_group_name=resource_group, route_table_name=route_table
             )
         )
 
         for route in routes:
-            result[route['name']] = route
+            result[route["name"]] = route
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def table_delete(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Delete a route table.
@@ -634,24 +646,23 @@ async def table_delete(hub, name, resource_group, **kwargs):
 
         azurerm.network.route.table_delete test-rt-table testgroup
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         table = netconn.route_tables.delete(
-            route_table_name=name,
-            resource_group_name=resource_group
+            route_table_name=name, resource_group_name=resource_group
         )
         table.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
 
 async def table_get(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get details about a specific route table.
@@ -667,27 +678,25 @@ async def table_get(hub, name, resource_group, **kwargs):
 
         azurerm.network.route.table_get test-rt-table testgroup
 
-    '''
-    expand = kwargs.get('expand')
+    """
+    expand = kwargs.get("expand")
 
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     try:
         table = netconn.route_tables.get(
-            route_table_name=name,
-            resource_group_name=resource_group,
-            expand=expand
+            route_table_name=name, resource_group_name=resource_group, expand=expand
         )
         result = table.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def table_create_or_update(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Create or update a route table within a specified resource group.
@@ -703,47 +712,49 @@ async def table_create_or_update(hub, name, resource_group, **kwargs):
 
         azurerm.network.route.table_create_or_update test-rt-table testgroup
 
-    '''
-    if 'location' not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(
-            resource_group, **kwargs
-        )
+    """
+    if "location" not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
 
-        if 'error' in rg_props:
-            log.error(
-                'Unable to determine location from resource group specified.'
-            )
+        if "error" in rg_props:
+            log.error("Unable to determine location from resource group specified.")
             return False
-        kwargs['location'] = rg_props['location']
+        kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     try:
-        rt_tbl_model = await hub.exec.utils.azurerm.create_object_model('network', 'RouteTable', **kwargs)
+        rt_tbl_model = await hub.exec.utils.azurerm.create_object_model(
+            "network", "RouteTable", **kwargs
+        )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         table = netconn.route_tables.create_or_update(
             resource_group_name=resource_group,
             route_table_name=name,
-            parameters=rt_tbl_model
+            parameters=rt_tbl_model,
         )
         table.wait()
         tbl_result = table.result()
         result = tbl_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def tables_list(hub, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all route tables within a resource group.
@@ -757,27 +768,25 @@ async def tables_list(hub, resource_group, **kwargs):
 
         azurerm.network.route.tables_list testgroup
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         tables = await hub.exec.utils.azurerm.paged_object_to_list(
-            netconn.route_tables.list(
-                resource_group_name=resource_group
-            )
+            netconn.route_tables.list(resource_group_name=resource_group)
         )
 
         for table in tables:
-            result[table['name']] = table
+            result[table["name"]] = table
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def tables_list_all(hub, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all route tables within a subscription.
@@ -788,16 +797,18 @@ async def tables_list_all(hub, **kwargs):
 
         azurerm.network.route.tables_list_all
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
-        tables = await hub.exec.utils.azurerm.paged_object_to_list(netconn.route_tables.list_all())
+        tables = await hub.exec.utils.azurerm.paged_object_to_list(
+            netconn.route_tables.list_all()
+        )
 
         for table in tables:
-            result[table['name']] = table
+            result[table["name"]] = table
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

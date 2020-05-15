@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Log Analytics Workspace Execution Module
 
 .. versionadded:: 2.0.0
@@ -45,7 +45,7 @@ Azure Resource Manager (ARM) Log Analytics Workspace Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -55,6 +55,7 @@ HAS_LIBS = False
 try:
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -64,8 +65,17 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, name, resource_group, location, sku=None, retention=None, customer_id=None, **kwargs):
-    '''
+async def create_or_update(
+    hub,
+    name,
+    resource_group,
+    location,
+    sku=None,
+    retention=None,
+    customer_id=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Create or update a workspace.
@@ -91,47 +101,51 @@ async def create_or_update(hub, name, resource_group, location, sku=None, retent
 
         azurerm.log_analytics.workspace.create test_name test_group test_location
 
-    '''
+    """
     result = {}
-    logconn = await hub.exec.utils.azurerm.get_client('loganalytics', **kwargs)
+    logconn = await hub.exec.utils.azurerm.get_client("loganalytics", **kwargs)
 
     if sku:
-        sku = {'name': sku}
+        sku = {"name": sku}
 
     try:
         spacemodel = await hub.exec.utils.azurerm.create_object_model(
-            'loganalytics',
-            'Workspace',
+            "loganalytics",
+            "Workspace",
             location=location,
             sku=sku,
             customer_id=customer_id,
             retention=retention,
-            **kwargs
+            **kwargs,
         )
 
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         workspace = logconn.workspaces.create_or_update(
             workspace_name=name,
             resource_group_name=resource_group,
-            parameters=spacemodel
+            parameters=spacemodel,
         )
 
         result = workspace.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('loganalytics', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("loganalytics", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def delete(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Deletes a workspace instance.
@@ -146,25 +160,24 @@ async def delete(hub, name, resource_group, **kwargs):
 
         azurerm.log_analytics.workspace.delete test_name test_group
 
-    '''
+    """
     result = False
-    logconn = await hub.exec.utils.azurerm.get_client('loganalytics', **kwargs)
+    logconn = await hub.exec.utils.azurerm.get_client("loganalytics", **kwargs)
 
     try:
         workspace = logconn.workspaces.delete(
-            workspace_name=name,
-            resource_group_name=resource_group
+            workspace_name=name, resource_group_name=resource_group
         )
 
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('loganalytics', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("loganalytics", str(exc), **kwargs)
 
     return result
 
 
 async def get(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Gets a workspace instance.
@@ -179,26 +192,25 @@ async def get(hub, name, resource_group, **kwargs):
 
         azurerm.log_analytics.workspace.get test_name test_group
 
-    '''
+    """
     result = {}
-    logconn = await hub.exec.utils.azurerm.get_client('loganalytics', **kwargs)
+    logconn = await hub.exec.utils.azurerm.get_client("loganalytics", **kwargs)
 
     try:
         workspace = logconn.workspaces.get(
-            workspace_name=name,
-            resource_group_name=resource_group
+            workspace_name=name, resource_group_name=resource_group
         )
 
         result = workspace.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('loganalytics', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("loganalytics", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_(hub, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Gets the workspaces in a subscription.
@@ -209,9 +221,9 @@ async def list_(hub, **kwargs):
 
         azurerm.log_analytics.workspace.list
 
-    '''
+    """
     result = {}
-    logconn = await hub.exec.utils.azurerm.get_client('loganalytics', **kwargs)
+    logconn = await hub.exec.utils.azurerm.get_client("loganalytics", **kwargs)
 
     try:
         workspaces = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -219,16 +231,16 @@ async def list_(hub, **kwargs):
         )
 
         for workspace in workspaces:
-            result[workspace['name']] = workspace
+            result[workspace["name"]] = workspace
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('loganalytics', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("loganalytics", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_by_resource_group(hub, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Gets the workspaces in a resource group.
@@ -241,9 +253,9 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
 
         azurerm.log_analytics.workspace.list_by_resource_group test_group
 
-    '''
+    """
     result = {}
-    logconn = await hub.exec.utils.azurerm.get_client('loganalytics', **kwargs)
+    logconn = await hub.exec.utils.azurerm.get_client("loganalytics", **kwargs)
 
     try:
         workspaces = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -253,16 +265,16 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
         )
 
         for workspace in workspaces:
-            result[workspace['name']] = workspace
+            result[workspace["name"]] = workspace
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('loganalytics', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("loganalytics", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_intelligence_packs(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Lists all the intelligence packs possible and whether they are enabled or disabled for a given workspace.
@@ -277,21 +289,20 @@ async def list_intelligence_packs(hub, name, resource_group, **kwargs):
 
         azurerm.log_analytics.workspace.list_intelligence_packs test_name test_group
 
-    '''
+    """
     result = {}
-    logconn = await hub.exec.utils.azurerm.get_client('loganalytics', **kwargs)
+    logconn = await hub.exec.utils.azurerm.get_client("loganalytics", **kwargs)
 
     try:
         packs = logconn.workspaces.list_intelligence_packs(
-            workspace_name=name,
-            resource_group_name=resource_group
+            workspace_name=name, resource_group_name=resource_group
         )
 
         for pack in packs:
             pack = pack.as_dict()
-            result[pack['name']] = pack
+            result[pack["name"]] = pack
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('loganalytics', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("loganalytics", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

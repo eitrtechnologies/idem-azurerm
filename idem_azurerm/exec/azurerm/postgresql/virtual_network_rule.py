@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) PostgreSQL Virtual Network Rule Operations Execution Module
 
 .. versionadded:: 2.0.0
@@ -45,7 +45,7 @@ Azure Resource Manager (ARM) PostgreSQL Virtual Network Rule Operations Executio
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -55,6 +55,7 @@ HAS_LIBS = False
 try:
     import azure.mgmt.rdbms.postgresql.models  # pylint: disable=unused-import
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -62,8 +63,16 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, name, server_name, resource_group, subnet_id, ignore_missing_endpoint=None, **kwargs):
-    '''
+async def create_or_update(
+    hub,
+    name,
+    server_name,
+    resource_group,
+    subnet_id,
+    ignore_missing_endpoint=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Creates or updates an existing virtual network rule.
@@ -86,9 +95,9 @@ async def create_or_update(hub, name, server_name, resource_group, subnet_id, ig
 
         azurerm.postgresql.virtual_network_rule.create_or_update test_name test_server test_group test_subnet
 
-    '''
+    """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
         rule = postconn.virtual_network_rules.create_or_update(
@@ -102,14 +111,14 @@ async def create_or_update(hub, name, server_name, resource_group, subnet_id, ig
         rule.wait()
         result = rule.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def delete(hub, name, server_name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Deletes the virtual network rule with the given name.
@@ -126,9 +135,9 @@ async def delete(hub, name, server_name, resource_group, **kwargs):
 
         azurerm.postgresql.virtual_network_rule.delete test_name test_server test_group
 
-    '''
+    """
     result = False
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
         rule = postconn.virtual_network_rules.delete(
@@ -140,14 +149,14 @@ async def delete(hub, name, server_name, resource_group, **kwargs):
         rule.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get(hub, name, server_name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Gets a virtual network rule.
@@ -164,9 +173,9 @@ async def get(hub, name, server_name, resource_group, **kwargs):
 
         azurerm.postgresql.virtual_network_rule.get test_name test_server test_group
 
-    '''
+    """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
         rule = postconn.virtual_network_rules.get(
@@ -177,14 +186,14 @@ async def get(hub, name, server_name, resource_group, **kwargs):
 
         result = rule.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_by_server(hub, server_name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Gets a list of virtual network rules in a server.
@@ -199,22 +208,21 @@ async def list_by_server(hub, server_name, resource_group, **kwargs):
 
         azurerm.postgresql.virtual_network_rule.list_by_server test_server test_group
 
-    '''
+    """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
         rules = await hub.exec.utils.azurerm.paged_object_to_list(
             postconn.virtual_network_rules.list_by_server(
-                server_name=server_name,
-                resource_group_name=resource_group
+                server_name=server_name, resource_group_name=resource_group
             )
         )
 
         for rule in rules:
-            result[rule['name']] = rule
+            result[rule["name"]] = rule
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

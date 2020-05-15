@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) SKU Operations Execution Module
 
 .. versionadded:: 2.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) SKU Operations Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -54,6 +54,7 @@ HAS_LIBS = False
 try:
     import azure.mgmt.storage  # pylint: disable=unused-import
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -64,7 +65,7 @@ log = logging.getLogger(__name__)
 
 
 async def list_(hub, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Lists the available SKUs supported by Microsoft.Storage for given subscription.
@@ -75,19 +76,17 @@ async def list_(hub, **kwargs):
 
         azurerm.storage.sku.list
 
-    '''
+    """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client('storage', **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
 
     try:
-        skus = await hub.exec.utils.azurerm.paged_object_to_list(
-            storconn.skus.list()
-        )
+        skus = await hub.exec.utils.azurerm.paged_object_to_list(storconn.skus.list())
 
         for sku in skus:
-            result[sku['name']] = sku
+            result[sku["name"]] = sku
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('storage', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Local Network Gateway Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Local Network Gateway Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -62,6 +62,7 @@ try:
     from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -72,7 +73,7 @@ log = logging.getLogger(__name__)
 
 
 async def create_or_update(hub, name, resource_group, gateway_ip_address, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Creates or updates a local network gateway object in the specified resource group.
@@ -89,52 +90,52 @@ async def create_or_update(hub, name, resource_group, gateway_ip_address, **kwar
 
         azurerm.network.local_network_gateway.create_or_update test_name test_group test_ip
 
-    '''
-    if 'location' not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(
-            resource_group, **kwargs
-        )
+    """
+    if "location" not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
 
-        if 'error' in rg_props:
-            log.error(
-                'Unable to determine location from resource group specified.'
-            )
+        if "error" in rg_props:
+            log.error("Unable to determine location from resource group specified.")
             return False
-        kwargs['location'] = rg_props['location']
+        kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     try:
         gatewaymodel = await hub.exec.utils.azurerm.create_object_model(
-            'network',
-            'LocalNetworkGateway',
+            "network",
+            "LocalNetworkGateway",
             gateway_ip_address=gateway_ip_address,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         gateway = netconn.local_network_gateways.create_or_update(
             local_network_gateway_name=name,
             resource_group_name=resource_group,
-            parameters=gatewaymodel
+            parameters=gatewaymodel,
         )
         gateway.wait()
         gateway_result = gateway.result()
         result = gateway_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def get(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets the details of a specific local network gateway within a specified resource group.
@@ -149,24 +150,23 @@ async def get(hub, name, resource_group, **kwargs):
 
         azurerm.network.local_network_gateway.get test_name test_group
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         gateway = netconn.local_network_gateways.get(
-            resource_group_name=resource_group,
-            local_network_gateway_name=name
+            resource_group_name=resource_group, local_network_gateway_name=name
         )
 
         result = gateway.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def delete(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Deletes the specified local network gateway.
@@ -181,24 +181,23 @@ async def delete(hub, name, resource_group, **kwargs):
 
         azurerm.network.local_network_gateway.delete test_name test_group
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         gateway = netconn.local_network_gateways.delete(
-            resource_group_name=resource_group,
-            local_network_gateway_name=name
+            resource_group_name=resource_group, local_network_gateway_name=name
         )
         gateway.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
 
 async def list_(hub, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Lists all local network gateways within a resource group.
@@ -211,20 +210,18 @@ async def list_(hub, resource_group, **kwargs):
 
         azurerm.network.local_network_gateway.list test_group
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         gateways = await hub.exec.utils.azurerm.paged_object_to_list(
-            netconn.local_network_gateways.list(
-                resource_group_name=resource_group
-            )
+            netconn.local_network_gateways.list(resource_group_name=resource_group)
         )
 
         for gateway in gateways:
-            result[gateway['name']] = gateway
+            result[gateway["name"]] = gateway
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

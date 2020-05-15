@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Resource Policy State Module
 
 .. versionadded:: 1.0.0
@@ -80,7 +80,7 @@ Azure Resource Manager (ARM) Resource Policy State Module
                 - name: other_rg
                 - connection_auth: {{ profile }}
 
-'''
+"""
 # Import Python libs
 from __future__ import absolute_import
 import json
@@ -89,10 +89,8 @@ import logging
 log = logging.getLogger(__name__)
 
 TREQ = {
-    'assignment_present': {
-        'require': [
-            'states.azurerm.resource.policy.definition_present',
-        ]
+    "assignment_present": {
+        "require": ["states.azurerm.resource.policy.definition_present",]
     },
 }
 
@@ -110,14 +108,14 @@ async def definition_present(
     parameters=None,
     policy_rule_json=None,
     policy_rule_file=None,
-    template='jinja',
+    template="jinja",
     source_hash=None,
     source_hash_name=None,
     skip_verify=False,
     connection_auth=None,
-    **kwargs
+    **kwargs,
 ):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     .. versionchanged:: 2.0.0
@@ -194,32 +192,39 @@ async def definition_present(
                       effect: deny
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     if not policy_rule and not policy_rule_json and not policy_rule_file:
-        ret['comment'] = 'One of "policy_rule", "policy_rule_json", or "policy_rule_file" is required!'
+        ret[
+            "comment"
+        ] = 'One of "policy_rule", "policy_rule_json", or "policy_rule_file" is required!'
         return ret
 
-    if sum(x is not None for x in [policy_rule, policy_rule_json, policy_rule_file]) > 1:
-        ret['comment'] = 'Only one of "policy_rule", "policy_rule_json", or "policy_rule_file" is allowed!'
+    if (
+        sum(x is not None for x in [policy_rule, policy_rule_json, policy_rule_file])
+        > 1
+    ):
+        ret[
+            "comment"
+        ] = 'Only one of "policy_rule", "policy_rule_json", or "policy_rule_file" is allowed!'
         return ret
 
-    if ((policy_rule_json or policy_rule_file) and
-       (policy_type or mode or display_name or description or metadata or parameters)):
-        ret['comment'] = 'Policy definitions cannot be passed when "policy_rule_json" or "policy_rule_file" is defined!'
+    if (policy_rule_json or policy_rule_file) and (
+        policy_type or mode or display_name or description or metadata or parameters
+    ):
+        ret[
+            "comment"
+        ] = 'Policy definitions cannot be passed when "policy_rule_json" or "policy_rule_file" is defined!'
         return ret
 
     temp_rule = {}
@@ -227,95 +232,102 @@ async def definition_present(
         try:
             temp_rule = json.loads(policy_rule_json)
         except Exception as exc:
-            ret['comment'] = 'Unable to load policy rule json! ({0})'.format(exc)
+            ret["comment"] = "Unable to load policy rule json! ({0})".format(exc)
             return ret
     elif policy_rule_file:
         try:
-            with open(policy_rule_file, 'r') as prf:
+            with open(policy_rule_file, "r") as prf:
                 temp_rule = json.load(prf)
         except Exception as exc:
-            ret['comment'] = 'Unable to load policy rule file "{0}"! ({1})'.format(policy_rule_file, exc)
+            ret["comment"] = 'Unable to load policy rule file "{0}"! ({1})'.format(
+                policy_rule_file, exc
+            )
             return ret
 
     policy_name = name
     if policy_rule_json or policy_rule_file:
-        if temp_rule.get('name'):
-            policy_name = temp_rule.get('name')
-        policy_rule = temp_rule.get('properties', {}).get('policyRule')
-        policy_type = temp_rule.get('properties', {}).get('policyType')
-        mode = temp_rule.get('properties', {}).get('mode')
-        display_name = temp_rule.get('properties', {}).get('displayName')
-        description = temp_rule.get('properties', {}).get('description')
-        metadata = temp_rule.get('properties', {}).get('metadata')
-        parameters = temp_rule.get('properties', {}).get('parameters')
+        if temp_rule.get("name"):
+            policy_name = temp_rule.get("name")
+        policy_rule = temp_rule.get("properties", {}).get("policyRule")
+        policy_type = temp_rule.get("properties", {}).get("policyType")
+        mode = temp_rule.get("properties", {}).get("mode")
+        display_name = temp_rule.get("properties", {}).get("displayName")
+        description = temp_rule.get("properties", {}).get("description")
+        metadata = temp_rule.get("properties", {}).get("metadata")
+        parameters = temp_rule.get("properties", {}).get("parameters")
 
-    policy = await hub.exec.azurerm.resource.policy.definition_get(name, azurerm_log_level='info', **connection_auth)
+    policy = await hub.exec.azurerm.resource.policy.definition_get(
+        name, azurerm_log_level="info", **connection_auth
+    )
 
-    if 'error' not in policy:
-        if policy_type and policy_type.lower() != policy.get('policy_type', '').lower():
-            ret['changes']['policy_type'] = {
-                'old': policy.get('policy_type'),
-                'new': policy_type
+    if "error" not in policy:
+        if policy_type and policy_type.lower() != policy.get("policy_type", "").lower():
+            ret["changes"]["policy_type"] = {
+                "old": policy.get("policy_type"),
+                "new": policy_type,
             }
 
-        if (mode or '').lower() != policy.get('mode', '').lower():
-            ret['changes']['mode'] = {
-                'old': policy.get('mode'),
-                'new': mode
+        if (mode or "").lower() != policy.get("mode", "").lower():
+            ret["changes"]["mode"] = {"old": policy.get("mode"), "new": mode}
+
+        if (display_name or "").lower() != policy.get("display_name", "").lower():
+            ret["changes"]["display_name"] = {
+                "old": policy.get("display_name"),
+                "new": display_name,
             }
 
-        if (display_name or '').lower() != policy.get('display_name', '').lower():
-            ret['changes']['display_name'] = {
-                'old': policy.get('display_name'),
-                'new': display_name
+        if (description or "").lower() != policy.get("description", "").lower():
+            ret["changes"]["description"] = {
+                "old": policy.get("description"),
+                "new": description,
             }
 
-        if (description or '').lower() != policy.get('description', '').lower():
-            ret['changes']['description'] = {
-                'old': policy.get('description'),
-                'new': description
-            }
-
-        rule_changes = await hub.exec.utils.dictdiffer.deep_diff(policy.get('policy_rule', {}), policy_rule or {})
+        rule_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            policy.get("policy_rule", {}), policy_rule or {}
+        )
         if rule_changes:
-            ret['changes']['policy_rule'] = rule_changes
+            ret["changes"]["policy_rule"] = rule_changes
 
-        meta_changes = await hub.exec.utils.dictdiffer.deep_diff(policy.get('metadata', {}), metadata or {})
+        meta_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            policy.get("metadata", {}), metadata or {}
+        )
         if meta_changes:
-            ret['changes']['metadata'] = meta_changes
+            ret["changes"]["metadata"] = meta_changes
 
-        param_changes = await hub.exec.utils.dictdiffer.deep_diff(policy.get('parameters', {}), parameters or {})
+        param_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            policy.get("parameters", {}), parameters or {}
+        )
         if param_changes:
-            ret['changes']['parameters'] = param_changes
+            ret["changes"]["parameters"] = param_changes
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Policy definition {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Policy definition {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['comment'] = 'Policy definition {0} would be updated.'.format(name)
-            ret['result'] = None
+        if ctx["test"]:
+            ret["comment"] = "Policy definition {0} would be updated.".format(name)
+            ret["result"] = None
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': policy_name,
-                'policy_type': policy_type,
-                'mode': mode,
-                'display_name': display_name,
-                'description': description,
-                'metadata': metadata,
-                'parameters': parameters,
-                'policy_rule': policy_rule,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": policy_name,
+                "policy_type": policy_type,
+                "mode": mode,
+                "display_name": display_name,
+                "description": description,
+                "metadata": metadata,
+                "parameters": parameters,
+                "policy_rule": policy_rule,
+            },
         }
 
-    if ctx['test']:
-        ret['comment'] = 'Policy definition {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Policy definition {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     # Convert OrderedDict to dict
@@ -336,22 +348,24 @@ async def definition_present(
         description=description,
         metadata=metadata,
         parameters=parameters,
-        **policy_kwargs
+        **policy_kwargs,
     )
 
-    if 'error' not in policy:
-        ret['result'] = True
-        ret['comment'] = 'Policy definition {0} has been created.'.format(name)
+    if "error" not in policy:
+        ret["result"] = True
+        ret["comment"] = "Policy definition {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create policy definition {0}! ({1})'.format(name, policy.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create policy definition {0}! ({1})".format(
+        name, policy.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
 async def definition_absent(hub, name, connection_auth=None, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Ensure a policy definition does not exist in the current subscription.
@@ -363,55 +377,64 @@ async def definition_absent(hub, name, connection_auth=None, **kwargs):
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
-    policy = await hub.exec.azurerm.resource.policy.definition_get(name, azurerm_log_level='info', **connection_auth)
+    policy = await hub.exec.azurerm.resource.policy.definition_get(
+        name, azurerm_log_level="info", **connection_auth
+    )
 
-    if 'error' in policy:
-        ret['result'] = True
-        ret['comment'] = 'Policy definition {0} is already absent.'.format(name)
+    if "error" in policy:
+        ret["result"] = True
+        ret["comment"] = "Policy definition {0} is already absent.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Policy definition {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': policy,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Policy definition {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": policy,
+            "new": {},
         }
         return ret
 
-    deleted = await hub.exec.azurerm.resource.policy.definition_delete(name, **connection_auth)
+    deleted = await hub.exec.azurerm.resource.policy.definition_delete(
+        name, **connection_auth
+    )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Policy definition {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': policy,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Policy definition {0} has been deleted.".format(name)
+        ret["changes"] = {"old": policy, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete policy definition {0}!'.format(name)
+    ret["comment"] = "Failed to delete policy definition {0}!".format(name)
     return ret
 
 
-async def assignment_present(hub, ctx, name, scope, definition_name, display_name=None, description=None,
-                             assignment_type=None, parameters=None, connection_auth=None, **kwargs):
-    '''
+async def assignment_present(
+    hub,
+    ctx,
+    name,
+    scope,
+    definition_name,
+    display_name=None,
+    description=None,
+    assignment_type=None,
+    parameters=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a security policy assignment exists.
@@ -454,91 +477,81 @@ async def assignment_present(hub, ctx, name, scope, definition_name, display_nam
                 - description: Test assignment for testing assignments.
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     policy = await hub.exec.azurerm.resource.policy.assignment_get(
-        name,
-        scope,
-        azurerm_log_level='info',
-        **connection_auth
+        name, scope, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' not in policy:
-        if assignment_type and assignment_type.lower() != policy.get('type', '').lower():
-            ret['changes']['type'] = {
-                'old': policy.get('type'),
-                'new': assignment_type
-            }
+    if "error" not in policy:
+        if (
+            assignment_type
+            and assignment_type.lower() != policy.get("type", "").lower()
+        ):
+            ret["changes"]["type"] = {"old": policy.get("type"), "new": assignment_type}
 
-        if scope.lower() != policy['scope'].lower():
-            ret['changes']['scope'] = {
-                'old': policy['scope'],
-                'new': scope
-            }
+        if scope.lower() != policy["scope"].lower():
+            ret["changes"]["scope"] = {"old": policy["scope"], "new": scope}
 
-        pa_name = policy['policy_definition_id'].split('/')[-1]
+        pa_name = policy["policy_definition_id"].split("/")[-1]
         if definition_name.lower() != pa_name.lower():
-            ret['changes']['definition_name'] = {
-                'old': pa_name,
-                'new': definition_name
+            ret["changes"]["definition_name"] = {"old": pa_name, "new": definition_name}
+
+        if (display_name or "").lower() != policy.get("display_name", "").lower():
+            ret["changes"]["display_name"] = {
+                "old": policy.get("display_name"),
+                "new": display_name,
             }
 
-        if (display_name or '').lower() != policy.get('display_name', '').lower():
-            ret['changes']['display_name'] = {
-                'old': policy.get('display_name'),
-                'new': display_name
+        if (description or "").lower() != policy.get("description", "").lower():
+            ret["changes"]["description"] = {
+                "old": policy.get("description"),
+                "new": description,
             }
 
-        if (description or '').lower() != policy.get('description', '').lower():
-            ret['changes']['description'] = {
-                'old': policy.get('description'),
-                'new': description
-            }
-
-        param_changes = await hub.exec.utils.dictdiffer.deep_diff(policy.get('parameters', {}), parameters or {})
+        param_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            policy.get("parameters", {}), parameters or {}
+        )
         if param_changes:
-            ret['changes']['parameters'] = param_changes
+            ret["changes"]["parameters"] = param_changes
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Policy assignment {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Policy assignment {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['comment'] = 'Policy assignment {0} would be updated.'.format(name)
-            ret['result'] = None
+        if ctx["test"]:
+            ret["comment"] = "Policy assignment {0} would be updated.".format(name)
+            ret["result"] = None
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'scope': scope,
-                'definition_name': definition_name,
-                'type': assignment_type,
-                'display_name': display_name,
-                'description': description,
-                'parameters': parameters,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "scope": scope,
+                "definition_name": definition_name,
+                "type": assignment_type,
+                "display_name": display_name,
+                "description": description,
+                "parameters": parameters,
+            },
         }
 
-    if ctx['test']:
-        ret['comment'] = 'Policy assignment {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Policy assignment {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     if isinstance(parameters, dict):
@@ -554,22 +567,24 @@ async def assignment_present(hub, ctx, name, scope, definition_name, display_nam
         display_name=display_name,
         description=description,
         parameters=parameters,
-        **policy_kwargs
+        **policy_kwargs,
     )
 
-    if 'error' not in policy:
-        ret['result'] = True
-        ret['comment'] = 'Policy assignment {0} has been created.'.format(name)
+    if "error" not in policy:
+        ret["result"] = True
+        ret["comment"] = "Policy assignment {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create policy assignment {0}! ({1})'.format(name, policy.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create policy assignment {0}! ({1})".format(
+        name, policy.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
 async def assignment_absent(hub, ctx, name, scope, connection_auth=None, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Ensure a policy assignment does not exist in the provided scope.
@@ -584,52 +599,45 @@ async def assignment_absent(hub, ctx, name, scope, connection_auth=None, **kwarg
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     policy = await hub.exec.azurerm.resource.policy.assignment_get(
-        name,
-        scope,
-        azurerm_log_level='info',
-        **connection_auth
+        name, scope, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' in policy:
-        ret['result'] = True
-        ret['comment'] = 'Policy assignment {0} is already absent.'.format(name)
+    if "error" in policy:
+        ret["result"] = True
+        ret["comment"] = "Policy assignment {0} is already absent.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Policy assignment {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': policy,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Policy assignment {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": policy,
+            "new": {},
         }
         return ret
 
-    deleted = await hub.exec.azurerm.resource.policy.assignment_delete(name, scope, **connection_auth)
+    deleted = await hub.exec.azurerm.resource.policy.assignment_delete(
+        name, scope, **connection_auth
+    )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Policy assignment {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': policy,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Policy assignment {0} has been deleted.".format(name)
+        ret["changes"] = {"old": policy, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete policy assignment {0}!'.format(name)
+    ret["comment"] = "Failed to delete policy assignment {0}!".format(name)
     return ret
