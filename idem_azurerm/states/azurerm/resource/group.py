@@ -132,8 +132,11 @@ async def present(hub, ctx, name, location, managed_by=None, tags=None, connecti
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     group = {}
 
@@ -220,8 +223,11 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     group = {}
 

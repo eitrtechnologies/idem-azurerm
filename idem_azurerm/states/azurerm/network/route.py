@@ -164,8 +164,11 @@ async def table_present(hub, ctx, name, resource_group, tags=None, routes=None, 
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     rt_tbl = await hub.exec.azurerm.network.route.table_get(
         name,
@@ -273,8 +276,11 @@ async def table_absent(hub, ctx, name, resource_group, connection_auth=None, **k
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     rt_tbl = await hub.exec.azurerm.network.route.table_get(
         name,
@@ -365,8 +371,11 @@ async def present(hub, ctx, name, address_prefix, next_hop_type, route_table, re
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     route = await hub.exec.azurerm.network.route.get(
         name,
@@ -473,8 +482,11 @@ async def absent(hub, ctx, name, route_table, resource_group, connection_auth=No
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     route = await hub.exec.azurerm.network.route.get(
         name,

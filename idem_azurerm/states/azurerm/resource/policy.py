@@ -203,8 +203,11 @@ async def definition_present(
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     if not policy_rule and not policy_rule_json and not policy_rule_file:
         ret['comment'] = 'One of "policy_rule", "policy_rule_json", or "policy_rule_file" is required!'
@@ -369,8 +372,11 @@ async def definition_absent(hub, name, connection_auth=None, **kwargs):
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     policy = await hub.exec.azurerm.resource.policy.definition_get(name, azurerm_log_level='info', **connection_auth)
 
@@ -457,8 +463,11 @@ async def assignment_present(hub, ctx, name, scope, definition_name, display_nam
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     policy = await hub.exec.azurerm.resource.policy.assignment_get(
         name,
@@ -584,8 +593,11 @@ async def assignment_absent(hub, ctx, name, scope, connection_auth=None, **kwarg
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     policy = await hub.exec.azurerm.resource.policy.assignment_get(
         name,

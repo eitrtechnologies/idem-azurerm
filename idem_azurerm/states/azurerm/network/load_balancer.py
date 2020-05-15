@@ -273,8 +273,11 @@ async def present(hub, ctx, name, resource_group, sku=None, frontend_ip_configur
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     if sku:
         sku = {'name': sku.capitalize()}
@@ -484,8 +487,11 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     load_bal = await hub.exec.azurerm.network.load_balancer.get(
         name,

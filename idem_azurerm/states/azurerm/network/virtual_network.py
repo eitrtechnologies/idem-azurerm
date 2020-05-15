@@ -159,8 +159,11 @@ async def present(hub, ctx, name, address_prefixes, resource_group, dns_servers=
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     vnet = await hub.exec.azurerm.network.virtual_network.get(
         name,
@@ -281,8 +284,11 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     vnet = await hub.exec.azurerm.network.virtual_network.get(
         name,
@@ -372,8 +378,11 @@ async def subnet_present(hub, ctx, name, address_prefix, virtual_network, resour
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     snet = await hub.exec.azurerm.network.virtual_network.subnet_get(
         name,
@@ -488,8 +497,11 @@ async def subnet_absent(hub, ctx, name, virtual_network, resource_group, connect
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     snet = await hub.exec.azurerm.network.virtual_network.subnet_get(
         name,

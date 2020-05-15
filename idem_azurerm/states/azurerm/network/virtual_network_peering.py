@@ -173,8 +173,11 @@ async def present(hub, ctx, name, remote_virtual_network, virtual_network, resou
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     peering = await hub.exec.azurerm.network.virtual_network_peering.get(
         name,
@@ -326,8 +329,11 @@ async def absent(hub, ctx, name, virtual_network, resource_group, connection_aut
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     peering = await hub.exec.azurerm.network.virtual_network_peering.get(
         name,

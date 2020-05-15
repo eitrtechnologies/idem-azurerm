@@ -104,8 +104,11 @@ async def present(hub, ctx, name, display_name=None, parent=None, connection_aut
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     mgroup = await hub.exec.azurerm.managementgroup.operations.get(
         name=name,
@@ -197,8 +200,11 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     mgroup = await hub.exec.azurerm.managementgroup.operations.get(
         name=name,

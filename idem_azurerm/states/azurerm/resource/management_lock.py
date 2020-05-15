@@ -115,8 +115,11 @@ async def present_by_scope(hub, ctx, name, scope, lock_level, notes=None, owners
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     lock = await hub.exec.azurerm.resource.management_lock.get_by_scope(
         name,
@@ -243,8 +246,11 @@ async def absent_by_scope(hub, ctx, name, scope, connection_auth=None, **kwargs)
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     lock = await hub.exec.azurerm.resource.management_lock.get_by_scope(
         name,
@@ -342,8 +348,11 @@ async def present_at_resource_level(hub, ctx, name, lock_level, resource_group, 
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     lock = await hub.exec.azurerm.resource.management_lock.get_at_resource_level(
         name,
@@ -492,8 +501,11 @@ async def absent_at_resource_level(hub, ctx, name, resource_group, resource, res
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     lock = await hub.exec.azurerm.resource.management_lock.get_at_resource_level(
         name,
@@ -588,8 +600,11 @@ async def present(hub, ctx, name, lock_level, resource_group=None, notes=None, o
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     if resource_group:
         lock = await hub.exec.azurerm.resource.management_lock.get_at_resource_group_level(
@@ -731,8 +746,11 @@ async def absent(hub, ctx, name, resource_group=None, connection_auth=None, **kw
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     if resource_group:
         lock = await hub.exec.azurerm.resource.management_lock.get_at_resource_group_level(

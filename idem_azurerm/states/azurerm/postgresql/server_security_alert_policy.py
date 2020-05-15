@@ -139,8 +139,11 @@ async def present(hub, ctx, server_name, resource_group, policy_state, disabled_
     }
 
     if not isinstance(connection_auth, dict):
-        ret['comment'] = 'Connection information must be specified via connection_auth dictionary!'
-        return ret
+        if ctx["acct"]:
+            connection_auth = ctx["acct"]
+        else:
+            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            return ret
 
     policy = await hub.exec.azurerm.postgresql.server_security_alert_policy.get(
         server_name=server_name,
