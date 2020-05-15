@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Virtual Network Peering State Module
 
 .. versionadded:: 1.0.0
@@ -84,7 +84,7 @@ Azure Resource Manager (ARM) Virtual Network Peering State Module
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -93,19 +93,31 @@ import re
 log = logging.getLogger(__name__)
 
 TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-            'states.azurerm.network.virtual_network.present',
+    "present": {
+        "require": [
+            "states.azurerm.resource.group.present",
+            "states.azurerm.network.virtual_network.present",
         ]
     },
 }
 
 
-async def present(hub, ctx, name, remote_virtual_network, virtual_network, resource_group, remote_vnet_group=None,
-            allow_virtual_network_access=True, allow_forwarded_traffic=False, allow_gateway_transit=False,
-            use_remote_gateways=False, connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    remote_virtual_network,
+    virtual_network,
+    resource_group,
+    remote_vnet_group=None,
+    allow_virtual_network_access=True,
+    allow_forwarded_traffic=False,
+    allow_gateway_transit=False,
+    use_remote_gateways=False,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a virtual network peering object exists.
@@ -164,74 +176,76 @@ async def present(hub, ctx, name, remote_virtual_network, virtual_network, resou
                 - use_remote_gateways: False
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     peering = await hub.exec.azurerm.network.virtual_network_peering.get(
         name,
         virtual_network,
         resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        azurerm_log_level="info",
+        **connection_auth,
     )
 
-    if 'error' not in peering:
+    if "error" not in peering:
         remote_vnet = None
-        if peering.get('remote_virtual_network', {}).get('id'):
-            remote_vnet = peering['remote_virtual_network']['id'].split('/')[-1]
+        if peering.get("remote_virtual_network", {}).get("id"):
+            remote_vnet = peering["remote_virtual_network"]["id"].split("/")[-1]
 
         if remote_virtual_network != remote_vnet:
-            ret['changes']['remote_virtual_network'] = {
-                'old': remote_vnet,
-                'new': remote_virtual_network
+            ret["changes"]["remote_virtual_network"] = {
+                "old": remote_vnet,
+                "new": remote_virtual_network,
             }
 
-        for bool_opt in ['use_remote_gateways', 'allow_forwarded_traffic', 'allow_virtual_network_access', 'allow_gateway_transit']:
+        for bool_opt in [
+            "use_remote_gateways",
+            "allow_forwarded_traffic",
+            "allow_virtual_network_access",
+            "allow_gateway_transit",
+        ]:
             if locals()[bool_opt] != peering.get(bool_opt):
-                ret['changes'][bool_opt] = {
-                    'old': peering.get(bool_opt),
-                    'new': locals()[bool_opt]
+                ret["changes"][bool_opt] = {
+                    "old": peering.get(bool_opt),
+                    "new": locals()[bool_opt],
                 }
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Peering object {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Peering object {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Peering object {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Peering object {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'remote_virtual_network': remote_virtual_network,
-                'remote_vnet_group': (remote_vnet_group or resource_group),
-                'use_remote_gateways': use_remote_gateways,
-                'allow_forwarded_traffic': allow_forwarded_traffic,
-                'allow_virtual_network_access': allow_virtual_network_access,
-                'allow_gateway_transit': allow_gateway_transit
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "remote_virtual_network": remote_virtual_network,
+                "remote_vnet_group": (remote_vnet_group or resource_group),
+                "use_remote_gateways": use_remote_gateways,
+                "allow_forwarded_traffic": allow_forwarded_traffic,
+                "allow_virtual_network_access": allow_virtual_network_access,
+                "allow_gateway_transit": allow_gateway_transit,
+            },
         }
 
-    if ctx['test']:
-        ret['comment'] = 'Subnet {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Subnet {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     peering_kwargs = kwargs.copy()
@@ -247,34 +261,37 @@ async def present(hub, ctx, name, remote_virtual_network, virtual_network, resou
         allow_forwarded_traffic=allow_forwarded_traffic,
         allow_virtual_network_access=allow_virtual_network_access,
         allow_gateway_transit=allow_gateway_transit,
-        **peering_kwargs
+        **peering_kwargs,
     )
 
     # This is a special case where one side of the peering has been deleted and recreated.
     # In order to establish the new peer, the remote peer needs to be set back to "Initiated" state.
-    if peering.get('error', '').startswith('Azure Error: RemotePeeringIsDisconnected'):
-        rname_match = re.search('because remote peering (\S+) referencing parent virtual network', peering['error'])
-        remote_name = rname_match.group(1).split('/')[-1]
+    if peering.get("error", "").startswith("Azure Error: RemotePeeringIsDisconnected"):
+        rname_match = re.search(
+            "because remote peering (\S+) referencing parent virtual network",
+            peering["error"],
+        )
+        remote_name = rname_match.group(1).split("/")[-1]
 
         remote_peering = await hub.exec.azurerm.network.virtual_network_peering.get(
             name=remote_name,
             virtual_network=remote_virtual_network,
             resource_group=remote_vnet_group,
-            azurerm_log_level='info',
-            **connection_auth
+            azurerm_log_level="info",
+            **connection_auth,
         )
 
         remote_peering_kwargs = remote_peering.copy()
         remote_peering_kwargs.update(connection_auth)
-        remote_peering_kwargs['peering_state'] = 'Initiated'
-        remote_peering_kwargs.pop('remote_virtual_network')
+        remote_peering_kwargs["peering_state"] = "Initiated"
+        remote_peering_kwargs.pop("remote_virtual_network")
 
         remote_peering = await hub.exec.azurerm.network.virtual_network_peering.create_or_update(
             remote_virtual_network=virtual_network,
             remote_vnet_group=resource_group,
             virtual_network=remote_virtual_network,
             resource_group=remote_vnet_group,
-            **remote_peering_kwargs
+            **remote_peering_kwargs,
         )
 
         peering = await hub.exec.azurerm.network.virtual_network_peering.create_or_update(
@@ -287,22 +304,26 @@ async def present(hub, ctx, name, remote_virtual_network, virtual_network, resou
             allow_forwarded_traffic=allow_forwarded_traffic,
             allow_virtual_network_access=allow_virtual_network_access,
             allow_gateway_transit=allow_gateway_transit,
-            **peering_kwargs
+            **peering_kwargs,
         )
 
-    if 'error' not in peering:
-        ret['result'] = True
-        ret['comment'] = 'Peering object {0} has been created.'.format(name)
+    if "error" not in peering:
+        ret["result"] = True
+        ret["comment"] = "Peering object {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create peering object {0}! ({1})'.format(name, peering.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create peering object {0}! ({1})".format(
+        name, peering.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
-async def absent(hub, ctx, name, virtual_network, resource_group, connection_auth=None, **kwargs):
-    '''
+async def absent(
+    hub, ctx, name, virtual_network, resource_group, connection_auth=None, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a virtual network peering object does not exist in the virtual network.
@@ -320,58 +341,49 @@ async def absent(hub, ctx, name, virtual_network, resource_group, connection_aut
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     peering = await hub.exec.azurerm.network.virtual_network_peering.get(
         name,
         virtual_network,
         resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        azurerm_log_level="info",
+        **connection_auth,
     )
 
-    if 'error' in peering:
-        ret['result'] = True
-        ret['comment'] = 'Peering object {0} was not found.'.format(name)
+    if "error" in peering:
+        ret["result"] = True
+        ret["comment"] = "Peering object {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Peering object {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': peering,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Peering object {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": peering,
+            "new": {},
         }
         return ret
 
     deleted = await hub.exec.azurerm.network.virtual_network_peering.delete(
-        name,
-        virtual_network,
-        resource_group,
-        **connection_auth
+        name, virtual_network, resource_group, **connection_auth
     )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Peering object {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': peering,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Peering object {0} has been deleted.".format(name)
+        ret["changes"] = {"old": peering, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete peering object {0}!'.format(name)
+    ret["comment"] = "Failed to delete peering object {0}!".format(name)
     return ret

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Compute Virtual Machine Extension Image Operations Execution Module
 
 .. versionadded:: 2.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Compute Virtual Machine Extension Image Operations 
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -54,6 +54,7 @@ HAS_LIBS = False
 try:
     import azure.mgmt.compute.models  # pylint: disable=unused-import
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -62,7 +63,7 @@ log = logging.getLogger(__name__)
 
 
 async def get(hub, location, publisher, extension_type, version, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Gets a virtual machine extension image.
@@ -81,9 +82,9 @@ async def get(hub, location, publisher, extension_type, version, **kwargs):
 
         azurerm.compute.virtual_machine_extension.get test_loc test_publisher test_type test_version
 
-    '''
+    """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
 
     try:
         image = compconn.virtual_machine_extension_images.get(
@@ -91,19 +92,19 @@ async def get(hub, location, publisher, extension_type, version, **kwargs):
             publisher_name=publisher,
             version=version,
             type=extension_type,
-            **kwargs
+            **kwargs,
         )
 
         result = image.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_types(hub, location, publisher, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Gets a list of virtual machine extension image types.
@@ -118,28 +119,27 @@ async def list_types(hub, location, publisher, **kwargs):
 
         azurerm.compute.virtual_machine_extension_image.list_types test_loc test_publisher
 
-    '''
+    """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
 
     try:
         images = compconn.virtual_machine_extension_images.list_types(
-            location=location,
-            publisher_name=publisher,
+            location=location, publisher_name=publisher,
         )
 
         for image in images:
             img = image.as_dict()
-            result[img['name']] = img
+            result[img["name"]] = img
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_versions(hub, location, publisher, extension_type, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Gets a list of virtual machine extension image versions.
@@ -156,22 +156,20 @@ async def list_versions(hub, location, publisher, extension_type, **kwargs):
 
         azurerm.compute.virtual_machine_extension_image.list_versions test_loc test_publisher test_type
 
-    '''
+    """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
 
     try:
         images = compconn.virtual_machine_extension_images.list_versions(
-            location=location,
-            publisher_name=publisher,
-            type=extension_type
+            location=location, publisher_name=publisher, type=extension_type
         )
 
         for image in images:
             img = image.as_dict()
-            result[img['name']] = img
+            result[img["name"]] = img
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

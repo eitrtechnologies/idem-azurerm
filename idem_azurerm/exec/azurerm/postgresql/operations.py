@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) PostgreSQL Operations Execution Module
 
 .. versionadded:: 2.0.0
@@ -45,7 +45,7 @@ Azure Resource Manager (ARM) PostgreSQL Operations Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -55,6 +55,7 @@ HAS_LIBS = False
 try:
     import azure.mgmt.rdbms.postgresql.models  # pylint: disable=unused-import
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -65,7 +66,7 @@ log = logging.getLogger(__name__)
 
 
 async def list_(hub, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Lists all of the available REST API operations.
@@ -76,16 +77,16 @@ async def list_(hub, **kwargs):
 
         azurerm.postgresql.operations.list_
 
-    '''
+    """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
         ops = postconn.operations.list()
 
         result = ops.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

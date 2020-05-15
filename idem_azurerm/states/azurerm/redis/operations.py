@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Redis Operations State Module
 
 .. versionadded:: 2.0.0
@@ -61,26 +61,36 @@ Azure Resource Manager (ARM) Redis Operations State Module
                 secret: XXXXXXXXXXXXXXXXXXXXXXXX
                 cloud_environment: AZURE_PUBLIC_CLOUD
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
 
 log = logging.getLogger(__name__)
 
-TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-        ]
-    }
-}
+TREQ = {"present": {"require": ["states.azurerm.resource.group.present",]}}
 
 
-async def present(hub, ctx, name, resource_group, location, sku, redis_configuration=None, enable_non_ssl_port=False,
-                 tenant_settings=None, shard_count=None, minimum_tls_version=None, subnet_id=None, static_ip=None,
-                 zones=None, tags=None, connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    resource_group,
+    location,
+    sku,
+    redis_configuration=None,
+    enable_non_ssl_port=False,
+    tenant_settings=None,
+    shard_count=None,
+    minimum_tls_version=None,
+    subnet_id=None,
+    static_ip=None,
+    zones=None,
+    tags=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Ensure a redis cache exists in the resource group.
@@ -141,116 +151,115 @@ async def present(hub, ctx, name, resource_group, location, sku, redis_configura
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     cache = await hub.exec.azurerm.redis.operations.get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     new_cache = True
 
-    if 'error' not in cache:
+    if "error" not in cache:
         new_cache = False
 
         if tags:
-            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(cache.get('tags', {}), tags)
+            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+                cache.get("tags", {}), tags
+            )
             if tag_changes:
-                ret['changes']['tags'] = tag_changes
+                ret["changes"]["tags"] = tag_changes
 
-        sku_changes = await hub.exec.utils.dictdiffer.deep_diff(cache.get('sku'), sku)
+        sku_changes = await hub.exec.utils.dictdiffer.deep_diff(cache.get("sku"), sku)
         if sku_changes:
-            ret['changes']['sku'] = sku_changes
+            ret["changes"]["sku"] = sku_changes
 
         if tenant_settings:
-            tenant_changes = await hub.exec.utils.dictdiffer.deep_diff(cache.get('tenant_settings', {}), tenant_settings)
+            tenant_changes = await hub.exec.utils.dictdiffer.deep_diff(
+                cache.get("tenant_settings", {}), tenant_settings
+            )
             if tenant_changes:
-                ret['changes']['tenant_settings'] = tenant_changes
+                ret["changes"]["tenant_settings"] = tenant_changes
 
         if redis_configuration:
-            config_changes = await hub.exec.utils.dictdiffer.deep_diff(cache.get('redis_configuration', {}), redis_configuration)
+            config_changes = await hub.exec.utils.dictdiffer.deep_diff(
+                cache.get("redis_configuration", {}), redis_configuration
+            )
             if config_changes:
-                ret['changes']['redis_configuration'] = config_changes
+                ret["changes"]["redis_configuration"] = config_changes
 
         if enable_non_ssl_port is not None:
-            if enable_non_ssl_port != cache.get('enable_non_ssl_port'):
-                ret['changes']['enable_non_ssl_port'] = {
-                    'old': cache.get('enable_non_ssl_port'),
-                    'new': enable_non_ssl_port
+            if enable_non_ssl_port != cache.get("enable_non_ssl_port"):
+                ret["changes"]["enable_non_ssl_port"] = {
+                    "old": cache.get("enable_non_ssl_port"),
+                    "new": enable_non_ssl_port,
                 }
         if shard_count is not None:
-            if shard_count != cache.get('shard_count', 0):
-                ret['changes']['shard_count'] = {
-                    'old': cache.get('shard_count'),
-                    'new': shard_count
+            if shard_count != cache.get("shard_count", 0):
+                ret["changes"]["shard_count"] = {
+                    "old": cache.get("shard_count"),
+                    "new": shard_count,
                 }
 
         if minimum_tls_version:
-            if minimum_tls_version != cache.get('minimum_tls_version'):
-                ret['changes']['minimum_tls_version'] = {
-                    'old': cache.get('minimum_tls_version'),
-                    'new': minimum_tls_version
+            if minimum_tls_version != cache.get("minimum_tls_version"):
+                ret["changes"]["minimum_tls_version"] = {
+                    "old": cache.get("minimum_tls_version"),
+                    "new": minimum_tls_version,
                 }
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Redis cache {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Redis cache {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Redis cache {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Redis cache {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'resource_group': resource_group,
-                'sku': sku,
-                'location': location,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "resource_group": resource_group,
+                "sku": sku,
+                "location": location,
+            },
         }
 
         if tags:
-            ret['changes']['new']['tags'] = tags
+            ret["changes"]["new"]["tags"] = tags
         if redis_configuration:
-            ret['changes']['new']['redis_configuration'] = redis_configuration
+            ret["changes"]["new"]["redis_configuration"] = redis_configuration
         if enable_non_ssl_port is not None:
-            ret['changes']['new']['enable_non_ssl_port'] = enable_non_ssl_port
+            ret["changes"]["new"]["enable_non_ssl_port"] = enable_non_ssl_port
         if tenant_settings:
-            ret['changes']['new']['tenant_settings'] = tenant_settings
+            ret["changes"]["new"]["tenant_settings"] = tenant_settings
         if shard_count is not None:
-            ret['changes']['new']['shard_count'] = shard_count
+            ret["changes"]["new"]["shard_count"] = shard_count
         if minimum_tls_version:
-            ret['changes']['new']['minimum_tls_version'] = minimum_tls_version
+            ret["changes"]["new"]["minimum_tls_version"] = minimum_tls_version
         if subnet_id:
-            ret['changes']['new']['subnet_id'] = subnet_id
+            ret["changes"]["new"]["subnet_id"] = subnet_id
         if static_ip:
-            ret['changes']['new']['static_ip'] = static_ip
+            ret["changes"]["new"]["static_ip"] = static_ip
         if zones:
-            ret['changes']['new']['zones'] = zones
+            ret["changes"]["new"]["zones"] = zones
 
-
-    if ctx['test']:
-        ret['comment'] = 'Redis cache {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Redis cache {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     cache_kwargs = kwargs.copy()
@@ -271,7 +280,7 @@ async def present(hub, ctx, name, resource_group, location, sku, redis_configura
             static_ip=static_ip,
             zones=zones,
             tags=tags,
-            **cache_kwargs
+            **cache_kwargs,
         )
     else:
         cache = await hub.exec.azurerm.redis.operations.update(
@@ -284,22 +293,24 @@ async def present(hub, ctx, name, resource_group, location, sku, redis_configura
             shard_count=shard_count,
             minimum_tls_version=minimum_tls_version,
             tags=tags,
-            **cache_kwargs
+            **cache_kwargs,
         )
 
-    if 'error' not in cache:
-        ret['result'] = True
-        ret['comment'] = 'Redis cache {0} has been created.'.format(name)
+    if "error" not in cache:
+        ret["result"] = True
+        ret["comment"] = "Redis cache {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create Redis cache {0}! ({1})'.format(name, cache.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create Redis cache {0}! ({1})".format(
+        name, cache.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Ensure a Redis cache does not exist in the specified resource group.
@@ -321,51 +332,45 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     cache = await hub.exec.azurerm.redis.operations.get(
-        name,
-        resource_group,
-        **connection_auth
+        name, resource_group, **connection_auth
     )
 
-    if 'error' in cache:
-        ret['result'] = True
-        ret['comment'] = 'Redis cache {0} was not found.'.format(name)
+    if "error" in cache:
+        ret["result"] = True
+        ret["comment"] = "Redis cache {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Redis cache {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': cache,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Redis cache {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": cache,
+            "new": {},
         }
         return ret
 
-    deleted = await hub.exec.azurerm.redis.operations.delete(name, resource_group, **connection_auth)
+    deleted = await hub.exec.azurerm.redis.operations.delete(
+        name, resource_group, **connection_auth
+    )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Redis cache {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': cache,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Redis cache {0} has been deleted.".format(name)
+        ret["changes"] = {"old": cache, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete Redis cache {0}!'.format(name)
+    ret["comment"] = "Failed to delete Redis cache {0}!".format(name)
     return ret

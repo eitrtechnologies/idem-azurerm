@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Compute Virtual Machine Extension Operations Execution Module
 
 .. versionadded:: 2.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Compute Virtual Machine Extension Operations Execut
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -54,6 +54,7 @@ HAS_LIBS = False
 try:
     import azure.mgmt.compute.models  # pylint: disable=unused-import
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -63,9 +64,19 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, name, vm_name, resource_group, location, publisher, extension_type, version, settings,
-                           **kwargs):
-    '''
+async def create_or_update(
+    hub,
+    name,
+    vm_name,
+    resource_group,
+    location,
+    publisher,
+    extension_type,
+    version,
+    settings,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     The operation to create or update the extension.
@@ -94,23 +105,25 @@ async def create_or_update(hub, name, vm_name, resource_group, location, publish
         azurerm.compute.virtual_machine_extension.create_or_update test_name test_vm test_group test_loc \
                 test_publisher test_type test_version test_settings
 
-    '''
+    """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
 
     try:
         paramsmodel = await hub.exec.utils.azurerm.create_object_model(
-            'compute',
-            'VirtualMachineExtension',
+            "compute",
+            "VirtualMachineExtension",
             location=location,
             settings=settings,
             publisher=publisher,
             virtual_machine_extension_type=extension_type,
             type_handler_version=version,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
@@ -124,14 +137,14 @@ async def create_or_update(hub, name, vm_name, resource_group, location, publish
         extension.wait()
         result = extension.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def delete(hub, name, vm_name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     The operation to delete the extension.
@@ -148,28 +161,26 @@ async def delete(hub, name, vm_name, resource_group, **kwargs):
 
         azurerm.compute.virtual_machine_extension.delete test_name test_vm test_group
 
-    '''
+    """
     result = False
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
 
     try:
         extension = compconn.virtual_machine_extensions.delete(
-            vm_extension_name=name,
-            vm_name=vm_name,
-            resource_group_name=resource_group
+            vm_extension_name=name, vm_name=vm_name, resource_group_name=resource_group
         )
 
         extension.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get(hub, name, vm_name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     The operation to get the extension.
@@ -186,27 +197,25 @@ async def get(hub, name, vm_name, resource_group, **kwargs):
 
         azurerm.compute.virtual_machine_extension.get test_name test_vm test_group
 
-    '''
+    """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
 
     try:
         extension = compconn.virtual_machine_extensions.get(
-            vm_extension_name=name,
-            vm_name=vm_name,
-            resource_group_name=resource_group
+            vm_extension_name=name, vm_name=vm_name, resource_group_name=resource_group
         )
 
         result = extension.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_(hub, vm_name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     The operation to get all extensions of a Virtual Machine.
@@ -221,21 +230,20 @@ async def list_(hub, vm_name, resource_group, **kwargs):
 
         azurerm.compute.virtual_machine_extension.list test_vm test_group
 
-    '''
+    """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
 
     try:
         extensions = compconn.virtual_machine_extensions.list(
-            vm_name=vm_name,
-            resource_group_name=resource_group
+            vm_name=vm_name, resource_group_name=resource_group
         )
 
-        extensions_as_list = extensions.as_dict().get('value', {})
+        extensions_as_list = extensions.as_dict().get("value", {})
         for extension in extensions_as_list:
-            result[extension['name']] = extension
+            result[extension["name"]] = extension
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

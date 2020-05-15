@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) PostgreSQL Check Name Availability Operations Execution Module
 
 .. versionadded:: 2.0.0
@@ -45,7 +45,7 @@ Azure Resource Manager (ARM) PostgreSQL Check Name Availability Operations Execu
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -55,6 +55,7 @@ HAS_LIBS = False
 try:
     import azure.mgmt.rdbms.postgresql.models  # pylint: disable=unused-import
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -63,7 +64,7 @@ log = logging.getLogger(__name__)
 
 
 async def execute(hub, name, type=None, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Check the availability of name for resource.
@@ -78,19 +79,16 @@ async def execute(hub, name, type=None, **kwargs):
 
         azurerm.postgresql.check_name_availability.execute test_name test_type
 
-    '''
+    """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
-        availability = postconn.check_name_availability.execute(
-            name=name,
-            type=type,
-        )
+        availability = postconn.check_name_availability.execute(name=name, type=type,)
 
         result = availability.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

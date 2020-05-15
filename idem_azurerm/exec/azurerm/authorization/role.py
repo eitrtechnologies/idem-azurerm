@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Authorization Roles Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ to every function in order to work properly.
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -56,6 +56,7 @@ try:
     import azure.mgmt.authorization.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -64,7 +65,7 @@ log = logging.getLogger(__name__)
 
 
 async def definitions_get(hub, role_id, scope, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get role definition by name (GUID).
@@ -79,27 +80,27 @@ async def definitions_get(hub, role_id, scope, **kwargs):
 
         azurerm.authorization.role.definitions_get testid testscope
 
-    '''
+    """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
 
     try:
         defs = authconn.role_definitions.get(
-            scope=scope,
-            role_definition_id=role_id,
-            **kwargs
+            scope=scope, role_definition_id=role_id, **kwargs
         )
 
         result = defs.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error(
+            "authorization", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
 
     return result
 
 
 async def definitions_get_by_id(hub, role_id, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets a role definition by ID.
@@ -115,26 +116,25 @@ async def definitions_get_by_id(hub, role_id, **kwargs):
 
         azurerm.authorization.role.definitions_get_by_id testid
 
-    '''
+    """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
 
     try:
-        defs = authconn.role_definitions.get_by_id(
-            role_definition_id=role_id,
-            **kwargs
-        )
+        defs = authconn.role_definitions.get_by_id(role_definition_id=role_id, **kwargs)
 
         result = defs.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error(
+            "authorization", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
 
     return result
 
 
 async def definitions_list(hub, scope, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get all role definitions that are applicable at scope and above.
@@ -147,29 +147,29 @@ async def definitions_list(hub, scope, **kwargs):
 
         azurerm.authorization.role.definitions_list testscope
 
-    '''
+    """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
 
     try:
         defs = await hub.exec.utils.azurerm.paged_object_to_list(
             authconn.role_definitions.list(
-                scope=scope,
-                filter=kwargs.get('filter'),
-                **kwargs
+                scope=scope, filter=kwargs.get("filter"), **kwargs
             )
         )
 
         result = defs
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error(
+            "authorization", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
 
     return result
 
 
 async def assignments_get(hub, name, scope, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get the specified role assignment.
@@ -184,27 +184,27 @@ async def assignments_get(hub, name, scope, **kwargs):
 
         azurerm.authorization.role.assignments_get testname testscope
 
-    '''
+    """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
 
     try:
         assigns = authconn.role_assignments.get(
-            role_assignment_name=name,
-            scope=scope,
-            **kwargs
+            role_assignment_name=name, scope=scope, **kwargs
         )
 
         result = assigns.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error(
+            "authorization", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
 
     return result
 
 
 async def assignments_get_by_id(hub, assignment_id, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets a role assignment by ID.
@@ -219,26 +219,27 @@ async def assignments_get_by_id(hub, assignment_id, **kwargs):
 
         azurerm.authorization.role.assignments_get_by_id testid
 
-    '''
+    """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
 
     try:
         assigns = authconn.role_assignments.get_by_id(
-            role_assignment_id=assignment_id,
-            **kwargs
-            )
+            role_assignment_id=assignment_id, **kwargs
+        )
 
         result = assigns.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error(
+            "authorization", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
 
     return result
 
 
 async def assignments_list(hub, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets all role assignments for the subscription.
@@ -249,29 +250,35 @@ async def assignments_list(hub, **kwargs):
 
         azurerm.authorization.role.assignments_list
 
-    '''
+    """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
 
     try:
         assigns = await hub.exec.utils.azurerm.paged_object_to_list(
-            authconn.role_assignments.list(
-                filter=kwargs.get('filter'),
-                **kwargs
-            )
+            authconn.role_assignments.list(filter=kwargs.get("filter"), **kwargs)
         )
 
         result = assigns
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error(
+            "authorization", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
 
     return result
 
 
-async def assignments_list_for_resource(hub, name, resource_group, resource_provider_namespace, resource_type,
-                                      parent_resource_path=None, **kwargs):
-    '''
+async def assignments_list_for_resource(
+    hub,
+    name,
+    resource_group,
+    resource_provider_namespace,
+    resource_type,
+    parent_resource_path=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Gets all role assignments for a resource.
@@ -293,12 +300,12 @@ async def assignments_list_for_resource(hub, name, resource_group, resource_prov
         azurerm.authorization.role.assignments_list_for_resource testname testgroup testnamespace \
                   testtype testpath
 
-    '''
+    """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
 
     if parent_resource_path is None:
-        parent_resource_path = ''
+        parent_resource_path = ""
 
     try:
         assigns = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -308,21 +315,23 @@ async def assignments_list_for_resource(hub, name, resource_group, resource_prov
                 resource_provider_namespace=resource_provider_namespace,
                 resource_type=resource_type,
                 parent_resource_path=parent_resource_path,
-                filter=kwargs.get('filter'),
-                **kwargs
+                filter=kwargs.get("filter"),
+                **kwargs,
             )
         )
 
         result = assigns
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error(
+            "authorization", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
 
     return result
 
 
 async def assignments_list_for_resource_group(hub, name, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets all role assignments for a resource group.
@@ -335,29 +344,29 @@ async def assignments_list_for_resource_group(hub, name, **kwargs):
 
         azurerm.authorization.role.assignments_list_for_resource_group testgroup
 
-    '''
+    """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
 
     try:
         assigns = await hub.exec.utils.azurerm.paged_object_to_list(
             authconn.role_assignments.list_for_resource_group(
-                resource_group_name=name,
-                filter=kwargs.get('filter'),
-                **kwargs
+                resource_group_name=name, filter=kwargs.get("filter"), **kwargs
             )
         )
 
         result = assigns
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error(
+            "authorization", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
 
     return result
 
 
 async def assignments_list_for_scope(hub, scope, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets role assignments for a scope.
@@ -370,22 +379,22 @@ async def assignments_list_for_scope(hub, scope, **kwargs):
 
         azurerm.authorization.role.assignments_list_for_scope testscope
 
-    '''
+    """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client('authorization', **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
 
     try:
         assigns = await hub.exec.utils.azurerm.paged_object_to_list(
             authconn.role_assignments.list_for_scope(
-                scope=scope,
-                filter=kwargs.get('filter'),
-                **kwargs
+                scope=scope, filter=kwargs.get("filter"), **kwargs
             )
         )
 
         result = assigns
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('authorization', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error(
+            "authorization", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
 
     return result

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) PostgreSQL Server Configuration Operations Execution Module
 
 .. versionadded:: 2.0.0
@@ -45,7 +45,7 @@ Azure Resource Manager (ARM) PostgreSQL Server Configuration Operations Executio
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -55,6 +55,7 @@ HAS_LIBS = False
 try:
     import azure.mgmt.rdbms.postgresql.models  # pylint: disable=unused-import
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -62,8 +63,10 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, name, server_name, resource_group, value=None, **kwargs):
-    '''
+async def create_or_update(
+    hub, name, server_name, resource_group, value=None, **kwargs
+):
+    """
     .. versionadded:: 2.0.0
 
     Updates the specified configuration setting for the given server. A list of configuration settings that can be
@@ -84,9 +87,9 @@ async def create_or_update(hub, name, server_name, resource_group, value=None, *
 
         azurerm.postgresql.configuration.create_or_update test_name test_server test_group test_value
 
-    '''
+    """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
         config = postconn.configurations.create_or_update(
@@ -99,14 +102,14 @@ async def create_or_update(hub, name, server_name, resource_group, value=None, *
         config.wait()
         result = config.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get(hub, name, server_name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Gets information about a configuration of server.
@@ -123,9 +126,9 @@ async def get(hub, name, server_name, resource_group, **kwargs):
 
         azurerm.postgresql.configuration.get test_name test_server test_group
 
-    '''
+    """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
         config = postconn.configurations.get(
@@ -136,14 +139,14 @@ async def get(hub, name, server_name, resource_group, **kwargs):
 
         result = config.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_by_server(hub, server_name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     List all the configurations in a given server.
@@ -158,22 +161,21 @@ async def list_by_server(hub, server_name, resource_group, **kwargs):
 
         azurerm.postgresql.configuration.list_by_server test_server test_group
 
-    '''
+    """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
         configs = await hub.exec.utils.azurerm.paged_object_to_list(
             postconn.configurations.list_by_server(
-                server_name=server_name,
-                resource_group_name=resource_group
+                server_name=server_name, resource_group_name=resource_group
             )
         )
 
         for config in configs:
-            result[config['name']] = config
+            result[config["name"]] = config
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

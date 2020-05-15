@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Key State Module
 
 .. versionadded:: 2.0.0
@@ -63,25 +63,31 @@ Azure Resource Manager (ARM) Key State Module
                 secret: XXXXXXXXXXXXXXXXXXXXXXXX
                 cloud_environment: AZURE_PUBLIC_CLOUD
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
 
 log = logging.getLogger(__name__)
 
-TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.keyvault.vault.present',
-        ]
-    }
-}
+TREQ = {"present": {"require": ["states.azurerm.keyvault.vault.present",]}}
 
 
-async def present(hub, ctx, name, key_type, vault_url, key_ops=None, enabled=None, expires_on=None, not_before=None,
-                  tags=None, connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    key_type,
+    vault_url,
+    key_ops=None,
+    enabled=None,
+    expires_on=None,
+    not_before=None,
+    tags=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Ensure the specified key exists within the given key vault. Requires keys/create permission. Key properties can be
@@ -122,101 +128,88 @@ async def present(hub, ctx, name, key_type, vault_url, key_ops=None, enabled=Non
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     key = await hub.exec.azurerm.keyvault.key.get_key(
-        name=name,
-        vault_url=vault_url,
-        azurerm_log_level='info',
-        **connection_auth
+        name=name, vault_url=vault_url, azurerm_log_level="info", **connection_auth
     )
 
-    if key_type != 'oct':
-        key_type = key_type.upper().replace('_', '-')
+    if key_type != "oct":
+        key_type = key_type.upper().replace("_", "-")
 
-    if 'error' not in key:
+    if "error" not in key:
         if tags:
             tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
-                key.get('properties', {}).get('tags', {}) or {},
-                tags or {}
+                key.get("properties", {}).get("tags", {}) or {}, tags or {}
             )
             if tag_changes:
-                ret['changes']['tags'] = tag_changes
+                ret["changes"]["tags"] = tag_changes
 
         if isinstance(key_ops, list):
-            if sorted(key_ops) != sorted(key.get('key_operations', [])):
-                ret['changes']['key_operations'] = {
-                    'old': key.get('key_operations'),
-                    'new': key_ops
+            if sorted(key_ops) != sorted(key.get("key_operations", [])):
+                ret["changes"]["key_operations"] = {
+                    "old": key.get("key_operations"),
+                    "new": key_ops,
                 }
 
         if enabled is not None:
-            if enabled != key.get('properties', {}).get('enabled'):
-                ret['changes']['enabled'] = {
-                    'old': key.get('properties', {}).get('enabled'),
-                    'new': enabled
+            if enabled != key.get("properties", {}).get("enabled"):
+                ret["changes"]["enabled"] = {
+                    "old": key.get("properties", {}).get("enabled"),
+                    "new": enabled,
                 }
 
         if expires_on:
-            if expires_on != key.get('properties', {}).get('expires_on'):
-                ret['changes']['expires_on'] = {
-                    'old': key.get('properties', {}).get('expires_on'),
-                    'new': expires_on
+            if expires_on != key.get("properties", {}).get("expires_on"):
+                ret["changes"]["expires_on"] = {
+                    "old": key.get("properties", {}).get("expires_on"),
+                    "new": expires_on,
                 }
 
         if not_before:
-            if not_before != key.get('properties', {}).get('not_before'):
-                ret['changes']['not_before'] = {
-                    'old': key.get('properties', {}).get('not_before'),
-                    'new': not_before
+            if not_before != key.get("properties", {}).get("not_before"):
+                ret["changes"]["not_before"] = {
+                    "old": key.get("properties", {}).get("not_before"),
+                    "new": not_before,
                 }
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Key {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Key {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Key {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Key {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'key_type': key_type
-            }
-        }
+        ret["changes"] = {"old": {}, "new": {"name": name, "key_type": key_type}}
 
         if tags:
-            ret['changes']['new']['tags'] = tags
+            ret["changes"]["new"]["tags"] = tags
         if key_ops is not None:
-            ret['changes']['new']['key_operations'] = key_ops
+            ret["changes"]["new"]["key_operations"] = key_ops
         if enabled is not None:
-            ret['changes']['new']['enabled'] = enabled
+            ret["changes"]["new"]["enabled"] = enabled
         if expires_on:
-            ret['changes']['new']['expires_on'] = expires_on
+            ret["changes"]["new"]["expires_on"] = expires_on
         if not_before:
-            ret['changes']['new']['not_before'] = not_before
+            ret["changes"]["new"]["not_before"] = not_before
 
-    if ctx['test']:
-        ret['comment'] = 'Key {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Key {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     key_kwargs = kwargs.copy()
@@ -231,22 +224,22 @@ async def present(hub, ctx, name, key_type, vault_url, key_ops=None, enabled=Non
         enabled=enabled,
         not_before=not_before,
         expires_on=expires_on,
-        **key_kwargs
+        **key_kwargs,
     )
 
-    if 'error' not in key:
-        ret['result'] = True
-        ret['comment'] = 'Key {0} has been created.'.format(name)
+    if "error" not in key:
+        ret["result"] = True
+        ret["comment"] = "Key {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create Key {0}! ({1})'.format(name, key.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create Key {0}! ({1})".format(name, key.get("error"))
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
 async def absent(hub, ctx, name, vault_url, connection_auth=None, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Ensure the specified key does not exist within the given key vault.
@@ -268,56 +261,45 @@ async def absent(hub, ctx, name, vault_url, connection_auth=None, **kwargs):
                 - vault_url: my_vault
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     key = await hub.exec.azurerm.keyvault.key.get_key(
-        name=name,
-        vault_url=vault_url,
-        azurerm_log_level='info',
-        **connection_auth
+        name=name, vault_url=vault_url, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' in key:
-        ret['result'] = True
-        ret['comment'] = 'Key {0} was not found.'.format(name)
+    if "error" in key:
+        ret["result"] = True
+        ret["comment"] = "Key {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Key {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': key,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Key {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": key,
+            "new": {},
         }
         return ret
 
     deleted = await hub.exec.azurerm.keyvault.key.begin_delete_key(
-        name=name,
-        vault_url=vault_url,
-        **connection_auth
+        name=name, vault_url=vault_url, **connection_auth
     )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Key {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': key,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Key {0} has been deleted.".format(name)
+        ret["changes"] = {"old": key, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete Key {0}!'.format(name)
+    ret["comment"] = "Failed to delete Key {0}!".format(name)
     return ret

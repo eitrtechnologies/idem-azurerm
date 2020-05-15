@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) PostgreSQL Server Security Alert Policy Operations State Module
 
 .. versionadded:: 2.0.0
@@ -61,7 +61,7 @@ Azure Resource Manager (ARM) PostgreSQL Server Security Alert Policy Operations 
                 secret: XXXXXXXXXXXXXXXXXXXXXXXX
                 cloud_environment: AZURE_PUBLIC_CLOUD
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -69,18 +69,32 @@ import logging
 log = logging.getLogger(__name__)
 
 TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-            'states.azurerm.postgresql.server.present',
+    "present": {
+        "require": [
+            "states.azurerm.resource.group.present",
+            "states.azurerm.postgresql.server.present",
         ]
     }
 }
 
-async def present(hub, ctx, server_name, resource_group, policy_state, disabled_alerts=None, email_addresses=None,
-                  email_account_admins=None, storage_endpoint=None, storage_account_access_key=None,
-                  retention_days=None, force_access_key=False, connection_auth=None, **kwargs):
-    '''
+
+async def present(
+    hub,
+    ctx,
+    server_name,
+    resource_group,
+    policy_state,
+    disabled_alerts=None,
+    email_addresses=None,
+    email_account_admins=None,
+    storage_endpoint=None,
+    storage_account_access_key=None,
+    retention_days=None,
+    force_access_key=False,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Ensures that the specified server security alert policy exists within the given PostgreSQL server.
@@ -128,118 +142,118 @@ async def present(hub, ctx, server_name, resource_group, policy_state, disabled_
                 - policy_state: 'Enabled'
                 - connection_auth: {{ profile }}
 
-    '''
-    name = 'Default'
+    """
+    name = "Default"
 
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     policy = await hub.exec.azurerm.postgresql.server_security_alert_policy.get(
         server_name=server_name,
         resource_group=resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        azurerm_log_level="info",
+        **connection_auth,
     )
 
-    if 'error' not in policy:
-        if policy_state != policy.get('state'):
-            ret['changes']['state'] = {
-                'old': policy.get('state'),
-                'new': policy_state
-            }
+    if "error" not in policy:
+        if policy_state != policy.get("state"):
+            ret["changes"]["state"] = {"old": policy.get("state"), "new": policy_state}
 
         if disabled_alerts:
-            if sorted(disabled_alerts or ['']) != sorted(policy.get('disabled_alerts', [''])):
-                ret['changes']['disabled_alerts'] = {
-                    'old': policy.get('disabled_alerts', ['']),
-                    'new': (disabled_alerts or [''])
+            if sorted(disabled_alerts or [""]) != sorted(
+                policy.get("disabled_alerts", [""])
+            ):
+                ret["changes"]["disabled_alerts"] = {
+                    "old": policy.get("disabled_alerts", [""]),
+                    "new": (disabled_alerts or [""]),
                 }
 
         if email_addresses:
-            if sorted(email_addresses or ['']) != sorted(policy.get('email_addresses', [''])):
-                ret['changes']['email_addresses'] = {
-                    'old': policy.get('email_addresses', ['']),
-                    'new': (email_addresses or [''])
+            if sorted(email_addresses or [""]) != sorted(
+                policy.get("email_addresses", [""])
+            ):
+                ret["changes"]["email_addresses"] = {
+                    "old": policy.get("email_addresses", [""]),
+                    "new": (email_addresses or [""]),
                 }
 
         if storage_endpoint:
-            if storage_endpoint != policy.get('storage_endpoint'):
-                ret['changes']['storage_endpoint'] = {
-                    'old': policy.get('storage_endpoint'),
-                    'new': storage_endpoint
+            if storage_endpoint != policy.get("storage_endpoint"):
+                ret["changes"]["storage_endpoint"] = {
+                    "old": policy.get("storage_endpoint"),
+                    "new": storage_endpoint,
                 }
 
         if email_account_admins is not None:
-            if email_account_admins != policy.get('email_account_admins'):
-                ret['changes']['email_account_admins'] = {
-                    'old': policy.get('email_account_admins'),
-                    'new': email_account_admins
+            if email_account_admins != policy.get("email_account_admins"):
+                ret["changes"]["email_account_admins"] = {
+                    "old": policy.get("email_account_admins"),
+                    "new": email_account_admins,
                 }
 
         if retention_days is not None:
-            if retention_days != policy.get('retention_days'):
-                ret['changes']['retention_days'] = {
-                    'old': policy.get('retention_days'),
-                    'new': retention_days
+            if retention_days != policy.get("retention_days"):
+                ret["changes"]["retention_days"] = {
+                    "old": policy.get("retention_days"),
+                    "new": retention_days,
                 }
 
         if storage_account_access_key:
             if force_access_key:
-                ret['changes']['storage_account_access_key'] = {
-                    'new': 'REDACTED'
-                }
-            elif ret['changes']:
-                ret['changes']['storage_account_access_key'] = {
-                    'new': 'REDACTED'
-                }
+                ret["changes"]["storage_account_access_key"] = {"new": "REDACTED"}
+            elif ret["changes"]:
+                ret["changes"]["storage_account_access_key"] = {"new": "REDACTED"}
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Server Security Alert Policy {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret[
+                "comment"
+            ] = "Server Security Alert Policy {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Server Security Alert Policy {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret[
+                "comment"
+            ] = "Server Security Alert Policy {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'server_name': server_name,
-                'resource_group': resource_group,
-                'state': policy_state
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "server_name": server_name,
+                "resource_group": resource_group,
+                "state": policy_state,
+            },
         }
 
         if disabled_alerts:
-            ret['changes']['new']['disabled_alerts'] = disabled_alerts
+            ret["changes"]["new"]["disabled_alerts"] = disabled_alerts
         if email_addresses:
-            ret['changes']['new']['email_addresses'] = email_addresses
+            ret["changes"]["new"]["email_addresses"] = email_addresses
         if email_account_admins is not None:
-            ret['changes']['new']['email_account_admins'] = email_account_admins
+            ret["changes"]["new"]["email_account_admins"] = email_account_admins
         if storage_endpoint:
-            ret['changes']['new']['storage_endpoint'] = storage_endpoint
+            ret["changes"]["new"]["storage_endpoint"] = storage_endpoint
         if storage_account_access_key:
-            ret['changes']['new']['storage_account_access_key'] = 'REDACTED'
+            ret["changes"]["new"]["storage_account_access_key"] = "REDACTED"
         if retention_days is not None:
-            ret['changes']['new']['retention_days'] = retention_days
+            ret["changes"]["new"]["retention_days"] = retention_days
 
-    if ctx['test']:
-        ret['comment'] = 'Server Security Alert Policy {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Server Security Alert Policy {0} would be created.".format(
+            name
+        )
+        ret["result"] = None
         return ret
 
     policy_kwargs = kwargs.copy()
@@ -255,15 +269,19 @@ async def present(hub, ctx, server_name, resource_group, policy_state, disabled_
         storage_endpoint=storage_endpoint,
         storage_account_access_key=storage_account_access_key,
         retention_days=retention_days,
-        **policy_kwargs
+        **policy_kwargs,
     )
 
-    if 'error' not in policy:
-        ret['result'] = True
-        ret['comment'] = 'Server Security Alert Policy {0} has been created.'.format(name)
+    if "error" not in policy:
+        ret["result"] = True
+        ret["comment"] = "Server Security Alert Policy {0} has been created.".format(
+            name
+        )
         return ret
 
-    ret['comment'] = 'Failed to create Server Security Alert Policy {0}! ({1})'.format(name, policy.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create Server Security Alert Policy {0}! ({1})".format(
+        name, policy.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret

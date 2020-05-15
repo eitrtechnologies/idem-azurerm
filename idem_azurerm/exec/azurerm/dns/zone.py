@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) DNS Zone Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ to every function in order to work properly.
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -56,6 +56,7 @@ try:
     import azure.mgmt.dns.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -66,7 +67,7 @@ log = logging.getLogger(__name__)
 
 
 async def create_or_update(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Creates or updates a DNS zone. Does not modify DNS records within the zone.
@@ -81,23 +82,31 @@ async def create_or_update(hub, name, resource_group, **kwargs):
 
         azurerm.dns.zone.create_or_update myzone testgroup
 
-    '''
+    """
     # DNS zones are global objects
-    kwargs['location'] = 'global'
+    kwargs["location"] = "global"
 
-    dnsconn = await hub.exec.utils.azurerm.get_client('dns', **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
 
     # Convert list of ID strings to list of dictionaries with id key.
-    if isinstance(kwargs.get('registration_virtual_networks'), list):
-        kwargs['registration_virtual_networks'] = [{'id': vnet} for vnet in kwargs['registration_virtual_networks']]
+    if isinstance(kwargs.get("registration_virtual_networks"), list):
+        kwargs["registration_virtual_networks"] = [
+            {"id": vnet} for vnet in kwargs["registration_virtual_networks"]
+        ]
 
-    if isinstance(kwargs.get('resolution_virtual_networks'), list):
-        kwargs['resolution_virtual_networks'] = [{'id': vnet} for vnet in kwargs['resolution_virtual_networks']]
+    if isinstance(kwargs.get("resolution_virtual_networks"), list):
+        kwargs["resolution_virtual_networks"] = [
+            {"id": vnet} for vnet in kwargs["resolution_virtual_networks"]
+        ]
 
     try:
-        zone_model = await hub.exec.utils.azurerm.create_object_model('dns', 'Zone', **kwargs)
+        zone_model = await hub.exec.utils.azurerm.create_object_model(
+            "dns", "Zone", **kwargs
+        )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
@@ -105,21 +114,23 @@ async def create_or_update(hub, name, resource_group, **kwargs):
             zone_name=name,
             resource_group_name=resource_group,
             parameters=zone_model,
-            if_match=kwargs.get('if_match'),
-            if_none_match=kwargs.get('if_none_match')
+            if_match=kwargs.get("if_match"),
+            if_none_match=kwargs.get("if_none_match"),
         )
         result = zone.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('dns', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("dns", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def delete(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Delete a DNS zone within a resource group.
@@ -134,25 +145,25 @@ async def delete(hub, name, resource_group, **kwargs):
 
         azurerm.dns.zone.delete myzone testgroup
 
-    '''
+    """
     result = False
-    dnsconn = await hub.exec.utils.azurerm.get_client('dns', **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
     try:
         zone = dnsconn.zones.delete(
             zone_name=name,
             resource_group_name=resource_group,
-            if_match=kwargs.get('if_match')
+            if_match=kwargs.get("if_match"),
         )
         zone.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('dns', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("dns", str(exc), **kwargs)
 
     return result
 
 
 async def get(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get a dictionary representing a DNS zone's properties, but not the
@@ -168,24 +179,21 @@ async def get(hub, name, resource_group, **kwargs):
 
         azurerm.dns.zone.get myzone testgroup
 
-    '''
-    dnsconn = await hub.exec.utils.azurerm.get_client('dns', **kwargs)
+    """
+    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
     try:
-        zone = dnsconn.zones.get(
-            zone_name=name,
-            resource_group_name=resource_group
-        )
+        zone = dnsconn.zones.get(zone_name=name, resource_group_name=resource_group)
         result = zone.as_dict()
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('dns', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("dns", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_by_resource_group(hub, resource_group, top=None, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Lists the DNS zones in a resource group.
@@ -201,28 +209,27 @@ async def list_by_resource_group(hub, resource_group, top=None, **kwargs):
 
         azurerm.dns.zone.list_by_resource_group testgroup
 
-    '''
+    """
     result = {}
-    dnsconn = await hub.exec.utils.azurerm.get_client('dns', **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
     try:
         zones = await hub.exec.utils.azurerm.paged_object_to_list(
             dnsconn.zones.list_by_resource_group(
-                resource_group_name=resource_group,
-                top=top
+                resource_group_name=resource_group, top=top
             )
         )
 
         for zone in zones:
-            result[zone['name']] = zone
+            result[zone["name"]] = zone
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('dns', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("dns", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_(hub, top=None, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Lists the DNS zones in all resource groups in a subscription.
@@ -236,16 +243,18 @@ async def list_(hub, top=None, **kwargs):
 
         azurerm.dns.zone.list
 
-    '''
+    """
     result = {}
-    dnsconn = await hub.exec.utils.azurerm.get_client('dns', **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
     try:
-        zones = await hub.exec.utils.azurerm.paged_object_to_list(dnsconn.zones.list(top=top))
+        zones = await hub.exec.utils.azurerm.paged_object_to_list(
+            dnsconn.zones.list(top=top)
+        )
 
         for zone in zones:
-            result[zone['name']] = zone
+            result[zone["name"]] = zone
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('dns', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("dns", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

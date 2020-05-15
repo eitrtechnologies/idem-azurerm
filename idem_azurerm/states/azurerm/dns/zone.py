@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) DNS Zone State Module
 
 .. versionadded:: 1.0.0
@@ -79,7 +79,7 @@ parameters are sensitive, it's recommended to pass them to the states via pillar
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -87,17 +87,26 @@ import logging
 log = logging.getLogger(__name__)
 
 TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-        ]
-    },
+    "present": {"require": ["states.azurerm.resource.group.present",]},
 }
 
 
-async def present(hub, ctx, name, resource_group, etag=None, if_match=None, if_none_match=None, registration_virtual_networks=None,
-            resolution_virtual_networks=None, tags=None, zone_type='Public', connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    resource_group,
+    etag=None,
+    if_match=None,
+    if_none_match=None,
+    registration_virtual_networks=None,
+    resolution_virtual_networks=None,
+    tags=None,
+    zone_type="Public",
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a DNS zone exists.
@@ -155,90 +164,107 @@ async def present(hub, ctx, name, resource_group, etag=None, if_match=None, if_n
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
-    zone = await hub.exec.azurerm.dns.zone.get(name, resource_group, azurerm_log_level='info', **connection_auth)
+    zone = await hub.exec.azurerm.dns.zone.get(
+        name, resource_group, azurerm_log_level="info", **connection_auth
+    )
 
-    if 'error' not in zone:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(zone.get('tags', {}), tags or {})
+    if "error" not in zone:
+        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            zone.get("tags", {}), tags or {}
+        )
         if tag_changes:
-            ret['changes']['tags'] = tag_changes
+            ret["changes"]["tags"] = tag_changes
 
         # The zone_type parameter is only accessible in azure-mgmt-dns >=2.0.0rc1
-        if zone.get('zone_type'):
-            if zone.get('zone_type').lower() != zone_type.lower():
-                ret['changes']['zone_type'] = {
-                    'old': zone['zone_type'],
-                    'new': zone_type
+        if zone.get("zone_type"):
+            if zone.get("zone_type").lower() != zone_type.lower():
+                ret["changes"]["zone_type"] = {
+                    "old": zone["zone_type"],
+                    "new": zone_type,
                 }
 
-            if zone_type.lower() == 'private':
+            if zone_type.lower() == "private":
                 # The registration_virtual_networks parameter is only accessible in azure-mgmt-dns >=2.0.0rc1
-                if registration_virtual_networks and not isinstance(registration_virtual_networks, list):
-                    ret['comment'] = 'registration_virtual_networks must be supplied as a list of VNET ID paths!'
+                if registration_virtual_networks and not isinstance(
+                    registration_virtual_networks, list
+                ):
+                    ret[
+                        "comment"
+                    ] = "registration_virtual_networks must be supplied as a list of VNET ID paths!"
                     return ret
-                reg_vnets = zone.get('registration_virtual_networks', [])
-                remote_reg_vnets = sorted([vnet['id'].lower() for vnet in reg_vnets if 'id' in vnet])
-                local_reg_vnets = sorted([vnet.lower() for vnet in registration_virtual_networks or []])
+                reg_vnets = zone.get("registration_virtual_networks", [])
+                remote_reg_vnets = sorted(
+                    [vnet["id"].lower() for vnet in reg_vnets if "id" in vnet]
+                )
+                local_reg_vnets = sorted(
+                    [vnet.lower() for vnet in registration_virtual_networks or []]
+                )
                 if local_reg_vnets != remote_reg_vnets:
-                    ret['changes']['registration_virtual_networks'] = {
-                        'old': remote_reg_vnets,
-                        'new': local_reg_vnets
+                    ret["changes"]["registration_virtual_networks"] = {
+                        "old": remote_reg_vnets,
+                        "new": local_reg_vnets,
                     }
 
                 # The resolution_virtual_networks parameter is only accessible in azure-mgmt-dns >=2.0.0rc1
-                if resolution_virtual_networks and not isinstance(resolution_virtual_networks, list):
-                    ret['comment'] = 'resolution_virtual_networks must be supplied as a list of VNET ID paths!'
+                if resolution_virtual_networks and not isinstance(
+                    resolution_virtual_networks, list
+                ):
+                    ret[
+                        "comment"
+                    ] = "resolution_virtual_networks must be supplied as a list of VNET ID paths!"
                     return ret
-                res_vnets = zone.get('resolution_virtual_networks', [])
-                remote_res_vnets = sorted([vnet['id'].lower() for vnet in res_vnets if 'id' in vnet])
-                local_res_vnets = sorted([vnet.lower() for vnet in resolution_virtual_networks or []])
+                res_vnets = zone.get("resolution_virtual_networks", [])
+                remote_res_vnets = sorted(
+                    [vnet["id"].lower() for vnet in res_vnets if "id" in vnet]
+                )
+                local_res_vnets = sorted(
+                    [vnet.lower() for vnet in resolution_virtual_networks or []]
+                )
                 if local_res_vnets != remote_res_vnets:
-                    ret['changes']['resolution_virtual_networks'] = {
-                        'old': remote_res_vnets,
-                        'new': local_res_vnets
+                    ret["changes"]["resolution_virtual_networks"] = {
+                        "old": remote_res_vnets,
+                        "new": local_res_vnets,
                     }
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'DNS zone {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "DNS zone {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'DNS zone {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "DNS zone {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'resource_group': resource_group,
-                'etag': etag,
-                'registration_virtual_networks': registration_virtual_networks,
-                'resolution_virtual_networks': resolution_virtual_networks,
-                'tags': tags,
-                'zone_type': zone_type,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "resource_group": resource_group,
+                "etag": etag,
+                "registration_virtual_networks": registration_virtual_networks,
+                "resolution_virtual_networks": resolution_virtual_networks,
+                "tags": tags,
+                "zone_type": zone_type,
+            },
         }
 
-    if ctx['test']:
-        ret['comment'] = 'DNS zone {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "DNS zone {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     zone_kwargs = kwargs.copy()
@@ -254,22 +280,24 @@ async def present(hub, ctx, name, resource_group, etag=None, if_match=None, if_n
         resolution_virtual_networks=resolution_virtual_networks,
         tags=tags,
         zone_type=zone_type,
-        **zone_kwargs
+        **zone_kwargs,
     )
 
-    if 'error' not in zone:
-        ret['result'] = True
-        ret['comment'] = 'DNS zone {0} has been created.'.format(name)
+    if "error" not in zone:
+        ret["result"] = True
+        ret["comment"] = "DNS zone {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create DNS zone {0}! ({1})'.format(name, zone.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create DNS zone {0}! ({1})".format(
+        name, zone.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Ensure a DNS zone does not exist in the resource group.
@@ -284,52 +312,45 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     zone = await hub.exec.azurerm.dns.zone.get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' in zone:
-        ret['result'] = True
-        ret['comment'] = 'DNS zone {0} was not found.'.format(name)
+    if "error" in zone:
+        ret["result"] = True
+        ret["comment"] = "DNS zone {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'DNS zone {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': zone,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "DNS zone {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": zone,
+            "new": {},
         }
         return ret
 
-    deleted = await hub.exec.azurerm.dns.zone.delete(name, resource_group, **connection_auth)
+    deleted = await hub.exec.azurerm.dns.zone.delete(
+        name, resource_group, **connection_auth
+    )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'DNS zone {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': zone,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "DNS zone {0} has been deleted.".format(name)
+        ret["changes"] = {"old": zone, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete DNS zone {0}!'.format(name)
+    ret["comment"] = "Failed to delete DNS zone {0}!".format(name)
     return ret

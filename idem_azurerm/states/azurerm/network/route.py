@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Network Route State Module
 
 .. versionadded:: 1.0.0
@@ -84,7 +84,7 @@ Azure Resource Manager (ARM) Network Route State Module
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -93,23 +93,28 @@ import re
 log = logging.getLogger(__name__)
 
 TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-            'states.azurerm.network.route.table_present',
+    "present": {
+        "require": [
+            "states.azurerm.resource.group.present",
+            "states.azurerm.network.route.table_present",
         ]
     },
-    'table_present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-        ]
-    },
+    "table_present": {"require": ["states.azurerm.resource.group.present",]},
 }
 
 
-async def table_present(hub, ctx, name, resource_group, tags=None, routes=None, disable_bgp_route_propagation=None,
-                  connection_auth=None, **kwargs):
-    '''
+async def table_present(
+    hub,
+    ctx,
+    name,
+    resource_group,
+    tags=None,
+    routes=None,
+    disable_bgp_route_propagation=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a route table exists.
@@ -155,77 +160,77 @@ async def table_present(hub, ctx, name, resource_group, tags=None, routes=None, 
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     rt_tbl = await hub.exec.azurerm.network.route.table_get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' not in rt_tbl:
+    if "error" not in rt_tbl:
         # tag changes
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(rt_tbl.get('tags', {}), tags or {})
+        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            rt_tbl.get("tags", {}), tags or {}
+        )
         if tag_changes:
-            ret['changes']['tags'] = tag_changes
+            ret["changes"]["tags"] = tag_changes
 
         # disable_bgp_route_propagation changes
         # pylint: disable=line-too-long
-        if disable_bgp_route_propagation and (disable_bgp_route_propagation != rt_tbl.get('disable_bgp_route_propagation')):
-            ret['changes']['disable_bgp_route_propagation'] = {
-                'old': rt_tbl.get('disable_bgp_route_propagation'),
-                'new': disable_bgp_route_propagation
+        if disable_bgp_route_propagation and (
+            disable_bgp_route_propagation != rt_tbl.get("disable_bgp_route_propagation")
+        ):
+            ret["changes"]["disable_bgp_route_propagation"] = {
+                "old": rt_tbl.get("disable_bgp_route_propagation"),
+                "new": disable_bgp_route_propagation,
             }
 
         # routes changes
         if routes:
-            comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(rt_tbl.get('routes', []), routes)
+            comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(
+                rt_tbl.get("routes", []), routes
+            )
 
-            if comp_ret.get('comment'):
-                ret['comment'] = '"routes" {0}'.format(comp_ret['comment'])
+            if comp_ret.get("comment"):
+                ret["comment"] = '"routes" {0}'.format(comp_ret["comment"])
                 return ret
 
-            if comp_ret.get('changes'):
-                ret['changes']['routes'] = comp_ret['changes']
+            if comp_ret.get("changes"):
+                ret["changes"]["routes"] = comp_ret["changes"]
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Route table {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Route table {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Route table {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Route table {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'tags': tags,
-                'routes': routes,
-                'disable_bgp_route_propagation': disable_bgp_route_propagation,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "tags": tags,
+                "routes": routes,
+                "disable_bgp_route_propagation": disable_bgp_route_propagation,
+            },
         }
 
-    if ctx['test']:
-        ret['comment'] = 'Route table {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Route table {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     rt_tbl_kwargs = kwargs.copy()
@@ -237,22 +242,24 @@ async def table_present(hub, ctx, name, resource_group, tags=None, routes=None, 
         disable_bgp_route_propagation=disable_bgp_route_propagation,
         routes=routes,
         tags=tags,
-        **rt_tbl_kwargs
+        **rt_tbl_kwargs,
     )
 
-    if 'error' not in rt_tbl:
-        ret['result'] = True
-        ret['comment'] = 'Route table {0} has been created.'.format(name)
+    if "error" not in rt_tbl:
+        ret["result"] = True
+        ret["comment"] = "Route table {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create route table {0}! ({1})'.format(name, rt_tbl.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create route table {0}! ({1})".format(
+        name, rt_tbl.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
 async def table_absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Ensure a route table does not exist in the resource group.
@@ -267,60 +274,63 @@ async def table_absent(hub, ctx, name, resource_group, connection_auth=None, **k
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     rt_tbl = await hub.exec.azurerm.network.route.table_get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' in rt_tbl:
-        ret['result'] = True
-        ret['comment'] = 'Route table {0} was not found.'.format(name)
+    if "error" in rt_tbl:
+        ret["result"] = True
+        ret["comment"] = "Route table {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Route table {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': rt_tbl,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Route table {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": rt_tbl,
+            "new": {},
         }
         return ret
 
-    deleted = await hub.exec.azurerm.network.route.table_delete(name, resource_group, **connection_auth)
+    deleted = await hub.exec.azurerm.network.route.table_delete(
+        name, resource_group, **connection_auth
+    )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Route table {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': rt_tbl,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Route table {0} has been deleted.".format(name)
+        ret["changes"] = {"old": rt_tbl, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete route table {0}!'.format(name)
+    ret["comment"] = "Failed to delete route table {0}!".format(name)
     return ret
 
 
-async def present(hub, ctx, name, address_prefix, next_hop_type, route_table, resource_group, next_hop_ip_address=None,
-            connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    address_prefix,
+    next_hop_type,
+    route_table,
+    resource_group,
+    next_hop_ip_address=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a route exists within a route table.
@@ -362,72 +372,67 @@ async def present(hub, ctx, name, address_prefix, next_hop_type, route_table, re
                 - next_hop_type: vnetlocal
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     route = await hub.exec.azurerm.network.route.get(
-        name,
-        route_table,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, route_table, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' not in route:
-        if address_prefix != route.get('address_prefix'):
-            ret['changes']['address_prefix'] = {
-                'old': route.get('address_prefix'),
-                'new': address_prefix
+    if "error" not in route:
+        if address_prefix != route.get("address_prefix"):
+            ret["changes"]["address_prefix"] = {
+                "old": route.get("address_prefix"),
+                "new": address_prefix,
             }
 
-        if next_hop_type.lower() != route.get('next_hop_type', '').lower():
-            ret['changes']['next_hop_type'] = {
-                'old': route.get('next_hop_type'),
-                'new': next_hop_type
+        if next_hop_type.lower() != route.get("next_hop_type", "").lower():
+            ret["changes"]["next_hop_type"] = {
+                "old": route.get("next_hop_type"),
+                "new": next_hop_type,
             }
 
-        if next_hop_type.lower() == 'virtualappliance' and next_hop_ip_address != route.get('next_hop_ip_address'):
-            ret['changes']['next_hop_ip_address'] = {
-                'old': route.get('next_hop_ip_address'),
-                'new': next_hop_ip_address
+        if next_hop_type.lower() == "virtualappliance" and next_hop_ip_address != route.get(
+            "next_hop_ip_address"
+        ):
+            ret["changes"]["next_hop_ip_address"] = {
+                "old": route.get("next_hop_ip_address"),
+                "new": next_hop_ip_address,
             }
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Route {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Route {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Route {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Route {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'address_prefix': address_prefix,
-                'next_hop_type': next_hop_type,
-                'next_hop_ip_address': next_hop_ip_address
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "address_prefix": address_prefix,
+                "next_hop_type": next_hop_type,
+                "next_hop_ip_address": next_hop_ip_address,
+            },
         }
 
-    if ctx['test']:
-        ret['comment'] = 'Route {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Route {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     route_kwargs = kwargs.copy()
@@ -440,22 +445,26 @@ async def present(hub, ctx, name, address_prefix, next_hop_type, route_table, re
         address_prefix=address_prefix,
         next_hop_type=next_hop_type,
         next_hop_ip_address=next_hop_ip_address,
-        **route_kwargs
+        **route_kwargs,
     )
 
-    if 'error' not in route:
-        ret['result'] = True
-        ret['comment'] = 'Route {0} has been created.'.format(name)
+    if "error" not in route:
+        ret["result"] = True
+        ret["comment"] = "Route {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create route {0}! ({1})'.format(name, route.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create route {0}! ({1})".format(
+        name, route.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
-async def absent(hub, ctx, name, route_table, resource_group, connection_auth=None, **kwargs):
-    '''
+async def absent(
+    hub, ctx, name, route_table, resource_group, connection_auth=None, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a route table does not exist in the resource group.
@@ -473,53 +482,45 @@ async def absent(hub, ctx, name, route_table, resource_group, connection_auth=No
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     route = await hub.exec.azurerm.network.route.get(
-        name,
-        route_table,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, route_table, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' in route:
-        ret['result'] = True
-        ret['comment'] = 'Route {0} was not found.'.format(name)
+    if "error" in route:
+        ret["result"] = True
+        ret["comment"] = "Route {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Route {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': route,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Route {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": route,
+            "new": {},
         }
         return ret
 
-    deleted = await hub.exec.azurerm.network.route.delete(name, route_table, resource_group, **connection_auth)
+    deleted = await hub.exec.azurerm.network.route.delete(
+        name, route_table, resource_group, **connection_auth
+    )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Route {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': route,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Route {0} has been deleted.".format(name)
+        ret["changes"] = {"old": route, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete route {0}!'.format(name)
+    ret["comment"] = "Failed to delete route {0}!".format(name)
     return ret

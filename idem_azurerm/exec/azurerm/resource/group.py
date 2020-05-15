@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Resource Group Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Resource Group Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -57,6 +57,7 @@ try:
     import azure.mgmt.resource.resources.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -67,7 +68,7 @@ log = logging.getLogger(__name__)
 
 
 async def list_(hub, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all resource groups within a subscription.
@@ -78,23 +79,25 @@ async def list_(hub, **kwargs):
 
         azurerm.resource.group.list
 
-    '''
+    """
     result = {}
-    resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
     try:
-        groups = await hub.exec.utils.azurerm.paged_object_to_list(resconn.resource_groups.list())
+        groups = await hub.exec.utils.azurerm.paged_object_to_list(
+            resconn.resource_groups.list()
+        )
 
         for group in groups:
-            result[group['name']] = group
+            result[group["name"]] = group
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def check_existence(hub, name, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Check for the existence of a named resource group in the current subscription.
@@ -107,20 +110,20 @@ async def check_existence(hub, name, **kwargs):
 
         azurerm.resource.group.check_existence testgroup
 
-    '''
+    """
     result = False
-    resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
     try:
         result = resconn.resource_groups.check_existence(name)
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
 
     return result
 
 
 async def get(hub, name, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get a dictionary representing a resource group's properties.
@@ -133,22 +136,22 @@ async def get(hub, name, **kwargs):
 
         azurerm.resource.group.get testgroup
 
-    '''
+    """
     result = {}
-    resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
     try:
         group = resconn.resource_groups.get(name)
         result = group.as_dict()
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def create_or_update(hub, name, location, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Create or update a resource group in a given location.
@@ -164,26 +167,26 @@ async def create_or_update(hub, name, location, **kwargs):
 
         azurerm.resource.group.create_or_update testgroup westus
 
-    '''
+    """
     result = {}
-    resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
     resource_group_params = {
-        'location': location,
-        'managed_by': kwargs.get('managed_by'),
-        'tags': kwargs.get('tags'),
+        "location": location,
+        "managed_by": kwargs.get("managed_by"),
+        "tags": kwargs.get("tags"),
     }
     try:
         group = resconn.resource_groups.create_or_update(name, resource_group_params)
         result = group.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def delete(hub, name, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Delete a resource group from the subscription.
@@ -196,14 +199,14 @@ async def delete(hub, name, **kwargs):
 
         azurerm.resource.group.delete testgroup
 
-    '''
+    """
     result = False
-    resconn = await hub.exec.utils.azurerm.get_client('resource', **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
     try:
         group = resconn.resource_groups.delete(name)
         group.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
 
     return result

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Compute Disk Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Compute Disk Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -57,6 +57,7 @@ try:
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
     from msrestazure.tools import is_valid_resource_id
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -65,7 +66,7 @@ log = logging.getLogger(__name__)
 
 
 async def delete(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Delete a disk.
@@ -80,17 +81,14 @@ async def delete(hub, name, resource_group, **kwargs):
 
         azurerm.compute.disk.delete testdisk testgroup
 
-    '''
+    """
     result = False
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
-        compconn.disks.delete(
-            resource_group_name=resource_group,
-            disk_name=name
-        )
+        compconn.disks.delete(resource_group_name=resource_group, disk_name=name)
         result = True
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
 
     return result

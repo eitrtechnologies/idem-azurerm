@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Storage Account State Module
 
 .. versionadded:: 2.0.0
@@ -60,26 +60,35 @@ Azure Resource Manager (ARM) Storage Account State Module
                 secret: XXXXXXXXXXXXXXXXXXXXXXXX
                 cloud_environment: AZURE_PUBLIC_CLOUD
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
 
 log = logging.getLogger(__name__)
 
-TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-        ]
-    }
-}
+TREQ = {"present": {"require": ["states.azurerm.resource.group.present",]}}
 
 
-async def present(hub, ctx, name, resource_group, sku, kind, location, custom_domain=None, encryption=None,
-                  network_rule_set=None, access_tier=None, https_traffic_only=None, is_hns_enabled=None,
-                  tags=None, connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    resource_group,
+    sku,
+    kind,
+    location,
+    custom_domain=None,
+    encryption=None,
+    network_rule_set=None,
+    access_tier=None,
+    https_traffic_only=None,
+    is_hns_enabled=None,
+    tags=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Ensure a storage account exists in the resource group.
@@ -137,124 +146,118 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, custom_do
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     account = await hub.exec.azurerm.storage.account.get_properties(
-        name,
-        resource_group,
-        **connection_auth
+        name, resource_group, **connection_auth
     )
 
-    if 'error' not in account:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(account.get('tags', {}), tags or {})
+    if "error" not in account:
+        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            account.get("tags", {}), tags or {}
+        )
         if tag_changes:
-            ret['changes']['tags'] = tag_changes
+            ret["changes"]["tags"] = tag_changes
 
-        if sku != account.get('sku').get('name'):
-            ret['changes']['sku'] = {
-                'old': account.get('sku').get('name'),
-                'new': sku
-            }
+        if sku != account.get("sku").get("name"):
+            ret["changes"]["sku"] = {"old": account.get("sku").get("name"), "new": sku}
 
-        if kind != account.get('kind'):
-            ret['changes']['kind'] = {
-                'old': account.get('kind'),
-                'new': kind
-            }
+        if kind != account.get("kind"):
+            ret["changes"]["kind"] = {"old": account.get("kind"), "new": kind}
 
         if https_traffic_only is not None:
-            if https_traffic_only != account.get('enable_https_traffic_only'):
-                ret['changes']['enable_https_traffic_only'] = {
-                    'old': account.get('enable_https_traffic_only'),
-                    'new': https_traffic_only
+            if https_traffic_only != account.get("enable_https_traffic_only"):
+                ret["changes"]["enable_https_traffic_only"] = {
+                    "old": account.get("enable_https_traffic_only"),
+                    "new": https_traffic_only,
                 }
 
         if is_hns_enabled is not None:
-            if is_hns_enabled != account.get('is_hns_enabled'):
-                ret['changes']['is_hns_enabled'] = {
-                    'old': account.get('is_hns_enabled'),
-                    'new': is_hns_enabled
+            if is_hns_enabled != account.get("is_hns_enabled"):
+                ret["changes"]["is_hns_enabled"] = {
+                    "old": account.get("is_hns_enabled"),
+                    "new": is_hns_enabled,
                 }
 
         if network_rule_set:
-            rule_set_changes = await hub.exec.utils.dictdiffer.deep_diff(account.get('network_rule_set', {}),
-                                                                         network_rule_set or {})
+            rule_set_changes = await hub.exec.utils.dictdiffer.deep_diff(
+                account.get("network_rule_set", {}), network_rule_set or {}
+            )
             if rule_set_changes:
-                ret['changes']['network_rule_set'] = rule_set_changes
+                ret["changes"]["network_rule_set"] = rule_set_changes
 
         if encryption:
-            encryption_changes = await hub.exec.utils.dictdiffer.deep_diff(account.get('encryption', {}),
-                                                                           encryption or {})
+            encryption_changes = await hub.exec.utils.dictdiffer.deep_diff(
+                account.get("encryption", {}), encryption or {}
+            )
             if encryption_changes:
-                ret['changes']['encryption'] = encryption_changes
+                ret["changes"]["encryption"] = encryption_changes
 
         # The Custom Domain can only be added on once, so if it already exists then this cannot be changed
         if custom_domain:
-            domain_changes = await hub.exec.utils.dictdiffer.deep_diff(account.get('custom_domain', {}),
-                                                                       custom_domain or {})
+            domain_changes = await hub.exec.utils.dictdiffer.deep_diff(
+                account.get("custom_domain", {}), custom_domain or {}
+            )
             if domain_changes:
-                ret['changes']['custom_domain'] = domain_changes
+                ret["changes"]["custom_domain"] = domain_changes
 
         if access_tier:
-            if access_tier != account.get('access_tier'):
-                ret['changes']['access_tier'] = {
-                    'old': account.get('access_tier'),
-                    'new': access_tier
+            if access_tier != account.get("access_tier"):
+                ret["changes"]["access_tier"] = {
+                    "old": account.get("access_tier"),
+                    "new": access_tier,
                 }
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Storage account {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Storage account {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Storage account {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Storage account {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'resource_group': resource_group,
-                'sku': sku,
-                'kind': kind,
-                'location': location,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "resource_group": resource_group,
+                "sku": sku,
+                "kind": kind,
+                "location": location,
+            },
         }
 
         if tags:
-            ret['changes']['new']['tags'] = tags
+            ret["changes"]["new"]["tags"] = tags
         if access_tier:
-            ret['changes']['new']['access_tier'] = access_tier
+            ret["changes"]["new"]["access_tier"] = access_tier
         if custom_domain:
-            ret['changes']['new']['custom_domain'] = custom_domain
+            ret["changes"]["new"]["custom_domain"] = custom_domain
         if encryption:
-            ret['changes']['new']['encryption'] = encryption
+            ret["changes"]["new"]["encryption"] = encryption
         if network_rule_set:
-            ret['changes']['new']['network_rule_set'] = network_rule_set
+            ret["changes"]["new"]["network_rule_set"] = network_rule_set
         if https_traffic_only is not None:
-            ret['changes']['new']['enable_https_traffic_only'] = https_traffic_only
+            ret["changes"]["new"]["enable_https_traffic_only"] = https_traffic_only
         if is_hns_enabled is not None:
-            ret['changes']['new']['is_hns_enabled'] = is_hns_enabled
+            ret["changes"]["new"]["is_hns_enabled"] = is_hns_enabled
 
-    if ctx['test']:
-        ret['comment'] = 'Storage account {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Storage account {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     account_kwargs = kwargs.copy()
@@ -273,22 +276,24 @@ async def present(hub, ctx, name, resource_group, sku, kind, location, custom_do
         access_tier=access_tier,
         https_traffic_only=https_traffic_only,
         is_hns_enabled=is_hns_enabled,
-        **account_kwargs
+        **account_kwargs,
     )
 
-    if 'error' not in account:
-        ret['result'] = True
-        ret['comment'] = 'Storage account {0} has been created.'.format(name)
+    if "error" not in account:
+        ret["result"] = True
+        ret["comment"] = "Storage account {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create storage acccount {0}! ({1})'.format(name, account.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create storage acccount {0}! ({1})".format(
+        name, account.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Ensure a storage account does not exist in the resource group.
@@ -309,51 +314,45 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     account = await hub.exec.azurerm.storage.account.get_properties(
-        name,
-        resource_group,
-        **connection_auth
+        name, resource_group, **connection_auth
     )
 
-    if 'error' in account:
-        ret['result'] = True
-        ret['comment'] = 'Storage account {0} was not found.'.format(name)
+    if "error" in account:
+        ret["result"] = True
+        ret["comment"] = "Storage account {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Storage account {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': account,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Storage account {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": account,
+            "new": {},
         }
         return ret
 
-    deleted = await hub.exec.azurerm.storage.account.delete(name, resource_group, **connection_auth)
+    deleted = await hub.exec.azurerm.storage.account.delete(
+        name, resource_group, **connection_auth
+    )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Storage account {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': account,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Storage account {0} has been deleted.".format(name)
+        ret["changes"] = {"old": account, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete storage account {0}!'.format(name)
+    ret["comment"] = "Failed to delete storage account {0}!".format(name)
     return ret

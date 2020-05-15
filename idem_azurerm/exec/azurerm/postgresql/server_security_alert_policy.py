@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) PostgreSQL Server Security Alert Policy Operations Execution Module
 
 .. versionadded:: 2.0.0
@@ -45,7 +45,7 @@ Azure Resource Manager (ARM) PostgreSQL Server Security Alert Policy Operations 
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -55,6 +55,7 @@ HAS_LIBS = False
 try:
     import azure.mgmt.rdbms.postgresql.models  # pylint: disable=unused-import
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -62,10 +63,20 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, server_name, resource_group, policy_state, disabled_alerts=None, email_addresses=None,
-                           email_account_admins=None, storage_endpoint=None, storage_account_access_key=None,
-                           retention_days=None, **kwargs):
-    '''
+async def create_or_update(
+    hub,
+    server_name,
+    resource_group,
+    policy_state,
+    disabled_alerts=None,
+    email_addresses=None,
+    email_account_admins=None,
+    storage_endpoint=None,
+    storage_account_access_key=None,
+    retention_days=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Creates or updates a threat detection policy.
@@ -100,14 +111,14 @@ async def create_or_update(hub, server_name, resource_group, policy_state, disab
 
         azurerm.postgresql.server_security_alert_policy.create_or_update test_server test_group test_state
 
-    '''
+    """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
         paramsmodel = await hub.exec.utils.azurerm.create_object_model(
-            'rdbms.postgresql',
-            'ServerSecurityAlertPolicy',
+            "rdbms.postgresql",
+            "ServerSecurityAlertPolicy",
             state=policy_state,
             disabled_alerts=disabled_alerts,
             email_addresses=email_addresses,
@@ -117,7 +128,9 @@ async def create_or_update(hub, server_name, resource_group, policy_state, disab
             retention_days=retention_days,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
@@ -130,14 +143,14 @@ async def create_or_update(hub, server_name, resource_group, policy_state, disab
         policy.wait()
         result = policy.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get(hub, server_name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Get a server's security alert policy.
@@ -152,19 +165,18 @@ async def get(hub, server_name, resource_group, **kwargs):
 
         azurerm.postgresql.server_security_alert_policy.get test_server test_group
 
-    '''
+    """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
         policy = postconn.server_security_alert_policies.get(
-            server_name=server_name,
-            resource_group_name=resource_group,
+            server_name=server_name, resource_group_name=resource_group,
         )
 
         result = policy.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

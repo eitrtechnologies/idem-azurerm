@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) PostgreSQL Server Operations State Module
 
 .. versionadded:: 2.0.0
@@ -61,26 +61,35 @@ Azure Resource Manager (ARM) PostgreSQL Server Operations State Module
                 secret: XXXXXXXXXXXXXXXXXXXXXXXX
                 cloud_environment: AZURE_PUBLIC_CLOUD
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
 
 log = logging.getLogger(__name__)
 
-TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-        ]
-    }
-}
+TREQ = {"present": {"require": ["states.azurerm.resource.group.present",]}}
 
 
-async def present(hub, ctx, name, resource_group, location, sku=None, version=None, ssl_enforcement=None,
-                  storage_profile=None, login=None, login_password=None, create_mode='Default', force_password=False,
-                  tags=None, connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    resource_group,
+    location,
+    sku=None,
+    version=None,
+    ssl_enforcement=None,
+    storage_profile=None,
+    login=None,
+    login_password=None,
+    create_mode="Default",
+    force_password=False,
+    tags=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Ensure a specified PostgreSQL Server exists.
@@ -140,115 +149,111 @@ async def present(hub, ctx, name, resource_group, location, sku=None, version=No
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     server = await hub.exec.azurerm.postgresql.server.get(
         name=name,
         resource_group=resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        azurerm_log_level="info",
+        **connection_auth,
     )
 
     new_server = True
 
-    if 'error' not in server:
+    if "error" not in server:
         new_server = False
 
         if tags:
-            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(server.get('tags', {}), tags or {})
+            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+                server.get("tags", {}), tags or {}
+            )
             if tag_changes:
-                ret['changes']['tags'] = tag_changes
+                ret["changes"]["tags"] = tag_changes
 
         if sku:
-            sku_changes = await hub.exec.utils.dictdiffer.deep_diff(server.get('sku', {}), sku)
+            sku_changes = await hub.exec.utils.dictdiffer.deep_diff(
+                server.get("sku", {}), sku
+            )
             if sku_changes:
-                ret['changes']['sku'] = sku_changes
+                ret["changes"]["sku"] = sku_changes
 
         if storage_profile:
             profile_changes = await hub.exec.utils.dictdiffer.deep_diff(
-                server.get('storage_profile', {}),
-                storage_profile
+                server.get("storage_profile", {}), storage_profile
             )
             if profile_changes:
-                ret['changes']['storage_profile'] = profile_changes
+                ret["changes"]["storage_profile"] = profile_changes
 
         if version:
-            if version != server.get('version'):
-                ret['changes']['version'] = {
-                    'old': server.get('version'),
-                    'new': version
+            if version != server.get("version"):
+                ret["changes"]["version"] = {
+                    "old": server.get("version"),
+                    "new": version,
                 }
 
         if ssl_enforcement:
-            if ssl_enforcement != server.get('ssl_enforcement'):
-                ret['changes']['ssl_enforcement'] = {
-                    'old': server.get('ssl_enforcement'),
-                    'new': ssl_enforcement
+            if ssl_enforcement != server.get("ssl_enforcement"):
+                ret["changes"]["ssl_enforcement"] = {
+                    "old": server.get("ssl_enforcement"),
+                    "new": ssl_enforcement,
                 }
 
         if force_password:
-            ret['changes']['administrator_login_password'] = {
-                'new': 'REDACTED'
-            }
-        elif ret['changes']:
-            ret['changes']['administrator_login_password'] = {
-                'new': 'REDACTED'
-            }
+            ret["changes"]["administrator_login_password"] = {"new": "REDACTED"}
+        elif ret["changes"]:
+            ret["changes"]["administrator_login_password"] = {"new": "REDACTED"}
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Server {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Server {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Server {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Server {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'resource_group': resource_group,
-                'location': location,
-                'create_mode': create_mode,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "resource_group": resource_group,
+                "location": location,
+                "create_mode": create_mode,
+            },
         }
 
         if tags:
-            ret['changes']['new']['tags'] = tags
+            ret["changes"]["new"]["tags"] = tags
         if sku:
-            ret['changes']['new']['sku'] = sku
+            ret["changes"]["new"]["sku"] = sku
         if version:
-            ret['changes']['new']['version'] = version
+            ret["changes"]["new"]["version"] = version
         if create_mode:
-            ret['changes']['new']['create_mode'] = create_mode
+            ret["changes"]["new"]["create_mode"] = create_mode
         if ssl_enforcement:
-            ret['changes']['new']['ssl_enforcement'] = ssl_enforcement
+            ret["changes"]["new"]["ssl_enforcement"] = ssl_enforcement
         if storage_profile:
-            ret['changes']['new']['storage_profile'] = storage_profile
+            ret["changes"]["new"]["storage_profile"] = storage_profile
         if login:
-            ret['changes']['new']['administrator_login'] = login
+            ret["changes"]["new"]["administrator_login"] = login
         if login_password:
-            ret['changes']['new']['administrator_login_password'] = 'REDACTED'
+            ret["changes"]["new"]["administrator_login_password"] = "REDACTED"
 
-    if ctx['test']:
-        ret['comment'] = 'Server {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Server {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     server_kwargs = kwargs.copy()
@@ -267,7 +272,7 @@ async def present(hub, ctx, name, resource_group, location, sku=None, version=No
             login_password=login_password,
             create_mode=create_mode,
             tags=tags,
-            **server_kwargs
+            **server_kwargs,
         )
     else:
         server = await hub.exec.azurerm.postgresql.server.update(
@@ -279,22 +284,24 @@ async def present(hub, ctx, name, resource_group, location, sku=None, version=No
             storage_profile=storage_profile,
             login_password=login_password,
             tags=tags,
-            **server_kwargs
+            **server_kwargs,
         )
 
-    if 'error' not in server:
-        ret['result'] = True
-        ret['comment'] = 'Server {0} has been created.'.format(name)
+    if "error" not in server:
+        ret["result"] = True
+        ret["comment"] = "Server {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create Server {0}! ({1})'.format(name, server.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create Server {0}! ({1})".format(
+        name, server.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Ensure a specified PostgreSQL Server does not exist.
@@ -316,56 +323,48 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     server = await hub.exec.azurerm.postgresql.server.get(
         name=name,
         resource_group=resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        azurerm_log_level="info",
+        **connection_auth,
     )
 
-    if 'error' in server:
-        ret['result'] = True
-        ret['comment'] = 'Server {0} was not found.'.format(name)
+    if "error" in server:
+        ret["result"] = True
+        ret["comment"] = "Server {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Server {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': server,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Server {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": server,
+            "new": {},
         }
         return ret
 
     deleted = await hub.exec.azurerm.postgresql.server.delete(
-        name=name,
-        resource_group=resource_group,
-        **connection_auth
+        name=name, resource_group=resource_group, **connection_auth
     )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Server {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': server,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Server {0} has been deleted.".format(name)
+        ret["changes"] = {"old": server, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete Server {0}!'.format(name)
+    ret["comment"] = "Failed to delete Server {0}!".format(name)
     return ret

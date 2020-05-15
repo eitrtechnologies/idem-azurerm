@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Network Security Group State Module
 
 .. versionadded:: 1.0.0
@@ -84,7 +84,7 @@ Azure Resource Manager (ARM) Network Security Group State Module
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -98,22 +98,27 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-        ]
-    },
-    'security_rule_present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-            'states.azurerm.network.network_security_group.present',
+    "present": {"require": ["states.azurerm.resource.group.present",]},
+    "security_rule_present": {
+        "require": [
+            "states.azurerm.resource.group.present",
+            "states.azurerm.network.network_security_group.present",
         ]
     },
 }
 
 
-async def present(hub, ctx, name, resource_group, tags=None, security_rules=None, connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    resource_group,
+    tags=None,
+    security_rules=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a network security group exists.
@@ -170,67 +175,67 @@ async def present(hub, ctx, name, resource_group, tags=None, security_rules=None
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     nsg = await hub.exec.azurerm.network.network_security_group.get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' not in nsg:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(nsg.get('tags', {}), tags or {})
+    if "error" not in nsg:
+        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            nsg.get("tags", {}), tags or {}
+        )
         if tag_changes:
-            ret['changes']['tags'] = tag_changes
+            ret["changes"]["tags"] = tag_changes
 
         if security_rules:
-            comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(nsg.get('security_rules', []), security_rules)
+            comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(
+                nsg.get("security_rules", []), security_rules
+            )
 
-            if comp_ret.get('comment'):
-                ret['comment'] = '"security_rules" {0}'.format(comp_ret['comment'])
+            if comp_ret.get("comment"):
+                ret["comment"] = '"security_rules" {0}'.format(comp_ret["comment"])
                 return ret
 
-            if comp_ret.get('changes'):
-                ret['changes']['security_rules'] = comp_ret['changes']
+            if comp_ret.get("changes"):
+                ret["changes"]["security_rules"] = comp_ret["changes"]
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Network security group {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Network security group {0} is already present.".format(
+                name
+            )
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Network security group {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Network security group {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'resource_group': resource_group,
-                'tags': tags,
-                'security_rules': security_rules,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "resource_group": resource_group,
+                "tags": tags,
+                "security_rules": security_rules,
+            },
         }
 
-    if ctx['test']:
-        ret['comment'] = 'Network security group {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Network security group {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     nsg_kwargs = kwargs.copy()
@@ -241,22 +246,24 @@ async def present(hub, ctx, name, resource_group, tags=None, security_rules=None
         resource_group=resource_group,
         tags=tags,
         security_rules=security_rules,
-        **nsg_kwargs
+        **nsg_kwargs,
     )
 
-    if 'error' not in nsg:
-        ret['result'] = True
-        ret['comment'] = 'Network security group {0} has been created.'.format(name)
+    if "error" not in nsg:
+        ret["result"] = True
+        ret["comment"] = "Network security group {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create network security group {0}! ({1})'.format(name, nsg.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create network security group {0}! ({1})".format(
+        name, nsg.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Ensure a network security group does not exist in the resource group.
@@ -281,63 +288,73 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
                 - resource_group: group1
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     nsg = await hub.exec.azurerm.network.network_security_group.get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' in nsg:
-        ret['result'] = True
-        ret['comment'] = 'Network security group {0} was not found.'.format(name)
+    if "error" in nsg:
+        ret["result"] = True
+        ret["comment"] = "Network security group {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Network security group {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': nsg,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Network security group {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": nsg,
+            "new": {},
         }
         return ret
 
-    deleted = await hub.exec.azurerm.network.network_security_group.delete(name, resource_group, **connection_auth)
+    deleted = await hub.exec.azurerm.network.network_security_group.delete(
+        name, resource_group, **connection_auth
+    )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Network security group {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': nsg,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Network security group {0} has been deleted.".format(name)
+        ret["changes"] = {"old": nsg, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete network security group {0}!'.format(name)
+    ret["comment"] = "Failed to delete network security group {0}!".format(name)
     return ret
 
 
-async def security_rule_present(hub, ctx, name, access, direction, priority, protocol, security_group, resource_group,
-                          destination_address_prefix=None, destination_port_range=None, source_address_prefix=None,
-                          source_port_range=None, description=None, destination_address_prefixes=None,
-                          destination_port_ranges=None, source_address_prefixes=None, source_port_ranges=None,
-                          connection_auth=None, **kwargs):
-    '''
+async def security_rule_present(
+    hub,
+    ctx,
+    name,
+    access,
+    direction,
+    priority,
+    protocol,
+    security_group,
+    resource_group,
+    destination_address_prefix=None,
+    destination_port_range=None,
+    source_address_prefix=None,
+    source_port_range=None,
+    description=None,
+    destination_address_prefixes=None,
+    destination_port_ranges=None,
+    source_address_prefixes=None,
+    source_port_ranges=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a security rule exists.
@@ -425,198 +442,208 @@ async def security_rule_present(hub, ctx, name, access, direction, priority, pro
                   - '443'
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     exclusive_params = [
-        ('source_port_ranges', 'source_port_range'),
-        ('source_address_prefixes', 'source_address_prefix'),
-        ('destination_port_ranges', 'destination_port_range'),
-        ('destination_address_prefixes', 'destination_address_prefix'),
+        ("source_port_ranges", "source_port_range"),
+        ("source_address_prefixes", "source_address_prefix"),
+        ("destination_port_ranges", "destination_port_range"),
+        ("destination_address_prefixes", "destination_address_prefix"),
     ]
 
     for params in exclusive_params:
         # pylint: disable=eval-used
         if not eval(params[0]) and not eval(params[1]):
-            ret['comment'] = 'Either the {0} or {1} parameter must be provided!'.format(params[0], params[1])
+            ret["comment"] = "Either the {0} or {1} parameter must be provided!".format(
+                params[0], params[1]
+            )
             return ret
         # pylint: disable=eval-used
         if eval(params[0]):
             # pylint: disable=eval-used
             if not isinstance(eval(params[0]), list):
-                ret['comment'] = 'The {0} parameter must be a list!'.format(params[0])
+                ret["comment"] = "The {0} parameter must be a list!".format(params[0])
                 return ret
             # pylint: disable=exec-used
-            exec('{0} = None'.format(params[1]))
+            exec("{0} = None".format(params[1]))
 
     rule = await hub.exec.azurerm.network.network_security_group.security_rule_get(
         name,
         security_group,
         resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        azurerm_log_level="info",
+        **connection_auth,
     )
 
-    if 'error' not in rule:
+    if "error" not in rule:
         # access changes
-        if access.capitalize() != rule.get('access'):
-            ret['changes']['access'] = {
-                'old': rule.get('access'),
-                'new': access
-            }
+        if access.capitalize() != rule.get("access"):
+            ret["changes"]["access"] = {"old": rule.get("access"), "new": access}
 
         # description changes
-        if description != rule.get('description'):
-            ret['changes']['description'] = {
-                'old': rule.get('description'),
-                'new': description
+        if description != rule.get("description"):
+            ret["changes"]["description"] = {
+                "old": rule.get("description"),
+                "new": description,
             }
 
         # direction changes
-        if direction.capitalize() != rule.get('direction'):
-            ret['changes']['direction'] = {
-                'old': rule.get('direction'),
-                'new': direction
+        if direction.capitalize() != rule.get("direction"):
+            ret["changes"]["direction"] = {
+                "old": rule.get("direction"),
+                "new": direction,
             }
 
         # priority changes
-        if int(priority) != rule.get('priority'):
-            ret['changes']['priority'] = {
-                'old': rule.get('priority'),
-                'new': priority
-            }
+        if int(priority) != rule.get("priority"):
+            ret["changes"]["priority"] = {"old": rule.get("priority"), "new": priority}
 
         # protocol changes
-        if protocol.lower() != rule.get('protocol', '').lower():
-            ret['changes']['protocol'] = {
-                'old': rule.get('protocol'),
-                'new': protocol
-            }
+        if protocol.lower() != rule.get("protocol", "").lower():
+            ret["changes"]["protocol"] = {"old": rule.get("protocol"), "new": protocol}
 
         # destination_port_range changes
-        if destination_port_range != rule.get('destination_port_range'):
-            ret['changes']['destination_port_range'] = {
-                'old': rule.get('destination_port_range'),
-                'new': destination_port_range
+        if destination_port_range != rule.get("destination_port_range"):
+            ret["changes"]["destination_port_range"] = {
+                "old": rule.get("destination_port_range"),
+                "new": destination_port_range,
             }
 
         # source_port_range changes
-        if source_port_range != rule.get('source_port_range'):
-            ret['changes']['source_port_range'] = {
-                'old': rule.get('source_port_range'),
-                'new': source_port_range
+        if source_port_range != rule.get("source_port_range"):
+            ret["changes"]["source_port_range"] = {
+                "old": rule.get("source_port_range"),
+                "new": source_port_range,
             }
 
         # destination_port_ranges changes
-        if sorted(destination_port_ranges or []) != sorted(rule.get('destination_port_ranges', [])):
-            ret['changes']['destination_port_ranges'] = {
-                'old': rule.get('destination_port_ranges'),
-                'new': destination_port_ranges
+        if sorted(destination_port_ranges or []) != sorted(
+            rule.get("destination_port_ranges", [])
+        ):
+            ret["changes"]["destination_port_ranges"] = {
+                "old": rule.get("destination_port_ranges"),
+                "new": destination_port_ranges,
             }
 
         # source_port_ranges changes
-        if sorted(source_port_ranges or []) != sorted(rule.get('source_port_ranges', [])):
-            ret['changes']['source_port_ranges'] = {
-                'old': rule.get('source_port_ranges'),
-                'new': source_port_ranges
+        if sorted(source_port_ranges or []) != sorted(
+            rule.get("source_port_ranges", [])
+        ):
+            ret["changes"]["source_port_ranges"] = {
+                "old": rule.get("source_port_ranges"),
+                "new": source_port_ranges,
             }
 
         # destination_address_prefix changes
-        if (destination_address_prefix or '').lower() != rule.get('destination_address_prefix', '').lower():
-            ret['changes']['destination_address_prefix'] = {
-                'old': rule.get('destination_address_prefix'),
-                'new': destination_address_prefix
+        if (destination_address_prefix or "").lower() != rule.get(
+            "destination_address_prefix", ""
+        ).lower():
+            ret["changes"]["destination_address_prefix"] = {
+                "old": rule.get("destination_address_prefix"),
+                "new": destination_address_prefix,
             }
 
         # source_address_prefix changes
-        if (source_address_prefix or '').lower() != rule.get('source_address_prefix', '').lower():
-            ret['changes']['source_address_prefix'] = {
-                'old': rule.get('source_address_prefix'),
-                'new': source_address_prefix
+        if (source_address_prefix or "").lower() != rule.get(
+            "source_address_prefix", ""
+        ).lower():
+            ret["changes"]["source_address_prefix"] = {
+                "old": rule.get("source_address_prefix"),
+                "new": source_address_prefix,
             }
 
         # destination_address_prefixes changes
-        if sorted(destination_address_prefixes or []) != sorted(rule.get('destination_address_prefixes', [])):
-            if len(destination_address_prefixes or []) != len(rule.get('destination_address_prefixes', [])):
-                ret['changes']['destination_address_prefixes'] = {
-                    'old': rule.get('destination_address_prefixes'),
-                    'new': destination_address_prefixes
+        if sorted(destination_address_prefixes or []) != sorted(
+            rule.get("destination_address_prefixes", [])
+        ):
+            if len(destination_address_prefixes or []) != len(
+                rule.get("destination_address_prefixes", [])
+            ):
+                ret["changes"]["destination_address_prefixes"] = {
+                    "old": rule.get("destination_address_prefixes"),
+                    "new": destination_address_prefixes,
                 }
             else:
-                local_dst_addrs, remote_dst_addrs = (sorted(destination_address_prefixes),
-                                                     sorted(rule.get('destination_address_prefixes')))
+                local_dst_addrs, remote_dst_addrs = (
+                    sorted(destination_address_prefixes),
+                    sorted(rule.get("destination_address_prefixes")),
+                )
                 for idx in six_range(0, len(local_dst_addrs)):
                     if local_dst_addrs[idx].lower() != remote_dst_addrs[idx].lower():
-                        ret['changes']['destination_address_prefixes'] = {
-                            'old': rule.get('destination_address_prefixes'),
-                            'new': destination_address_prefixes
+                        ret["changes"]["destination_address_prefixes"] = {
+                            "old": rule.get("destination_address_prefixes"),
+                            "new": destination_address_prefixes,
                         }
                         break
 
         # source_address_prefixes changes
-        if sorted(source_address_prefixes or []) != sorted(rule.get('source_address_prefixes', [])):
-            if len(source_address_prefixes or []) != len(rule.get('source_address_prefixes', [])):
-                ret['changes']['source_address_prefixes'] = {
-                    'old': rule.get('source_address_prefixes'),
-                    'new': source_address_prefixes
+        if sorted(source_address_prefixes or []) != sorted(
+            rule.get("source_address_prefixes", [])
+        ):
+            if len(source_address_prefixes or []) != len(
+                rule.get("source_address_prefixes", [])
+            ):
+                ret["changes"]["source_address_prefixes"] = {
+                    "old": rule.get("source_address_prefixes"),
+                    "new": source_address_prefixes,
                 }
             else:
-                local_src_addrs, remote_src_addrs = (sorted(source_address_prefixes),
-                                                     sorted(rule.get('source_address_prefixes')))
+                local_src_addrs, remote_src_addrs = (
+                    sorted(source_address_prefixes),
+                    sorted(rule.get("source_address_prefixes")),
+                )
                 for idx in six_range(0, len(local_src_addrs)):
                     if local_src_addrs[idx].lower() != remote_src_addrs[idx].lower():
-                        ret['changes']['source_address_prefixes'] = {
-                            'old': rule.get('source_address_prefixes'),
-                            'new': source_address_prefixes
+                        ret["changes"]["source_address_prefixes"] = {
+                            "old": rule.get("source_address_prefixes"),
+                            "new": source_address_prefixes,
                         }
                         break
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Security rule {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Security rule {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Security rule {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Security rule {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'access': access,
-                'description': description,
-                'direction': direction,
-                'priority': priority,
-                'protocol': protocol,
-                'destination_address_prefix': destination_address_prefix,
-                'destination_address_prefixes': destination_address_prefixes,
-                'destination_port_range': destination_port_range,
-                'destination_port_ranges': destination_port_ranges,
-                'source_address_prefix': source_address_prefix,
-                'source_address_prefixes': source_address_prefixes,
-                'source_port_range': source_port_range,
-                'source_port_ranges': source_port_ranges,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "access": access,
+                "description": description,
+                "direction": direction,
+                "priority": priority,
+                "protocol": protocol,
+                "destination_address_prefix": destination_address_prefix,
+                "destination_address_prefixes": destination_address_prefixes,
+                "destination_port_range": destination_port_range,
+                "destination_port_ranges": destination_port_ranges,
+                "source_address_prefix": source_address_prefix,
+                "source_address_prefixes": source_address_prefixes,
+                "source_port_range": source_port_range,
+                "source_port_ranges": source_port_ranges,
+            },
         }
 
-    if ctx['test']:
-        ret['comment'] = 'Security rule {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Security rule {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     rule_kwargs = kwargs.copy()
@@ -639,22 +666,26 @@ async def security_rule_present(hub, ctx, name, access, direction, priority, pro
         source_address_prefixes=source_address_prefixes,
         source_port_range=source_port_range,
         source_port_ranges=source_port_ranges,
-        **rule_kwargs
+        **rule_kwargs,
     )
 
-    if 'error' not in rule:
-        ret['result'] = True
-        ret['comment'] = 'Security rule {0} has been created.'.format(name)
+    if "error" not in rule:
+        ret["result"] = True
+        ret["comment"] = "Security rule {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create security rule {0}! ({1})'.format(name, rule.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create security rule {0}! ({1})".format(
+        name, rule.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
-async def security_rule_absent(hub, ctx, name, security_group, resource_group, connection_auth=None, **kwargs):
-    '''
+async def security_rule_absent(
+    hub, ctx, name, security_group, resource_group, connection_auth=None, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a security rule does not exist in the network security group.
@@ -683,58 +714,49 @@ async def security_rule_absent(hub, ctx, name, security_group, resource_group, c
                 - resource_group: group1
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     rule = await hub.exec.azurerm.network.network_security_group.security_rule_get(
         name,
         security_group,
         resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        azurerm_log_level="info",
+        **connection_auth,
     )
 
-    if 'error' in rule:
-        ret['result'] = True
-        ret['comment'] = 'Security rule {0} was not found.'.format(name)
+    if "error" in rule:
+        ret["result"] = True
+        ret["comment"] = "Security rule {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Security rule {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': rule,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Security rule {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": rule,
+            "new": {},
         }
         return ret
 
     deleted = await hub.exec.azurerm.network.network_security_group.security_rule_delete(
-        name,
-        security_group,
-        resource_group,
-        **connection_auth
+        name, security_group, resource_group, **connection_auth
     )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Security rule {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': rule,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Security rule {0} has been deleted.".format(name)
+        ret["changes"] = {"old": rule, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete security rule {0}!'.format(name)
+    ret["comment"] = "Failed to delete security rule {0}!".format(name)
     return ret

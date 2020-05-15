@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Virtual Network Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Virtual Network Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -62,6 +62,7 @@ try:
     from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -72,7 +73,7 @@ log = logging.getLogger(__name__)
 
 
 async def subnets_list(hub, virtual_network, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all subnets within a virtual network.
@@ -88,28 +89,27 @@ async def subnets_list(hub, virtual_network, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.subnets_list testnet testgroup
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         subnets = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.subnets.list(
-                resource_group_name=resource_group,
-                virtual_network_name=virtual_network
+                resource_group_name=resource_group, virtual_network_name=virtual_network
             )
         )
 
         for subnet in subnets:
-            result[subnet['name']] = subnet
+            result[subnet["name"]] = subnet
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def subnet_get(hub, name, virtual_network, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get details about a specific subnet.
@@ -128,25 +128,27 @@ async def subnet_get(hub, name, virtual_network, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.subnet_get testsubnet testnet testgroup
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         subnet = netconn.subnets.get(
             resource_group_name=resource_group,
             virtual_network_name=virtual_network,
-            subnet_name=name
+            subnet_name=name,
         )
 
         result = subnet.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def subnet_create_or_update(hub, name, address_prefix, virtual_network, resource_group, **kwargs):
-    '''
+async def subnet_create_or_update(
+    hub, name, address_prefix, virtual_network, resource_group, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Create or update a subnet.
@@ -168,39 +170,39 @@ async def subnet_create_or_update(hub, name, address_prefix, virtual_network, re
         azurerm.network.virtual_network_gateway.subnet_create_or_update testsubnet \
                   '10.0.0.0/24' testnet testgroup
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     # Use NSG name to link to the ID of an existing NSG.
-    if kwargs.get('network_security_group'):
+    if kwargs.get("network_security_group"):
         nsg = network_security_group_get(
-            name=kwargs['network_security_group'],
+            name=kwargs["network_security_group"],
             resource_group=resource_group,
-            **kwargs
+            **kwargs,
         )
-        if 'error' not in nsg:
-            kwargs['network_security_group'] = {'id': str(nsg['id'])}
+        if "error" not in nsg:
+            kwargs["network_security_group"] = {"id": str(nsg["id"])}
 
     # Use Route Table name to link to the ID of an existing Route Table.
-    if kwargs.get('route_table'):
+    if kwargs.get("route_table"):
         rt_table = route_table_get(
-            name=kwargs['route_table'],
-            resource_group=resource_group,
-            **kwargs
+            name=kwargs["route_table"], resource_group=resource_group, **kwargs
         )
-        if 'error' not in rt_table:
-            kwargs['route_table'] = {'id': str(rt_table['id'])}
+        if "error" not in rt_table:
+            kwargs["route_table"] = {"id": str(rt_table["id"])}
 
     try:
         snetmodel = await hub.exec.utils.azurerm.create_object_model(
-            'network',
-            'Subnet',
+            "network",
+            "Subnet",
             address_prefix=address_prefix,
             resource_group=resource_group,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
@@ -214,16 +216,18 @@ async def subnet_create_or_update(hub, name, address_prefix, virtual_network, re
         sn_result = subnet.result()
         result = sn_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def subnet_delete(hub, name, virtual_network, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Delete a subnet.
@@ -242,25 +246,25 @@ async def subnet_delete(hub, name, virtual_network, resource_group, **kwargs):
 
         azurerm.network.virtual_network_gateway.subnet_delete testsubnet testnet testgroup
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         subnet = netconn.subnets.delete(
             resource_group_name=resource_group,
             virtual_network_name=virtual_network,
-            subnet_name=name
+            subnet_name=name,
         )
         subnet.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
 
 async def list_all(hub, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all virtual networks within a subscription.
@@ -271,23 +275,25 @@ async def list_all(hub, **kwargs):
 
         azurerm.network.virtual_network.list_all
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
-        vnets = await hub.exec.utils.azurerm.paged_object_to_list(netconn.virtual_networks.list_all())
+        vnets = await hub.exec.utils.azurerm.paged_object_to_list(
+            netconn.virtual_networks.list_all()
+        )
 
         for vnet in vnets:
-            result[vnet['name']] = vnet
+            result[vnet["name"]] = vnet
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_(hub, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all virtual networks within a resource group.
@@ -301,27 +307,25 @@ async def list_(hub, resource_group, **kwargs):
 
         azurerm.network.virtual_network.list testgroup
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         vnets = await hub.exec.utils.azurerm.paged_object_to_list(
-            netconn.virtual_networks.list(
-                resource_group_name=resource_group
-            )
+            netconn.virtual_networks.list(resource_group_name=resource_group)
         )
 
         for vnet in vnets:
-            result[vnet['name']] = vnet
+            result[vnet["name"]] = vnet
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def create_or_update(hub, name, address_prefixes, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Create or update a virtual network.
@@ -342,62 +346,60 @@ async def create_or_update(hub, name, address_prefixes, resource_group, **kwargs
         azurerm.network.virtual_network.create_or_update \
                   testnet ['10.0.0.0/16'] testgroup
 
-    '''
-    if 'location' not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(
-            resource_group, **kwargs
-        )
+    """
+    if "location" not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
 
-        if 'error' in rg_props:
-            log.error(
-                'Unable to determine location from resource group specified.'
-            )
+        if "error" in rg_props:
+            log.error("Unable to determine location from resource group specified.")
             return False
-        kwargs['location'] = rg_props['location']
+        kwargs["location"] = rg_props["location"]
 
     if not isinstance(address_prefixes, list):
-        log.error(
-            'Address prefixes must be specified as a list!'
-        )
+        log.error("Address prefixes must be specified as a list!")
         return False
 
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
-    address_space = {'address_prefixes': address_prefixes}
-    dhcp_options = {'dns_servers': kwargs.get('dns_servers')}
+    address_space = {"address_prefixes": address_prefixes}
+    dhcp_options = {"dns_servers": kwargs.get("dns_servers")}
 
     try:
         vnetmodel = await hub.exec.utils.azurerm.create_object_model(
-            'network',
-            'VirtualNetwork',
+            "network",
+            "VirtualNetwork",
             address_space=address_space,
             dhcp_options=dhcp_options,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         vnet = netconn.virtual_networks.create_or_update(
             virtual_network_name=name,
             resource_group_name=resource_group,
-            parameters=vnetmodel
+            parameters=vnetmodel,
         )
         vnet.wait()
         vnet_result = vnet.result()
         result = vnet_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def delete(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Delete a virtual network.
@@ -413,24 +415,23 @@ async def delete(hub, name, resource_group, **kwargs):
 
         azurerm.network.virtual_network.delete testnet testgroup
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         vnet = netconn.virtual_networks.delete(
-            virtual_network_name=name,
-            resource_group_name=resource_group
+            virtual_network_name=name, resource_group_name=resource_group
         )
         vnet.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
 
 async def get(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get details about a specific virtual network.
@@ -446,16 +447,15 @@ async def get(hub, name, resource_group, **kwargs):
 
         azurerm.network.virtual_network.get testnet testgroup
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         vnet = netconn.virtual_networks.get(
-            virtual_network_name=name,
-            resource_group_name=resource_group
+            virtual_network_name=name, resource_group_name=resource_group
         )
         result = vnet.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

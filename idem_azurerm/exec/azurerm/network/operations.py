@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Network Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Network Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -61,6 +61,7 @@ try:
     import azure.mgmt.network.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -69,7 +70,7 @@ log = logging.getLogger(__name__)
 
 
 async def check_dns_name_availability(hub, name, region, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Check whether a domain name in the current zone is available for use.
@@ -84,23 +85,24 @@ async def check_dns_name_availability(hub, name, region, **kwargs):
 
          azurerm.network.check_dns_name_availability testdnsname westus
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         check_dns_name = netconn.check_dns_name_availability(
-            location=region,
-            domain_name_label=name
+            location=region, domain_name_label=name
         )
         result = check_dns_name.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def check_ip_address_availability(hub, ip_address, virtual_network, resource_group, **kwargs):
-    '''
+async def check_ip_address_availability(
+    hub, ip_address, virtual_network, resource_group, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Check that a private ip address is available within the specified
@@ -120,23 +122,24 @@ async def check_ip_address_availability(hub, ip_address, virtual_network, resour
 
          azurerm.network.check_ip_address_availability 10.0.0.4 testnet testgroup
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         check_ip = netconn.virtual_networks.check_ip_address_availability(
             resource_group_name=resource_group,
             virtual_network_name=virtual_network,
-            ip_address=ip_address)
+            ip_address=ip_address,
+        )
         result = check_ip.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def usages_list(hub, location, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List subscription network usage for a location.
@@ -149,12 +152,14 @@ async def usages_list(hub, location, **kwargs):
 
          azurerm.network.usages_list westus
 
-    '''
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    """
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
-        result = await hub.exec.utils.azurerm.paged_object_to_list(netconn.usages.list(location))
+        result = await hub.exec.utils.azurerm.paged_object_to_list(
+            netconn.usages.list(location)
+        )
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

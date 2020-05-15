@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Compute Availability Set Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Compute Availability Set Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -57,6 +57,7 @@ try:
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
     from msrestazure.tools import is_valid_resource_id
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -67,7 +68,7 @@ log = logging.getLogger(__name__)
 
 
 async def create_or_update(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Create or update an availability set.
@@ -83,59 +84,59 @@ async def create_or_update(hub, name, resource_group, **kwargs):
 
         azurerm.compute.availability_set.create_or_update testset testgroup
 
-    '''
-    if 'location' not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(
-            resource_group, **kwargs
-        )
+    """
+    if "location" not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
 
-        if 'error' in rg_props:
-            log.error(
-                'Unable to determine location from resource group specified.'
-            )
+        if "error" in rg_props:
+            log.error("Unable to determine location from resource group specified.")
             return False
-        kwargs['location'] = rg_props['location']
+        kwargs["location"] = rg_props["location"]
 
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
 
     # Use VM names to link to the IDs of existing VMs.
-    if isinstance(kwargs.get('virtual_machines'), list):
+    if isinstance(kwargs.get("virtual_machines"), list):
         vm_list = []
-        for vm_name in kwargs.get('virtual_machines'):
+        for vm_name in kwargs.get("virtual_machines"):
             vm_instance = await hub.exec.azurerm.compute.virtual_machine.get(
-                name=vm_name,
-                resource_group=resource_group,
-                **kwargs
+                name=vm_name, resource_group=resource_group, **kwargs
             )
-            if 'error' not in vm_instance:
-                vm_list.append({'id': str(vm_instance['id'])})
-        kwargs['virtual_machines'] = vm_list
+            if "error" not in vm_instance:
+                vm_list.append({"id": str(vm_instance["id"])})
+        kwargs["virtual_machines"] = vm_list
 
     try:
-        setmodel = await hub.exec.utils.azurerm.create_object_model('compute', 'AvailabilitySet', **kwargs)
+        setmodel = await hub.exec.utils.azurerm.create_object_model(
+            "compute", "AvailabilitySet", **kwargs
+        )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         av_set = compconn.availability_sets.create_or_update(
             resource_group_name=resource_group,
             availability_set_name=name,
-            parameters=setmodel
+            parameters=setmodel,
         )
         result = av_set.as_dict()
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def delete(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Delete an availability set.
@@ -151,24 +152,23 @@ async def delete(hub, name, resource_group, **kwargs):
 
         azurerm.compute.availability_set.delete testset testgroup
 
-    '''
+    """
     result = False
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
         compconn.availability_sets.delete(
-            resource_group_name=resource_group,
-            availability_set_name=name
+            resource_group_name=resource_group, availability_set_name=name
         )
         result = True
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
 
     return result
 
 
 async def get(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get a dictionary representing an availability set's properties.
@@ -184,24 +184,23 @@ async def get(hub, name, resource_group, **kwargs):
 
         azurerm.compute.availability_set.get testset testgroup
 
-    '''
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    """
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
         av_set = compconn.availability_sets.get(
-            resource_group_name=resource_group,
-            availability_set_name=name
+            resource_group_name=resource_group, availability_set_name=name
         )
         result = av_set.as_dict()
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_(hub, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all availability sets within a resource group.
@@ -215,27 +214,25 @@ async def list_(hub, resource_group, **kwargs):
 
         azurerm.compute.availability_set.list testgroup
 
-    '''
+    """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
         avail_sets = await hub.exec.utils.azurerm.paged_object_to_list(
-            compconn.availability_sets.list(
-                resource_group_name=resource_group
-            )
+            compconn.availability_sets.list(resource_group_name=resource_group)
         )
 
         for avail_set in avail_sets:
-            result[avail_set['name']] = avail_set
+            result[avail_set["name"]] = avail_set
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_available_sizes(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all available virtual machine sizes that can be used to
@@ -253,21 +250,20 @@ async def list_available_sizes(hub, name, resource_group, **kwargs):
 
         azurerm.compute.availability_set.list_available_sizes testset testgroup
 
-    '''
+    """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client('compute', **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
     try:
         sizes = await hub.exec.utils.azurerm.paged_object_to_list(
             compconn.availability_sets.list_available_sizes(
-                resource_group_name=resource_group,
-                availability_set_name=name
+                resource_group_name=resource_group, availability_set_name=name
             )
         )
 
         for size in sizes:
-            result[size['name']] = size
+            result[size["name"]] = size
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('compute', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

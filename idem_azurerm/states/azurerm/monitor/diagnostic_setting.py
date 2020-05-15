@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Diagnostic Setting State Module
 
 .. versionadded:: 2.0.0
@@ -60,7 +60,7 @@ Azure Resource Manager (ARM) Diagnostic Setting State Module
                 secret: XXXXXXXXXXXXXXXXXXXXXXXX
                 cloud_environment: AZURE_PUBLIC_CLOUD
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -69,10 +69,22 @@ from operator import itemgetter
 log = logging.getLogger(__name__)
 
 
-async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None, storage_account_id=None,
-                  service_bus_rule_id=None, event_hub_authorization_rule_id=None, event_hub_name=None,
-                  connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    resource_uri,
+    metrics,
+    logs,
+    workspace_id=None,
+    storage_account_id=None,
+    service_bus_rule_id=None,
+    event_hub_authorization_rule_id=None,
+    event_hub_name=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Ensure a diagnostic setting exists. At least one destination for the diagnostic setting logs is required. Any
@@ -146,134 +158,137 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
                 - storage_account_id: my_account_id
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     setting = await hub.exec.azurerm.monitor.diagnostic_setting.get(
-        name,
-        resource_uri,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_uri, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' not in setting:
+    if "error" not in setting:
         # Checks for changes in the metrics parameter
-        if len(metrics) == len(setting.get('metrics', [])):
-            new_metrics_sorted = sorted(metrics, key=itemgetter('category', 'enabled'))
-            old_metrics_sorted = sorted(setting.get('metrics', []), key=itemgetter('category', 'enabled'))
+        if len(metrics) == len(setting.get("metrics", [])):
+            new_metrics_sorted = sorted(metrics, key=itemgetter("category", "enabled"))
+            old_metrics_sorted = sorted(
+                setting.get("metrics", []), key=itemgetter("category", "enabled")
+            )
             for index, metric in enumerate(new_metrics_sorted):
-                changes = await hub.exec.utils.dictdiffer.deep_diff(old_metrics_sorted[index], metric)
+                changes = await hub.exec.utils.dictdiffer.deep_diff(
+                    old_metrics_sorted[index], metric
+                )
                 if changes:
-                    ret['changes']['metrics'] = {
-                        'old': setting.get('metrics', []),
-                        'new': metrics
+                    ret["changes"]["metrics"] = {
+                        "old": setting.get("metrics", []),
+                        "new": metrics,
                     }
                     break
         else:
-            ret['changes']['metrics'] = {
-                'old': setting.get('metrics', []),
-                'new': metrics
+            ret["changes"]["metrics"] = {
+                "old": setting.get("metrics", []),
+                "new": metrics,
             }
 
         # Checks for changes in the logs parameter
-        if len(logs) == len(setting.get('logs', [])):
-            new_logs_sorted = sorted(logs, key=itemgetter('category', 'enabled'))
-            old_logs_sorted = sorted(setting.get('logs', []), key=itemgetter('category', 'enabled'))
+        if len(logs) == len(setting.get("logs", [])):
+            new_logs_sorted = sorted(logs, key=itemgetter("category", "enabled"))
+            old_logs_sorted = sorted(
+                setting.get("logs", []), key=itemgetter("category", "enabled")
+            )
             for log in new_logs_sorted:
-                changes = await hub.exec.utils.dictdiffer.deep_diff(old_logs_sorted('logs')[index], log)
+                changes = await hub.exec.utils.dictdiffer.deep_diff(
+                    old_logs_sorted("logs")[index], log
+                )
                 if changes:
-                    ret['changes']['logs'] = {
-                        'old': setting.get('logs', []),
-                        'new': logs
+                    ret["changes"]["logs"] = {
+                        "old": setting.get("logs", []),
+                        "new": logs,
                     }
                     break
         else:
-            ret['changes']['logs'] = {
-                'old': setting.get('logs', []),
-                'new': logs
-            }
+            ret["changes"]["logs"] = {"old": setting.get("logs", []), "new": logs}
         if storage_account_id:
-            if storage_account_id != setting.get('storage_account_id', None):
-                ret['changes']['storage_account_id'] = {
-                    'old': setting.get('storage_account_id'),
-                    'new': storage_account_id
+            if storage_account_id != setting.get("storage_account_id", None):
+                ret["changes"]["storage_account_id"] = {
+                    "old": setting.get("storage_account_id"),
+                    "new": storage_account_id,
                 }
 
         if workspace_id:
-            if workspace_id != setting.get('workspace_id', None):
-                ret['changes']['workspace_id'] = {
-                    'old': setting.get('workspace_id'),
-                    'new': workspace_id
+            if workspace_id != setting.get("workspace_id", None):
+                ret["changes"]["workspace_id"] = {
+                    "old": setting.get("workspace_id"),
+                    "new": workspace_id,
                 }
 
         if service_bus_rule_id:
-            if service_bus_rule_id != setting.get('service_bus_rule_id', None):
-                ret['changes']['service_bus_rule_id'] = {
-                    'old': setting.get('service_bus_rule_id'),
-                    'new': service_bus_rule_id
+            if service_bus_rule_id != setting.get("service_bus_rule_id", None):
+                ret["changes"]["service_bus_rule_id"] = {
+                    "old": setting.get("service_bus_rule_id"),
+                    "new": service_bus_rule_id,
                 }
 
         if event_hub_authorization_rule_id:
-            if event_hub_authorization_rule_id != setting.get('event_hub_authorization_rule_id', None):
-                ret['changes']['event_hub_authorization_rule_id'] = {
-                    'old': setting.get('event_hub_authorization_rule_id'),
-                    'new': event_hub_authorization_rule_id
+            if event_hub_authorization_rule_id != setting.get(
+                "event_hub_authorization_rule_id", None
+            ):
+                ret["changes"]["event_hub_authorization_rule_id"] = {
+                    "old": setting.get("event_hub_authorization_rule_id"),
+                    "new": event_hub_authorization_rule_id,
                 }
 
         if event_hub_name:
-            if event_hub_name != setting.get('event_hub_name', None):
-                ret['changes']['event_hub_name'] = {
-                    'old': setting.get('event_hub_name'),
-                    'new': event_hub_name
+            if event_hub_name != setting.get("event_hub_name", None):
+                ret["changes"]["event_hub_name"] = {
+                    "old": setting.get("event_hub_name"),
+                    "new": event_hub_name,
                 }
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Diagnostic setting {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Diagnostic setting {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Diagnostic setting {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Diagnostic setting {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'resource_uri': resource_uri,
-                'metrics': metrics,
-                'logs': logs,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "resource_uri": resource_uri,
+                "metrics": metrics,
+                "logs": logs,
+            },
         }
 
         if storage_account_id:
-            ret['changes']['new']['storage_account_id'] = storage_account_id
+            ret["changes"]["new"]["storage_account_id"] = storage_account_id
         if workspace_id:
-            ret['changes']['new']['workspace_id'] = workspace_id
+            ret["changes"]["new"]["workspace_id"] = workspace_id
         if service_bus_rule_id:
-            ret['changes']['new']['service_bus_rule_id'] = service_bus_rule_id
+            ret["changes"]["new"]["service_bus_rule_id"] = service_bus_rule_id
         if event_hub_authorization_rule_id:
-            ret['changes']['new']['event_hub_authorization_rule_id'] = event_hub_authorization_rule_id
+            ret["changes"]["new"][
+                "event_hub_authorization_rule_id"
+            ] = event_hub_authorization_rule_id
         if event_hub_name:
-            ret['changes']['new']['event_hub_name'] = event_hub_name
+            ret["changes"]["new"]["event_hub_name"] = event_hub_name
 
-    if ctx['test']:
-        ret['comment'] = 'Diagnostic setting {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Diagnostic setting {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     setting_kwargs = kwargs.copy()
@@ -289,22 +304,24 @@ async def present(hub, ctx, name, resource_uri, metrics, logs, workspace_id=None
         event_hub_name=event_hub_name,
         event_hub_authorization_rule_id=event_hub_authorization_rule_id,
         service_bus_rule_id=service_bus_rule_id,
-        **setting_kwargs
+        **setting_kwargs,
     )
 
-    if 'error' not in setting:
-        ret['result'] = True
-        ret['comment'] = 'Diagnostic setting {0} has been created.'.format(name)
+    if "error" not in setting:
+        ret["result"] = True
+        ret["comment"] = "Diagnostic setting {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create diagnostic setting {0}! ({1})'.format(name, setting.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create diagnostic setting {0}! ({1})".format(
+        name, setting.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
 async def absent(hub, ctx, name, resource_uri, connection_auth=None, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Ensure a diagnostic setting does not exist for the specified resource uri.
@@ -326,56 +343,45 @@ async def absent(hub, ctx, name, resource_uri, connection_auth=None, **kwargs):
                 - resource_uri: my_resource
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     setting = await hub.exec.azurerm.monitor.diagnostic_setting.get(
-        name,
-        resource_uri,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_uri, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' in setting:
-        ret['result'] = True
-        ret['comment'] = 'Diagnostic setting {0} was not found.'.format(name)
+    if "error" in setting:
+        ret["result"] = True
+        ret["comment"] = "Diagnostic setting {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Diagnostic setting {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': setting,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Diagnostic setting {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": setting,
+            "new": {},
         }
         return ret
 
     deleted = await hub.exec.azurerm.monitor.diagnostic_setting.delete(
-        name,
-        resource_uri,
-        **connection_auth
+        name, resource_uri, **connection_auth
     )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Diagnostic setting {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': setting,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Diagnostic setting {0} has been deleted.".format(name)
+        ret["changes"] = {"old": setting, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete diagnostic setting {0}!'.format(name)
+    ret["comment"] = "Failed to delete diagnostic setting {0}!".format(name)
     return ret

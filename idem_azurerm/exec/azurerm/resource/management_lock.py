@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Management Lock Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Management Lock Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -55,6 +55,7 @@ try:
     import azure.mgmt.resource.resources.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -62,9 +63,10 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def create_or_update_at_resource_group_level(hub, name, resource_group, lock_level, notes=None, owners=None,
-                                                   **kwargs):
-    '''
+async def create_or_update_at_resource_group_level(
+    hub, name, resource_group, lock_level, notes=None, owners=None, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Creates or updates a management lock at the resource group level. When you apply a lock at a parent scope,
@@ -91,48 +93,50 @@ async def create_or_update_at_resource_group_level(hub, name, resource_group, lo
 
         azurerm.resource.management_lock.create_or_update_at_resource_group_level test_name test_group test_level
 
-    '''
+    """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
     if owners:
-        lock_owners = [{'application_id': owner} for owner in owners]
+        lock_owners = [{"application_id": owner} for owner in owners]
     else:
         lock_owners = []
 
     try:
         lockmodel = await hub.exec.utils.azurerm.create_object_model(
-            'resource.locks',
-            'ManagementLockObject',
+            "resource.locks",
+            "ManagementLockObject",
             level=lock_level,
             notes=notes,
             owners=lock_owners,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         lock = lckconn.management_locks.create_or_update_at_resource_group_level(
-            resource_group_name=resource_group,
-            lock_name=name,
-            parameters=lockmodel
+            resource_group_name=resource_group, lock_name=name, parameters=lockmodel
         )
 
         result = lock.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def delete_at_resource_group_level(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Deletes a management lock at the resource group level. To delete management locks, you must have access to
@@ -148,27 +152,25 @@ async def delete_at_resource_group_level(hub, name, resource_group, **kwargs):
 
         azurerm.resource.management_lock.delete_at_resource_group_level test_name test_group
 
-    '''
+    """
     result = False
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     try:
         lock = lckconn.management_locks.delete_at_resource_group_level(
-            resource_group_name=resource_group,
-            lock_name=name,
-            **kwargs
+            resource_group_name=resource_group, lock_name=name, **kwargs
         )
 
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get_at_resource_group_level(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets a management lock at the resource group level.
@@ -183,27 +185,27 @@ async def get_at_resource_group_level(hub, name, resource_group, **kwargs):
 
         azurerm.resource.management_lock.get_at_resource_group_level test_name test_group
 
-    '''
+    """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     try:
         lock = lckconn.management_locks.get_at_resource_group_level(
-            resource_group_name=resource_group,
-            lock_name=name,
-            **kwargs
+            resource_group_name=resource_group, lock_name=name, **kwargs
         )
 
         result = lock.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def create_or_update_by_scope(hub, name, scope, lock_level, notes=None, owners=None, **kwargs):
-    '''
+async def create_or_update_by_scope(
+    hub, name, scope, lock_level, notes=None, owners=None, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Create or update a management lock by scope. When you apply a lock at a parent scope, all child resources inherit
@@ -234,48 +236,50 @@ async def create_or_update_by_scope(hub, name, scope, lock_level, notes=None, ow
 
         azurerm.resource.management_lock.create_or_update_by_scope test_name test_scope test_level
 
-    '''
+    """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
     if owners:
-        lock_owners = [{'application_id': owner} for owner in owners]
+        lock_owners = [{"application_id": owner} for owner in owners]
     else:
         lock_owners = []
 
     try:
         lockmodel = await hub.exec.utils.azurerm.create_object_model(
-            'resource.locks',
-            'ManagementLockObject',
+            "resource.locks",
+            "ManagementLockObject",
             level=lock_level,
             notes=notes,
             owners=lock_owners,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         lock = lckconn.management_locks.create_or_update_by_scope(
-            scope=scope,
-            lock_name=name,
-            parameters=lockmodel
+            scope=scope, lock_name=name, parameters=lockmodel
         )
 
         result = lock.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def delete_by_scope(hub, name, scope, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Delete a management lock by scope. To delete management locks, you must have access to Microsoft.Authorization/*
@@ -295,27 +299,25 @@ async def delete_by_scope(hub, name, scope, **kwargs):
 
         azurerm.resource.management_lock.delete_by_scope test_name test_scope
 
-    '''
+    """
     result = False
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     try:
         lock = lckconn.management_locks.delete_by_scope(
-            scope=scope,
-            lock_name=name,
-            **kwargs
+            scope=scope, lock_name=name, **kwargs
         )
 
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get_by_scope(hub, name, scope, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get a management lock by scope.
@@ -334,29 +336,37 @@ async def get_by_scope(hub, name, scope, **kwargs):
 
         azurerm.resource.management_lock.get_by_scope test_name test_scope
 
-    '''
+    """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     try:
         lock = lckconn.management_locks.get_by_scope(
-            scope=scope,
-            lock_name=name,
-            **kwargs
+            scope=scope, lock_name=name, **kwargs
         )
 
         result = lock.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def create_or_update_at_resource_level(hub, name, lock_level, resource_group, resource, resource_type,
-                                             resource_provider_namespace, parent_resource_path=None, notes=None,
-                                             owners=None, **kwargs):
-    '''
+async def create_or_update_at_resource_level(
+    hub,
+    name,
+    lock_level,
+    resource_group,
+    resource,
+    resource_type,
+    resource_provider_namespace,
+    parent_resource_path=None,
+    notes=None,
+    owners=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Creates or updates a management lock at the resource level or any level below the resource. When you apply a lock
@@ -392,31 +402,33 @@ async def create_or_update_at_resource_level(hub, name, lock_level, resource_gro
         azurerm.resource.management_lock.create_or_update_at_resource_level test_name test_level test_group \
                   test_resource test_type test_namespace
 
-    '''
+    """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
     if owners:
-        lock_owners = [{'application_id': owner} for owner in owners]
+        lock_owners = [{"application_id": owner} for owner in owners]
     else:
         lock_owners = []
 
     try:
         lockmodel = await hub.exec.utils.azurerm.create_object_model(
-            'resource.locks',
-            'ManagementLockObject',
+            "resource.locks",
+            "ManagementLockObject",
             level=lock_level,
             notes=notes,
             owners=lock_owners,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     if parent_resource_path is None:
-        parent_resource_path = ''
+        parent_resource_path = ""
 
     try:
         lock = lckconn.management_locks.create_or_update_at_resource_level(
@@ -426,22 +438,32 @@ async def create_or_update_at_resource_level(hub, name, lock_level, resource_gro
             resource_provider_namespace=resource_provider_namespace,
             resource_type=resource_type,
             parent_resource_path=parent_resource_path,
-            parameters=lockmodel
+            parameters=lockmodel,
         )
 
         result = lock.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
-async def delete_at_resource_level(hub, name, resource_group, resource, resource_type, resource_provider_namespace,
-                                   parent_resource_path=None, **kwargs):
-    '''
+async def delete_at_resource_level(
+    hub,
+    name,
+    resource_group,
+    resource,
+    resource_type,
+    resource_provider_namespace,
+    parent_resource_path=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Deletes the management lock of a resource or any level below the resource. When you apply a lock
@@ -467,12 +489,12 @@ async def delete_at_resource_level(hub, name, resource_group, resource, resource
         azurerm.resource.management_lock.delete_at_resource_level test_name test_group test_resource \
                   test_type test_namespace
 
-    '''
+    """
     result = False
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     if parent_resource_path is None:
-        parent_resource_path = ''
+        parent_resource_path = ""
 
     try:
         lock = lckconn.management_locks.delete_at_resource_level(
@@ -482,20 +504,28 @@ async def delete_at_resource_level(hub, name, resource_group, resource, resource
             resource_provider_namespace=resource_provider_namespace,
             resource_type=resource_type,
             parent_resource_path=parent_resource_path,
-            **kwargs
+            **kwargs,
         )
 
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def get_at_resource_level(hub, name, resource_group, resource, resource_type, resource_provider_namespace,
-                                parent_resource_path=None, **kwargs):
-    '''
+async def get_at_resource_level(
+    hub,
+    name,
+    resource_group,
+    resource,
+    resource_type,
+    resource_provider_namespace,
+    parent_resource_path=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Get the management lock of a resource or any level below resource.
@@ -519,12 +549,12 @@ async def get_at_resource_level(hub, name, resource_group, resource, resource_ty
         azurerm.resource.management_lock.get_at_resource_level test_name test_group test_resource \
                   test_type test_namespace
 
-    '''
+    """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     if parent_resource_path is None:
-        parent_resource_path = ''
+        parent_resource_path = ""
 
     try:
         lock = lckconn.management_locks.get_at_resource_level(
@@ -534,19 +564,21 @@ async def get_at_resource_level(hub, name, resource_group, resource, resource_ty
             resource_provider_namespace=resource_provider_namespace,
             resource_type=resource_type,
             parent_resource_path=parent_resource_path,
-            **kwargs
+            **kwargs,
         )
 
         result = lock.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def create_or_update_at_subscription_level(hub, name, lock_level, notes=None, owners=None, **kwargs):
-    '''
+async def create_or_update_at_subscription_level(
+    hub, name, lock_level, notes=None, owners=None, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Creates or updates a management lock at the subscription level. When you apply a lock at a parent scope,
@@ -571,47 +603,50 @@ async def create_or_update_at_subscription_level(hub, name, lock_level, notes=No
 
         azurerm.resource.management_lock.create_or_update_at_subscription_level test_name test_level
 
-    '''
+    """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
     if owners:
-        lock_owners = [{'application_id': owner} for owner in owners]
+        lock_owners = [{"application_id": owner} for owner in owners]
     else:
         lock_owners = []
 
     try:
         lockmodel = await hub.exec.utils.azurerm.create_object_model(
-            'resource.locks',
-            'ManagementLockObject',
+            "resource.locks",
+            "ManagementLockObject",
             level=lock_level,
             notes=notes,
             owners=lock_owners,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         lock = lckconn.management_locks.create_or_update_at_subscription_level(
-            lock_name=name,
-            parameters=lockmodel
+            lock_name=name, parameters=lockmodel
         )
 
         result = lock.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def delete_at_subscription_level(hub, name, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Deletes the management lock at the subscription level. To delete management locks, you must have access to
@@ -625,26 +660,25 @@ async def delete_at_subscription_level(hub, name, **kwargs):
 
         azurerm.resource.management_lock.delete_at_subscription_level test_name
 
-    '''
+    """
     result = False
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     try:
         lock = lckconn.management_locks.delete_at_subscription_level(
-            lock_name=name,
-            **kwargs
+            lock_name=name, **kwargs
         )
 
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get_at_subscription_level(hub, name, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets a management lock at the subscription level.
@@ -657,26 +691,25 @@ async def get_at_subscription_level(hub, name, **kwargs):
 
         azurerm.resource.management_lock.get_at_subscription_level test_name
 
-    '''
+    """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     try:
         lock = lckconn.management_locks.get_at_subscription_level(
-            lock_name=name,
-            **kwargs
+            lock_name=name, **kwargs
         )
 
         result = lock.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_at_resource_group_level(hub, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets all the management locks for a resource group.
@@ -689,28 +722,34 @@ async def list_at_resource_group_level(hub, resource_group, **kwargs):
 
         azurerm.resource.management_lock.list_at_resource_group_level test_group
 
-    '''
+    """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     try:
         result = await hub.exec.utils.azurerm.paged_object_to_list(
             lckconn.management_locks.list_at_resource_group_level(
-                resource_group_name=resource_group,
-                filter=kwargs.get('filter')
+                resource_group_name=resource_group, filter=kwargs.get("filter")
             )
         )
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def list_at_resource_level(hub, resource_group, resource, resource_type, resource_provider_namespace,
-                                 parent_resource_path=None, **kwargs):
-    '''
+async def list_at_resource_level(
+    hub,
+    resource_group,
+    resource,
+    resource_type,
+    resource_provider_namespace,
+    parent_resource_path=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Get the management lock of a resource or any level below resource.
@@ -732,12 +771,12 @@ async def list_at_resource_level(hub, resource_group, resource, resource_type, r
         azurerm.resource.management_lock.list_at_resource_level test_group test_resource test_type \
                   test_namespace test_path
 
-    '''
+    """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     if parent_resource_path is None:
-        parent_resource_path = ''
+        parent_resource_path = ""
 
     try:
         result = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -747,19 +786,19 @@ async def list_at_resource_level(hub, resource_group, resource, resource_type, r
                 resource_provider_namespace=resource_provider_namespace,
                 resource_type=resource_type,
                 parent_resource_path=parent_resource_path,
-                filter=kwargs.get('filter')
+                filter=kwargs.get("filter"),
             )
         )
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_at_subscription_level(hub, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets all the management locks for a subscription.
@@ -770,26 +809,26 @@ async def list_at_subscription_level(hub, **kwargs):
 
         azurerm.resource.management_lock.list_at_subscription_level
 
-    '''
+    """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     try:
         result = await hub.exec.utils.azurerm.paged_object_to_list(
             lckconn.management_locks.list_at_subscription_level(
-                filter=kwargs.get('filter')
+                filter=kwargs.get("filter")
             )
         )
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_by_scope(hub, scope, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets all the management locks for a scope.
@@ -806,20 +845,19 @@ async def list_by_scope(hub, scope, **kwargs):
 
         azurerm.resource.management_lock.list_by_scope test_scope
 
-    '''
+    """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client('managementlock', **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
 
     try:
         result = await hub.exec.utils.azurerm.paged_object_to_list(
             lckconn.management_locks.list_by_scope(
-                scope=scope,
-                filter=kwargs.get('filter')
+                scope=scope, filter=kwargs.get("filter")
             )
         )
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('resource', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Network Interface State Module
 
 .. versionadded:: 1.0.0
@@ -84,7 +84,7 @@ Azure Resource Manager (ARM) Network Interface State Module
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -93,21 +93,37 @@ import re
 log = logging.getLogger(__name__)
 
 TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-            'states.azurerm.network.virtual_network.present',
-            'states.azurerm.network.virtual_network.subnet_present',
-            'states.azurerm.network.network_security_group.present',
+    "present": {
+        "require": [
+            "states.azurerm.resource.group.present",
+            "states.azurerm.network.virtual_network.present",
+            "states.azurerm.network.virtual_network.subnet_present",
+            "states.azurerm.network.network_security_group.present",
         ]
     },
 }
 
 
-async def present(hub, ctx, name, ip_configurations, subnet, virtual_network, resource_group, tags=None,
-                  virtual_machine=None, network_security_group=None, dns_settings=None, mac_address=None, primary=None,
-                  enable_accelerated_networking=None, enable_ip_forwarding=None, connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    ip_configurations,
+    subnet,
+    virtual_network,
+    resource_group,
+    tags=None,
+    virtual_machine=None,
+    network_security_group=None,
+    dns_settings=None,
+    mac_address=None,
+    primary=None,
+    enable_accelerated_networking=None,
+    enable_ip_forwarding=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Ensure a network interface exists.
@@ -189,145 +205,143 @@ async def present(hub, ctx, name, ip_configurations, subnet, virtual_network, re
                 - network_security_group: nsg1
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     iface = await hub.exec.azurerm.network.network_interface.get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' not in iface:
+    if "error" not in iface:
         # tag changes
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(iface.get('tags', {}), tags or {})
+        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            iface.get("tags", {}), tags or {}
+        )
         if tag_changes:
-            ret['changes']['tags'] = tag_changes
+            ret["changes"]["tags"] = tag_changes
 
         # mac_address changes
-        if mac_address and (mac_address != iface.get('mac_address')):
-            ret['changes']['mac_address'] = {
-                'old': iface.get('mac_address'),
-                'new': mac_address
+        if mac_address and (mac_address != iface.get("mac_address")):
+            ret["changes"]["mac_address"] = {
+                "old": iface.get("mac_address"),
+                "new": mac_address,
             }
 
         # primary changes
         if primary is not None:
-            if primary != iface.get('primary', True):
-                ret['changes']['primary'] = {
-                    'old': iface.get('primary'),
-                    'new': primary
+            if primary != iface.get("primary", True):
+                ret["changes"]["primary"] = {
+                    "old": iface.get("primary"),
+                    "new": primary,
                 }
 
         # enable_accelerated_networking changes
         if enable_accelerated_networking is not None:
-            if enable_accelerated_networking != iface.get('enable_accelerated_networking'):
-                ret['changes']['enable_accelerated_networking'] = {
-                    'old': iface.get('enable_accelerated_networking'),
-                    'new': enable_accelerated_networking
+            if enable_accelerated_networking != iface.get(
+                "enable_accelerated_networking"
+            ):
+                ret["changes"]["enable_accelerated_networking"] = {
+                    "old": iface.get("enable_accelerated_networking"),
+                    "new": enable_accelerated_networking,
                 }
 
         # enable_ip_forwarding changes
         if enable_ip_forwarding is not None:
-            if enable_ip_forwarding != iface.get('enable_ip_forwarding'):
-                ret['changes']['enable_ip_forwarding'] = {
-                    'old': iface.get('enable_ip_forwarding'),
-                    'new': enable_ip_forwarding
+            if enable_ip_forwarding != iface.get("enable_ip_forwarding"):
+                ret["changes"]["enable_ip_forwarding"] = {
+                    "old": iface.get("enable_ip_forwarding"),
+                    "new": enable_ip_forwarding,
                 }
 
         # network_security_group changes
         nsg_name = None
-        if iface.get('network_security_group'):
-            nsg_name = iface['network_security_group']['id'].split('/')[-1]
+        if iface.get("network_security_group"):
+            nsg_name = iface["network_security_group"]["id"].split("/")[-1]
 
         if network_security_group and (network_security_group != nsg_name):
-            ret['changes']['network_security_group'] = {
-                'old': nsg_name,
-                'new': network_security_group
+            ret["changes"]["network_security_group"] = {
+                "old": nsg_name,
+                "new": network_security_group,
             }
 
         # virtual_machine changes
         vm_name = None
-        if iface.get('virtual_machine'):
-            vm_name = iface['virtual_machine']['id'].split('/')[-1]
+        if iface.get("virtual_machine"):
+            vm_name = iface["virtual_machine"]["id"].split("/")[-1]
 
         if virtual_machine and (virtual_machine != vm_name):
-            ret['changes']['virtual_machine'] = {
-                'old': vm_name,
-                'new': virtual_machine
-            }
+            ret["changes"]["virtual_machine"] = {"old": vm_name, "new": virtual_machine}
 
         # dns_settings changes
         if dns_settings:
             if not isinstance(dns_settings, dict):
-                ret['comment'] = 'DNS settings must be provided as a dictionary!'
+                ret["comment"] = "DNS settings must be provided as a dictionary!"
                 return ret
 
             for key in dns_settings:
-                if dns_settings[key].lower() != iface.get('dns_settings', {}).get(key, '').lower():
-                    ret['changes']['dns_settings'] = {
-                        'old': iface.get('dns_settings'),
-                        'new': dns_settings
+                if (
+                    dns_settings[key].lower()
+                    != iface.get("dns_settings", {}).get(key, "").lower()
+                ):
+                    ret["changes"]["dns_settings"] = {
+                        "old": iface.get("dns_settings"),
+                        "new": dns_settings,
                     }
                     break
 
         # ip_configurations changes
         comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(
-            iface.get('ip_configurations', []),
+            iface.get("ip_configurations", []),
             ip_configurations,
-            ['public_ip_address', 'subnet']
+            ["public_ip_address", "subnet"],
         )
 
-        if comp_ret.get('comment'):
-            ret['comment'] = '"ip_configurations" {0}'.format(comp_ret['comment'])
+        if comp_ret.get("comment"):
+            ret["comment"] = '"ip_configurations" {0}'.format(comp_ret["comment"])
             return ret
 
-        if comp_ret.get('changes'):
-            ret['changes']['ip_configurations'] = comp_ret['changes']
+        if comp_ret.get("changes"):
+            ret["changes"]["ip_configurations"] = comp_ret["changes"]
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Network interface {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Network interface {0} is already present.".format(name)
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Network interface {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Network interface {0} would be updated.".format(name)
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'ip_configurations': ip_configurations,
-                'dns_settings': dns_settings,
-                'network_security_group': network_security_group,
-                'virtual_machine': virtual_machine,
-                'enable_accelerated_networking': enable_accelerated_networking,
-                'enable_ip_forwarding': enable_ip_forwarding,
-                'mac_address': mac_address,
-                'primary': primary,
-                'tags': tags,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "ip_configurations": ip_configurations,
+                "dns_settings": dns_settings,
+                "network_security_group": network_security_group,
+                "virtual_machine": virtual_machine,
+                "enable_accelerated_networking": enable_accelerated_networking,
+                "enable_ip_forwarding": enable_ip_forwarding,
+                "mac_address": mac_address,
+                "primary": primary,
+                "tags": tags,
+            },
         }
 
-    if ctx['test']:
-        ret['comment'] = 'Network interface {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Network interface {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     iface_kwargs = kwargs.copy()
@@ -347,22 +361,24 @@ async def present(hub, ctx, name, ip_configurations, subnet, virtual_network, re
         network_security_group=network_security_group,
         virtual_machine=virtual_machine,
         tags=tags,
-        **iface_kwargs
+        **iface_kwargs,
     )
 
-    if 'error' not in iface:
-        ret['result'] = True
-        ret['comment'] = 'Network interface {0} has been created.'.format(name)
+    if "error" not in iface:
+        ret["result"] = True
+        ret["comment"] = "Network interface {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create network interface {0}! ({1})'.format(name, iface.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create network interface {0}! ({1})".format(
+        name, iface.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Ensure a network interface does not exist in the resource group.
@@ -387,52 +403,45 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
                 - resource_group: group1
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     iface = await hub.exec.azurerm.network.network_interface.get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' in iface:
-        ret['result'] = True
-        ret['comment'] = 'Network interface {0} was not found.'.format(name)
+    if "error" in iface:
+        ret["result"] = True
+        ret["comment"] = "Network interface {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Network interface {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': iface,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Network interface {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": iface,
+            "new": {},
         }
         return ret
 
-    deleted = await hub.exec.azurerm.network.network_interface.delete(name, resource_group, **connection_auth)
+    deleted = await hub.exec.azurerm.network.network_interface.delete(
+        name, resource_group, **connection_auth
+    )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Network interface {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': iface,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Network interface {0} has been deleted.".format(name)
+        ret["changes"] = {"old": iface, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete network interface {0}!)'.format(name)
+    ret["comment"] = "Failed to delete network interface {0}!)".format(name)
     return ret

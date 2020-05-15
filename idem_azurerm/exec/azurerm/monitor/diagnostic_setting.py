@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Diagnostic Setting Execution Module
 
 .. versionadded:: 1.0.0
@@ -45,7 +45,7 @@ to every function in order to work properly.
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -58,6 +58,7 @@ try:
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
     from azure.mgmt.monitor.models import ErrorResponseException
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -67,10 +68,20 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, name, resource_uri, metrics, logs, workspace_id=None, storage_account_id=None,
-                           service_bus_rule_id=None, event_hub_authorization_rule_id=None, event_hub_name=None,
-                           **kwargs):
-    '''
+async def create_or_update(
+    hub,
+    name,
+    resource_uri,
+    metrics,
+    logs,
+    workspace_id=None,
+    storage_account_id=None,
+    service_bus_rule_id=None,
+    event_hub_authorization_rule_id=None,
+    event_hub_name=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Create or update diagnostic settings for the specified resource. At least one destination for the diagnostic
@@ -128,14 +139,14 @@ async def create_or_update(hub, name, resource_uri, metrics, logs, workspace_id=
         azurerm.monitor.diagnostic_setting.create_or_update test_name test_uri test_metrics test_logs \
                   test_destination
 
-    '''
+    """
     result = {}
-    moniconn = await hub.exec.utils.azurerm.get_client('monitor', **kwargs)
+    moniconn = await hub.exec.utils.azurerm.get_client("monitor", **kwargs)
 
     try:
         diagmodel = await hub.exec.utils.azurerm.create_object_model(
-            'monitor',
-            'DiagnosticSettingsResource',
+            "monitor",
+            "DiagnosticSettingsResource",
             metrics=metrics,
             logs=logs,
             workspace_id=workspace_id,
@@ -143,29 +154,29 @@ async def create_or_update(hub, name, resource_uri, metrics, logs, workspace_id=
             service_bus_rule_id=service_bus_rule_id,
             event_hub_authorization_rule_id=event_hub_authorization_rule_id,
             event_hub_name=event_hub_name,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         diag = moniconn.diagnostic_settings.create_or_update(
-            name=name,
-            resource_uri=resource_uri,
-            parameters=diagmodel
+            name=name, resource_uri=resource_uri, parameters=diagmodel
         )
 
         result = diag.as_dict()
     except (CloudError, ErrorResponseException) as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('monitor', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("monitor", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def delete(hub, name, resource_uri, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Deletes existing diagnostic settings for the specified resource.
@@ -180,26 +191,24 @@ async def delete(hub, name, resource_uri, **kwargs):
 
         azurerm.monitor.diagnostic_setting.delete test_name test_uri
 
-    '''
+    """
     result = False
-    moniconn = await hub.exec.utils.azurerm.get_client('monitor', **kwargs)
+    moniconn = await hub.exec.utils.azurerm.get_client("monitor", **kwargs)
     try:
         diag = moniconn.diagnostic_settings.delete(
-            name=name,
-            resource_uri=resource_uri,
-            **kwargs
+            name=name, resource_uri=resource_uri, **kwargs
         )
 
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('monitor', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("monitor", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get(hub, name, resource_uri, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets the active diagnostic settings for the specified resource.
@@ -214,27 +223,25 @@ async def get(hub, name, resource_uri, **kwargs):
 
         azurerm.monitor.diagnostic_setting.get test_name test_uri
 
-    '''
+    """
     result = {}
-    moniconn = await hub.exec.utils.azurerm.get_client('monitor', **kwargs)
+    moniconn = await hub.exec.utils.azurerm.get_client("monitor", **kwargs)
 
     try:
         diag = moniconn.diagnostic_settings.get(
-            name=name,
-            resource_uri=resource_uri,
-            **kwargs
+            name=name, resource_uri=resource_uri, **kwargs
         )
 
         result = diag.as_dict()
     except (CloudError, ErrorResponseException) as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('monitor', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("monitor", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_(hub, resource_uri, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Gets the active diagnostic settings list for the specified resource.
@@ -247,21 +254,18 @@ async def list_(hub, resource_uri, **kwargs):
 
         azurerm.monitor.diagnostic_setting.list test_uri
 
-    '''
+    """
     result = {}
-    moniconn = await hub.exec.utils.azurerm.get_client('monitor', **kwargs)
+    moniconn = await hub.exec.utils.azurerm.get_client("monitor", **kwargs)
 
     try:
-        diag = moniconn.diagnostic_settings.list(
-            resource_uri=resource_uri,
-            **kwargs
-        )
+        diag = moniconn.diagnostic_settings.list(resource_uri=resource_uri, **kwargs)
 
-        values = diag.as_dict().get('value', [])
+        values = diag.as_dict().get("value", [])
         for value in values:
-            result[value['name']] = value
+            result[value["name"]] = value
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('monitor', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("monitor", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

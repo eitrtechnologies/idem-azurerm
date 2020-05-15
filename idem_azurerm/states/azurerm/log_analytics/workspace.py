@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Log Analytics Workspace State Module
 
 .. versionadded:: 2.0.0
@@ -61,7 +61,7 @@ Azure Resource Manager (ARM) Log Analytics Workspace State Module
                 secret: XXXXXXXXXXXXXXXXXXXXXXXX
                 cloud_environment: AZURE_PUBLIC_CLOUD
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -69,18 +69,23 @@ from operator import itemgetter
 
 log = logging.getLogger(__name__)
 
-TREQ = {
-    'present': {
-        'require': [
-            'states.azurerm.resource.group.present',
-        ]
-    }
-}
+TREQ = {"present": {"require": ["states.azurerm.resource.group.present",]}}
 
 
-async def present(hub, ctx, name, resource_group, location, sku=None, retention=None, customer_id=None,
-                  tags=None, connection_auth=None, **kwargs):
-    '''
+async def present(
+    hub,
+    ctx,
+    name,
+    resource_group,
+    location,
+    sku=None,
+    retention=None,
+    customer_id=None,
+    tags=None,
+    connection_auth=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Ensure a specified log analytics workspace exists.
@@ -118,96 +123,96 @@ async def present(hub, ctx, name, resource_group, location, sku=None, retention=
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     workspace = await hub.exec.azurerm.log_analytics.workspace.get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' not in workspace:
+    if "error" not in workspace:
         if tags:
-            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(workspace.get('tags', {}), tags)
+            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+                workspace.get("tags", {}), tags
+            )
             if tag_changes:
-                ret['changes']['tags'] = tag_changes
+                ret["changes"]["tags"] = tag_changes
 
         if sku:
-            if sku.lower() != workspace.get('sku').get('name').lower():
-                ret['changes']['sku'] = {
-                    'old': workspace.get('sku').get('name'),
-                    'new': sku
+            if sku.lower() != workspace.get("sku").get("name").lower():
+                ret["changes"]["sku"] = {
+                    "old": workspace.get("sku").get("name"),
+                    "new": sku,
                 }
 
         if retention is not None:
-            if retention != workspace.get('retention_in_days'):
-                ret['changes']['retention_in_days'] = {
-                    'old': workspace.get('retention_in_days'),
-                    'new': retention
+            if retention != workspace.get("retention_in_days"):
+                ret["changes"]["retention_in_days"] = {
+                    "old": workspace.get("retention_in_days"),
+                    "new": retention,
                 }
 
         if customer_id:
-            if customer_id != workspace.get('customer_id'):
-                ret['changes']['customer_id'] = {
-                    'old': workspace.get('customer_id'),
-                    'new': customer_id
+            if customer_id != workspace.get("customer_id"):
+                ret["changes"]["customer_id"] = {
+                    "old": workspace.get("customer_id"),
+                    "new": customer_id,
                 }
 
-        if kwargs.get('etag'):
-            if kwargs.get('etag') != workspace.get('e_tag'):
-                ret['changes']['e_tag'] = {
-                    'old': workspace.get('e_tag'),
-                    'new': kwargs.get('etag')
+        if kwargs.get("etag"):
+            if kwargs.get("etag") != workspace.get("e_tag"):
+                ret["changes"]["e_tag"] = {
+                    "old": workspace.get("e_tag"),
+                    "new": kwargs.get("etag"),
                 }
 
-        if not ret['changes']:
-            ret['result'] = True
-            ret['comment'] = 'Log Analytics Workspace {0} is already present.'.format(name)
+        if not ret["changes"]:
+            ret["result"] = True
+            ret["comment"] = "Log Analytics Workspace {0} is already present.".format(
+                name
+            )
             return ret
 
-        if ctx['test']:
-            ret['result'] = None
-            ret['comment'] = 'Log Analytics Workspace {0} would be updated.'.format(name)
+        if ctx["test"]:
+            ret["result"] = None
+            ret["comment"] = "Log Analytics Workspace {0} would be updated.".format(
+                name
+            )
             return ret
 
     else:
-        ret['changes'] = {
-            'old': {},
-            'new': {
-                'name': name,
-                'resource_group': resource_group,
-                'location': location,
-            }
+        ret["changes"] = {
+            "old": {},
+            "new": {
+                "name": name,
+                "resource_group": resource_group,
+                "location": location,
+            },
         }
 
         if tags:
-            ret['changes']['new']['tags'] = tags
+            ret["changes"]["new"]["tags"] = tags
         if sku:
-            ret['changes']['new']['sku'] = {'name': sku}
+            ret["changes"]["new"]["sku"] = {"name": sku}
         if customer_id:
-            ret['changes']['new']['customer_id'] = customer_id
+            ret["changes"]["new"]["customer_id"] = customer_id
         if retention is not None:
-            ret['changes']['new']['retention_in_days'] = retention
-        if kwargs.get('etag'):
-            ret['changes']['new']['e_tag'] = kwargs.get('etag')
+            ret["changes"]["new"]["retention_in_days"] = retention
+        if kwargs.get("etag"):
+            ret["changes"]["new"]["e_tag"] = kwargs.get("etag")
 
-    if ctx['test']:
-        ret['comment'] = 'Log Analytics Workspace {0} would be created.'.format(name)
-        ret['result'] = None
+    if ctx["test"]:
+        ret["comment"] = "Log Analytics Workspace {0} would be created.".format(name)
+        ret["result"] = None
         return ret
 
     workspace_kwargs = kwargs.copy()
@@ -221,22 +226,24 @@ async def present(hub, ctx, name, resource_group, location, sku=None, retention=
         retention=retention,
         customer_id=customer_id,
         tags=tags,
-        **workspace_kwargs
+        **workspace_kwargs,
     )
 
-    if 'error' not in workspace:
-        ret['result'] = True
-        ret['comment'] = 'Log Analytics Workspace {0} has been created.'.format(name)
+    if "error" not in workspace:
+        ret["result"] = True
+        ret["comment"] = "Log Analytics Workspace {0} has been created.".format(name)
         return ret
 
-    ret['comment'] = 'Failed to create Log Analytics Workspace {0}! ({1})'.format(name, workspace.get('error'))
-    if not ret['result']:
-        ret['changes'] = {}
+    ret["comment"] = "Failed to create Log Analytics Workspace {0}! ({1})".format(
+        name, workspace.get("error")
+    )
+    if not ret["result"]:
+        ret["changes"] = {}
     return ret
 
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Ensure a specified Log Analytics Workspace does not exist.
@@ -258,56 +265,45 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
 
-    '''
-    ret = {
-        'name': name,
-        'result': False,
-        'comment': '',
-        'changes': {}
-    }
+    """
+    ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
             connection_auth = ctx["acct"]
         else:
-            ret['comment'] = 'Connection information must be specified via acct or connection_auth dictionary!'
+            ret[
+                "comment"
+            ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
     workspace = await hub.exec.azurerm.log_analytics.workspace.get(
-        name,
-        resource_group,
-        azurerm_log_level='info',
-        **connection_auth
+        name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    if 'error' in workspace:
-        ret['result'] = True
-        ret['comment'] = 'Log Analytics Workspace {0} was not found.'.format(name)
+    if "error" in workspace:
+        ret["result"] = True
+        ret["comment"] = "Log Analytics Workspace {0} was not found.".format(name)
         return ret
 
-    elif ctx['test']:
-        ret['comment'] = 'Log Analytics Workspace {0} would be deleted.'.format(name)
-        ret['result'] = None
-        ret['changes'] = {
-            'old': workspace,
-            'new': {},
+    elif ctx["test"]:
+        ret["comment"] = "Log Analytics Workspace {0} would be deleted.".format(name)
+        ret["result"] = None
+        ret["changes"] = {
+            "old": workspace,
+            "new": {},
         }
         return ret
 
     deleted = await hub.exec.azurerm.log_analytics.workspace.delete(
-        name,
-        resource_group,
-        **connection_auth
+        name, resource_group, **connection_auth
     )
 
     if deleted:
-        ret['result'] = True
-        ret['comment'] = 'Log Analytics Workspace {0} has been deleted.'.format(name)
-        ret['changes'] = {
-            'old': workspace,
-            'new': {}
-        }
+        ret["result"] = True
+        ret["comment"] = "Log Analytics Workspace {0} has been deleted.".format(name)
+        ret["changes"] = {"old": workspace, "new": {}}
         return ret
 
-    ret['comment'] = 'Failed to delete Log Analytics Workspace {0}!'.format(name)
+    ret["comment"] = "Failed to delete Log Analytics Workspace {0}!".format(name)
     return ret

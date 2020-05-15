@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) DNS Record Set Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ to every function in order to work properly.
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -56,6 +56,7 @@ try:
     import azure.mgmt.dns.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -64,7 +65,7 @@ log = logging.getLogger(__name__)
 
 
 async def create_or_update(hub, name, zone_name, resource_group, record_type, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Creates or updates a record set within a DNS zone.
@@ -86,13 +87,17 @@ async def create_or_update(hub, name, zone_name, resource_group, record_type, **
         azurerm.dns.record_set.create_or_update myhost myzone testgroup A
             arecords='[{ipv4_address: 10.0.0.1}]' ttl=300
 
-    '''
-    dnsconn = await hub.exec.utils.azurerm.get_client('dns', **kwargs)
+    """
+    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
 
     try:
-        record_set_model = await hub.exec.utils.azurerm.create_object_model('dns', 'RecordSet', **kwargs)
+        record_set_model = await hub.exec.utils.azurerm.create_object_model(
+            "dns", "RecordSet", **kwargs
+        )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
@@ -102,21 +107,23 @@ async def create_or_update(hub, name, zone_name, resource_group, record_type, **
             resource_group_name=resource_group,
             record_type=record_type,
             parameters=record_set_model,
-            if_match=kwargs.get('if_match'),
-            if_none_match=kwargs.get('if_none_match')
+            if_match=kwargs.get("if_match"),
+            if_none_match=kwargs.get("if_none_match"),
         )
         result = record_set.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('dns', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("dns", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def delete(hub, name, zone_name, resource_group, record_type, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Deletes a record set from a DNS zone. This operation cannot be undone.
@@ -137,26 +144,26 @@ async def delete(hub, name, zone_name, resource_group, record_type, **kwargs):
 
         azurerm.dns.record_set.delete myhost myzone testgroup A
 
-    '''
+    """
     result = False
-    dnsconn = await hub.exec.utils.azurerm.get_client('dns', **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
     try:
         record_set = dnsconn.record_sets.delete(
             relative_record_set_name=name,
             zone_name=zone_name,
             resource_group_name=resource_group,
             record_type=record_type,
-            if_match=kwargs.get('if_match')
+            if_match=kwargs.get("if_match"),
         )
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('dns', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("dns", str(exc), **kwargs)
 
     return result
 
 
 async def get(hub, name, zone_name, resource_group, record_type, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get a dictionary representing a record set's properties.
@@ -176,26 +183,34 @@ async def get(hub, name, zone_name, resource_group, record_type, **kwargs):
 
         azurerm.dns.record_set.get '@' myzone testgroup SOA
 
-    '''
-    dnsconn = await hub.exec.utils.azurerm.get_client('dns', **kwargs)
+    """
+    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
     try:
         record_set = dnsconn.record_sets.get(
             relative_record_set_name=name,
             zone_name=zone_name,
             resource_group_name=resource_group,
-            record_type=record_type
+            record_type=record_type,
         )
         result = record_set.as_dict()
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('dns', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("dns", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def list_by_type(hub, zone_name, resource_group, record_type, top=None, recordsetnamesuffix=None, **kwargs):
-    '''
+async def list_by_type(
+    hub,
+    zone_name,
+    resource_group,
+    record_type,
+    top=None,
+    recordsetnamesuffix=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 1.0.0
 
     Lists the record sets of a specified type in a DNS zone.
@@ -219,9 +234,9 @@ async def list_by_type(hub, zone_name, resource_group, record_type, top=None, re
 
         azurerm.dns.record_set.list_by_type myzone testgroup SOA
 
-    '''
+    """
     result = {}
-    dnsconn = await hub.exec.utils.azurerm.get_client('dns', **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
     try:
         record_sets = await hub.exec.utils.azurerm.paged_object_to_list(
             dnsconn.record_sets.list_by_type(
@@ -229,21 +244,23 @@ async def list_by_type(hub, zone_name, resource_group, record_type, top=None, re
                 resource_group_name=resource_group,
                 record_type=record_type,
                 top=top,
-                recordsetnamesuffix=recordsetnamesuffix
+                recordsetnamesuffix=recordsetnamesuffix,
             )
         )
 
         for record_set in record_sets:
-            result[record_set['name']] = record_set
+            result[record_set["name"]] = record_set
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('dns', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("dns", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def list_by_dns_zone(hub, zone_name, resource_group, top=None, recordsetnamesuffix=None, **kwargs):
-    '''
+async def list_by_dns_zone(
+    hub, zone_name, resource_group, top=None, recordsetnamesuffix=None, **kwargs
+):
+    """
     .. versionadded:: 1.0.0
 
     Lists all record sets in a DNS zone.
@@ -264,23 +281,23 @@ async def list_by_dns_zone(hub, zone_name, resource_group, top=None, recordsetna
 
         azurerm.dns.record_set.list_by_dns_zone myzone testgroup
 
-    '''
+    """
     result = {}
-    dnsconn = await hub.exec.utils.azurerm.get_client('dns', **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
     try:
         record_sets = await hub.exec.utils.azurerm.paged_object_to_list(
             dnsconn.record_sets.list_by_dns_zone(
                 zone_name=zone_name,
                 resource_group_name=resource_group,
                 top=top,
-                recordsetnamesuffix=recordsetnamesuffix
+                recordsetnamesuffix=recordsetnamesuffix,
             )
         )
 
         for record_set in record_sets:
-            result[record_set['name']] = record_set
+            result[record_set["name"]] = record_set
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('dns', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("dns", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

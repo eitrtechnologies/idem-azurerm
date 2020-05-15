@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Redis Operations Execution Module
 
 .. versionadded:: 2.0.0
@@ -45,7 +45,7 @@ Azure Resource Manager (ARM) Redis Operations Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -56,6 +56,7 @@ try:
     import azure.mgmt.network.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -66,7 +67,7 @@ log = logging.getLogger(__name__)
 
 
 async def check_name_availability(hub, name, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Checks that the redis cache name is valid and is not already in use.
@@ -79,29 +80,41 @@ async def check_name_availability(hub, name, **kwargs):
 
         azurerm.redis.operations.check_name_availability test_name
 
-    '''
+    """
     result = False
-    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
 
     try:
         avail = redconn.redis.check_name_availability(
-            name=name,
-            type='Microsoft.Cache/redis',
+            name=name, type="Microsoft.Cache/redis",
         )
 
         if avail is None:
             result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def create(hub, name, resource_group, location, sku, redis_configuration=None, enable_non_ssl_port=False,
-                 tenant_settings=None, shard_count=None, minimum_tls_version=None, subnet_id=None, static_ip=None,
-                 zones=None, **kwargs):
-    '''
+async def create(
+    hub,
+    name,
+    resource_group,
+    location,
+    sku,
+    redis_configuration=None,
+    enable_non_ssl_port=False,
+    tenant_settings=None,
+    shard_count=None,
+    minimum_tls_version=None,
+    subnet_id=None,
+    static_ip=None,
+    zones=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Create or replace (overwrite/recreate, with potential downtime) an existing Redis cache.
@@ -146,13 +159,13 @@ async def create(hub, name, resource_group, location, sku, redis_configuration=N
 
         azurerm.redis.operations.create test_name test_rg test_location test_sku
 
-    '''
-    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+    """
+    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
 
     try:
         paramsmodel = await hub.exec.utils.azurerm.create_object_model(
-            'redis',
-            'RedisCreateParameters',
+            "redis",
+            "RedisCreateParameters",
             sku=sku,
             location=location,
             redis_configuration=redis_configuration,
@@ -163,31 +176,33 @@ async def create(hub, name, resource_group, location, sku, redis_configuration=N
             subnet_id=subnet_id,
             static_ip=static_ip,
             zones=zones,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         cache = redconn.redis.create(
-            name=name,
-            resource_group_name=resource_group,
-            parameters=paramsmodel
+            name=name, resource_group_name=resource_group, parameters=paramsmodel
         )
 
         result = cache.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def delete(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Deletes a Redis cache.
@@ -202,25 +217,24 @@ async def delete(hub, name, resource_group, **kwargs):
 
         azurerm.redis.operations.delete test_name test_rg
 
-    '''
+    """
     result = False
-    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
 
     try:
-        cache = redconn.redis.delete(
-            name=name,
-            resource_group_name=resource_group
-        )
+        cache = redconn.redis.delete(name=name, resource_group_name=resource_group)
 
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
 
     return result
 
 
-async def export_data(hub, name, resource_group, prefix, container, format=None, **kwargs):
-    '''
+async def export_data(
+    hub, name, resource_group, prefix, container, format=None, **kwargs
+):
+    """
     .. versionadded:: 2.0.0
 
     Export data from the redis cache to blobs in a container.
@@ -241,40 +255,40 @@ async def export_data(hub, name, resource_group, prefix, container, format=None,
 
         azurerm.redis.operations.export_data test_name test_rg test_prefix test_container
 
-    '''
+    """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
 
     # Create a ExportRDBParameters object
     try:
         paramsmodel = await hub.exec.utils.azurerm.create_object_model(
-            'redis',
-            'ExportRDBParameters',
+            "redis",
+            "ExportRDBParameters",
             prefix=prefix,
             container=container,
-            format=format
+            format=format,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         cache = redconn.redis.export_data(
-            name=name,
-            resource_group_name=resource_group,
-            parameters=paramsmodel
+            name=name, resource_group_name=resource_group, parameters=paramsmodel
         )
 
         result = cache.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def force_reboot(hub, name, resource_group, reboot_type, shard_id=None, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Reboot specified Redis node(s). This operation requires write permission to the cache resource.
@@ -295,28 +309,28 @@ async def force_reboot(hub, name, resource_group, reboot_type, shard_id=None, **
 
         azurerm.redis.operations.force_reboot test_name test_rg test_type test_id
 
-    '''
+    """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
 
     try:
         cache = redconn.redis.force_reboot(
             name=name,
             resource_group_name=resource_group,
             reboot_type=reboot_type,
-            shard_id=shard_id
+            shard_id=shard_id,
         )
 
         result = cache.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def get(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Gets a Redis cache (resource description).
@@ -331,26 +345,23 @@ async def get(hub, name, resource_group, **kwargs):
 
         azurerm.redis.operations.get test_name test_rg
 
-    '''
+    """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
 
     try:
-        cache = redconn.redis.get(
-            name=name,
-            resource_group_name=resource_group
-        )
+        cache = redconn.redis.get(name=name, resource_group_name=resource_group)
 
         result = cache.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def import_data(hub, name, resource_group, files, format=None, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Import data into Redis cache.
@@ -369,28 +380,25 @@ async def import_data(hub, name, resource_group, files, format=None, **kwargs):
 
         azurerm.redis.operations.import_data test_name test_rg test_files
 
-    '''
+    """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
 
     try:
         cache = redconn.redis.import_data(
-            name=name,
-            resource_group_name=resource_group,
-            files=files,
-            format=format
+            name=name, resource_group_name=resource_group, files=files, format=format
         )
 
         result = cache.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_(hub, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Gets all Redis caches in the specified subscription.
@@ -401,26 +409,24 @@ async def list_(hub, **kwargs):
 
         azurerm.redis.operations.list
 
-    '''
+    """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
 
     try:
-        caches = await hub.exec.utils.azurerm.paged_object_to_list(
-            redconn.redis.list()
-        )
+        caches = await hub.exec.utils.azurerm.paged_object_to_list(redconn.redis.list())
 
         for cache in caches:
-            result[cache['name']] = cache
+            result[cache["name"]] = cache
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_by_resource_group(hub, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Lists all Redis caches in a resource group.
@@ -433,28 +439,26 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
 
         azurerm.redis.operations.list_by_resource_group test_rg
 
-    '''
+    """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
 
     try:
         caches = await hub.exec.utils.azurerm.paged_object_to_list(
-            redconn.redis.list_by_resource_group(
-                resource_group_name=resource_group,
-            )
+            redconn.redis.list_by_resource_group(resource_group_name=resource_group,)
         )
 
         for cache in caches:
-            result[cache['name']] = cache
+            result[cache["name"]] = cache
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_keys(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Retrieve a Redis cache's access keys. This operation requires write permission to the cache resource.
@@ -469,26 +473,23 @@ async def list_keys(hub, name, resource_group, **kwargs):
 
         azurerm.redis.operations.list_keys test_name test_rg
 
-    '''
+    """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
 
     try:
-        keys = redconn.redis.list_keys(
-            name=name,
-            resource_group_name=resource_group
-        )
+        keys = redconn.redis.list_keys(name=name, resource_group_name=resource_group)
 
         result = keys.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_upgrade_notifications(hub, name, resource_group, history, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Gets any upgrade notifications for a Redis cache.
@@ -505,27 +506,25 @@ async def list_upgrade_notifications(hub, name, resource_group, history, **kwarg
 
         azurerm.redis.operations.list_upgrade_notifications test_name test_rg test_history
 
-    '''
+    """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
 
     try:
         notifications = redconn.redis.list_upgrade_notifications(
-            name=name,
-            resource_group_name=resource_group,
-            history=history
+            name=name, resource_group_name=resource_group, history=history
         )
 
         result = notifications.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def regenerate_key(hub, name, resource_group, key_type, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     Regenerate Redis cache's access keys. This operation requires write permission to the cache resource.
@@ -542,28 +541,35 @@ async def regenerate_key(hub, name, resource_group, key_type, **kwargs):
 
         azurerm.redis.operations.renegerate_key test_name test_rg test_type
 
-    '''
-    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+    """
+    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
 
     try:
         keys = redconn.redis.regenerate_key(
-            resource_group_name=resource_group,
-            name=name,
-            key_type=key_type,
-            **kwargs
+            resource_group_name=resource_group, name=name, key_type=key_type, **kwargs
         )
 
         result = keys.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
-async def update(hub, name, resource_group, sku=None, redis_configuration=None, enable_non_ssl_port=False,
-                 tenant_settings=None, shard_count=None, minimum_tls_version=None, **kwargs):
-    '''
+async def update(
+    hub,
+    name,
+    resource_group,
+    sku=None,
+    redis_configuration=None,
+    enable_non_ssl_port=False,
+    tenant_settings=None,
+    shard_count=None,
+    minimum_tls_version=None,
+    **kwargs,
+):
+    """
     .. versionadded:: 2.0.0
 
     Update an existing Redis cache.
@@ -599,37 +605,39 @@ async def update(hub, name, resource_group, sku=None, redis_configuration=None, 
 
         azurerm.redis.operations.update test_name test_rg test_location test_sku
 
-    '''
-    redconn = await hub.exec.utils.azurerm.get_client('redis', **kwargs)
+    """
+    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
 
     try:
         paramsmodel = await hub.exec.utils.azurerm.create_object_model(
-            'redis',
-            'RedisUpdateParameters',
+            "redis",
+            "RedisUpdateParameters",
             sku=sku,
             redis_configuration=redis_configuration,
             enable_non_ssl_port=enable_non_ssl_port,
             tenant_settings=tenant_settings,
             shard_count=shard_count,
             minimum_tls_version=minimum_tls_version,
-            **kwargs
+            **kwargs,
         )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         cache = redconn.redis.update(
-            name=name,
-            resource_group_name=resource_group,
-            parameters=paramsmodel
+            name=name, resource_group_name=resource_group, parameters=paramsmodel
         )
 
         result = cache.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('redis', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result

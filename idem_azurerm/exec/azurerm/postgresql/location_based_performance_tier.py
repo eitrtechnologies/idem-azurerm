@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) PostgreSQL Location Based Performance Tier Operations Execution Module
 
 .. versionadded:: 2.0.0
@@ -45,7 +45,7 @@ Azure Resource Manager (ARM) PostgreSQL Location Based Performance Tier Operatio
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -55,6 +55,7 @@ HAS_LIBS = False
 try:
     import azure.mgmt.rdbms.postgresql.models  # pylint: disable=unused-import
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -65,7 +66,7 @@ log = logging.getLogger(__name__)
 
 
 async def list_(hub, location, **kwargs):
-    '''
+    """
     .. versionadded:: 2.0.0
 
     List all the performance tiers at specified location in a given subscription.
@@ -78,21 +79,19 @@ async def list_(hub, location, **kwargs):
 
         azurerm.postgresql.location_based_performance_tier.list test_location
 
-    '''
+    """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client('postgresql', **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
 
     try:
         tiers = await hub.exec.utils.azurerm.paged_object_to_list(
-            postconn.location_based_performance_tier.list(
-                location_name=location
-            )
+            postconn.location_based_performance_tier.list(location_name=location)
         )
 
         for tier in tiers:
-            result[tier['id']] = tier
+            result[tier["id"]] = tier
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('postgresql', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

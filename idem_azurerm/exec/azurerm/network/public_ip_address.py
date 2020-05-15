@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Azure Resource Manager (ARM) Network Public IP Address Execution Module
 
 .. versionadded:: 1.0.0
@@ -44,7 +44,7 @@ Azure Resource Manager (ARM) Network Public IP Address Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-'''
+"""
 
 # Python libs
 from __future__ import absolute_import
@@ -62,6 +62,7 @@ try:
     from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
+
     HAS_LIBS = True
 except ImportError:
     pass
@@ -72,7 +73,7 @@ log = logging.getLogger(__name__)
 
 
 async def delete(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Delete a public IP address.
@@ -88,24 +89,23 @@ async def delete(hub, name, resource_group, **kwargs):
 
         azurerm.network.public_ip_address.delete test-pub-ip testgroup
 
-    '''
+    """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         pub_ip = netconn.public_ip_addresses.delete(
-            public_ip_address_name=name,
-            resource_group_name=resource_group
+            public_ip_address_name=name, resource_group_name=resource_group
         )
         pub_ip.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
 
 async def get(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Get details about a specific public IP address.
@@ -121,27 +121,27 @@ async def get(hub, name, resource_group, **kwargs):
 
         azurerm.network.public_ip_address.get test-pub-ip testgroup
 
-    '''
-    expand = kwargs.get('expand')
+    """
+    expand = kwargs.get("expand")
 
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     try:
         pub_ip = netconn.public_ip_addresses.get(
             public_ip_address_name=name,
             resource_group_name=resource_group,
-            expand=expand
+            expand=expand,
         )
         result = pub_ip.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def create_or_update(hub, name, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     Create or update a public IP address within a specified resource group.
@@ -157,47 +157,49 @@ async def create_or_update(hub, name, resource_group, **kwargs):
 
         azurerm.network.public_ip_address.create_or_update test-ip-0 testgroup
 
-    '''
-    if 'location' not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(
-            resource_group, **kwargs
-        )
+    """
+    if "location" not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
 
-        if 'error' in rg_props:
-            log.error(
-                'Unable to determine location from resource group specified.'
-            )
+        if "error" in rg_props:
+            log.error("Unable to determine location from resource group specified.")
             return False
-        kwargs['location'] = rg_props['location']
+        kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
 
     try:
-        pub_ip_model = await hub.exec.utils.azurerm.create_object_model('network', 'PublicIPAddress', **kwargs)
+        pub_ip_model = await hub.exec.utils.azurerm.create_object_model(
+            "network", "PublicIPAddress", **kwargs
+        )
     except TypeError as exc:
-        result = {'error': 'The object model could not be built. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
         return result
 
     try:
         ip = netconn.public_ip_addresses.create_or_update(
             resource_group_name=resource_group,
             public_ip_address_name=name,
-            parameters=pub_ip_model
+            parameters=pub_ip_model,
         )
         ip.wait()
         ip_result = ip.result()
         result = ip_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
     except SerializationError as exc:
-        result = {'error': 'The object model could not be parsed. ({0})'.format(str(exc))}
+        result = {
+            "error": "The object model could not be parsed. ({0})".format(str(exc))
+        }
 
     return result
 
 
 async def list_all(hub, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all public IP addresses within a subscription.
@@ -208,23 +210,25 @@ async def list_all(hub, **kwargs):
 
         azurerm.network.public_ip_address.list_all
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
-        pub_ips = await hub.exec.utils.azurerm.paged_object_to_list(netconn.public_ip_addresses.list_all())
+        pub_ips = await hub.exec.utils.azurerm.paged_object_to_list(
+            netconn.public_ip_addresses.list_all()
+        )
 
         for ip in pub_ips:
-            result[ip['name']] = ip
+            result[ip["name"]] = ip
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
 
 async def list_(hub, resource_group, **kwargs):
-    '''
+    """
     .. versionadded:: 1.0.0
 
     List all public IP addresses within a resource group.
@@ -238,20 +242,18 @@ async def list_(hub, resource_group, **kwargs):
 
         azurerm.network.public_ip_address.list testgroup
 
-    '''
+    """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client('network', **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
     try:
         pub_ips = await hub.exec.utils.azurerm.paged_object_to_list(
-            netconn.public_ip_addresses.list(
-                resource_group_name=resource_group
-            )
+            netconn.public_ip_addresses.list(resource_group_name=resource_group)
         )
 
         for ip in pub_ips:
-            result[ip['name']] = ip
+            result[ip["name"]] = ip
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error('network', str(exc), **kwargs)
-        result = {'error': str(exc)}
+        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
