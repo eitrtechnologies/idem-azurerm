@@ -1,0 +1,18 @@
+=========================
+network execution modules
+=========================
+
+.. autosummary::
+   :toctree:
+   :template: autosummary.rst.tmpl
+
+   load_balancer
+   local_network_gateway
+   network_interface
+   network_security_group
+   operations
+   public_ip_address
+   route
+   virtual_network_gateway
+   virtual_network_peerings
+   virtual_network
