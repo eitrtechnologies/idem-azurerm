@@ -12,7 +12,7 @@ A clear and concise description of what the bug is.
 
 **Include troubleshooting information**
 1. Steps to reproduce the behavior.
-2. Provide relevant configs and/or SLS files (be sure to remove sensitive into)
+2. Provide relevant configs and/or SLS files (be sure to remove sensitive info).
 3. Provide command line arguments.
 4. Include debug logs if possible and relevant.
 5. Include errors.
