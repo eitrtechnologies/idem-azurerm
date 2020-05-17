@@ -2,8 +2,8 @@
 monitor state modules
 =====================
 
-.. autosummary::
-   :toctree:
-   :template: autosummary.rst.tmpl
+.. toctree::
+   :maxdepth: 1
+   :glob:
 
    diagnostic_setting

@@ -2,9 +2,9 @@
 dns execution modules
 =====================
 
-.. autosummary::
-   :toctree:
-   :template: autosummary.rst.tmpl
+.. toctree::
+   :maxdepth: 1
+   :glob:
 
    record_set
    zone

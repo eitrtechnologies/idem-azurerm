@@ -1,12 +1,11 @@
-=================
-execution modules
-=================
+=============
+state modules
+=============
 
 .. toctree::
    :maxdepth: 1
    :glob:
 
-   authorization/index
    compute/index
    dns/index
    keyvault/index

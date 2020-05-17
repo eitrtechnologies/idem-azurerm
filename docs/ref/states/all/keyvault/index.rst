@@ -2,9 +2,9 @@
 keyvault state modules
 ======================
 
-.. autosummary::
-   :toctree:
-   :template: autosummary.rst.tmpl
+.. toctree::
+   :maxdepth: 1
+   :glob:
 
    key
    vault

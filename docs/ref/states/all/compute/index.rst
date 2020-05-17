@@ -2,9 +2,9 @@
 compute state modules
 =====================
 
-.. autosummary::
-   :toctree:
-   :template: autosummary.rst.tmpl
+.. toctree::
+   :maxdepth: 1
+   :glob:
 
    availability_set
    virtual_machine
