@@ -17,6 +17,6 @@ def mock_hub(hub):
     """
     mock_hub = hub.pop.testing.mock_hub()
     # TODO replace mocked functions with necessary real ones
-    #mock_hub.pop.data.imap = hub.pop.data.imap
-    #mock_hub.exec.utils = hub.exec.utils
+    # mock_hub.pop.data.imap = hub.pop.data.imap
+    # mock_hub.exec.utils = hub.exec.utils
     yield mock_hub
