@@ -1,15 +1,15 @@
 import pytest
 
 
+@pytest.mark.run(before="test_absent")
 @pytest.mark.asyncio
-async def test_absent_present(hub, subtests):
-    ctx = {"acct": {}, "test": False}
-    ret = await hub.states.azurerm.resource.group.absent(ctx, "name")
+async def test_present(hub, ctx, resource_group, location):
+    ret = await hub.states.azurerm.resource.group.present(ctx, resource_group, location)
     assert ret == {"actual result": "value"}
 
-    with subtests.test(action="present"):
-        ret = await hub.states.azurerm.resource.group.present(ctx, "name")
-        assert ret == {"actual result": "value"}
 
-    ret = await hub.states.azurerm.resource.group.absent(ctx, "name")
+@pytest.mark.run(after="test_present")
+@pytest.mark.asyncio
+async def test_absent(hub, ctx, resource_group):
+    ret = await hub.states.azurerm.resource.group.absent(ctx, resource_group)
     assert ret == {"actual result": "value"}
