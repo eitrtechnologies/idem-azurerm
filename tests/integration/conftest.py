@@ -28,5 +28,13 @@ def location():
 
 
 @pytest.fixture
+def tags():
+    yield {
+        "Organization": "Everest",
+        "Owner": "Elmer Fudd Gantry",
+    }
+
+
+@pytest.fixture
 def resource_group():
     yield "rg-idem-inttest"
