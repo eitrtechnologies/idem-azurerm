@@ -12,6 +12,10 @@ repos:
       - id: mixed-line-ending     # Replaces or checks mixed line ending.
         args: [--fix=lf]
         language_version: python3
+        exclude: >
+            (?x)^(
+                docs/make.bat
+            )$
       - id: end-of-file-fixer     # Makes sure files end in a newline and only a newline.
         exclude: tests/fake_.*\.key
         language_version: python3
