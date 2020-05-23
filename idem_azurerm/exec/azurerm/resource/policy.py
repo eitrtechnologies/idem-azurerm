@@ -130,7 +130,7 @@ async def assignment_create(hub, name, scope, definition_name, **kwargs):
 
     # Delete this section when the ticket above is resolved.
     #  BEGIN
-    definition_list = policy_definitions_list(**kwargs)
+    definition_list = await hub.exec.azurerm.resource.policy.definitions_list(**kwargs)
     if definition_name in definition_list:
         definition = definition_list[definition_name]
     else:

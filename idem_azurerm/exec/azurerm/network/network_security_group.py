@@ -139,7 +139,7 @@ async def default_security_rules_list(hub, security_group, resource_group, **kwa
     """
     result = {}
 
-    secgroup = network_security_group_get(
+    secgroup = await hub.exec.azurerm.network.network_security_group.get(
         security_group=security_group, resource_group=resource_group, **kwargs
     )
 
