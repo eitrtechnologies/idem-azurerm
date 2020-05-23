@@ -132,6 +132,7 @@ async def present(
             return ret
 
     config = await hub.exec.azurerm.postgresql.configuration.get(
+        ctx=ctx,
         name=name,
         server_name=server_name,
         resource_group=resource_group,
@@ -178,6 +179,7 @@ async def present(
     config_kwargs.update(connection_auth)
 
     config = await hub.exec.azurerm.postgresql.configuration.create_or_update(
+        ctx=ctx,
         name=name,
         server_name=server_name,
         resource_group=resource_group,

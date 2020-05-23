@@ -177,7 +177,7 @@ async def present(
             return ret
 
     zone = await hub.exec.azurerm.dns.zone.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in zone:
@@ -271,6 +271,7 @@ async def present(
     zone_kwargs.update(connection_auth)
 
     zone = await hub.exec.azurerm.dns.zone.create_or_update(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         etag=etag,
@@ -325,7 +326,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             return ret
 
     zone = await hub.exec.azurerm.dns.zone.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in zone:
@@ -343,7 +344,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.dns.zone.delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:

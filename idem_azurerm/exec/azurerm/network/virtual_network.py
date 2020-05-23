@@ -72,7 +72,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def subnets_list(hub, virtual_network, resource_group, **kwargs):
+async def subnets_list(hub, ctx, virtual_network, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -91,7 +91,7 @@ async def subnets_list(hub, virtual_network, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         subnets = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.subnets.list(
@@ -108,7 +108,7 @@ async def subnets_list(hub, virtual_network, resource_group, **kwargs):
     return result
 
 
-async def subnet_get(hub, name, virtual_network, resource_group, **kwargs):
+async def subnet_get(hub, ctx, name, virtual_network, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -129,7 +129,7 @@ async def subnet_get(hub, name, virtual_network, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.subnet_get testsubnet testnet testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         subnet = netconn.subnets.get(
             resource_group_name=resource_group,
@@ -146,7 +146,7 @@ async def subnet_get(hub, name, virtual_network, resource_group, **kwargs):
 
 
 async def subnet_create_or_update(
-    hub, name, address_prefix, virtual_network, resource_group, **kwargs
+    hub, ctx, name, address_prefix, virtual_network, resource_group, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -171,7 +171,7 @@ async def subnet_create_or_update(
                   '10.0.0.0/24' testnet testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     # Use NSG name to link to the ID of an existing NSG.
     if kwargs.get("network_security_group"):
@@ -226,7 +226,7 @@ async def subnet_create_or_update(
     return result
 
 
-async def subnet_delete(hub, name, virtual_network, resource_group, **kwargs):
+async def subnet_delete(hub, ctx, name, virtual_network, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -248,7 +248,7 @@ async def subnet_delete(hub, name, virtual_network, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         subnet = netconn.subnets.delete(
             resource_group_name=resource_group,
@@ -263,7 +263,7 @@ async def subnet_delete(hub, name, virtual_network, resource_group, **kwargs):
     return result
 
 
-async def list_all(hub, **kwargs):
+async def list_all(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -277,7 +277,7 @@ async def list_all(hub, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         vnets = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.virtual_networks.list_all()
@@ -292,7 +292,7 @@ async def list_all(hub, **kwargs):
     return result
 
 
-async def list_(hub, resource_group, **kwargs):
+async def list_(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -309,7 +309,7 @@ async def list_(hub, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         vnets = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.virtual_networks.list(resource_group_name=resource_group)
@@ -324,7 +324,7 @@ async def list_(hub, resource_group, **kwargs):
     return result
 
 
-async def create_or_update(hub, name, address_prefixes, resource_group, **kwargs):
+async def create_or_update(hub, ctx, name, address_prefixes, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -359,7 +359,7 @@ async def create_or_update(hub, name, address_prefixes, resource_group, **kwargs
         log.error("Address prefixes must be specified as a list!")
         return False
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     address_space = {"address_prefixes": address_prefixes}
     dhcp_options = {"dns_servers": kwargs.get("dns_servers")}
@@ -398,7 +398,7 @@ async def create_or_update(hub, name, address_prefixes, resource_group, **kwargs
     return result
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -417,7 +417,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         vnet = netconn.virtual_networks.delete(
             virtual_network_name=name, resource_group_name=resource_group
@@ -430,7 +430,7 @@ async def delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get(hub, name, resource_group, **kwargs):
+async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -448,7 +448,7 @@ async def get(hub, name, resource_group, **kwargs):
         azurerm.network.virtual_network.get testnet testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         vnet = netconn.virtual_networks.get(
             virtual_network_name=name, resource_group_name=resource_group

@@ -64,7 +64,7 @@ log = logging.getLogger(__name__)
 
 
 async def create_or_update_at_resource_group_level(
-    hub, name, resource_group, lock_level, notes=None, owners=None, **kwargs
+    hub, ctx, name, resource_group, lock_level, notes=None, owners=None, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -95,7 +95,7 @@ async def create_or_update_at_resource_group_level(
 
     """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
     if owners:
@@ -135,7 +135,7 @@ async def create_or_update_at_resource_group_level(
     return result
 
 
-async def delete_at_resource_group_level(hub, name, resource_group, **kwargs):
+async def delete_at_resource_group_level(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -154,7 +154,7 @@ async def delete_at_resource_group_level(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     try:
         lock = lckconn.management_locks.delete_at_resource_group_level(
@@ -169,7 +169,7 @@ async def delete_at_resource_group_level(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get_at_resource_group_level(hub, name, resource_group, **kwargs):
+async def get_at_resource_group_level(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -187,7 +187,7 @@ async def get_at_resource_group_level(hub, name, resource_group, **kwargs):
 
     """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     try:
         lock = lckconn.management_locks.get_at_resource_group_level(
@@ -203,7 +203,7 @@ async def get_at_resource_group_level(hub, name, resource_group, **kwargs):
 
 
 async def create_or_update_by_scope(
-    hub, name, scope, lock_level, notes=None, owners=None, **kwargs
+    hub, ctx, name, scope, lock_level, notes=None, owners=None, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -238,7 +238,7 @@ async def create_or_update_by_scope(
 
     """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
     if owners:
@@ -278,7 +278,7 @@ async def create_or_update_by_scope(
     return result
 
 
-async def delete_by_scope(hub, name, scope, **kwargs):
+async def delete_by_scope(hub, ctx, name, scope, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -301,7 +301,7 @@ async def delete_by_scope(hub, name, scope, **kwargs):
 
     """
     result = False
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     try:
         lock = lckconn.management_locks.delete_by_scope(
@@ -316,7 +316,7 @@ async def delete_by_scope(hub, name, scope, **kwargs):
     return result
 
 
-async def get_by_scope(hub, name, scope, **kwargs):
+async def get_by_scope(hub, ctx, name, scope, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -338,7 +338,7 @@ async def get_by_scope(hub, name, scope, **kwargs):
 
     """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     try:
         lock = lckconn.management_locks.get_by_scope(
@@ -355,6 +355,7 @@ async def get_by_scope(hub, name, scope, **kwargs):
 
 async def create_or_update_at_resource_level(
     hub,
+    ctx,
     name,
     lock_level,
     resource_group,
@@ -404,7 +405,7 @@ async def create_or_update_at_resource_level(
 
     """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
     if owners:
@@ -455,6 +456,7 @@ async def create_or_update_at_resource_level(
 
 async def delete_at_resource_level(
     hub,
+    ctx,
     name,
     resource_group,
     resource,
@@ -491,7 +493,7 @@ async def delete_at_resource_level(
 
     """
     result = False
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     if parent_resource_path is None:
         parent_resource_path = ""
@@ -517,6 +519,7 @@ async def delete_at_resource_level(
 
 async def get_at_resource_level(
     hub,
+    ctx,
     name,
     resource_group,
     resource,
@@ -551,7 +554,7 @@ async def get_at_resource_level(
 
     """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     if parent_resource_path is None:
         parent_resource_path = ""
@@ -576,7 +579,7 @@ async def get_at_resource_level(
 
 
 async def create_or_update_at_subscription_level(
-    hub, name, lock_level, notes=None, owners=None, **kwargs
+    hub, ctx, name, lock_level, notes=None, owners=None, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -605,7 +608,7 @@ async def create_or_update_at_subscription_level(
 
     """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     # Converts each application id in the owners list into a dictionary that represents a ManagementLockOwner object
     if owners:
@@ -645,7 +648,7 @@ async def create_or_update_at_subscription_level(
     return result
 
 
-async def delete_at_subscription_level(hub, name, **kwargs):
+async def delete_at_subscription_level(hub, ctx, name, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -662,7 +665,7 @@ async def delete_at_subscription_level(hub, name, **kwargs):
 
     """
     result = False
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     try:
         lock = lckconn.management_locks.delete_at_subscription_level(
@@ -677,7 +680,7 @@ async def delete_at_subscription_level(hub, name, **kwargs):
     return result
 
 
-async def get_at_subscription_level(hub, name, **kwargs):
+async def get_at_subscription_level(hub, ctx, name, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -693,7 +696,7 @@ async def get_at_subscription_level(hub, name, **kwargs):
 
     """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     try:
         lock = lckconn.management_locks.get_at_subscription_level(
@@ -708,7 +711,7 @@ async def get_at_subscription_level(hub, name, **kwargs):
     return result
 
 
-async def list_at_resource_group_level(hub, resource_group, **kwargs):
+async def list_at_resource_group_level(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -724,7 +727,7 @@ async def list_at_resource_group_level(hub, resource_group, **kwargs):
 
     """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     try:
         result = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -742,6 +745,7 @@ async def list_at_resource_group_level(hub, resource_group, **kwargs):
 
 async def list_at_resource_level(
     hub,
+    ctx,
     resource_group,
     resource,
     resource_type,
@@ -773,7 +777,7 @@ async def list_at_resource_level(
 
     """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     if parent_resource_path is None:
         parent_resource_path = ""
@@ -797,7 +801,7 @@ async def list_at_resource_level(
     return result
 
 
-async def list_at_subscription_level(hub, **kwargs):
+async def list_at_subscription_level(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -811,7 +815,7 @@ async def list_at_subscription_level(hub, **kwargs):
 
     """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     try:
         result = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -827,7 +831,7 @@ async def list_at_subscription_level(hub, **kwargs):
     return result
 
 
-async def list_by_scope(hub, scope, **kwargs):
+async def list_by_scope(hub, ctx, scope, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -847,7 +851,7 @@ async def list_by_scope(hub, scope, **kwargs):
 
     """
     result = {}
-    lckconn = await hub.exec.utils.azurerm.get_client("managementlock", **kwargs)
+    lckconn = await hub.exec.utils.azurerm.get_client(ctx, "managementlock", **kwargs)
 
     try:
         result = await hub.exec.utils.azurerm.paged_object_to_list(

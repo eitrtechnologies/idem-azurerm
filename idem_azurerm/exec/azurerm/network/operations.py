@@ -69,7 +69,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def check_dns_name_availability(hub, name, region, **kwargs):
+async def check_dns_name_availability(hub, ctx, name, region, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -86,7 +86,7 @@ async def check_dns_name_availability(hub, name, region, **kwargs):
          azurerm.network.check_dns_name_availability testdnsname westus
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         check_dns_name = netconn.check_dns_name_availability(
             location=region, domain_name_label=name
@@ -100,7 +100,7 @@ async def check_dns_name_availability(hub, name, region, **kwargs):
 
 
 async def check_ip_address_availability(
-    hub, ip_address, virtual_network, resource_group, **kwargs
+    hub, ctx, ip_address, virtual_network, resource_group, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -123,7 +123,7 @@ async def check_ip_address_availability(
          azurerm.network.check_ip_address_availability 10.0.0.4 testnet testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         check_ip = netconn.virtual_networks.check_ip_address_availability(
             resource_group_name=resource_group,
@@ -138,7 +138,7 @@ async def check_ip_address_availability(
     return result
 
 
-async def usages_list(hub, location, **kwargs):
+async def usages_list(hub, ctx, location, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -153,7 +153,7 @@ async def usages_list(hub, location, **kwargs):
          azurerm.network.usages_list westus
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         result = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.usages.list(location)

@@ -141,7 +141,11 @@ async def present(
             return ret
 
     key = await hub.exec.azurerm.keyvault.key.get_key(
-        name=name, vault_url=vault_url, azurerm_log_level="info", **connection_auth
+        ctx=ctx,
+        name=name,
+        vault_url=vault_url,
+        azurerm_log_level="info",
+        **connection_auth,
     )
 
     if key_type != "oct":
@@ -216,6 +220,7 @@ async def present(
     key_kwargs.update(connection_auth)
 
     key = await hub.exec.azurerm.keyvault.key.create_key(
+        ctx=ctx,
         name=name,
         vault_url=vault_url,
         key_type=key_type,
@@ -274,7 +279,11 @@ async def absent(hub, ctx, name, vault_url, connection_auth=None, **kwargs):
             return ret
 
     key = await hub.exec.azurerm.keyvault.key.get_key(
-        name=name, vault_url=vault_url, azurerm_log_level="info", **connection_auth
+        ctx=ctx,
+        name=name,
+        vault_url=vault_url,
+        azurerm_log_level="info",
+        **connection_auth,
     )
 
     if "error" in key:
@@ -292,7 +301,7 @@ async def absent(hub, ctx, name, vault_url, connection_auth=None, **kwargs):
         return ret
 
     deleted = await hub.exec.azurerm.keyvault.key.begin_delete_key(
-        name=name, vault_url=vault_url, **connection_auth
+        ctx=ctx, name=name, vault_url=vault_url, **connection_auth
     )
 
     if deleted:

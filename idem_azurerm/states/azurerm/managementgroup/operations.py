@@ -110,7 +110,7 @@ async def present(
             return ret
 
     mgroup = await hub.exec.azurerm.managementgroup.operations.get(
-        name=name, azurerm_log_level="info", **connection_auth
+        ctx=ctx, name=name, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in mgroup:
@@ -155,7 +155,7 @@ async def present(
     mgroup_kwargs.update(connection_auth)
 
     mgroup = await hub.exec.azurerm.managementgroup.operations.create_or_update(
-        name=name, parent=parent, display_name=display_name, **mgroup_kwargs
+        ctx=ctx, name=name, parent=parent, display_name=display_name, **mgroup_kwargs
     )
 
     if "error" not in mgroup:
@@ -195,7 +195,7 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
             return ret
 
     mgroup = await hub.exec.azurerm.managementgroup.operations.get(
-        name=name, azurerm_log_level="info", **connection_auth
+        ctx=ctx, name=name, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in mgroup:
@@ -213,7 +213,7 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
         return ret
 
     deleted = await hub.exec.azurerm.managementgroup.operations.delete(
-        name=name, **connection_auth
+        ctx=ctx, name=name, **connection_auth
     )
 
     if deleted:

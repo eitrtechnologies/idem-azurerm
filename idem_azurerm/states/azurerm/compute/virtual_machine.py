@@ -414,7 +414,7 @@ async def present(
             return ret
 
     vm = await hub.exec.azurerm.compute.virtual_machine.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     new_vm = True
@@ -708,6 +708,7 @@ async def present(
     vm_kwargs.update(connection_auth)
 
     vm = await hub.exec.azurerm.compute.virtual_machine.create_or_update(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         vm_size=vm_size,
@@ -822,7 +823,7 @@ async def absent(
             return ret
 
     vm = await hub.exec.azurerm.compute.virtual_machine.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in vm:
@@ -840,7 +841,7 @@ async def absent(
         return ret
 
     deleted = await hub.exec.azurerm.compute.virtual_machine.delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:
@@ -857,7 +858,11 @@ async def absent(
                     log.error("This isn't a valid disk resource: %s", os_disk)
 
                 deleted_disk = await hub.exec.azurerm.compute.disk.delete(
-                    disk_name, disk_group, azurerm_log_level="info", **connection_auth
+                    ctx,
+                    disk_name,
+                    disk_group,
+                    azurerm_log_level="info",
+                    **connection_auth,
                 )
 
                 if not deleted_disk:
@@ -877,6 +882,7 @@ async def absent(
                         continue
 
                     deleted_disk = await hub.exec.azurerm.compute.disk.delete(
+                        ctx,
                         disk_name,
                         disk_group,
                         azurerm_log_level="info",
@@ -900,11 +906,19 @@ async def absent(
                     continue
 
                 nic = await hub.exec.azurerm.network.network_interface.get(
-                    nic_name, nic_group, azurerm_log_level="info", **connection_auth
+                    ctx,
+                    nic_name,
+                    nic_group,
+                    azurerm_log_level="info",
+                    **connection_auth,
                 )
 
                 deleted_nic = await hub.exec.azurerm.network.network_interface.delete(
-                    nic_name, nic_group, azurerm_log_level="info", **connection_auth
+                    ctx,
+                    nic_name,
+                    nic_group,
+                    azurerm_log_level="info",
+                    **connection_auth,
                 )
 
                 if cleanup_public_ips:
@@ -925,6 +939,7 @@ async def absent(
                             continue
 
                         deleted_pip = await hub.exec.azurerm.network.public_ip_address.delete(
+                            ctx,
                             pip_name,
                             pip_group,
                             azurerm_log_level="info",

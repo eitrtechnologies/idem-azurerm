@@ -173,7 +173,7 @@ async def table_present(
             return ret
 
     rt_tbl = await hub.exec.azurerm.network.route.table_get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in rt_tbl:
@@ -237,6 +237,7 @@ async def table_present(
     rt_tbl_kwargs.update(connection_auth)
 
     rt_tbl = await hub.exec.azurerm.network.route.table_create_or_update(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         disable_bgp_route_propagation=disable_bgp_route_propagation,
@@ -287,7 +288,7 @@ async def table_absent(hub, ctx, name, resource_group, connection_auth=None, **k
             return ret
 
     rt_tbl = await hub.exec.azurerm.network.route.table_get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in rt_tbl:
@@ -305,7 +306,7 @@ async def table_absent(hub, ctx, name, resource_group, connection_auth=None, **k
         return ret
 
     deleted = await hub.exec.azurerm.network.route.table_delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:
@@ -385,7 +386,12 @@ async def present(
             return ret
 
     route = await hub.exec.azurerm.network.route.get(
-        name, route_table, resource_group, azurerm_log_level="info", **connection_auth
+        ctx,
+        name,
+        route_table,
+        resource_group,
+        azurerm_log_level="info",
+        **connection_auth,
     )
 
     if "error" not in route:
@@ -439,6 +445,7 @@ async def present(
     route_kwargs.update(connection_auth)
 
     route = await hub.exec.azurerm.network.route.create_or_update(
+        ctx=ctx,
         name=name,
         route_table=route_table,
         resource_group=resource_group,
@@ -495,7 +502,12 @@ async def absent(
             return ret
 
     route = await hub.exec.azurerm.network.route.get(
-        name, route_table, resource_group, azurerm_log_level="info", **connection_auth
+        ctx,
+        name,
+        route_table,
+        resource_group,
+        azurerm_log_level="info",
+        **connection_auth,
     )
 
     if "error" in route:
@@ -513,7 +525,7 @@ async def absent(
         return ret
 
     deleted = await hub.exec.azurerm.network.route.delete(
-        name, route_table, resource_group, **connection_auth
+        ctx, name, route_table, resource_group, **connection_auth
     )
 
     if deleted:

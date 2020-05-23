@@ -65,7 +65,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def list_(hub, location, **kwargs):
+async def list_(hub, ctx, location, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -81,7 +81,7 @@ async def list_(hub, location, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
 
     try:
         tiers = await hub.exec.utils.azurerm.paged_object_to_list(

@@ -270,6 +270,7 @@ async def present(
             return ret
 
     rec_set = await hub.exec.azurerm.dns.record_set.get(
+        ctx,
         name,
         zone_name,
         resource_group,
@@ -368,6 +369,7 @@ async def present(
     rec_set_kwargs.update(connection_auth)
 
     rec_set = await hub.exec.azurerm.dns.record_set.create_or_update(
+        ctx=ctx,
         name=name,
         zone_name=zone_name,
         resource_group=resource_group,
@@ -437,7 +439,12 @@ async def absent(
             return ret
 
     rec_set = await hub.exec.azurerm.dns.record_set.get(
-        name, zone_name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx,
+        name,
+        zone_name,
+        resource_group,
+        azurerm_log_level="info",
+        **connection_auth,
     )
 
     if "error" in rec_set:
@@ -457,7 +464,7 @@ async def absent(
         return ret
 
     deleted = await hub.exec.azurerm.dns.record_set.delete(
-        name, zone_name, resource_group, **connection_auth
+        ctx, name, zone_name, resource_group, **connection_auth
     )
 
     if deleted:

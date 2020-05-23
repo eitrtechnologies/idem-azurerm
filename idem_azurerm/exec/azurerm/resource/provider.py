@@ -67,7 +67,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def list_(hub, top=None, expand=None, **kwargs):
+async def list_(hub, ctx, top=None, expand=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -86,7 +86,7 @@ async def list_(hub, top=None, expand=None, **kwargs):
 
     """
     result = {}
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
 
     if not expand:
         expand = "resourceTypes/aliases"

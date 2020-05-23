@@ -63,7 +63,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def execute(hub, name, type=None, **kwargs):
+async def execute(hub, ctx, name, type=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -81,7 +81,7 @@ async def execute(hub, name, type=None, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
 
     try:
         availability = postconn.check_name_availability.execute(name=name, type=type,)

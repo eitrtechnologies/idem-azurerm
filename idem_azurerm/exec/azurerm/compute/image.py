@@ -67,6 +67,7 @@ log = logging.getLogger(__name__)
 
 async def create_or_update(
     hub,
+    ctx,
     name,
     resource_group,
     source_vm=None,
@@ -114,7 +115,7 @@ async def create_or_update(
             return False
         kwargs["location"] = rg_props["location"]
 
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
 
     if source_vm:
         # Use VM name to link to the IDs of existing VMs.
@@ -202,7 +203,7 @@ async def create_or_update(
     return result
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -220,7 +221,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
     try:
         compconn.images.delete(resource_group_name=resource_group, image_name=name)
         result = True
@@ -231,7 +232,7 @@ async def delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get(hub, name, resource_group, **kwargs):
+async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -248,7 +249,7 @@ async def get(hub, name, resource_group, **kwargs):
         azurerm.compute.image.get testimage testgroup
 
     """
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
     try:
         image = compconn.images.get(resource_group_name=resource_group, image_name=name)
         result = image.as_dict()
@@ -260,7 +261,7 @@ async def get(hub, name, resource_group, **kwargs):
     return result
 
 
-async def images_list_by_resource_group(hub, resource_group, **kwargs):
+async def images_list_by_resource_group(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -276,7 +277,7 @@ async def images_list_by_resource_group(hub, resource_group, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
     try:
         images = await hub.exec.utils.azurerm.paged_object_to_list(
             compconn.images.list_by_resource_group(resource_group_name=resource_group)
@@ -291,7 +292,7 @@ async def images_list_by_resource_group(hub, resource_group, **kwargs):
     return result
 
 
-async def images_list(hub, **kwargs):
+async def images_list(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -305,7 +306,7 @@ async def images_list(hub, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
     try:
         images = await hub.exec.utils.azurerm.paged_object_to_list(
             compconn.images.list()

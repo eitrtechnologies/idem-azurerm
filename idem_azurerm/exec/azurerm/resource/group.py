@@ -67,7 +67,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def list_(hub, **kwargs):
+async def list_(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -81,7 +81,7 @@ async def list_(hub, **kwargs):
 
     """
     result = {}
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
     try:
         groups = await hub.exec.utils.azurerm.paged_object_to_list(
             resconn.resource_groups.list()
@@ -96,7 +96,7 @@ async def list_(hub, **kwargs):
     return result
 
 
-async def check_existence(hub, name, **kwargs):
+async def check_existence(hub, ctx, name, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -112,7 +112,7 @@ async def check_existence(hub, name, **kwargs):
 
     """
     result = False
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
     try:
         result = resconn.resource_groups.check_existence(name)
 
@@ -122,7 +122,7 @@ async def check_existence(hub, name, **kwargs):
     return result
 
 
-async def get(hub, name, **kwargs):
+async def get(hub, ctx, name, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -138,7 +138,7 @@ async def get(hub, name, **kwargs):
 
     """
     result = {}
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
     try:
         group = resconn.resource_groups.get(name)
         result = group.as_dict()
@@ -150,7 +150,7 @@ async def get(hub, name, **kwargs):
     return result
 
 
-async def create_or_update(hub, name, location, **kwargs):
+async def create_or_update(hub, ctx, name, location, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -169,7 +169,7 @@ async def create_or_update(hub, name, location, **kwargs):
 
     """
     result = {}
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
     resource_group_params = {
         "location": location,
         "managed_by": kwargs.get("managed_by"),
@@ -185,7 +185,7 @@ async def create_or_update(hub, name, location, **kwargs):
     return result
 
 
-async def delete(hub, name, **kwargs):
+async def delete(hub, ctx, name, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -201,7 +201,7 @@ async def delete(hub, name, **kwargs):
 
     """
     result = False
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
     try:
         group = resconn.resource_groups.delete(name)
         group.wait()

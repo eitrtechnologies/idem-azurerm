@@ -64,7 +64,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def clear_legal_hold(hub, name, account, resource_group, tags, **kwargs):
+async def clear_legal_hold(hub, ctx, name, account, resource_group, tags, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -89,7 +89,7 @@ async def clear_legal_hold(hub, name, account, resource_group, tags, **kwargs):
         azurerm.storage.container.clear_legal_hold test_name test_account test_group test_tags
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         hold = storconn.blob_containers.clear_legal_hold(
@@ -108,7 +108,7 @@ async def clear_legal_hold(hub, name, account, resource_group, tags, **kwargs):
 
 
 async def create(
-    hub, name, account, resource_group, public_access=None, metadata=None, **kwargs
+    hub, ctx, name, account, resource_group, public_access=None, metadata=None, **kwargs
 ):
     """
     .. versionadded:: 2.0.0
@@ -138,7 +138,7 @@ async def create(
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         container = storconn.blob_containers.create(
@@ -163,7 +163,14 @@ async def create(
 
 
 async def create_or_update_immutability_policy(
-    hub, name, account, resource_group, immutability_period, if_match=None, **kwargs
+    hub,
+    ctx,
+    name,
+    account,
+    resource_group,
+    immutability_period,
+    if_match=None,
+    **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
@@ -195,7 +202,7 @@ async def create_or_update_immutability_policy(
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         policy = storconn.blob_containers.create_or_update_immutability_policy(
@@ -219,7 +226,7 @@ async def create_or_update_immutability_policy(
     return result
 
 
-async def delete(hub, name, account, resource_group, **kwargs):
+async def delete(hub, ctx, name, account, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -242,7 +249,7 @@ async def delete(hub, name, account, resource_group, **kwargs):
 
     """
     result = False
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         container = storconn.blob_containers.delete(
@@ -259,7 +266,7 @@ async def delete(hub, name, account, resource_group, **kwargs):
 
 
 async def delete_immutability_policy(
-    hub, name, account, resource_group, if_match, **kwargs
+    hub, ctx, name, account, resource_group, if_match, **kwargs
 ):
     """
     .. versionadded:: 2.0.0
@@ -289,7 +296,7 @@ async def delete_immutability_policy(
 
     """
     result = False
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         policy = storconn.blob_containers.delete_immutability_policy(
@@ -307,7 +314,7 @@ async def delete_immutability_policy(
 
 
 async def extend_immutability_policy(
-    hub, name, account, resource_group, immutability_period, if_match, **kwargs
+    hub, ctx, name, account, resource_group, immutability_period, if_match, **kwargs
 ):
     """
     .. versionadded:: 2.0.0
@@ -338,7 +345,7 @@ async def extend_immutability_policy(
         azurerm.storage.container.extend_immutability_policy test_name test_account test_group test_period test_if_match
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         policy = storconn.blob_containers.extend_immutability_policy(
@@ -358,7 +365,7 @@ async def extend_immutability_policy(
     return result
 
 
-async def get(hub, name, account, resource_group, **kwargs):
+async def get(hub, ctx, name, account, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -381,7 +388,7 @@ async def get(hub, name, account, resource_group, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         container = storconn.blob_containers.get(
@@ -399,7 +406,7 @@ async def get(hub, name, account, resource_group, **kwargs):
 
 
 async def get_immutability_policy(
-    hub, name, account, resource_group, if_match=None, **kwargs
+    hub, ctx, name, account, resource_group, if_match=None, **kwargs
 ):
     """
     .. versionadded:: 2.0.0
@@ -427,7 +434,7 @@ async def get_immutability_policy(
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         policy = storconn.blob_containers.get_immutability_policy(
@@ -445,7 +452,7 @@ async def get_immutability_policy(
     return result
 
 
-async def list_(hub, account, resource_group, **kwargs):
+async def list_(hub, ctx, account, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -465,7 +472,7 @@ async def list_(hub, account, resource_group, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         containers = storconn.blob_containers.list(
@@ -483,7 +490,7 @@ async def list_(hub, account, resource_group, **kwargs):
 
 
 async def lock_immutability_policy(
-    hub, name, account, resource_group, if_match, **kwargs
+    hub, ctx, name, account, resource_group, if_match, **kwargs
 ):
     """
     .. versionadded:: 2.0.0
@@ -508,7 +515,7 @@ async def lock_immutability_policy(
         azurerm.storage.container.lock_immutability_policy test_name test_account test_group test_if_match
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         policy = storconn.blob_containers.lock_immutability_policy(
@@ -527,7 +534,7 @@ async def lock_immutability_policy(
     return result
 
 
-async def set_legal_hold(hub, name, account, resource_group, tags, **kwargs):
+async def set_legal_hold(hub, ctx, name, account, resource_group, tags, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -552,7 +559,7 @@ async def set_legal_hold(hub, name, account, resource_group, tags, **kwargs):
         azurerm.storage.container.set_legal_hold test_name test_account test_group test_tags
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         hold = storconn.blob_containers.set_legal_hold(
@@ -571,7 +578,7 @@ async def set_legal_hold(hub, name, account, resource_group, tags, **kwargs):
 
 
 async def update(
-    hub, name, account, resource_group, public_access=None, metadata=None, **kwargs
+    hub, ctx, name, account, resource_group, public_access=None, metadata=None, **kwargs
 ):
     """
     .. versionadded:: 2.0.0
@@ -600,7 +607,7 @@ async def update(
         azurerm.storage.container.update test_name test_account test_group test_access test_metadata
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         container = storconn.blob_containers.update(

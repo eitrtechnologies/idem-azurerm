@@ -164,7 +164,7 @@ async def present(
             return ret
 
     cache = await hub.exec.azurerm.redis.operations.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     new_cache = True
@@ -267,6 +267,7 @@ async def present(
 
     if new_cache:
         cache = await hub.exec.azurerm.redis.operations.create(
+            ctx=ctx,
             name=name,
             resource_group=resource_group,
             sku=sku,
@@ -284,6 +285,7 @@ async def present(
         )
     else:
         cache = await hub.exec.azurerm.redis.operations.update(
+            ctx=ctx,
             name=name,
             resource_group=resource_group,
             sku=sku,
@@ -345,7 +347,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             return ret
 
     cache = await hub.exec.azurerm.redis.operations.get(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if "error" in cache:
@@ -363,7 +365,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.redis.operations.delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:

@@ -64,7 +64,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def check_name_availability(hub, name, **kwargs):
+async def check_name_availability(hub, ctx, name, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -80,7 +80,7 @@ async def check_name_availability(hub, name, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         status = storconn.storage_accounts.check_name_availability(name=name)
@@ -95,6 +95,7 @@ async def check_name_availability(hub, name, **kwargs):
 
 async def create(
     hub,
+    ctx,
     name,
     resource_group,
     sku,
@@ -156,7 +157,7 @@ async def create(
         azurerm.storage.account.create test_name test_group test_sku test_kind test_location
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     sku = {"name": sku}
 
@@ -200,7 +201,7 @@ async def create(
     return result
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -218,7 +219,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         account = storconn.storage_accounts.delete(
@@ -232,7 +233,7 @@ async def delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get_properties(hub, name, resource_group, **kwargs):
+async def get_properties(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -250,7 +251,7 @@ async def get_properties(hub, name, resource_group, **kwargs):
         azurerm.storage.account.get_properties test_name test_group
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         props = storconn.storage_accounts.get_properties(
@@ -265,7 +266,7 @@ async def get_properties(hub, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, **kwargs):
+async def list_(hub, ctx, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -280,7 +281,7 @@ async def list_(hub, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         accounts = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -298,6 +299,7 @@ async def list_(hub, **kwargs):
 
 async def list_account_sas(
     hub,
+    ctx,
     name,
     resource_group,
     services,
@@ -337,7 +339,7 @@ async def list_account_sas(
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         accountmodel = await hub.exec.utils.azurerm.create_object_model(
@@ -370,7 +372,7 @@ async def list_account_sas(
     return result
 
 
-async def list_by_resource_group(hub, resource_group, **kwargs):
+async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -387,7 +389,7 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
     try:
         accounts = await hub.exec.utils.azurerm.paged_object_to_list(
             storconn.storage_accounts.list_by_resource_group(
@@ -404,7 +406,7 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
     return result
 
 
-async def list_keys(hub, name, resource_group, **kwargs):
+async def list_keys(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -422,7 +424,7 @@ async def list_keys(hub, name, resource_group, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
     try:
         keys = storconn.storage_accounts.list_keys(
             account_name=name, resource_group_name=resource_group
@@ -438,6 +440,7 @@ async def list_keys(hub, name, resource_group, **kwargs):
 
 async def list_service_sas(
     hub,
+    ctx,
     name,
     resource_group,
     canonicalized_resource,
@@ -471,7 +474,7 @@ async def list_service_sas(
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         servicemodel = await hub.exec.utils.azurerm.create_object_model(
@@ -503,7 +506,7 @@ async def list_service_sas(
     return result
 
 
-async def regenerate_key(hub, name, resource_group, key_name, **kwargs):
+async def regenerate_key(hub, ctx, name, resource_group, key_name, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -522,7 +525,7 @@ async def regenerate_key(hub, name, resource_group, key_name, **kwargs):
         azurerm.storage.account.renegerate_key test_name test_group test_key
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         keys = storconn.storage_accounts.regenerate_key(

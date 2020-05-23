@@ -77,7 +77,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def get_key_client(hub, vault_url, **kwargs):
+async def get_key_client(hub, ctx, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -127,7 +127,7 @@ def _key_properties_as_dict(key_properties):
     return result
 
 
-async def backup_key(hub, name, vault_url, **kwargs):
+async def backup_key(hub, ctx, name, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -160,7 +160,7 @@ async def backup_key(hub, name, vault_url, **kwargs):
     return result
 
 
-async def begin_delete_key(hub, name, vault_url, **kwargs):
+async def begin_delete_key(hub, ctx, name, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -192,7 +192,7 @@ async def begin_delete_key(hub, name, vault_url, **kwargs):
     return result
 
 
-async def begin_recover_deleted_key(hub, name, vault_url, **kwargs):
+async def begin_recover_deleted_key(hub, ctx, name, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -227,6 +227,7 @@ async def begin_recover_deleted_key(hub, name, vault_url, **kwargs):
 
 async def create_ec_key(
     hub,
+    ctx,
     name,
     vault_url,
     key_ops=None,
@@ -288,6 +289,7 @@ async def create_ec_key(
 
 async def create_key(
     hub,
+    ctx,
     name,
     key_type,
     vault_url,
@@ -356,6 +358,7 @@ async def create_key(
 
 async def create_rsa_key(
     hub,
+    ctx,
     name,
     vault_url,
     key_ops=None,
@@ -415,7 +418,7 @@ async def create_rsa_key(
     return result
 
 
-async def get_deleted_key(hub, name, vault_url, **kwargs):
+async def get_deleted_key(hub, ctx, name, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -445,7 +448,7 @@ async def get_deleted_key(hub, name, vault_url, **kwargs):
     return result
 
 
-async def get_key(hub, name, vault_url, version=None, **kwargs):
+async def get_key(hub, ctx, name, vault_url, version=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -478,7 +481,7 @@ async def get_key(hub, name, vault_url, version=None, **kwargs):
     return result
 
 
-async def import_key(hub, name, vault_url, **kwargs):
+async def import_key(hub, ctx, name, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -561,7 +564,7 @@ async def import_key(hub, name, vault_url, **kwargs):
     return result
 
 
-async def list_(hub, vault_url, **kwargs):
+async def list_(hub, ctx, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -590,7 +593,7 @@ async def list_(hub, vault_url, **kwargs):
     return result
 
 
-async def list_properties_of_key_versions(hub, name, vault_url, **kwargs):
+async def list_properties_of_key_versions(hub, ctx, name, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -621,7 +624,7 @@ async def list_properties_of_key_versions(hub, name, vault_url, **kwargs):
     return result
 
 
-async def list_deleted_keys(hub, vault_url, **kwargs):
+async def list_deleted_keys(hub, ctx, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -651,7 +654,7 @@ async def list_deleted_keys(hub, vault_url, **kwargs):
     return result
 
 
-async def purge_deleted_key(hub, name, vault_url, **kwargs):
+async def purge_deleted_key(hub, ctx, name, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -684,7 +687,7 @@ async def purge_deleted_key(hub, name, vault_url, **kwargs):
     return result
 
 
-async def restore_key_backup(hub, backup, vault_url, **kwargs):
+async def restore_key_backup(hub, ctx, backup, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -718,6 +721,7 @@ async def restore_key_backup(hub, backup, vault_url, **kwargs):
 
 async def update_key_properties(
     hub,
+    ctx,
     name,
     vault_url,
     version=None,

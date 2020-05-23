@@ -64,7 +64,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def definitions_get(hub, role_id, scope, **kwargs):
+async def definitions_get(hub, ctx, role_id, scope, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -82,7 +82,7 @@ async def definitions_get(hub, role_id, scope, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
 
     try:
         defs = authconn.role_definitions.get(
@@ -99,7 +99,7 @@ async def definitions_get(hub, role_id, scope, **kwargs):
     return result
 
 
-async def definitions_get_by_id(hub, role_id, **kwargs):
+async def definitions_get_by_id(hub, ctx, role_id, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -118,7 +118,7 @@ async def definitions_get_by_id(hub, role_id, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
 
     try:
         defs = authconn.role_definitions.get_by_id(role_definition_id=role_id, **kwargs)
@@ -133,7 +133,7 @@ async def definitions_get_by_id(hub, role_id, **kwargs):
     return result
 
 
-async def definitions_list(hub, scope, **kwargs):
+async def definitions_list(hub, ctx, scope, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -149,7 +149,7 @@ async def definitions_list(hub, scope, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
 
     try:
         defs = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -168,7 +168,7 @@ async def definitions_list(hub, scope, **kwargs):
     return result
 
 
-async def assignments_get(hub, name, scope, **kwargs):
+async def assignments_get(hub, ctx, name, scope, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -186,7 +186,7 @@ async def assignments_get(hub, name, scope, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
 
     try:
         assigns = authconn.role_assignments.get(
@@ -203,7 +203,7 @@ async def assignments_get(hub, name, scope, **kwargs):
     return result
 
 
-async def assignments_get_by_id(hub, assignment_id, **kwargs):
+async def assignments_get_by_id(hub, ctx, assignment_id, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -221,7 +221,7 @@ async def assignments_get_by_id(hub, assignment_id, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
 
     try:
         assigns = authconn.role_assignments.get_by_id(
@@ -238,7 +238,7 @@ async def assignments_get_by_id(hub, assignment_id, **kwargs):
     return result
 
 
-async def assignments_list(hub, **kwargs):
+async def assignments_list(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -252,7 +252,7 @@ async def assignments_list(hub, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
 
     try:
         assigns = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -271,6 +271,7 @@ async def assignments_list(hub, **kwargs):
 
 async def assignments_list_for_resource(
     hub,
+    ctx,
     name,
     resource_group,
     resource_provider_namespace,
@@ -302,7 +303,7 @@ async def assignments_list_for_resource(
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
 
     if parent_resource_path is None:
         parent_resource_path = ""
@@ -330,7 +331,7 @@ async def assignments_list_for_resource(
     return result
 
 
-async def assignments_list_for_resource_group(hub, name, **kwargs):
+async def assignments_list_for_resource_group(hub, ctx, name, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -346,7 +347,7 @@ async def assignments_list_for_resource_group(hub, name, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
 
     try:
         assigns = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -365,7 +366,7 @@ async def assignments_list_for_resource_group(hub, name, **kwargs):
     return result
 
 
-async def assignments_list_for_scope(hub, scope, **kwargs):
+async def assignments_list_for_scope(hub, ctx, scope, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -381,7 +382,7 @@ async def assignments_list_for_scope(hub, scope, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
 
     try:
         assigns = await hub.exec.utils.azurerm.paged_object_to_list(

@@ -65,7 +65,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def assignment_delete(hub, name, scope, **kwargs):
+async def assignment_delete(hub, ctx, name, scope, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -84,7 +84,7 @@ async def assignment_delete(hub, name, scope, **kwargs):
 
     """
     result = False
-    polconn = await hub.exec.utils.azurerm.get_client("policy", **kwargs)
+    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
     try:
         # pylint: disable=unused-variable
         policy = polconn.policy_assignments.delete(
@@ -97,7 +97,7 @@ async def assignment_delete(hub, name, scope, **kwargs):
     return result
 
 
-async def assignment_create(hub, name, scope, definition_name, **kwargs):
+async def assignment_create(hub, ctx, name, scope, definition_name, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -117,7 +117,7 @@ async def assignment_create(hub, name, scope, definition_name, **kwargs):
         /subscriptions/bc75htn-a0fhsi-349b-56gh-4fghti-f84852 testpolicy
 
     """
-    polconn = await hub.exec.utils.azurerm.get_client("policy", **kwargs)
+    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
 
     # "get" doesn't work for built-in policies per https://github.com/Azure/azure-cli/issues/692
     # Uncomment this section when the ticket above is resolved.
@@ -181,7 +181,7 @@ async def assignment_create(hub, name, scope, definition_name, **kwargs):
     return result
 
 
-async def assignment_get(hub, name, scope, **kwargs):
+async def assignment_get(hub, ctx, name, scope, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -199,7 +199,7 @@ async def assignment_get(hub, name, scope, **kwargs):
         /subscriptions/bc75htn-a0fhsi-349b-56gh-4fghti-f84852
 
     """
-    polconn = await hub.exec.utils.azurerm.get_client("policy", **kwargs)
+    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
     try:
         policy = polconn.policy_assignments.get(
             policy_assignment_name=name, scope=scope
@@ -213,7 +213,7 @@ async def assignment_get(hub, name, scope, **kwargs):
 
 
 async def assignments_list_for_resource_group(
-    hub, resource_group, **kwargs
+    hub, ctx, resource_group, **kwargs
 ):  # pylint: disable=invalid-name
     """
     .. versionadded:: 1.0.0
@@ -230,7 +230,7 @@ async def assignments_list_for_resource_group(
 
     """
     result = {}
-    polconn = await hub.exec.utils.azurerm.get_client("policy", **kwargs)
+    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
     try:
         policy_assign = await hub.exec.utils.azurerm.paged_object_to_list(
             polconn.policy_assignments.list_for_resource_group(
@@ -247,7 +247,7 @@ async def assignments_list_for_resource_group(
     return result
 
 
-async def assignments_list(hub, **kwargs):
+async def assignments_list(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -261,7 +261,7 @@ async def assignments_list(hub, **kwargs):
 
     """
     result = {}
-    polconn = await hub.exec.utils.azurerm.get_client("policy", **kwargs)
+    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
     try:
         policy_assign = await hub.exec.utils.azurerm.paged_object_to_list(
             polconn.policy_assignments.list()
@@ -277,7 +277,7 @@ async def assignments_list(hub, **kwargs):
 
 
 async def definition_create_or_update(
-    hub, name, policy_rule, **kwargs
+    hub, ctx, name, policy_rule, **kwargs
 ):  # pylint: disable=invalid-name
     """
     .. versionadded:: 1.0.0
@@ -300,7 +300,7 @@ async def definition_create_or_update(
         result = {"error": "The policy rule must be a dictionary!"}
         return result
 
-    polconn = await hub.exec.utils.azurerm.get_client("policy", **kwargs)
+    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
 
     # Convert OrderedDict to dict
     prop_kwargs = {"policy_rule": loads(dumps(policy_rule))}
@@ -334,7 +334,7 @@ async def definition_create_or_update(
     return result
 
 
-async def definition_delete(hub, name, **kwargs):
+async def definition_delete(hub, ctx, name, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -350,7 +350,7 @@ async def definition_delete(hub, name, **kwargs):
 
     """
     result = False
-    polconn = await hub.exec.utils.azurerm.get_client("policy", **kwargs)
+    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
     try:
         # pylint: disable=unused-variable
         policy = polconn.policy_definitions.delete(policy_definition_name=name)
@@ -361,7 +361,7 @@ async def definition_delete(hub, name, **kwargs):
     return result
 
 
-async def definition_get(hub, name, **kwargs):
+async def definition_get(hub, ctx, name, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -376,7 +376,7 @@ async def definition_get(hub, name, **kwargs):
         azurerm.resource.policy.definition_get testpolicy
 
     """
-    polconn = await hub.exec.utils.azurerm.get_client("policy", **kwargs)
+    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
     try:
         policy_def = polconn.policy_definitions.get(policy_definition_name=name)
         result = policy_def.as_dict()
@@ -387,7 +387,7 @@ async def definition_get(hub, name, **kwargs):
     return result
 
 
-async def definitions_list(hub, hide_builtin=False, **kwargs):
+async def definitions_list(hub, ctx, hide_builtin=False, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -403,7 +403,7 @@ async def definitions_list(hub, hide_builtin=False, **kwargs):
 
     """
     result = {}
-    polconn = await hub.exec.utils.azurerm.get_client("policy", **kwargs)
+    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
     try:
         policy_defs = await hub.exec.utils.azurerm.paged_object_to_list(
             polconn.policy_definitions.list()

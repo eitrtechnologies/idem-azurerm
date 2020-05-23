@@ -136,7 +136,7 @@ async def present(
             return ret
 
     workspace = await hub.exec.azurerm.log_analytics.workspace.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in workspace:
@@ -219,6 +219,7 @@ async def present(
     workspace_kwargs.update(connection_auth)
 
     workspace = await hub.exec.azurerm.log_analytics.workspace.create_or_update(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         location=location,
@@ -278,7 +279,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             return ret
 
     workspace = await hub.exec.azurerm.log_analytics.workspace.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in workspace:
@@ -296,7 +297,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.log_analytics.workspace.delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:

@@ -257,7 +257,7 @@ async def definition_present(
         parameters = temp_rule.get("properties", {}).get("parameters")
 
     policy = await hub.exec.azurerm.resource.policy.definition_get(
-        name, azurerm_log_level="info", **connection_auth
+        ctx, name, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in policy:
@@ -340,6 +340,7 @@ async def definition_present(
     policy_kwargs.update(connection_auth)
 
     policy = await hub.exec.azurerm.resource.policy.definition_create_or_update(
+        ctx=ctx,
         name=policy_name,
         policy_rule=policy_rule,
         policy_type=policy_type,
@@ -390,7 +391,7 @@ async def definition_absent(hub, name, connection_auth=None, **kwargs):
             return ret
 
     policy = await hub.exec.azurerm.resource.policy.definition_get(
-        name, azurerm_log_level="info", **connection_auth
+        ctx, name, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in policy:
@@ -408,7 +409,7 @@ async def definition_absent(hub, name, connection_auth=None, **kwargs):
         return ret
 
     deleted = await hub.exec.azurerm.resource.policy.definition_delete(
-        name, **connection_auth
+        ctx, name, **connection_auth
     )
 
     if deleted:
@@ -490,7 +491,7 @@ async def assignment_present(
             return ret
 
     policy = await hub.exec.azurerm.resource.policy.assignment_get(
-        name, scope, azurerm_log_level="info", **connection_auth
+        ctx, name, scope, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in policy:
@@ -560,6 +561,7 @@ async def assignment_present(
     policy_kwargs = kwargs.copy()
     policy_kwargs.update(connection_auth)
     policy = await hub.exec.azurerm.resource.policy.assignment_create(
+        ctx=ctx,
         name=name,
         scope=scope,
         definition_name=definition_name,
@@ -612,7 +614,7 @@ async def assignment_absent(hub, ctx, name, scope, connection_auth=None, **kwarg
             return ret
 
     policy = await hub.exec.azurerm.resource.policy.assignment_get(
-        name, scope, azurerm_log_level="info", **connection_auth
+        ctx, name, scope, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in policy:
@@ -630,7 +632,7 @@ async def assignment_absent(hub, ctx, name, scope, connection_auth=None, **kwarg
         return ret
 
     deleted = await hub.exec.azurerm.resource.policy.assignment_delete(
-        name, scope, **connection_auth
+        ctx, name, scope, **connection_auth
     )
 
     if deleted:

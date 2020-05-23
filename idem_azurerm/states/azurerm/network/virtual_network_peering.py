@@ -189,6 +189,7 @@ async def present(
             return ret
 
     peering = await hub.exec.azurerm.network.virtual_network_peering.get(
+        ctx,
         name,
         virtual_network,
         resource_group,
@@ -252,6 +253,7 @@ async def present(
     peering_kwargs.update(connection_auth)
 
     peering = await hub.exec.azurerm.network.virtual_network_peering.create_or_update(
+        ctx=ctx,
         name=name,
         remote_virtual_network=remote_virtual_network,
         remote_vnet_group=remote_vnet_group,
@@ -274,6 +276,7 @@ async def present(
         remote_name = rname_match.group(1).split("/")[-1]
 
         remote_peering = await hub.exec.azurerm.network.virtual_network_peering.get(
+            ctx=ctx,
             name=remote_name,
             virtual_network=remote_virtual_network,
             resource_group=remote_vnet_group,
@@ -287,6 +290,7 @@ async def present(
         remote_peering_kwargs.pop("remote_virtual_network")
 
         remote_peering = await hub.exec.azurerm.network.virtual_network_peering.create_or_update(
+            ctx=ctx,
             remote_virtual_network=virtual_network,
             remote_vnet_group=resource_group,
             virtual_network=remote_virtual_network,
@@ -295,6 +299,7 @@ async def present(
         )
 
         peering = await hub.exec.azurerm.network.virtual_network_peering.create_or_update(
+            ctx=ctx,
             name=name,
             remote_virtual_network=remote_virtual_network,
             remote_vnet_group=remote_vnet_group,
@@ -354,6 +359,7 @@ async def absent(
             return ret
 
     peering = await hub.exec.azurerm.network.virtual_network_peering.get(
+        ctx,
         name,
         virtual_network,
         resource_group,
@@ -376,7 +382,7 @@ async def absent(
         return ret
 
     deleted = await hub.exec.azurerm.network.virtual_network_peering.delete(
-        name, virtual_network, resource_group, **connection_auth
+        ctx, name, virtual_network, resource_group, **connection_auth
     )
 
     if deleted:

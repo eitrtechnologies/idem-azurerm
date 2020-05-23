@@ -67,7 +67,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def list_locations(hub, subscription_id=None, **kwargs):
+async def list_locations(hub, ctx, subscription_id=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -89,7 +89,7 @@ async def list_locations(hub, subscription_id=None, **kwargs):
     elif not kwargs.get("subscription_id"):
         kwargs["subscription_id"] = subscription_id
 
-    subconn = await hub.exec.utils.azurerm.get_client("subscription", **kwargs)
+    subconn = await hub.exec.utils.azurerm.get_client(ctx, "subscription", **kwargs)
     try:
         locations = await hub.exec.utils.azurerm.paged_object_to_list(
             subconn.subscriptions.list_locations(
@@ -106,7 +106,7 @@ async def list_locations(hub, subscription_id=None, **kwargs):
     return result
 
 
-async def get(hub, subscription_id=None, **kwargs):
+async def get(hub, ctx, subscription_id=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -128,7 +128,7 @@ async def get(hub, subscription_id=None, **kwargs):
     elif not kwargs.get("subscription_id"):
         kwargs["subscription_id"] = subscription_id
 
-    subconn = await hub.exec.utils.azurerm.get_client("subscription", **kwargs)
+    subconn = await hub.exec.utils.azurerm.get_client(ctx, "subscription", **kwargs)
     try:
         subscription = subconn.subscriptions.get(
             subscription_id=kwargs.get("subscription_id")
@@ -142,7 +142,7 @@ async def get(hub, subscription_id=None, **kwargs):
     return result
 
 
-async def list_(hub, **kwargs):
+async def list_(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -156,7 +156,7 @@ async def list_(hub, **kwargs):
 
     """
     result = {}
-    subconn = await hub.exec.utils.azurerm.get_client("subscription", **kwargs)
+    subconn = await hub.exec.utils.azurerm.get_client(ctx, "subscription", **kwargs)
     try:
         subs = await hub.exec.utils.azurerm.paged_object_to_list(
             subconn.subscriptions.list()

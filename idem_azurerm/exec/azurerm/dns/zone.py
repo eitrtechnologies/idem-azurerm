@@ -66,7 +66,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, name, resource_group, **kwargs):
+async def create_or_update(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -86,7 +86,7 @@ async def create_or_update(hub, name, resource_group, **kwargs):
     # DNS zones are global objects
     kwargs["location"] = "global"
 
-    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client(ctx, "dns", **kwargs)
 
     # Convert list of ID strings to list of dictionaries with id key.
     if isinstance(kwargs.get("registration_virtual_networks"), list):
@@ -129,7 +129,7 @@ async def create_or_update(hub, name, resource_group, **kwargs):
     return result
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -147,7 +147,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client(ctx, "dns", **kwargs)
     try:
         zone = dnsconn.zones.delete(
             zone_name=name,
@@ -162,7 +162,7 @@ async def delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get(hub, name, resource_group, **kwargs):
+async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -180,7 +180,7 @@ async def get(hub, name, resource_group, **kwargs):
         azurerm.dns.zone.get myzone testgroup
 
     """
-    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client(ctx, "dns", **kwargs)
     try:
         zone = dnsconn.zones.get(zone_name=name, resource_group_name=resource_group)
         result = zone.as_dict()
@@ -192,7 +192,7 @@ async def get(hub, name, resource_group, **kwargs):
     return result
 
 
-async def list_by_resource_group(hub, resource_group, top=None, **kwargs):
+async def list_by_resource_group(hub, ctx, resource_group, top=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -211,7 +211,7 @@ async def list_by_resource_group(hub, resource_group, top=None, **kwargs):
 
     """
     result = {}
-    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client(ctx, "dns", **kwargs)
     try:
         zones = await hub.exec.utils.azurerm.paged_object_to_list(
             dnsconn.zones.list_by_resource_group(
@@ -228,7 +228,7 @@ async def list_by_resource_group(hub, resource_group, top=None, **kwargs):
     return result
 
 
-async def list_(hub, top=None, **kwargs):
+async def list_(hub, ctx, top=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -245,7 +245,7 @@ async def list_(hub, top=None, **kwargs):
 
     """
     result = {}
-    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client(ctx, "dns", **kwargs)
     try:
         zones = await hub.exec.utils.azurerm.paged_object_to_list(
             dnsconn.zones.list(top=top)

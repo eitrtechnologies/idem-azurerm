@@ -72,7 +72,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -91,7 +91,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         pub_ip = netconn.public_ip_addresses.delete(
             public_ip_address_name=name, resource_group_name=resource_group
@@ -104,7 +104,7 @@ async def delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get(hub, name, resource_group, **kwargs):
+async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -124,7 +124,7 @@ async def get(hub, name, resource_group, **kwargs):
     """
     expand = kwargs.get("expand")
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     try:
         pub_ip = netconn.public_ip_addresses.get(
@@ -140,7 +140,7 @@ async def get(hub, name, resource_group, **kwargs):
     return result
 
 
-async def create_or_update(hub, name, resource_group, **kwargs):
+async def create_or_update(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -166,7 +166,7 @@ async def create_or_update(hub, name, resource_group, **kwargs):
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     try:
         pub_ip_model = await hub.exec.utils.azurerm.create_object_model(
@@ -198,7 +198,7 @@ async def create_or_update(hub, name, resource_group, **kwargs):
     return result
 
 
-async def list_all(hub, **kwargs):
+async def list_all(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -212,7 +212,7 @@ async def list_all(hub, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         pub_ips = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.public_ip_addresses.list_all()
@@ -227,7 +227,7 @@ async def list_all(hub, **kwargs):
     return result
 
 
-async def list_(hub, resource_group, **kwargs):
+async def list_(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -244,7 +244,7 @@ async def list_(hub, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         pub_ips = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.public_ip_addresses.list(resource_group_name=resource_group)

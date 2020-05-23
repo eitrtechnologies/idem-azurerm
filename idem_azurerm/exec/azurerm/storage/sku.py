@@ -64,7 +64,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def list_(hub, **kwargs):
+async def list_(hub, ctx, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -78,7 +78,7 @@ async def list_(hub, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client("storage", **kwargs)
+    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
 
     try:
         skus = await hub.exec.utils.azurerm.paged_object_to_list(storconn.skus.list())

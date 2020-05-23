@@ -218,7 +218,7 @@ async def present(
             return ret
 
     iface = await hub.exec.azurerm.network.network_interface.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in iface:
@@ -348,6 +348,7 @@ async def present(
     iface_kwargs.update(connection_auth)
 
     iface = await hub.exec.azurerm.network.network_interface.create_or_update(
+        ctx=ctx,
         name=name,
         subnet=subnet,
         virtual_network=virtual_network,
@@ -416,7 +417,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             return ret
 
     iface = await hub.exec.azurerm.network.network_interface.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in iface:
@@ -434,7 +435,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.network.network_interface.delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:

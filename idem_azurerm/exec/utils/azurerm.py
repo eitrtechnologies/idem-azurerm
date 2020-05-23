@@ -67,12 +67,17 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def determine_auth(hub, resource=None, **kwargs):
+async def determine_auth(hub, ctx, resource=None, **kwargs):
     """
     Acquire Azure RM Credentials (mgmt modules)
     """
     service_principal_creds_kwargs = ["client_id", "secret", "tenant"]
     user_pass_creds_kwargs = ["username", "password"]
+
+    if ctx["acct"]:
+        for key, val in ctx["acct"].items():
+            # explicit kwargs override acct
+            kwargs.setdefault(key, val)
 
     cred_kwargs = {}
 
@@ -139,7 +144,7 @@ async def determine_auth(hub, resource=None, **kwargs):
     return credentials, subscription_id, cloud_env
 
 
-async def get_client(hub, client_type, **kwargs):
+async def get_client(hub, ctx, client_type, **kwargs):
     """
     Dynamically load the selected client and return a management client object
     """
@@ -190,7 +195,7 @@ async def get_client(hub, client_type, **kwargs):
         credentials,
         subscription_id,
         cloud_env,
-    ) = await hub.exec.utils.azurerm.determine_auth(**kwargs)
+    ) = await hub.exec.utils.azurerm.determine_auth(ctx, **kwargs)
 
     if client_type == "subscription":
         client = Client(

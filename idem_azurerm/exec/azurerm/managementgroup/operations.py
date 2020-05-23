@@ -70,7 +70,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def get_api_client(hub, **kwargs):
+async def get_api_client(hub, ctx, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -86,7 +86,7 @@ async def get_api_client(hub, **kwargs):
     return client
 
 
-async def create_or_update(hub, name, display_name=None, parent=None, **kwargs):
+async def create_or_update(hub, ctx, name, display_name=None, parent=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -155,7 +155,7 @@ async def create_or_update(hub, name, display_name=None, parent=None, **kwargs):
     return result
 
 
-async def delete(hub, name, **kwargs):
+async def delete(hub, ctx, name, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -183,7 +183,7 @@ async def delete(hub, name, **kwargs):
     return result
 
 
-async def get(hub, name, expand=None, recurse=None, filter=None, **kwargs):
+async def get(hub, ctx, name, expand=None, recurse=None, filter=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -219,7 +219,7 @@ async def get(hub, name, expand=None, recurse=None, filter=None, **kwargs):
     return result
 
 
-async def list_(hub, skip_token=None, **kwargs):
+async def list_(hub, ctx, skip_token=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 

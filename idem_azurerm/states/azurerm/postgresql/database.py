@@ -131,6 +131,7 @@ async def present(
             return ret
 
     database = await hub.exec.azurerm.postgresql.database.get(
+        ctx=ctx,
         name=name,
         server_name=server_name,
         resource_group=resource_group,
@@ -187,6 +188,7 @@ async def present(
     database_kwargs.update(connection_auth)
 
     database = await hub.exec.azurerm.postgresql.database.create_or_update(
+        ctx=ctx,
         name=name,
         server_name=server_name,
         resource_group=resource_group,
@@ -249,6 +251,7 @@ async def absent(
             return ret
 
     database = await hub.exec.azurerm.postgresql.database.get(
+        ctx=ctx,
         name=name,
         server_name=server_name,
         resource_group=resource_group,
@@ -271,6 +274,7 @@ async def absent(
         return ret
 
     deleted = await hub.exec.azurerm.postgresql.database.delete(
+        ctx=ctx,
         name=name,
         server_name=server_name,
         resource_group=resource_group,

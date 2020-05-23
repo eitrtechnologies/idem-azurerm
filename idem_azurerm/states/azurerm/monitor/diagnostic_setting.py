@@ -171,7 +171,7 @@ async def present(
             return ret
 
     setting = await hub.exec.azurerm.monitor.diagnostic_setting.get(
-        name, resource_uri, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_uri, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in setting:
@@ -295,6 +295,7 @@ async def present(
     setting_kwargs.update(connection_auth)
 
     setting = await hub.exec.azurerm.monitor.diagnostic_setting.create_or_update(
+        ctx=ctx,
         name=name,
         resource_uri=resource_uri,
         logs=logs,
@@ -356,7 +357,7 @@ async def absent(hub, ctx, name, resource_uri, connection_auth=None, **kwargs):
             return ret
 
     setting = await hub.exec.azurerm.monitor.diagnostic_setting.get(
-        name, resource_uri, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_uri, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in setting:
@@ -374,7 +375,7 @@ async def absent(hub, ctx, name, resource_uri, connection_auth=None, **kwargs):
         return ret
 
     deleted = await hub.exec.azurerm.monitor.diagnostic_setting.delete(
-        name, resource_uri, **connection_auth
+        ctx, name, resource_uri, **connection_auth
     )
 
     if deleted:

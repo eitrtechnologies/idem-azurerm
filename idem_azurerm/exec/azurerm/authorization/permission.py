@@ -66,6 +66,7 @@ log = logging.getLogger(__name__)
 
 async def permissions_list_for_resource(
     hub,
+    ctx,
     name,
     resource_group,
     resource_provider_namespace,
@@ -97,7 +98,7 @@ async def permissions_list_for_resource(
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
 
     if parent_resource_path is None:
         parent_resource_path = ""
@@ -124,7 +125,7 @@ async def permissions_list_for_resource(
     return result
 
 
-async def permissions_list_for_resource_group(hub, name, **kwargs):
+async def permissions_list_for_resource_group(hub, ctx, name, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -140,7 +141,7 @@ async def permissions_list_for_resource_group(hub, name, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
 
     try:
         perms = await hub.exec.utils.azurerm.paged_object_to_list(

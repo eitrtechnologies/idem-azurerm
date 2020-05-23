@@ -290,7 +290,7 @@ async def present(
         sku = {"name": sku.capitalize()}
 
     load_bal = await hub.exec.azurerm.network.load_balancer.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in load_bal:
@@ -452,6 +452,7 @@ async def present(
     lb_kwargs.update(connection_auth)
 
     load_bal = await hub.exec.azurerm.network.load_balancer.create_or_update(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         sku=sku,
@@ -508,7 +509,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             return ret
 
     load_bal = await hub.exec.azurerm.network.load_balancer.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in load_bal:
@@ -526,7 +527,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.network.load_balancer.delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:

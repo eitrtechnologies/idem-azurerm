@@ -62,7 +62,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def get(hub, location, publisher, extension_type, version, **kwargs):
+async def get(hub, ctx, location, publisher, extension_type, version, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -84,7 +84,7 @@ async def get(hub, location, publisher, extension_type, version, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
 
     try:
         image = compconn.virtual_machine_extension_images.get(
@@ -103,7 +103,7 @@ async def get(hub, location, publisher, extension_type, version, **kwargs):
     return result
 
 
-async def list_types(hub, location, publisher, **kwargs):
+async def list_types(hub, ctx, location, publisher, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -121,7 +121,7 @@ async def list_types(hub, location, publisher, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
 
     try:
         images = compconn.virtual_machine_extension_images.list_types(
@@ -138,7 +138,7 @@ async def list_types(hub, location, publisher, **kwargs):
     return result
 
 
-async def list_versions(hub, location, publisher, extension_type, **kwargs):
+async def list_versions(hub, ctx, location, publisher, extension_type, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -158,7 +158,7 @@ async def list_versions(hub, location, publisher, extension_type, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
 
     try:
         images = compconn.virtual_machine_extension_images.list_versions(

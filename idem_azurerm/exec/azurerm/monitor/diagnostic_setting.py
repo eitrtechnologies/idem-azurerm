@@ -70,6 +70,7 @@ log = logging.getLogger(__name__)
 
 async def create_or_update(
     hub,
+    ctx,
     name,
     resource_uri,
     metrics,
@@ -141,7 +142,7 @@ async def create_or_update(
 
     """
     result = {}
-    moniconn = await hub.exec.utils.azurerm.get_client("monitor", **kwargs)
+    moniconn = await hub.exec.utils.azurerm.get_client(ctx, "monitor", **kwargs)
 
     try:
         diagmodel = await hub.exec.utils.azurerm.create_object_model(
@@ -175,7 +176,7 @@ async def create_or_update(
     return result
 
 
-async def delete(hub, name, resource_uri, **kwargs):
+async def delete(hub, ctx, name, resource_uri, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -193,7 +194,7 @@ async def delete(hub, name, resource_uri, **kwargs):
 
     """
     result = False
-    moniconn = await hub.exec.utils.azurerm.get_client("monitor", **kwargs)
+    moniconn = await hub.exec.utils.azurerm.get_client(ctx, "monitor", **kwargs)
     try:
         diag = moniconn.diagnostic_settings.delete(
             name=name, resource_uri=resource_uri, **kwargs
@@ -207,7 +208,7 @@ async def delete(hub, name, resource_uri, **kwargs):
     return result
 
 
-async def get(hub, name, resource_uri, **kwargs):
+async def get(hub, ctx, name, resource_uri, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -225,7 +226,7 @@ async def get(hub, name, resource_uri, **kwargs):
 
     """
     result = {}
-    moniconn = await hub.exec.utils.azurerm.get_client("monitor", **kwargs)
+    moniconn = await hub.exec.utils.azurerm.get_client(ctx, "monitor", **kwargs)
 
     try:
         diag = moniconn.diagnostic_settings.get(
@@ -240,7 +241,7 @@ async def get(hub, name, resource_uri, **kwargs):
     return result
 
 
-async def list_(hub, resource_uri, **kwargs):
+async def list_(hub, ctx, resource_uri, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -256,7 +257,7 @@ async def list_(hub, resource_uri, **kwargs):
 
     """
     result = {}
-    moniconn = await hub.exec.utils.azurerm.get_client("monitor", **kwargs)
+    moniconn = await hub.exec.utils.azurerm.get_client(ctx, "monitor", **kwargs)
 
     try:
         diag = moniconn.diagnostic_settings.list(resource_uri=resource_uri, **kwargs)

@@ -188,7 +188,7 @@ async def present(
             return ret
 
     nsg = await hub.exec.azurerm.network.network_security_group.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in nsg:
@@ -242,6 +242,7 @@ async def present(
     nsg_kwargs.update(connection_auth)
 
     nsg = await hub.exec.azurerm.network.network_security_group.create_or_update(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         tags=tags,
@@ -301,7 +302,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             return ret
 
     nsg = await hub.exec.azurerm.network.network_security_group.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in nsg:
@@ -319,7 +320,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.network.network_security_group.delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:
@@ -478,6 +479,7 @@ async def security_rule_present(
             exec("{0} = None".format(params[1]))
 
     rule = await hub.exec.azurerm.network.network_security_group.security_rule_get(
+        ctx,
         name,
         security_group,
         resource_group,
@@ -650,6 +652,7 @@ async def security_rule_present(
     rule_kwargs.update(connection_auth)
 
     rule = await hub.exec.azurerm.network.network_security_group.security_rule_create_or_update(
+        ctx=ctx,
         name=name,
         access=access,
         description=description,
@@ -727,6 +730,7 @@ async def security_rule_absent(
             return ret
 
     rule = await hub.exec.azurerm.network.network_security_group.security_rule_get(
+        ctx,
         name,
         security_group,
         resource_group,
@@ -749,7 +753,7 @@ async def security_rule_absent(
         return ret
 
     deleted = await hub.exec.azurerm.network.network_security_group.security_rule_delete(
-        name, security_group, resource_group, **connection_auth
+        ctx, name, security_group, resource_group, **connection_auth
     )
 
     if deleted:

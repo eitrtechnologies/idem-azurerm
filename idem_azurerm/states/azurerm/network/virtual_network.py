@@ -168,7 +168,7 @@ async def present(
             return ret
 
     vnet = await hub.exec.azurerm.network.virtual_network.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in vnet:
@@ -247,6 +247,7 @@ async def present(
     vnet_kwargs.update(connection_auth)
 
     vnet = await hub.exec.azurerm.network.virtual_network.create_or_update(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         address_prefixes=address_prefixes,
@@ -297,7 +298,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             return ret
 
     vnet = await hub.exec.azurerm.network.virtual_network.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in vnet:
@@ -315,7 +316,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.network.virtual_network.delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:
@@ -394,6 +395,7 @@ async def subnet_present(
             return ret
 
     snet = await hub.exec.azurerm.network.virtual_network.subnet_get(
+        ctx,
         name,
         virtual_network,
         resource_group,
@@ -455,6 +457,7 @@ async def subnet_present(
     snet_kwargs.update(connection_auth)
 
     snet = await hub.exec.azurerm.network.virtual_network.subnet_create_or_update(
+        ctx=ctx,
         name=name,
         virtual_network=virtual_network,
         resource_group=resource_group,
@@ -511,6 +514,7 @@ async def subnet_absent(
             return ret
 
     snet = await hub.exec.azurerm.network.virtual_network.subnet_get(
+        ctx,
         name,
         virtual_network,
         resource_group,
@@ -533,7 +537,7 @@ async def subnet_absent(
         return ret
 
     deleted = await hub.exec.azurerm.network.virtual_network.subnet_delete(
-        name, virtual_network, resource_group, **connection_auth
+        ctx, name, virtual_network, resource_group, **connection_auth
     )
 
     if deleted:

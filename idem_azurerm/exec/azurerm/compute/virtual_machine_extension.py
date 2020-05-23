@@ -66,6 +66,7 @@ log = logging.getLogger(__name__)
 
 async def create_or_update(
     hub,
+    ctx,
     name,
     vm_name,
     resource_group,
@@ -107,7 +108,7 @@ async def create_or_update(
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
 
     try:
         paramsmodel = await hub.exec.utils.azurerm.create_object_model(
@@ -143,7 +144,7 @@ async def create_or_update(
     return result
 
 
-async def delete(hub, name, vm_name, resource_group, **kwargs):
+async def delete(hub, ctx, name, vm_name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -163,7 +164,7 @@ async def delete(hub, name, vm_name, resource_group, **kwargs):
 
     """
     result = False
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
 
     try:
         extension = compconn.virtual_machine_extensions.delete(
@@ -179,7 +180,7 @@ async def delete(hub, name, vm_name, resource_group, **kwargs):
     return result
 
 
-async def get(hub, name, vm_name, resource_group, **kwargs):
+async def get(hub, ctx, name, vm_name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -199,7 +200,7 @@ async def get(hub, name, vm_name, resource_group, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
 
     try:
         extension = compconn.virtual_machine_extensions.get(
@@ -214,7 +215,7 @@ async def get(hub, name, vm_name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, vm_name, resource_group, **kwargs):
+async def list_(hub, ctx, vm_name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -232,7 +233,7 @@ async def list_(hub, vm_name, resource_group, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
 
     try:
         extensions = compconn.virtual_machine_extensions.list(
