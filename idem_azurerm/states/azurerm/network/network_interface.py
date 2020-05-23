@@ -99,6 +99,7 @@ TREQ = {
             "states.azurerm.network.virtual_network.present",
             "states.azurerm.network.virtual_network.subnet_present",
             "states.azurerm.network.network_security_group.present",
+            "states.azurerm.network.load_balancer.present",
         ]
     },
 }
