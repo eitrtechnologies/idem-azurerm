@@ -220,7 +220,7 @@ async def create_or_update(
     netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     # Use Remote Virtual Network name to link to the ID of an existing object
-    remote_vnet = virtual_network_get(
+    remote_vnet = await hub.exec.azurerm.network.virtual_network.get(
         name=remote_virtual_network,
         resource_group=(remote_vnet_group or resource_group),
         **kwargs,
