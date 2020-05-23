@@ -110,6 +110,8 @@ TREQ = {
             "states.azurerm.resource.group.present",
             "states.azurerm.network.virtual_network.present",
             "states.azurerm.network.virtual_network.subnet_present",
+            "states.azurerm.network.network_interface.present",
+            "states.azurerm.compute.availability_set.present",
         ]
     },
 }

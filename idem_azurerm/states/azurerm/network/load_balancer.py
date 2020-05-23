@@ -93,7 +93,12 @@ import re
 log = logging.getLogger(__name__)
 
 TREQ = {
-    "present": {"require": ["states.azurerm.resource.group.present",]},
+    "present": {
+        "require": [
+            "states.azurerm.resource.group.present",
+            "states.azurerm.network.public_ip_address.present",
+        ]
+    },
 }
 
 
