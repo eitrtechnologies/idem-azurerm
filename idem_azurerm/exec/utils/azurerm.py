@@ -354,7 +354,7 @@ async def compare_list_of_dicts(hub, old, new, convert_id_to_name=None):
     return ret
 
 
-async def get_identity_credentials(hub, **kwargs):
+async def get_identity_credentials(hub, ctx, **kwargs):
     """
     Acquire Azure RM Credentials from the identity provider (not for mgmt)
 
@@ -366,6 +366,11 @@ async def get_identity_credentials(hub, **kwargs):
     `Microsoft Docs on EnvironmentCredential <https://aka.ms/azsdk-python-identity-default-cred-ref>`_
     for more information.
     """
+    if ctx["acct"]:
+        for key, val in ctx["acct"].items():
+            # explicit kwargs override acct
+            kwargs.setdefault(key, val)
+
     kwarg_map = {
         "tenant": "AZURE_TENANT_ID",
         "client_id": "AZURE_CLIENT_ID",
