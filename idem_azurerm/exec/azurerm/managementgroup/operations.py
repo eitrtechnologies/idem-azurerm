@@ -81,7 +81,7 @@ async def get_api_client(hub, ctx, **kwargs):
         credentials,
         subscription_id,
         cloud_env,
-    ) = await hub.exec.utils.azurerm.determine_auth(**kwargs)
+    ) = await hub.exec.utils.azurerm.determine_auth(ctx, **kwargs)
     client = ManagementGroupsAPI(credentials=credentials, base_url=None)
     return client
 
@@ -109,7 +109,9 @@ async def create_or_update(hub, ctx, name, display_name=None, parent=None, **kwa
 
     """
     result = {}
-    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
+    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(
+        ctx, **kwargs
+    )
 
     if parent:
         parent = {"id": parent}
@@ -171,7 +173,9 @@ async def delete(hub, ctx, name, **kwargs):
 
     """
     result = False
-    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
+    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(
+        ctx, **kwargs
+    )
 
     try:
         mgroup = manconn.management_groups.delete(group_id=name,)
@@ -205,7 +209,9 @@ async def get(hub, ctx, name, expand=None, recurse=None, filter=None, **kwargs):
 
     """
     result = {}
-    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
+    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(
+        ctx, **kwargs
+    )
 
     try:
         mgroup = manconn.management_groups.get(
@@ -237,7 +243,9 @@ async def list_(hub, ctx, skip_token=None, **kwargs):
 
     """
     result = {}
-    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
+    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(
+        ctx, **kwargs
+    )
 
     try:
         mgroups = await hub.exec.utils.azurerm.paged_object_to_list(
