@@ -212,7 +212,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
                 )
                 if "error" not in vnets:
                     for vnet in vnets:
-                        subnets = await hub.exec.azurerm.network.subnets.list(
+                        subnets = await hub.exec.azurerm.network.virtual_network.subnets_list(
                             virtual_network=vnet,
                             resource_group=resource_group,
                             **kwargs,
