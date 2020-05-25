@@ -293,6 +293,7 @@ async def create_or_update(
 
     try:
         validate = await hub.exec.azurerm.resource.deployment.validate(
+            ctx=ctx,
             name=name,
             resource_group=resource_group,
             deploy_mode=deploy_mode,

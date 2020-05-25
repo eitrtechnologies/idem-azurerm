@@ -176,6 +176,7 @@ async def subnet_create_or_update(
     # Use NSG name to link to the ID of an existing NSG.
     if kwargs.get("network_security_group"):
         nsg = await hub.exec.azurerm.network.network_security_group.get(
+            ctx=ctx,
             name=kwargs["network_security_group"],
             resource_group=resource_group,
             **kwargs,
@@ -186,7 +187,7 @@ async def subnet_create_or_update(
     # Use Route Table name to link to the ID of an existing Route Table.
     if kwargs.get("route_table"):
         rt_table = await hub.exec.azurerm.network.route.table_get(
-            name=kwargs["route_table"], resource_group=resource_group, **kwargs
+            ctx=ctx, name=kwargs["route_table"], resource_group=resource_group, **kwargs
         )
         if "error" not in rt_table:
             kwargs["route_table"] = {"id": str(rt_table["id"])}
@@ -348,7 +349,9 @@ async def create_or_update(hub, ctx, name, address_prefixes, resource_group, **k
 
     """
     if "location" not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
+        rg_props = await hub.exec.azurerm.resource.group.get(
+            ctx, resource_group, **kwargs
+        )
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")

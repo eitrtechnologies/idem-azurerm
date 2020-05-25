@@ -343,7 +343,9 @@ async def create_or_update(
 
     """
     if "location" not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
+        rg_props = await hub.exec.azurerm.resource.group.get(
+            ctx, resource_group, **kwargs
+        )
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
@@ -395,7 +397,7 @@ async def create_or_update(
 
         if allocate_public_ip:
             pubip = await hub.exec.azurerm.network.public_ip_address.create_or_update(
-                f"{name}-pip0", resource_group, **kwargs
+                ctx, f"{name}-pip0", resource_group, **kwargs
             )
 
             try:
@@ -409,6 +411,7 @@ async def create_or_update(
                 return result
 
         iface = await hub.exec.azurerm.network.network_interface.create_or_update(
+            ctx,
             f"{name}-nic0",
             [ipc],
             subnet,
@@ -681,6 +684,7 @@ async def create_or_update(
 
             if userdata:
                 userdata_ret = await hub.exec.azurerm.compute.virtual_machine_extension.create_or_update(
+                    ctx=ctx,
                     name=f"{name}_custom_userdata_script",
                     vm_name=name,
                     resource_group=resource_group,
@@ -728,6 +732,7 @@ async def create_or_update(
                     extension_info["settings"]["KekVaultResourceId"] = disk_enc_keyvault
 
                 encryption_info = await hub.exec.azurerm.compute.virtual_machine_extension.create_or_update(
+                    ctx=ctx,
                     name="DiskEncryption",
                     vm_name=name,
                     resource_group=resource_group,
@@ -755,6 +760,7 @@ async def create_or_update(
             iface_dict = parse_resource_id(iface["id"])
 
             iface_details = await hub.exec.azurerm.network.network_interface.get(
+                ctx=ctx,
                 resource_group=iface_dict["resource_group"],
                 name=iface_dict["name"],
                 **kwargs,
@@ -804,7 +810,7 @@ async def delete(
     compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
 
     vm = await hub.exec.azurerm.compute.virtual_machine.get(
-        resource_group=resource_group, name=name, **kwargs
+        ctx=ctx, resource_group=resource_group, name=name, **kwargs
     )
 
     try:
@@ -820,7 +826,10 @@ async def delete(
             )
 
             os_disk_ret = await hub.exec.azurerm.compute.disk.delete(
-                resource_group=os_disk["resource_group"], name=os_disk["name"], **kwargs
+                ctx=ctx,
+                resource_group=os_disk["resource_group"],
+                name=os_disk["name"],
+                **kwargs,
             )
 
         if cleanup_data_disks:
@@ -828,6 +837,7 @@ async def delete(
                 disk_dict = parse_resource_id(disk.get("managed_disk", {}).get("id"))
 
                 data_disk_ret = await hub.exec.azurerm.compute.disk.delete(
+                    ctx=ctx,
                     resource_group=disk_dict["resource_group"],
                     name=disk_dict["name"],
                     **kwargs,
@@ -838,12 +848,14 @@ async def delete(
                 iface_dict = parse_resource_id(iface["id"])
 
                 iface_details = await hub.exec.azurerm.network.network_interface.get(
+                    ctx=ctx,
                     resource_group=iface_dict["resource_group"],
                     name=iface_dict["name"],
                     **kwargs,
                 )
 
                 iface_ret = await hub.exec.azurerm.network.network_interface.delete(
+                    ctx=ctx,
                     resource_group=iface_dict["resource_group"],
                     name=iface_dict["name"],
                     **kwargs,
@@ -854,6 +866,7 @@ async def delete(
                         ip_dict = parse_resource_id(ipc["public_ip_address"]["id"])
 
                         ip_ret = await hub.exec.azurerm.network.public_ip_address.delete(
+                            ctx=ctx,
                             resource_group=ip_dict["resource_group"],
                             name=ip_dict["name"],
                             **kwargs,
