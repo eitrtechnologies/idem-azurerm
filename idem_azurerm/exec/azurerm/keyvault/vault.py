@@ -66,7 +66,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def check_name_availability(hub, name, **kwargs):
+async def check_name_availability(hub, ctx, name, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -82,7 +82,7 @@ async def check_name_availability(hub, name, **kwargs):
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client("keyvault", **kwargs)
+    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
 
     try:
         avail = vconn.vaults.check_name_availability(name=name,)
@@ -97,6 +97,7 @@ async def check_name_availability(hub, name, **kwargs):
 
 async def create_or_update(
     hub,
+    ctx,
     name,
     resource_group,
     location,
@@ -185,7 +186,7 @@ async def create_or_update(
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client("keyvault", **kwargs)
+    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
 
     sku = {"name": sku}
 
@@ -244,7 +245,7 @@ async def create_or_update(
     return result
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -262,7 +263,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    vconn = await hub.exec.utils.azurerm.get_client("keyvault", **kwargs)
+    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
 
     try:
         vault = vconn.vaults.delete(vault_name=name, resource_group_name=resource_group)
@@ -274,7 +275,7 @@ async def delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get(hub, name, resource_group, **kwargs):
+async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -292,7 +293,7 @@ async def get(hub, name, resource_group, **kwargs):
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client("keyvault", **kwargs)
+    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
 
     try:
         vault = vconn.vaults.get(vault_name=name, resource_group_name=resource_group)
@@ -305,7 +306,7 @@ async def get(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get_deleted(hub, name, location, **kwargs):
+async def get_deleted(hub, ctx, name, location, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -323,7 +324,7 @@ async def get_deleted(hub, name, location, **kwargs):
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client("keyvault", **kwargs)
+    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
 
     try:
         vault = vconn.vaults.get_deleted(vault_name=name, location=location)
@@ -336,7 +337,7 @@ async def get_deleted(hub, name, location, **kwargs):
     return result
 
 
-async def list_(hub, top=None, **kwargs):
+async def list_(hub, ctx, top=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -352,7 +353,7 @@ async def list_(hub, top=None, **kwargs):
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client("keyvault", **kwargs)
+    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
 
     try:
         vaults = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -368,7 +369,7 @@ async def list_(hub, top=None, **kwargs):
     return result
 
 
-async def list_by_resource_group(hub, resource_group, top=None, **kwargs):
+async def list_by_resource_group(hub, ctx, resource_group, top=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -387,7 +388,7 @@ async def list_by_resource_group(hub, resource_group, top=None, **kwargs):
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client("keyvault", **kwargs)
+    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
 
     try:
         vaults = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -405,7 +406,7 @@ async def list_by_resource_group(hub, resource_group, top=None, **kwargs):
     return result
 
 
-async def list_by_subscription(hub, top=None, **kwargs):
+async def list_by_subscription(hub, ctx, top=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -421,7 +422,7 @@ async def list_by_subscription(hub, top=None, **kwargs):
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client("keyvault", **kwargs)
+    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
 
     try:
         vaults = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -437,7 +438,7 @@ async def list_by_subscription(hub, top=None, **kwargs):
     return result
 
 
-async def list_deleted(hub, **kwargs):
+async def list_deleted(hub, ctx, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -451,7 +452,7 @@ async def list_deleted(hub, **kwargs):
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client("keyvault", **kwargs)
+    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
 
     try:
         vaults = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -467,7 +468,7 @@ async def list_deleted(hub, **kwargs):
     return result
 
 
-async def purge_deleted(hub, name, location, **kwargs):
+async def purge_deleted(hub, ctx, name, location, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -485,7 +486,7 @@ async def purge_deleted(hub, name, location, **kwargs):
 
     """
     result = False
-    vconn = await hub.exec.utils.azurerm.get_client("keyvault", **kwargs)
+    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
 
     try:
         vault = vconn.vaults.purge_deleted(vault_name=name, location=location)
@@ -498,7 +499,7 @@ async def purge_deleted(hub, name, location, **kwargs):
 
 
 async def update_access_policy(
-    hub, name, resource_group, operation_kind, access_policies, **kwargs
+    hub, ctx, name, resource_group, operation_kind, access_policies, **kwargs
 ):
     """
     .. versionadded:: 2.0.0
@@ -540,7 +541,7 @@ async def update_access_policy(
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client("keyvault", **kwargs)
+    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
 
     # Create the VaultAccessPolicyProperties object
     try:

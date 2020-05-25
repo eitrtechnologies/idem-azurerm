@@ -70,7 +70,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def get_api_client(hub, **kwargs):
+async def get_api_client(hub, ctx, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -81,12 +81,12 @@ async def get_api_client(hub, **kwargs):
         credentials,
         subscription_id,
         cloud_env,
-    ) = await hub.exec.utils.azurerm.determine_auth(**kwargs)
+    ) = await hub.exec.utils.azurerm.determine_auth(ctx, **kwargs)
     client = ManagementGroupsAPI(credentials=credentials, base_url=None)
     return client
 
 
-async def create_or_update(hub, name, display_name=None, parent=None, **kwargs):
+async def create_or_update(hub, ctx, name, display_name=None, parent=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -109,7 +109,9 @@ async def create_or_update(hub, name, display_name=None, parent=None, **kwargs):
 
     """
     result = {}
-    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
+    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(
+        ctx, **kwargs
+    )
 
     if parent:
         parent = {"id": parent}
@@ -155,7 +157,7 @@ async def create_or_update(hub, name, display_name=None, parent=None, **kwargs):
     return result
 
 
-async def delete(hub, name, **kwargs):
+async def delete(hub, ctx, name, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -171,7 +173,9 @@ async def delete(hub, name, **kwargs):
 
     """
     result = False
-    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
+    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(
+        ctx, **kwargs
+    )
 
     try:
         mgroup = manconn.management_groups.delete(group_id=name,)
@@ -183,7 +187,7 @@ async def delete(hub, name, **kwargs):
     return result
 
 
-async def get(hub, name, expand=None, recurse=None, filter=None, **kwargs):
+async def get(hub, ctx, name, expand=None, recurse=None, filter=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -205,7 +209,9 @@ async def get(hub, name, expand=None, recurse=None, filter=None, **kwargs):
 
     """
     result = {}
-    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
+    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(
+        ctx, **kwargs
+    )
 
     try:
         mgroup = manconn.management_groups.get(
@@ -219,7 +225,7 @@ async def get(hub, name, expand=None, recurse=None, filter=None, **kwargs):
     return result
 
 
-async def list_(hub, skip_token=None, **kwargs):
+async def list_(hub, ctx, skip_token=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -237,7 +243,9 @@ async def list_(hub, skip_token=None, **kwargs):
 
     """
     result = {}
-    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(**kwargs)
+    manconn = await hub.exec.azurerm.managementgroup.operations.get_api_client(
+        ctx, **kwargs
+    )
 
     try:
         mgroups = await hub.exec.utils.azurerm.paged_object_to_list(

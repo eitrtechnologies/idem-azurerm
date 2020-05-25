@@ -72,7 +72,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -92,7 +92,7 @@ async def delete(hub, name, resource_group, **kwargs):
     """
     result = False
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         nic = netconn.network_interfaces.delete(
             network_interface_name=name, resource_group_name=resource_group
@@ -105,7 +105,7 @@ async def delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get(hub, name, resource_group, **kwargs):
+async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -123,7 +123,7 @@ async def get(hub, name, resource_group, **kwargs):
         azurerm.network.network_interface.get test-iface0 testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         nic = netconn.network_interfaces.get(
             network_interface_name=name, resource_group_name=resource_group
@@ -137,7 +137,7 @@ async def get(hub, name, resource_group, **kwargs):
 
 
 async def create_or_update(
-    hub, name, ip_configurations, subnet, virtual_network, resource_group, **kwargs
+    hub, ctx, name, ip_configurations, subnet, virtual_network, resource_group, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -173,7 +173,7 @@ async def create_or_update(
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     # Use NSG name to link to the ID of an existing NSG.
     if kwargs.get("network_security_group"):
@@ -260,7 +260,7 @@ async def create_or_update(
     return result
 
 
-async def list_all(hub, **kwargs):
+async def list_all(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -274,7 +274,7 @@ async def list_all(hub, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         nics = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.network_interfaces.list_all()
@@ -289,7 +289,7 @@ async def list_all(hub, **kwargs):
     return result
 
 
-async def list_(hub, resource_group, **kwargs):
+async def list_(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -306,7 +306,7 @@ async def list_(hub, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         nics = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.network_interfaces.list(resource_group_name=resource_group)
@@ -321,7 +321,7 @@ async def list_(hub, resource_group, **kwargs):
     return result
 
 
-async def get_effective_route_table(hub, name, resource_group, **kwargs):
+async def get_effective_route_table(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -339,7 +339,7 @@ async def get_effective_route_table(hub, name, resource_group, **kwargs):
         azurerm.network.network_interface.get_effective_route_table test-iface0 testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         nic = netconn.network_interfaces.get_effective_route_table(
             network_interface_name=name, resource_group_name=resource_group
@@ -355,7 +355,9 @@ async def get_effective_route_table(hub, name, resource_group, **kwargs):
     return result
 
 
-async def list_effective_network_security_groups(hub, name, resource_group, **kwargs):
+async def list_effective_network_security_groups(
+    hub, ctx, name, resource_group, **kwargs
+):
     """
     .. versionadded:: 1.0.0
 
@@ -373,7 +375,7 @@ async def list_effective_network_security_groups(hub, name, resource_group, **kw
         azurerm.network.network_interface.list_effective_network_security_groups test-iface0 testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         nic = netconn.network_interfaces.list_effective_network_security_groups(
             network_interface_name=name, resource_group_name=resource_group
@@ -390,7 +392,7 @@ async def list_effective_network_security_groups(hub, name, resource_group, **kw
 
 
 async def list_virtual_machine_scale_set_vm_network_interfaces(
-    hub, scale_set, vm_index, resource_group, **kwargs
+    hub, ctx, scale_set, vm_index, resource_group, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -412,7 +414,7 @@ async def list_virtual_machine_scale_set_vm_network_interfaces(
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         nics = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.network_interfaces.list_virtual_machine_scale_set_vm_network_interfaces(
@@ -432,7 +434,7 @@ async def list_virtual_machine_scale_set_vm_network_interfaces(
 
 
 async def list_virtual_machine_scale_set_network_interfaces(
-    hub, scale_set, resource_group, **kwargs
+    hub, ctx, scale_set, resource_group, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -452,7 +454,7 @@ async def list_virtual_machine_scale_set_network_interfaces(
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         nics = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.network_interfaces.list_virtual_machine_scale_set_network_interfaces(
@@ -471,7 +473,7 @@ async def list_virtual_machine_scale_set_network_interfaces(
 
 
 async def get_virtual_machine_scale_set_network_interface(
-    hub, name, scale_set, vm_index, resource_group, **kwargs
+    hub, ctx, name, scale_set, vm_index, resource_group, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -497,7 +499,7 @@ async def get_virtual_machine_scale_set_network_interface(
     """
     expand = kwargs.get("expand")
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         nic = netconn.network_interfaces.list_virtual_machine_scale_set_vm_network_interfaces(
             network_interface_name=name,

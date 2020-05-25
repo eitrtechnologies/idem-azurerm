@@ -65,6 +65,7 @@ log = logging.getLogger(__name__)
 
 async def create_or_update(
     hub,
+    ctx,
     server_name,
     resource_group,
     policy_state,
@@ -113,7 +114,7 @@ async def create_or_update(
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
 
     try:
         paramsmodel = await hub.exec.utils.azurerm.create_object_model(
@@ -149,7 +150,7 @@ async def create_or_update(
     return result
 
 
-async def get(hub, server_name, resource_group, **kwargs):
+async def get(hub, ctx, server_name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -167,7 +168,7 @@ async def get(hub, server_name, resource_group, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
 
     try:
         policy = postconn.server_security_alert_policies.get(

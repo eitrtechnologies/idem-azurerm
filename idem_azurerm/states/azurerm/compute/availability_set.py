@@ -171,7 +171,7 @@ async def present(
         sku = {"name": sku.capitalize()}
 
     aset = await hub.exec.azurerm.compute.availability_set.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in aset:
@@ -248,6 +248,7 @@ async def present(
     aset_kwargs.update(connection_auth)
 
     aset = await hub.exec.azurerm.compute.availability_set.create_or_update(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         virtual_machines=virtual_machines,
@@ -300,7 +301,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             return ret
 
     aset = await hub.exec.azurerm.compute.availability_set.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in aset:
@@ -318,7 +319,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.compute.availability_set.delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:

@@ -67,6 +67,7 @@ log = logging.getLogger(__name__)
 
 async def create_or_update(
     hub,
+    ctx,
     name,
     resource_group,
     location,
@@ -103,7 +104,7 @@ async def create_or_update(
 
     """
     result = {}
-    logconn = await hub.exec.utils.azurerm.get_client("loganalytics", **kwargs)
+    logconn = await hub.exec.utils.azurerm.get_client(ctx, "loganalytics", **kwargs)
 
     if sku:
         sku = {"name": sku}
@@ -144,7 +145,7 @@ async def create_or_update(
     return result
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -162,7 +163,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    logconn = await hub.exec.utils.azurerm.get_client("loganalytics", **kwargs)
+    logconn = await hub.exec.utils.azurerm.get_client(ctx, "loganalytics", **kwargs)
 
     try:
         workspace = logconn.workspaces.delete(
@@ -176,7 +177,7 @@ async def delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get(hub, name, resource_group, **kwargs):
+async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -194,7 +195,7 @@ async def get(hub, name, resource_group, **kwargs):
 
     """
     result = {}
-    logconn = await hub.exec.utils.azurerm.get_client("loganalytics", **kwargs)
+    logconn = await hub.exec.utils.azurerm.get_client(ctx, "loganalytics", **kwargs)
 
     try:
         workspace = logconn.workspaces.get(
@@ -209,7 +210,7 @@ async def get(hub, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, **kwargs):
+async def list_(hub, ctx, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -223,7 +224,7 @@ async def list_(hub, **kwargs):
 
     """
     result = {}
-    logconn = await hub.exec.utils.azurerm.get_client("loganalytics", **kwargs)
+    logconn = await hub.exec.utils.azurerm.get_client(ctx, "loganalytics", **kwargs)
 
     try:
         workspaces = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -239,7 +240,7 @@ async def list_(hub, **kwargs):
     return result
 
 
-async def list_by_resource_group(hub, resource_group, **kwargs):
+async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -255,7 +256,7 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
 
     """
     result = {}
-    logconn = await hub.exec.utils.azurerm.get_client("loganalytics", **kwargs)
+    logconn = await hub.exec.utils.azurerm.get_client(ctx, "loganalytics", **kwargs)
 
     try:
         workspaces = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -273,7 +274,7 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
     return result
 
 
-async def list_intelligence_packs(hub, name, resource_group, **kwargs):
+async def list_intelligence_packs(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -291,7 +292,7 @@ async def list_intelligence_packs(hub, name, resource_group, **kwargs):
 
     """
     result = {}
-    logconn = await hub.exec.utils.azurerm.get_client("loganalytics", **kwargs)
+    logconn = await hub.exec.utils.azurerm.get_client(ctx, "loganalytics", **kwargs)
 
     try:
         packs = logconn.workspaces.list_intelligence_packs(

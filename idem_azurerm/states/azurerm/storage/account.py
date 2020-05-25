@@ -159,7 +159,7 @@ async def present(
             return ret
 
     account = await hub.exec.azurerm.storage.account.get_properties(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if "error" not in account:
@@ -264,6 +264,7 @@ async def present(
     account_kwargs.update(connection_auth)
 
     account = await hub.exec.azurerm.storage.account.create(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         tags=tags,
@@ -327,7 +328,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             return ret
 
     account = await hub.exec.azurerm.storage.account.get_properties(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if "error" in account:
@@ -345,7 +346,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.storage.account.delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:

@@ -65,7 +65,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def list_(hub, **kwargs):
+async def list_(hub, ctx, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -79,7 +79,7 @@ async def list_(hub, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
 
     try:
         ops = postconn.operations.list()

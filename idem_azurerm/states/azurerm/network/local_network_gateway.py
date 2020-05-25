@@ -174,7 +174,7 @@ async def present(
             return ret
 
     gateway = await hub.exec.azurerm.network.local_network_gateway.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in gateway:
@@ -259,6 +259,7 @@ async def present(
     gateway_kwargs.update(connection_auth)
 
     gateway = await hub.exec.azurerm.network.local_network_gateway.create_or_update(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         gateway_ip_address=gateway_ip_address,
@@ -319,7 +320,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             return ret
 
     gateway = await hub.exec.azurerm.network.local_network_gateway.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in gateway:
@@ -339,7 +340,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.network.local_network_gateway.delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:

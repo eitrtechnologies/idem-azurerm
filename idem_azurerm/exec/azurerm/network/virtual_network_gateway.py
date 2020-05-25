@@ -73,7 +73,7 @@ log = logging.getLogger(__name__)
 
 
 async def connection_create_or_update(
-    hub, name, resource_group, virtual_network_gateway, connection_type, **kwargs
+    hub, ctx, name, resource_group, virtual_network_gateway, connection_type, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -115,7 +115,7 @@ async def connection_create_or_update(
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     # Converts the Resource ID of virtual_network_gateway into a VirtualNetworkGateway Object.
     # This endpoint will be where the connection originates.
@@ -202,7 +202,7 @@ async def connection_create_or_update(
     return result
 
 
-async def connection_get(hub, name, resource_group, **kwargs):
+async def connection_get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -219,7 +219,7 @@ async def connection_get(hub, name, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.connection_get test_name test_group
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         connection = netconn.virtual_network_gateway_connections.get(
             resource_group_name=resource_group,
@@ -234,7 +234,7 @@ async def connection_get(hub, name, resource_group, **kwargs):
     return result
 
 
-async def connection_delete(hub, name, resource_group, **kwargs):
+async def connection_delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -252,7 +252,7 @@ async def connection_delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         connection = netconn.virtual_network_gateway_connections.delete(
             resource_group_name=resource_group,
@@ -266,7 +266,7 @@ async def connection_delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def connection_set_shared_key(hub, name, resource_group, value, **kwargs):
+async def connection_set_shared_key(hub, ctx, name, resource_group, value, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -287,7 +287,7 @@ async def connection_set_shared_key(hub, name, resource_group, value, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     try:
         key = netconn.virtual_network_gateway_connections.set_shared_key(
@@ -305,7 +305,7 @@ async def connection_set_shared_key(hub, name, resource_group, value, **kwargs):
     return result
 
 
-async def connection_get_shared_key(hub, name, resource_group, **kwargs):
+async def connection_get_shared_key(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -323,7 +323,7 @@ async def connection_get_shared_key(hub, name, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.connection_get_shared_key test_name test_group
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         key = netconn.virtual_network_gateway_connections.get_shared_key(
             resource_group_name=resource_group,
@@ -339,7 +339,7 @@ async def connection_get_shared_key(hub, name, resource_group, **kwargs):
 
 
 async def connection_reset_shared_key(
-    hub, name, resource_group, key_length=128, **kwargs
+    hub, ctx, name, resource_group, key_length=128, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -363,7 +363,7 @@ async def connection_reset_shared_key(
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         rkey = netconn.virtual_network_gateway_connections.reset_shared_key(
             resource_group_name=resource_group,
@@ -380,7 +380,7 @@ async def connection_reset_shared_key(
     return result
 
 
-async def connections_list(hub, resource_group, **kwargs):
+async def connections_list(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -396,7 +396,7 @@ async def connections_list(hub, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         connections = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.virtual_network_gateway_connections.list(
@@ -413,7 +413,7 @@ async def connections_list(hub, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, resource_group, **kwargs):
+async def list_(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -429,7 +429,7 @@ async def list_(hub, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         gateways = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.virtual_network_gateways.list(resource_group_name=resource_group)
@@ -445,7 +445,7 @@ async def list_(hub, resource_group, **kwargs):
 
 
 async def create_or_update(
-    hub, name, resource_group, virtual_network, ip_configurations, **kwargs
+    hub, ctx, name, resource_group, virtual_network, ip_configurations, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -484,7 +484,7 @@ async def create_or_update(
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     # Loop through IP Configurations and build each dictionary to pass to model creation.
     if isinstance(ip_configurations, list):
@@ -541,7 +541,7 @@ async def create_or_update(
     return result
 
 
-async def get(hub, name, resource_group, **kwargs):
+async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -558,7 +558,7 @@ async def get(hub, name, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.get test_name test_group
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         gateway = netconn.virtual_network_gateways.get(
             resource_group_name=resource_group, virtual_network_gateway_name=name
@@ -572,7 +572,7 @@ async def get(hub, name, resource_group, **kwargs):
     return result
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -590,7 +590,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         gateway = netconn.virtual_network_gateways.delete(
             resource_group_name=resource_group, virtual_network_gateway_name=name
@@ -603,7 +603,7 @@ async def delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def list_connections(hub, name, resource_group, **kwargs):
+async def list_connections(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -621,7 +621,7 @@ async def list_connections(hub, name, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         connections = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.virtual_network_gateways.list_connections(
@@ -637,7 +637,7 @@ async def list_connections(hub, name, resource_group, **kwargs):
     return result
 
 
-async def reset(hub, name, resource_group, gateway_vip=None, **kwargs):
+async def reset(hub, ctx, name, resource_group, gateway_vip=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -658,7 +658,7 @@ async def reset(hub, name, resource_group, gateway_vip=None, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         reset = netconn.virtual_network_gateways.reset(
             resource_group_name=resource_group,
@@ -674,7 +674,7 @@ async def reset(hub, name, resource_group, gateway_vip=None, **kwargs):
     return result
 
 
-async def reset_vpn_client_shared_key(hub, name, resource_group, **kwargs):
+async def reset_vpn_client_shared_key(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -692,7 +692,7 @@ async def reset_vpn_client_shared_key(hub, name, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         reset = netconn.virtual_network_gateways.reset_vpn_client_shared_key(
             resource_group_name=resource_group, virtual_network_gateway_name=name
@@ -709,6 +709,7 @@ async def reset_vpn_client_shared_key(hub, name, resource_group, **kwargs):
 
 async def generatevpnclientpackage(
     hub,
+    ctx,
     name,
     resource_group,
     processor_architecture,
@@ -745,7 +746,7 @@ async def generatevpnclientpackage(
         azurerm.network.virtual_network_gateway.generatevpnclientpackage test_name test_group test_params
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     try:
         pkgmodel = await hub.exec.utils.azurerm.create_object_model(
@@ -784,6 +785,7 @@ async def generatevpnclientpackage(
 
 async def generate_vpn_profile(
     hub,
+    ctx,
     name,
     resource_group,
     processor_architecture,
@@ -820,7 +822,7 @@ async def generate_vpn_profile(
         azurerm.network.virtual_network_gateway.generate_vpn_profile test_name test_group test_params
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     try:
         profilemodel = await hub.exec.utils.azurerm.create_object_model(
@@ -857,7 +859,7 @@ async def generate_vpn_profile(
     return result
 
 
-async def get_vpn_profile_package_url(hub, name, resource_group, **kwargs):
+async def get_vpn_profile_package_url(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -875,7 +877,7 @@ async def get_vpn_profile_package_url(hub, name, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.get_vpn_profile_package_url test_name test_group
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         url = netconn.virtual_network_gateways.get_vpn_profile_package_url(
             resource_group_name=resource_group, virtual_network_gateway_name=name
@@ -889,7 +891,7 @@ async def get_vpn_profile_package_url(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get_bgp_peer_status(hub, name, resource_group, peer=None, **kwargs):
+async def get_bgp_peer_status(hub, ctx, name, resource_group, peer=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -909,7 +911,7 @@ async def get_bgp_peer_status(hub, name, resource_group, peer=None, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         peers = netconn.virtual_network_gateways.get_bgp_peer_status(
             resource_group_name=resource_group,
@@ -927,7 +929,7 @@ async def get_bgp_peer_status(hub, name, resource_group, peer=None, **kwargs):
     return result
 
 
-async def supported_vpn_devices(hub, name, resource_group, **kwargs):
+async def supported_vpn_devices(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -944,7 +946,7 @@ async def supported_vpn_devices(hub, name, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.supported_vpn_devices test_name test_group
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         devices = netconn.virtual_network_gateways.supported_vpn_devices(
             resource_group_name=resource_group, virtual_network_gateway_name=name
@@ -958,7 +960,7 @@ async def supported_vpn_devices(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get_learned_routes(hub, name, resource_group, **kwargs):
+async def get_learned_routes(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -976,7 +978,7 @@ async def get_learned_routes(hub, name, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         routes = netconn.virtual_network_gateways.get_learned_routes(
             resource_group_name=resource_group, virtual_network_gateway_name=name
@@ -992,7 +994,7 @@ async def get_learned_routes(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get_advertised_routes(hub, name, resource_group, peer, **kwargs):
+async def get_advertised_routes(hub, ctx, name, resource_group, peer, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -1011,7 +1013,7 @@ async def get_advertised_routes(hub, name, resource_group, peer, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         routes = netconn.virtual_network_gateways.get_advertised_routes(
             resource_group_name=resource_group,
@@ -1031,6 +1033,7 @@ async def get_advertised_routes(hub, name, resource_group, peer, **kwargs):
 
 async def set_vpnclient_ipsec_parameters(
     hub,
+    ctx,
     name,
     resource_group,
     sa_life_time_seconds,
@@ -1088,7 +1091,7 @@ async def set_vpnclient_ipsec_parameters(
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         paramsmodel = await hub.exec.utils.azurerm.create_object_model(
             "network",
@@ -1125,7 +1128,7 @@ async def set_vpnclient_ipsec_parameters(
     return result
 
 
-async def get_vpnclient_ipsec_parameters(hub, name, resource_group, **kwargs):
+async def get_vpnclient_ipsec_parameters(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -1142,7 +1145,7 @@ async def get_vpnclient_ipsec_parameters(hub, name, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.get_vpnclient_ipsec_parameters test_name test_group
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         policy = netconn.virtual_network_gateways.get_vpnclient_ipsec_parameters(
             resource_group_name=resource_group, virtual_network_gateway_name=name
@@ -1158,7 +1161,7 @@ async def get_vpnclient_ipsec_parameters(hub, name, resource_group, **kwargs):
 
 
 async def vpn_device_configuration_script(
-    hub, name, resource_group, vendor, device_family, firmware_version, **kwargs
+    hub, ctx, name, resource_group, vendor, device_family, firmware_version, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -1183,7 +1186,7 @@ async def vpn_device_configuration_script(
                   test_vendor test_device_fam test_version
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     try:
         scriptmodel = await hub.exec.utils.azurerm.create_object_model(

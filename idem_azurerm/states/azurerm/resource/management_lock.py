@@ -129,7 +129,7 @@ async def present_by_scope(
             return ret
 
     lock = await hub.exec.azurerm.resource.management_lock.get_by_scope(
-        name, scope, azurerm_log_level="info", **connection_auth
+        ctx, name, scope, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in lock:
@@ -182,6 +182,7 @@ async def present_by_scope(
     lock_kwargs.update(connection_auth)
 
     lock = await hub.exec.azurerm.resource.management_lock.create_or_update_by_scope(
+        ctx=ctx,
         name=name,
         scope=scope,
         lock_level=lock_level,
@@ -243,7 +244,7 @@ async def absent_by_scope(hub, ctx, name, scope, connection_auth=None, **kwargs)
             return ret
 
     lock = await hub.exec.azurerm.resource.management_lock.get_by_scope(
-        name, scope, azurerm_log_level="info", **connection_auth
+        ctx, name, scope, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in lock:
@@ -261,7 +262,7 @@ async def absent_by_scope(hub, ctx, name, scope, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.resource.management_lock.delete_by_scope(
-        name, scope, **connection_auth
+        ctx, name, scope, **connection_auth
     )
 
     if deleted:
@@ -346,6 +347,7 @@ async def present_at_resource_level(
             return ret
 
     lock = await hub.exec.azurerm.resource.management_lock.get_at_resource_level(
+        ctx,
         name,
         resource_group,
         resource,
@@ -415,6 +417,7 @@ async def present_at_resource_level(
     lock_kwargs.update(connection_auth)
 
     lock = await hub.exec.azurerm.resource.management_lock.create_or_update_at_resource_level(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         resource=resource,
@@ -499,6 +502,7 @@ async def absent_at_resource_level(
             return ret
 
     lock = await hub.exec.azurerm.resource.management_lock.get_at_resource_level(
+        ctx,
         name,
         resource_group,
         resource,
@@ -524,6 +528,7 @@ async def absent_at_resource_level(
         return ret
 
     deleted = await hub.exec.azurerm.resource.management_lock.delete_at_resource_level(
+        ctx,
         name,
         resource_group,
         resource,
@@ -602,11 +607,11 @@ async def present(
 
     if resource_group:
         lock = await hub.exec.azurerm.resource.management_lock.get_at_resource_group_level(
-            name, resource_group, azurerm_log_level="info", **connection_auth
+            ctx, name, resource_group, azurerm_log_level="info", **connection_auth
         )
     else:
         lock = await hub.exec.azurerm.resource.management_lock.get_at_subscription_level(
-            name, azurerm_log_level="info", **connection_auth
+            ctx, name, azurerm_log_level="info", **connection_auth
         )
 
     if "error" not in lock:
@@ -659,6 +664,7 @@ async def present(
 
     if resource_group:
         lock = await hub.exec.azurerm.resource.management_lock.create_or_update_at_resource_group_level(
+            ctx=ctx,
             name=name,
             resource_group=resource_group,
             lock_level=lock_level,
@@ -668,7 +674,12 @@ async def present(
         )
     else:
         lock = await hub.exec.azurerm.resource.management_lock.create_or_update_at_subscription_level(
-            name=name, lock_level=lock_level, notes=notes, owners=owners, **lock_kwargs
+            ctx=ctx,
+            name=name,
+            lock_level=lock_level,
+            notes=notes,
+            owners=owners,
+            **lock_kwargs,
         )
 
     if "error" not in lock:
@@ -723,11 +734,11 @@ async def absent(hub, ctx, name, resource_group=None, connection_auth=None, **kw
 
     if resource_group:
         lock = await hub.exec.azurerm.resource.management_lock.get_at_resource_group_level(
-            name, resource_group, azurerm_log_level="info", **connection_auth
+            ctx, name, resource_group, azurerm_log_level="info", **connection_auth
         )
     else:
         lock = await hub.exec.azurerm.resource.management_lock.get_at_subscription_level(
-            name, azurerm_log_level="info", **connection_auth
+            ctx, name, azurerm_log_level="info", **connection_auth
         )
 
     if "error" in lock:
@@ -746,11 +757,11 @@ async def absent(hub, ctx, name, resource_group=None, connection_auth=None, **kw
 
     if resource_group:
         deleted = await hub.exec.azurerm.resource.management_lock.delete_at_resource_group_level(
-            name, resource_group, **connection_auth
+            ctx, name, resource_group, **connection_auth
         )
     else:
         deleted = await hub.exec.azurerm.resource.management_lock.delete_at_subscription_level(
-            name, **connection_auth
+            ctx, name, **connection_auth
         )
 
     if deleted:

@@ -140,7 +140,7 @@ async def present(
             return ret
 
     container = await hub.exec.azurerm.storage.container.get(
-        name, account, resource_group, **connection_auth
+        ctx, name, account, resource_group, **connection_auth
     )
     existed = False
 
@@ -202,6 +202,7 @@ async def present(
 
     if not existed:
         container = await hub.exec.azurerm.storage.container.create(
+            ctx=ctx,
             name=name,
             account=account,
             resource_group=resource_group,
@@ -213,6 +214,7 @@ async def present(
 
     else:
         container = await hub.exec.azurerm.storage.container.update(
+            ctx=ctx,
             name=name,
             account=account,
             resource_group=resource_group,
@@ -301,7 +303,7 @@ async def immutability_policy_present(
             return ret
 
     policy = await hub.exec.azurerm.storage.container.get_immutability_policy(
-        name, account, resource_group, if_match, **connection_auth
+        ctx, name, account, resource_group, if_match, **connection_auth
     )
 
     if "error" not in policy:
@@ -366,6 +368,7 @@ async def immutability_policy_present(
     policy_kwargs.update(connection_auth)
 
     policy = await hub.exec.azurerm.storage.container.create_or_update_immutability_policy(
+        ctx=ctx,
         name=name,
         account=account,
         resource_group=resource_group,
@@ -437,7 +440,7 @@ async def absent(
             return ret
 
     container = await hub.exec.azurerm.storage.container.get(
-        name, account, resource_group, **connection_auth
+        ctx, name, account, resource_group, **connection_auth
     )
 
     if "error" in container:
@@ -455,7 +458,7 @@ async def absent(
         return ret
 
     deleted = await hub.exec.azurerm.storage.container.delete(
-        name, account, resource_group, **connection_auth
+        ctx, name, account, resource_group, **connection_auth
     )
 
     if deleted:
@@ -523,7 +526,7 @@ async def immutability_policy_absent(
             return ret
 
     policy = await hub.exec.azurerm.storage.container.get_immutability_policy(
-        name, account, resource_group, if_match, **connection_auth
+        ctx, name, account, resource_group, if_match, **connection_auth
     )
 
     if "error" in policy:
@@ -552,7 +555,7 @@ async def immutability_policy_absent(
         if_match = policy.get("etag")
 
     deleted = await hub.exec.azurerm.storage.container.delete_immutability_policy(
-        name, account, resource_group, if_match, **connection_auth
+        ctx, name, account, resource_group, if_match, **connection_auth
     )
 
     if deleted:

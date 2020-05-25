@@ -67,7 +67,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, name, resource_group, **kwargs):
+async def create_or_update(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -93,7 +93,7 @@ async def create_or_update(hub, name, resource_group, **kwargs):
             return False
         kwargs["location"] = rg_props["location"]
 
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
 
     # Use VM names to link to the IDs of existing VMs.
     if isinstance(kwargs.get("virtual_machines"), list):
@@ -135,7 +135,7 @@ async def create_or_update(hub, name, resource_group, **kwargs):
     return result
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -154,7 +154,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
     try:
         compconn.availability_sets.delete(
             resource_group_name=resource_group, availability_set_name=name
@@ -167,7 +167,7 @@ async def delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get(hub, name, resource_group, **kwargs):
+async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -185,7 +185,7 @@ async def get(hub, name, resource_group, **kwargs):
         azurerm.compute.availability_set.get testset testgroup
 
     """
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
     try:
         av_set = compconn.availability_sets.get(
             resource_group_name=resource_group, availability_set_name=name
@@ -199,7 +199,7 @@ async def get(hub, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, resource_group, **kwargs):
+async def list_(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -216,7 +216,7 @@ async def list_(hub, resource_group, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
     try:
         avail_sets = await hub.exec.utils.azurerm.paged_object_to_list(
             compconn.availability_sets.list(resource_group_name=resource_group)
@@ -231,7 +231,7 @@ async def list_(hub, resource_group, **kwargs):
     return result
 
 
-async def list_available_sizes(hub, name, resource_group, **kwargs):
+async def list_available_sizes(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -252,7 +252,7 @@ async def list_available_sizes(hub, name, resource_group, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
     try:
         sizes = await hub.exec.utils.azurerm.paged_object_to_list(
             compconn.availability_sets.list_available_sizes(

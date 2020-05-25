@@ -67,7 +67,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def list_(hub, **kwargs):
+async def list_(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -81,7 +81,7 @@ async def list_(hub, **kwargs):
 
     """
     result = {}
-    moniconn = await hub.exec.utils.azurerm.get_client("monitor", **kwargs)
+    moniconn = await hub.exec.utils.azurerm.get_client(ctx, "monitor", **kwargs)
     try:
         profiles = await hub.exec.utils.azurerm.paged_object_to_list(
             moniconn.log_profiles.list()

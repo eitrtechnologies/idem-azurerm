@@ -72,7 +72,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def list_all(hub, **kwargs):
+async def list_all(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -86,7 +86,7 @@ async def list_all(hub, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         load_balancers = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.load_balancers.list_all()
@@ -101,7 +101,7 @@ async def list_all(hub, **kwargs):
     return result
 
 
-async def list_(hub, resource_group, **kwargs):
+async def list_(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -118,7 +118,7 @@ async def list_(hub, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         load_balancers = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.load_balancers.list(resource_group_name=resource_group)
@@ -133,7 +133,7 @@ async def list_(hub, resource_group, **kwargs):
     return result
 
 
-async def get(hub, name, resource_group, **kwargs):
+async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -151,7 +151,7 @@ async def get(hub, name, resource_group, **kwargs):
         azurerm.network.load_balancer.get testlb testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         load_balancer = netconn.load_balancers.get(
             load_balancer_name=name, resource_group_name=resource_group
@@ -164,7 +164,7 @@ async def get(hub, name, resource_group, **kwargs):
     return result
 
 
-async def create_or_update(hub, name, resource_group, **kwargs):
+async def create_or_update(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -190,7 +190,7 @@ async def create_or_update(hub, name, resource_group, **kwargs):
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     if isinstance(kwargs.get("frontend_ip_configurations"), list):
         for idx in six_range(0, len(kwargs["frontend_ip_configurations"])):
@@ -350,7 +350,7 @@ async def create_or_update(hub, name, resource_group, **kwargs):
     return result
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -369,7 +369,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         load_balancer = netconn.load_balancers.delete(
             load_balancer_name=name, resource_group_name=resource_group

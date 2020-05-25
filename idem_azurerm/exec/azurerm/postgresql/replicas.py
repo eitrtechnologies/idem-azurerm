@@ -63,7 +63,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def list_by_server(hub, server_name, resource_group, **kwargs):
+async def list_by_server(hub, ctx, server_name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -81,7 +81,7 @@ async def list_by_server(hub, server_name, resource_group, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
 
     try:
         reps = await hub.exec.utils.azurerm.paged_object_to_list(

@@ -64,7 +64,9 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, name, zone_name, resource_group, record_type, **kwargs):
+async def create_or_update(
+    hub, ctx, name, zone_name, resource_group, record_type, **kwargs
+):
     """
     .. versionadded:: 1.0.0
 
@@ -88,7 +90,7 @@ async def create_or_update(hub, name, zone_name, resource_group, record_type, **
             arecords='[{ipv4_address: 10.0.0.1}]' ttl=300
 
     """
-    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client(ctx, "dns", **kwargs)
 
     try:
         record_set_model = await hub.exec.utils.azurerm.create_object_model(
@@ -122,7 +124,7 @@ async def create_or_update(hub, name, zone_name, resource_group, record_type, **
     return result
 
 
-async def delete(hub, name, zone_name, resource_group, record_type, **kwargs):
+async def delete(hub, ctx, name, zone_name, resource_group, record_type, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -146,7 +148,7 @@ async def delete(hub, name, zone_name, resource_group, record_type, **kwargs):
 
     """
     result = False
-    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client(ctx, "dns", **kwargs)
     try:
         record_set = dnsconn.record_sets.delete(
             relative_record_set_name=name,
@@ -162,7 +164,7 @@ async def delete(hub, name, zone_name, resource_group, record_type, **kwargs):
     return result
 
 
-async def get(hub, name, zone_name, resource_group, record_type, **kwargs):
+async def get(hub, ctx, name, zone_name, resource_group, record_type, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -184,7 +186,7 @@ async def get(hub, name, zone_name, resource_group, record_type, **kwargs):
         azurerm.dns.record_set.get '@' myzone testgroup SOA
 
     """
-    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client(ctx, "dns", **kwargs)
     try:
         record_set = dnsconn.record_sets.get(
             relative_record_set_name=name,
@@ -203,6 +205,7 @@ async def get(hub, name, zone_name, resource_group, record_type, **kwargs):
 
 async def list_by_type(
     hub,
+    ctx,
     zone_name,
     resource_group,
     record_type,
@@ -236,7 +239,7 @@ async def list_by_type(
 
     """
     result = {}
-    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client(ctx, "dns", **kwargs)
     try:
         record_sets = await hub.exec.utils.azurerm.paged_object_to_list(
             dnsconn.record_sets.list_by_type(
@@ -258,7 +261,7 @@ async def list_by_type(
 
 
 async def list_by_dns_zone(
-    hub, zone_name, resource_group, top=None, recordsetnamesuffix=None, **kwargs
+    hub, ctx, zone_name, resource_group, top=None, recordsetnamesuffix=None, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -283,7 +286,7 @@ async def list_by_dns_zone(
 
     """
     result = {}
-    dnsconn = await hub.exec.utils.azurerm.get_client("dns", **kwargs)
+    dnsconn = await hub.exec.utils.azurerm.get_client(ctx, "dns", **kwargs)
     try:
         record_sets = await hub.exec.utils.azurerm.paged_object_to_list(
             dnsconn.record_sets.list_by_dns_zone(

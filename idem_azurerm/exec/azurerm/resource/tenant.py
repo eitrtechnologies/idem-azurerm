@@ -67,7 +67,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def list_(hub, **kwargs):
+async def list_(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -81,7 +81,7 @@ async def list_(hub, **kwargs):
 
     """
     result = {}
-    subconn = await hub.exec.utils.azurerm.get_client("subscription", **kwargs)
+    subconn = await hub.exec.utils.azurerm.get_client(ctx, "subscription", **kwargs)
     try:
         tenants = await hub.exec.utils.azurerm.paged_object_to_list(
             subconn.tenants.list()

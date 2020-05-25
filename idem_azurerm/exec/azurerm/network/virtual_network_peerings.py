@@ -72,7 +72,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def list_(hub, virtual_network, resource_group, **kwargs):
+async def list_(hub, ctx, virtual_network, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -90,7 +90,7 @@ async def list_(hub, virtual_network, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         peerings = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.virtual_network_peerings.list(
@@ -107,7 +107,7 @@ async def list_(hub, virtual_network, resource_group, **kwargs):
     return result
 
 
-async def delete(hub, name, virtual_network, resource_group, **kwargs):
+async def delete(hub, ctx, name, virtual_network, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -129,7 +129,7 @@ async def delete(hub, name, virtual_network, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         peering = netconn.virtual_network_peerings.delete(
             resource_group_name=resource_group,
@@ -144,7 +144,7 @@ async def delete(hub, name, virtual_network, resource_group, **kwargs):
     return result
 
 
-async def get(hub, name, virtual_network, resource_group, **kwargs):
+async def get(hub, ctx, name, virtual_network, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -165,7 +165,7 @@ async def get(hub, name, virtual_network, resource_group, **kwargs):
         azurerm.network.virtual_network_peering.get peer1 testnet testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         peering = netconn.virtual_network_peerings.get(
             resource_group_name=resource_group,
@@ -183,6 +183,7 @@ async def get(hub, name, virtual_network, resource_group, **kwargs):
 
 async def create_or_update(
     hub,
+    ctx,
     name,
     remote_virtual_network,
     virtual_network,
@@ -216,7 +217,7 @@ async def create_or_update(
                   remotenet testnet testgroup remote_vnet_group=remotegroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     # Use Remote Virtual Network name to link to the ID of an existing object
     remote_vnet = virtual_network_get(

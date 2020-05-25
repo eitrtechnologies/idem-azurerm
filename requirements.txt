@@ -1,6 +1,6 @@
 pop==13
 acct==1.4
-idem==7
+idem==8
 pop-config==6
 takara==1.2
 azure-common==1.1.23

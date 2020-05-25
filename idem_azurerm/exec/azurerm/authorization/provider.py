@@ -65,7 +65,7 @@ log = logging.getLogger(__name__)
 
 
 async def operations_metadata_get(
-    hub, resource_provider_namespace, api_version="2015-07-01", **kwargs
+    hub, ctx, resource_provider_namespace, api_version="2015-07-01", **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -84,7 +84,7 @@ async def operations_metadata_get(
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
     try:
         data = authconn.provider_operations_metadata.get(
             resource_provider_namespace=resource_provider_namespace,
@@ -102,7 +102,7 @@ async def operations_metadata_get(
     return result
 
 
-async def operations_metadata_list(hub, api_version="2015-07-01", **kwargs):
+async def operations_metadata_list(hub, ctx, api_version="2015-07-01", **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -118,7 +118,7 @@ async def operations_metadata_list(hub, api_version="2015-07-01", **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client("authorization", **kwargs)
+    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
 
     try:
         providers = await hub.exec.utils.azurerm.paged_object_to_list(

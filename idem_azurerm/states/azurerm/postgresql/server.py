@@ -162,6 +162,7 @@ async def present(
             return ret
 
     server = await hub.exec.azurerm.postgresql.server.get(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         azurerm_log_level="info",
@@ -261,6 +262,7 @@ async def present(
 
     if new_server:
         server = await hub.exec.azurerm.postgresql.server.create(
+            ctx=ctx,
             name=name,
             resource_group=resource_group,
             location=location,
@@ -276,6 +278,7 @@ async def present(
         )
     else:
         server = await hub.exec.azurerm.postgresql.server.update(
+            ctx=ctx,
             name=name,
             resource_group=resource_group,
             sku=sku,
@@ -336,6 +339,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             return ret
 
     server = await hub.exec.azurerm.postgresql.server.get(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         azurerm_log_level="info",
@@ -357,7 +361,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.postgresql.server.delete(
-        name=name, resource_group=resource_group, **connection_auth
+        ctx=ctx, name=name, resource_group=resource_group, **connection_auth
     )
 
     if deleted:

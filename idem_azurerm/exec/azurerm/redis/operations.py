@@ -66,7 +66,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def check_name_availability(hub, name, **kwargs):
+async def check_name_availability(hub, ctx, name, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -82,7 +82,7 @@ async def check_name_availability(hub, name, **kwargs):
 
     """
     result = False
-    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
 
     try:
         avail = redconn.redis.check_name_availability(
@@ -100,6 +100,7 @@ async def check_name_availability(hub, name, **kwargs):
 
 async def create(
     hub,
+    ctx,
     name,
     resource_group,
     location,
@@ -160,7 +161,7 @@ async def create(
         azurerm.redis.operations.create test_name test_rg test_location test_sku
 
     """
-    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
 
     try:
         paramsmodel = await hub.exec.utils.azurerm.create_object_model(
@@ -201,7 +202,7 @@ async def create(
     return result
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -219,7 +220,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
 
     try:
         cache = redconn.redis.delete(name=name, resource_group_name=resource_group)
@@ -232,7 +233,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
 
 async def export_data(
-    hub, name, resource_group, prefix, container, format=None, **kwargs
+    hub, ctx, name, resource_group, prefix, container, format=None, **kwargs
 ):
     """
     .. versionadded:: 2.0.0
@@ -257,7 +258,7 @@ async def export_data(
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
 
     # Create a ExportRDBParameters object
     try:
@@ -287,7 +288,9 @@ async def export_data(
     return result
 
 
-async def force_reboot(hub, name, resource_group, reboot_type, shard_id=None, **kwargs):
+async def force_reboot(
+    hub, ctx, name, resource_group, reboot_type, shard_id=None, **kwargs
+):
     """
     .. versionadded:: 2.0.0
 
@@ -311,7 +314,7 @@ async def force_reboot(hub, name, resource_group, reboot_type, shard_id=None, **
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
 
     try:
         cache = redconn.redis.force_reboot(
@@ -329,7 +332,7 @@ async def force_reboot(hub, name, resource_group, reboot_type, shard_id=None, **
     return result
 
 
-async def get(hub, name, resource_group, **kwargs):
+async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -347,7 +350,7 @@ async def get(hub, name, resource_group, **kwargs):
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
 
     try:
         cache = redconn.redis.get(name=name, resource_group_name=resource_group)
@@ -360,7 +363,7 @@ async def get(hub, name, resource_group, **kwargs):
     return result
 
 
-async def import_data(hub, name, resource_group, files, format=None, **kwargs):
+async def import_data(hub, ctx, name, resource_group, files, format=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -382,7 +385,7 @@ async def import_data(hub, name, resource_group, files, format=None, **kwargs):
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
 
     try:
         cache = redconn.redis.import_data(
@@ -397,7 +400,7 @@ async def import_data(hub, name, resource_group, files, format=None, **kwargs):
     return result
 
 
-async def list_(hub, **kwargs):
+async def list_(hub, ctx, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -411,7 +414,7 @@ async def list_(hub, **kwargs):
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
 
     try:
         caches = await hub.exec.utils.azurerm.paged_object_to_list(redconn.redis.list())
@@ -425,7 +428,7 @@ async def list_(hub, **kwargs):
     return result
 
 
-async def list_by_resource_group(hub, resource_group, **kwargs):
+async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -441,7 +444,7 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
 
     try:
         caches = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -457,7 +460,7 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
     return result
 
 
-async def list_keys(hub, name, resource_group, **kwargs):
+async def list_keys(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -475,7 +478,7 @@ async def list_keys(hub, name, resource_group, **kwargs):
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
 
     try:
         keys = redconn.redis.list_keys(name=name, resource_group_name=resource_group)
@@ -488,7 +491,7 @@ async def list_keys(hub, name, resource_group, **kwargs):
     return result
 
 
-async def list_upgrade_notifications(hub, name, resource_group, history, **kwargs):
+async def list_upgrade_notifications(hub, ctx, name, resource_group, history, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -508,7 +511,7 @@ async def list_upgrade_notifications(hub, name, resource_group, history, **kwarg
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
 
     try:
         notifications = redconn.redis.list_upgrade_notifications(
@@ -523,7 +526,7 @@ async def list_upgrade_notifications(hub, name, resource_group, history, **kwarg
     return result
 
 
-async def regenerate_key(hub, name, resource_group, key_type, **kwargs):
+async def regenerate_key(hub, ctx, name, resource_group, key_type, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -542,7 +545,7 @@ async def regenerate_key(hub, name, resource_group, key_type, **kwargs):
         azurerm.redis.operations.renegerate_key test_name test_rg test_type
 
     """
-    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
 
     try:
         keys = redconn.redis.regenerate_key(
@@ -559,6 +562,7 @@ async def regenerate_key(hub, name, resource_group, key_type, **kwargs):
 
 async def update(
     hub,
+    ctx,
     name,
     resource_group,
     sku=None,
@@ -606,7 +610,7 @@ async def update(
         azurerm.redis.operations.update test_name test_rg test_location test_sku
 
     """
-    redconn = await hub.exec.utils.azurerm.get_client("redis", **kwargs)
+    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
 
     try:
         paramsmodel = await hub.exec.utils.azurerm.create_object_model(

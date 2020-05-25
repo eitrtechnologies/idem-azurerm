@@ -140,11 +140,11 @@ async def present(
     group = {}
 
     present = await hub.exec.azurerm.resource.group.check_existence(
-        name, **connection_auth
+        ctx, name, **connection_auth
     )
 
     if present:
-        group = await hub.exec.azurerm.resource.group.get(name, **connection_auth)
+        group = await hub.exec.azurerm.resource.group.get(ctx, name, **connection_auth)
         ret["changes"] = await hub.exec.utils.dictdiffer.deep_diff(
             group.get("tags", {}), tags or {}
         )
@@ -178,10 +178,10 @@ async def present(
     group_kwargs.update(connection_auth)
 
     group = await hub.exec.azurerm.resource.group.create_or_update(
-        name, location, managed_by=managed_by, tags=tags, **group_kwargs
+        ctx, name, location, managed_by=managed_by, tags=tags, **group_kwargs
     )
     present = await hub.exec.azurerm.resource.group.check_existence(
-        name, **connection_auth
+        ctx, name, **connection_auth
     )
 
     if present:
@@ -226,7 +226,7 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
     group = {}
 
     present = await hub.exec.azurerm.resource.group.check_existence(
-        name, **connection_auth
+        ctx, name, **connection_auth
     )
 
     if not present:
@@ -235,7 +235,7 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
         return ret
 
     elif ctx["test"]:
-        group = await hub.exec.azurerm.resource.group.get(name, **connection_auth)
+        group = await hub.exec.azurerm.resource.group.get(ctx, name, **connection_auth)
 
         ret["comment"] = "Resource group {0} would be deleted.".format(name)
         ret["result"] = None
@@ -245,14 +245,14 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
         }
         return ret
 
-    group = await hub.exec.azurerm.resource.group.get(name, **connection_auth)
-    deleted = await hub.exec.azurerm.resource.group.delete(name, **connection_auth)
+    group = await hub.exec.azurerm.resource.group.get(ctx, name, **connection_auth)
+    deleted = await hub.exec.azurerm.resource.group.delete(ctx, name, **connection_auth)
 
     if deleted:
         present = False
     else:
         present = await hub.exec.azurerm.resource.group.check_existence(
-            name, **connection_auth
+            ctx, name, **connection_auth
         )
 
     if not present:

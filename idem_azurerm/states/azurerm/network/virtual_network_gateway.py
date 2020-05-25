@@ -267,7 +267,7 @@ async def connection_present(
             return ret
 
     connection = await hub.exec.azurerm.network.virtual_network_gateway.connection_get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in connection:
@@ -446,6 +446,7 @@ async def connection_present(
 
     if connection_type == "IPSec":
         con = await hub.exec.azurerm.network.virtual_network_gateway.connection_create_or_update(
+            ctx=ctx,
             name=name,
             resource_group=resource_group,
             virtual_network_gateway=virtual_network_gateway,
@@ -462,6 +463,7 @@ async def connection_present(
 
     if connection_type == "Vnet2Vnet":
         con = await hub.exec.azurerm.network.virtual_network_gateway.connection_create_or_update(
+            ctx=ctx,
             name=name,
             resource_group=resource_group,
             virtual_network_gateway=virtual_network_gateway,
@@ -532,7 +534,7 @@ async def connection_absent(
             return ret
 
     connection = await hub.exec.azurerm.network.virtual_network_gateway.connection_get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in connection:
@@ -554,7 +556,7 @@ async def connection_absent(
         return ret
 
     deleted = await hub.exec.azurerm.network.virtual_network_gateway.connection_delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:
@@ -712,7 +714,7 @@ async def present(
             return ret
 
     gateway = await hub.exec.azurerm.network.virtual_network_gateway.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in gateway:
@@ -834,6 +836,7 @@ async def present(
     gateway_kwargs.update(connection_auth)
 
     gateway = await hub.exec.azurerm.network.virtual_network_gateway.create_or_update(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         virtual_network=virtual_network,
@@ -901,7 +904,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             return ret
 
     gateway = await hub.exec.azurerm.network.virtual_network_gateway.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in gateway:
@@ -923,7 +926,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.network.virtual_network_gateway.delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:

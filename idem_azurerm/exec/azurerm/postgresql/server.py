@@ -69,6 +69,7 @@ log = logging.getLogger(__name__)
 
 async def create(
     hub,
+    ctx,
     name,
     resource_group,
     location,
@@ -128,7 +129,7 @@ async def create(
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
 
     try:
         propsmodel = await hub.exec.utils.azurerm.create_object_model(
@@ -179,7 +180,7 @@ async def create(
     return result
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -197,7 +198,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
 
     try:
         server = postconn.servers.delete(
@@ -213,7 +214,7 @@ async def delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get(hub, name, resource_group, **kwargs):
+async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -231,7 +232,7 @@ async def get(hub, name, resource_group, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
 
     try:
         server = postconn.servers.get(
@@ -246,7 +247,7 @@ async def get(hub, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, **kwargs):
+async def list_(hub, ctx, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -260,7 +261,7 @@ async def list_(hub, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
 
     try:
         servers = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -276,7 +277,7 @@ async def list_(hub, **kwargs):
     return result
 
 
-async def list_by_resource_group(hub, resource_group, **kwargs):
+async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -292,7 +293,7 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
 
     try:
         servers = await hub.exec.utils.azurerm.paged_object_to_list(
@@ -308,7 +309,7 @@ async def list_by_resource_group(hub, resource_group, **kwargs):
     return result
 
 
-async def restart(hub, name, resource_group, **kwargs):
+async def restart(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -326,7 +327,7 @@ async def restart(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
 
     try:
         server = postconn.servers.restart(
@@ -344,6 +345,7 @@ async def restart(hub, name, resource_group, **kwargs):
 
 async def update(
     hub,
+    ctx,
     name,
     resource_group,
     sku=None,
@@ -395,7 +397,7 @@ async def update(
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client("postgresql", **kwargs)
+    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
 
     try:
         paramsmodel = await hub.exec.utils.azurerm.create_object_model(

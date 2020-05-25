@@ -73,7 +73,7 @@ log = logging.getLogger(__name__)
 
 
 async def default_security_rule_get(
-    hub, name, security_group, resource_group, **kwargs
+    hub, ctx, name, security_group, resource_group, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -119,7 +119,9 @@ async def default_security_rule_get(
     return result
 
 
-async def default_security_rules_list(hub, security_group, resource_group, **kwargs):
+async def default_security_rules_list(
+    hub, ctx, security_group, resource_group, **kwargs
+):
     """
     .. versionadded:: 1.0.0
 
@@ -155,7 +157,7 @@ async def default_security_rules_list(hub, security_group, resource_group, **kwa
     return result
 
 
-async def security_rules_list(hub, security_group, resource_group, **kwargs):
+async def security_rules_list(hub, ctx, security_group, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -173,7 +175,7 @@ async def security_rules_list(hub, security_group, resource_group, **kwargs):
         azurerm.network.network_security_group.security_rules_list testnsg testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         secrules = netconn.security_rules.list(
             network_security_group_name=security_group,
@@ -189,6 +191,7 @@ async def security_rules_list(hub, security_group, resource_group, **kwargs):
 
 async def security_rule_create_or_update(
     hub,
+    ctx,
     name,
     access,
     direction,
@@ -295,7 +298,7 @@ async def security_rule_create_or_update(
             # pylint: disable=exec-used
             exec("{0} = None".format(params[1]))
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     try:
         rulemodel = await hub.exec.utils.azurerm.create_object_model(
@@ -344,7 +347,7 @@ async def security_rule_create_or_update(
 
 
 async def security_rule_delete(
-    hub, security_rule, security_group, resource_group, **kwargs
+    hub, ctx, security_rule, security_group, resource_group, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -367,7 +370,7 @@ async def security_rule_delete(
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         secrule = netconn.security_rules.delete(
             network_security_group_name=security_group,
@@ -383,7 +386,7 @@ async def security_rule_delete(
 
 
 async def security_rule_get(
-    hub, security_rule, security_group, resource_group, **kwargs
+    hub, ctx, security_rule, security_group, resource_group, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -405,7 +408,7 @@ async def security_rule_get(
         azurerm.network.network_security_group.security_rule_get testrule1 testnsg testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         secrule = netconn.security_rules.get(
             network_security_group_name=security_group,
@@ -420,7 +423,7 @@ async def security_rule_get(
     return result
 
 
-async def create_or_update(hub, name, resource_group, **kwargs):
+async def create_or_update(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -446,7 +449,7 @@ async def create_or_update(hub, name, resource_group, **kwargs):
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     try:
         secgroupmodel = await hub.exec.utils.azurerm.create_object_model(
@@ -478,7 +481,7 @@ async def create_or_update(hub, name, resource_group, **kwargs):
     return result
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -497,7 +500,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         secgroup = netconn.network_security_groups.delete(
             resource_group_name=resource_group, network_security_group_name=name
@@ -510,7 +513,7 @@ async def delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def get(hub, name, resource_group, **kwargs):
+async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -528,7 +531,7 @@ async def get(hub, name, resource_group, **kwargs):
         azurerm.network.network_security_group.get testnsg testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         secgroup = netconn.network_security_groups.get(
             resource_group_name=resource_group, network_security_group_name=name
@@ -541,7 +544,7 @@ async def get(hub, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, resource_group, **kwargs):
+async def list_(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -558,7 +561,7 @@ async def list_(hub, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         secgroups = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.network_security_groups.list(resource_group_name=resource_group)
@@ -572,7 +575,7 @@ async def list_(hub, resource_group, **kwargs):
     return result
 
 
-async def list_all(hub, **kwargs):
+async def list_all(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -586,7 +589,7 @@ async def list_all(hub, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         secgroups = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.network_security_groups.list_all()

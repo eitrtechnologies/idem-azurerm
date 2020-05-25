@@ -65,7 +65,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -83,7 +83,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    compconn = await hub.exec.utils.azurerm.get_client("compute", **kwargs)
+    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
     try:
         compconn.disks.delete(resource_group_name=resource_group, disk_name=name)
         result = True

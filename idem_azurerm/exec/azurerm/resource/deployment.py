@@ -67,7 +67,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def operation_get(hub, operation, deployment, resource_group, **kwargs):
+async def operation_get(hub, ctx, operation, deployment, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -86,7 +86,7 @@ async def operation_get(hub, operation, deployment, resource_group, **kwargs):
         azurerm.resource.deployment.operation_get testoperation testdeploy testgroup
 
     """
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
     try:
         operation = resconn.deployment_operations.get(
             resource_group_name=resource_group,
@@ -102,7 +102,7 @@ async def operation_get(hub, operation, deployment, resource_group, **kwargs):
     return result
 
 
-async def operations_list(hub, name, resource_group, result_limit=10, **kwargs):
+async def operations_list(hub, ctx, name, resource_group, result_limit=10, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -122,7 +122,7 @@ async def operations_list(hub, name, resource_group, result_limit=10, **kwargs):
 
     """
     result = {}
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
     try:
         operations = await hub.exec.utils.azurerm.paged_object_to_list(
             resconn.deployment_operations.list(
@@ -141,7 +141,7 @@ async def operations_list(hub, name, resource_group, result_limit=10, **kwargs):
     return result
 
 
-async def delete(hub, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -159,7 +159,7 @@ async def delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
     try:
         deploy = resconn.deployments.delete(
             deployment_name=name, resource_group_name=resource_group
@@ -172,7 +172,7 @@ async def delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def check_existence(hub, name, resource_group, **kwargs):
+async def check_existence(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -190,7 +190,7 @@ async def check_existence(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
     try:
         result = resconn.deployments.check_existence(
             deployment_name=name, resource_group_name=resource_group
@@ -203,6 +203,7 @@ async def check_existence(hub, name, resource_group, **kwargs):
 
 async def create_or_update(
     hub,
+    ctx,
     name,
     resource_group,
     deploy_mode="incremental",
@@ -256,7 +257,7 @@ async def create_or_update(
         azurerm.resource.deployment.create_or_update testdeploy testgroup
 
     """
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
 
     prop_kwargs = {"mode": deploy_mode}
     prop_kwargs["debug_setting"] = {"detail_level": debug_setting}
@@ -324,7 +325,7 @@ async def create_or_update(
     return result
 
 
-async def get(hub, name, resource_group, **kwargs):
+async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -341,7 +342,7 @@ async def get(hub, name, resource_group, **kwargs):
         azurerm.resource.deployment.get testdeploy testgroup
 
     """
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
     try:
         deploy = resconn.deployments.get(
             deployment_name=name, resource_group_name=resource_group
@@ -354,7 +355,7 @@ async def get(hub, name, resource_group, **kwargs):
     return result
 
 
-async def cancel(hub, name, resource_group, **kwargs):
+async def cancel(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -371,7 +372,7 @@ async def cancel(hub, name, resource_group, **kwargs):
         azurerm.resource.deployment.cancel testdeploy testgroup
 
     """
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
     try:
         resconn.deployments.cancel(
             deployment_name=name, resource_group_name=resource_group
@@ -386,6 +387,7 @@ async def cancel(hub, name, resource_group, **kwargs):
 
 async def validate(
     hub,
+    ctx,
     name,
     resource_group,
     deploy_mode=None,
@@ -439,7 +441,7 @@ async def validate(
         azurerm.resource.deployment.validate testdeploy testgroup
 
     """
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
 
     prop_kwargs = {"mode": deploy_mode}
     prop_kwargs["debug_setting"] = {"detail_level": debug_setting}
@@ -495,7 +497,7 @@ async def validate(
     return result
 
 
-async def export_template(hub, name, resource_group, **kwargs):
+async def export_template(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -512,7 +514,7 @@ async def export_template(hub, name, resource_group, **kwargs):
         azurerm.resource.deployment.export_template testdeploy testgroup
 
     """
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
     try:
         deploy = resconn.deployments.export_template(
             deployment_name=name, resource_group_name=resource_group
@@ -525,7 +527,7 @@ async def export_template(hub, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, resource_group, **kwargs):
+async def list_(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -539,7 +541,7 @@ async def list_(hub, resource_group, **kwargs):
 
     """
     result = {}
-    resconn = await hub.exec.utils.azurerm.get_client("resource", **kwargs)
+    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
     try:
         deployments = await hub.exec.utils.azurerm.paged_object_to_list(
             resconn.deployments.list_by_resource_group(

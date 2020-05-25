@@ -77,7 +77,7 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def get_key_client(hub, vault_url, **kwargs):
+async def get_key_client(hub, ctx, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -85,7 +85,7 @@ async def get_key_client(hub, vault_url, **kwargs):
 
     :param vault_url: The URL of the vault that the client will access.
     """
-    credential = await hub.exec.utils.azurerm.get_identity_credentials(**kwargs)
+    credential = await hub.exec.utils.azurerm.get_identity_credentials(ctx, **kwargs)
 
     key_client = KeyClient(vault_url=vault_url, credential=credential)
 
@@ -127,7 +127,7 @@ def _key_properties_as_dict(key_properties):
     return result
 
 
-async def backup_key(hub, name, vault_url, **kwargs):
+async def backup_key(hub, ctx, name, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -148,7 +148,7 @@ async def backup_key(hub, name, vault_url, **kwargs):
 
     """
     result = {}
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
         backup = kconn.backup_key(name=name,)
@@ -160,7 +160,7 @@ async def backup_key(hub, name, vault_url, **kwargs):
     return result
 
 
-async def begin_delete_key(hub, name, vault_url, **kwargs):
+async def begin_delete_key(hub, ctx, name, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -180,7 +180,7 @@ async def begin_delete_key(hub, name, vault_url, **kwargs):
 
     """
     result = {}
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
         key = kconn.begin_delete_key(name=name,)
@@ -192,7 +192,7 @@ async def begin_delete_key(hub, name, vault_url, **kwargs):
     return result
 
 
-async def begin_recover_deleted_key(hub, name, vault_url, **kwargs):
+async def begin_recover_deleted_key(hub, ctx, name, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -213,7 +213,7 @@ async def begin_recover_deleted_key(hub, name, vault_url, **kwargs):
 
     """
     result = {}
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
         key = kconn.begin_recover_deleted_key(name=name,)
@@ -227,6 +227,7 @@ async def begin_recover_deleted_key(hub, name, vault_url, **kwargs):
 
 async def create_ec_key(
     hub,
+    ctx,
     name,
     vault_url,
     key_ops=None,
@@ -267,7 +268,7 @@ async def create_ec_key(
 
     """
     result = {}
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
         key = kconn.create_ec_key(
@@ -288,6 +289,7 @@ async def create_ec_key(
 
 async def create_key(
     hub,
+    ctx,
     name,
     key_type,
     vault_url,
@@ -331,7 +333,7 @@ async def create_key(
 
     """
     result = {}
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     if key_type != "oct":
         key_type = key_type.upper().replace("_", "-")
@@ -356,6 +358,7 @@ async def create_key(
 
 async def create_rsa_key(
     hub,
+    ctx,
     name,
     vault_url,
     key_ops=None,
@@ -396,7 +399,7 @@ async def create_rsa_key(
 
     """
     result = {}
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
         key = kconn.create_rsa_key(
@@ -415,7 +418,7 @@ async def create_rsa_key(
     return result
 
 
-async def get_deleted_key(hub, name, vault_url, **kwargs):
+async def get_deleted_key(hub, ctx, name, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -433,7 +436,7 @@ async def get_deleted_key(hub, name, vault_url, **kwargs):
 
     """
     result = {}
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
         key = kconn.get_deleted_key(name=name,)
@@ -445,7 +448,7 @@ async def get_deleted_key(hub, name, vault_url, **kwargs):
     return result
 
 
-async def get_key(hub, name, vault_url, version=None, **kwargs):
+async def get_key(hub, ctx, name, vault_url, version=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -466,7 +469,7 @@ async def get_key(hub, name, vault_url, version=None, **kwargs):
 
     """
     result = {}
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
         key = kconn.get_key(name=name, version=version,)
@@ -478,7 +481,7 @@ async def get_key(hub, name, vault_url, version=None, **kwargs):
     return result
 
 
-async def import_key(hub, name, vault_url, **kwargs):
+async def import_key(hub, ctx, name, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -536,7 +539,7 @@ async def import_key(hub, name, vault_url, **kwargs):
 
     """
     result = {}
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     if kwargs["key_type"] != "oct":
         kwargs["key_type"] = kwargs.get("key_type").upper().replace("_", "-")
@@ -561,7 +564,7 @@ async def import_key(hub, name, vault_url, **kwargs):
     return result
 
 
-async def list_(hub, vault_url, **kwargs):
+async def list_(hub, ctx, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -577,7 +580,7 @@ async def list_(hub, vault_url, **kwargs):
 
     """
     result = {}
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
         keys = kconn.list_properties_of_keys()
@@ -590,7 +593,7 @@ async def list_(hub, vault_url, **kwargs):
     return result
 
 
-async def list_properties_of_key_versions(hub, name, vault_url, **kwargs):
+async def list_properties_of_key_versions(hub, ctx, name, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -608,7 +611,7 @@ async def list_properties_of_key_versions(hub, name, vault_url, **kwargs):
 
     """
     result = {}
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
         keys = kconn.list_properties_of_key_versions(name=name,)
@@ -621,7 +624,7 @@ async def list_properties_of_key_versions(hub, name, vault_url, **kwargs):
     return result
 
 
-async def list_deleted_keys(hub, vault_url, **kwargs):
+async def list_deleted_keys(hub, ctx, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -638,7 +641,7 @@ async def list_deleted_keys(hub, vault_url, **kwargs):
 
     """
     result = {}
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
         keys = kconn.list_deleted_keys()
@@ -651,7 +654,7 @@ async def list_deleted_keys(hub, vault_url, **kwargs):
     return result
 
 
-async def purge_deleted_key(hub, name, vault_url, **kwargs):
+async def purge_deleted_key(hub, ctx, name, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -672,7 +675,7 @@ async def purge_deleted_key(hub, name, vault_url, **kwargs):
 
     """
     result = False
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
         key = kconn.purge_deleted_key(name=name,)
@@ -684,7 +687,7 @@ async def purge_deleted_key(hub, name, vault_url, **kwargs):
     return result
 
 
-async def restore_key_backup(hub, backup, vault_url, **kwargs):
+async def restore_key_backup(hub, ctx, backup, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -704,7 +707,7 @@ async def restore_key_backup(hub, backup, vault_url, **kwargs):
 
     """
     result = {}
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
         key = kconn.restore_key_backup(backup=backup,)
@@ -718,6 +721,7 @@ async def restore_key_backup(hub, backup, vault_url, **kwargs):
 
 async def update_key_properties(
     hub,
+    ctx,
     name,
     vault_url,
     version=None,
@@ -758,7 +762,7 @@ async def update_key_properties(
 
     """
     result = {}
-    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(vault_url, **kwargs)
+    kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
         key = kconn.update_key_properties(

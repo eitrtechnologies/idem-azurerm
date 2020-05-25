@@ -70,7 +70,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def filter_rule_delete(hub, name, route_filter, resource_group, **kwargs):
+async def filter_rule_delete(hub, ctx, name, route_filter, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -91,7 +91,7 @@ async def filter_rule_delete(hub, name, route_filter, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         rule = netconn.route_filter_rules.delete(
             resource_group_name=resource_group,
@@ -106,7 +106,7 @@ async def filter_rule_delete(hub, name, route_filter, resource_group, **kwargs):
     return result
 
 
-async def filter_rule_get(hub, name, route_filter, resource_group, **kwargs):
+async def filter_rule_get(hub, ctx, name, route_filter, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -127,7 +127,7 @@ async def filter_rule_get(hub, name, route_filter, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         rule = netconn.route_filter_rules.get(
             resource_group_name=resource_group,
@@ -144,7 +144,7 @@ async def filter_rule_get(hub, name, route_filter, resource_group, **kwargs):
 
 
 async def filter_rule_create_or_update(
-    hub, name, access, communities, route_filter, resource_group, **kwargs
+    hub, ctx, name, access, communities, route_filter, resource_group, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
@@ -182,7 +182,7 @@ async def filter_rule_create_or_update(
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     try:
         rule_model = await hub.exec.utils.azurerm.create_object_model(
@@ -222,7 +222,7 @@ async def filter_rule_create_or_update(
     return result
 
 
-async def filter_rules_list(hub, route_filter, resource_group, **kwargs):
+async def filter_rules_list(hub, ctx, route_filter, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -241,7 +241,7 @@ async def filter_rules_list(hub, route_filter, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         rules = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.route_filter_rules.list_by_route_filter(
@@ -258,7 +258,7 @@ async def filter_rules_list(hub, route_filter, resource_group, **kwargs):
     return result
 
 
-async def filter_delete(hub, name, resource_group, **kwargs):
+async def filter_delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -277,7 +277,7 @@ async def filter_delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         route_filter = netconn.route_filters.delete(
             route_filter_name=name, resource_group_name=resource_group
@@ -290,7 +290,7 @@ async def filter_delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def filter_get(hub, name, resource_group, **kwargs):
+async def filter_get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -310,7 +310,7 @@ async def filter_get(hub, name, resource_group, **kwargs):
     """
     expand = kwargs.get("expand")
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     try:
         route_filter = netconn.route_filters.get(
@@ -324,7 +324,7 @@ async def filter_get(hub, name, resource_group, **kwargs):
     return result
 
 
-async def filter_create_or_update(hub, name, resource_group, **kwargs):
+async def filter_create_or_update(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -350,7 +350,7 @@ async def filter_create_or_update(hub, name, resource_group, **kwargs):
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     try:
         rt_filter_model = await hub.exec.utils.azurerm.create_object_model(
@@ -382,7 +382,7 @@ async def filter_create_or_update(hub, name, resource_group, **kwargs):
     return result
 
 
-async def filters_list(hub, resource_group, **kwargs):
+async def filters_list(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -399,7 +399,7 @@ async def filters_list(hub, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         filters = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.route_filters.list_by_resource_group(
@@ -416,7 +416,7 @@ async def filters_list(hub, resource_group, **kwargs):
     return result
 
 
-async def filters_list_all(hub, **kwargs):
+async def filters_list_all(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -430,7 +430,7 @@ async def filters_list_all(hub, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         filters = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.route_filters.list()
@@ -445,7 +445,7 @@ async def filters_list_all(hub, **kwargs):
     return result
 
 
-async def delete(hub, name, route_table, resource_group, **kwargs):
+async def delete(hub, ctx, name, route_table, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -466,7 +466,7 @@ async def delete(hub, name, route_table, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         route = netconn.routes.delete(
             resource_group_name=resource_group,
@@ -481,7 +481,7 @@ async def delete(hub, name, route_table, resource_group, **kwargs):
     return result
 
 
-async def get(hub, name, route_table, resource_group, **kwargs):
+async def get(hub, ctx, name, route_table, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -502,7 +502,7 @@ async def get(hub, name, route_table, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         route = netconn.routes.get(
             resource_group_name=resource_group,
@@ -520,6 +520,7 @@ async def get(hub, name, route_table, resource_group, **kwargs):
 
 async def create_or_update(
     hub,
+    ctx,
     name,
     address_prefix,
     next_hop_type,
@@ -555,7 +556,7 @@ async def create_or_update(
         azurerm.network.route.create_or_update test-rt '10.0.0.0/8' test-rt-table testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     try:
         rt_model = await hub.exec.utils.azurerm.create_object_model(
@@ -593,7 +594,7 @@ async def create_or_update(
     return result
 
 
-async def routes_list(hub, route_table, resource_group, **kwargs):
+async def routes_list(hub, ctx, route_table, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -612,7 +613,7 @@ async def routes_list(hub, route_table, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         routes = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.routes.list(
@@ -629,7 +630,7 @@ async def routes_list(hub, route_table, resource_group, **kwargs):
     return result
 
 
-async def table_delete(hub, name, resource_group, **kwargs):
+async def table_delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -648,7 +649,7 @@ async def table_delete(hub, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         table = netconn.route_tables.delete(
             route_table_name=name, resource_group_name=resource_group
@@ -661,7 +662,7 @@ async def table_delete(hub, name, resource_group, **kwargs):
     return result
 
 
-async def table_get(hub, name, resource_group, **kwargs):
+async def table_get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -681,7 +682,7 @@ async def table_get(hub, name, resource_group, **kwargs):
     """
     expand = kwargs.get("expand")
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     try:
         table = netconn.route_tables.get(
@@ -695,7 +696,7 @@ async def table_get(hub, name, resource_group, **kwargs):
     return result
 
 
-async def table_create_or_update(hub, name, resource_group, **kwargs):
+async def table_create_or_update(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -721,7 +722,7 @@ async def table_create_or_update(hub, name, resource_group, **kwargs):
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
 
     try:
         rt_tbl_model = await hub.exec.utils.azurerm.create_object_model(
@@ -753,7 +754,7 @@ async def table_create_or_update(hub, name, resource_group, **kwargs):
     return result
 
 
-async def tables_list(hub, resource_group, **kwargs):
+async def tables_list(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -770,7 +771,7 @@ async def tables_list(hub, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         tables = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.route_tables.list(resource_group_name=resource_group)
@@ -785,7 +786,7 @@ async def tables_list(hub, resource_group, **kwargs):
     return result
 
 
-async def tables_list_all(hub, **kwargs):
+async def tables_list_all(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -799,7 +800,7 @@ async def tables_list_all(hub, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client("network", **kwargs)
+    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
     try:
         tables = await hub.exec.utils.azurerm.paged_object_to_list(
             netconn.route_tables.list_all()

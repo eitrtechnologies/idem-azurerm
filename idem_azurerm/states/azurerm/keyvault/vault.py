@@ -205,7 +205,7 @@ async def present(
             return ret
 
     vault = await hub.exec.azurerm.keyvault.vault.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in vault:
@@ -384,6 +384,7 @@ async def present(
     vault_kwargs.update(connection_auth)
 
     vault = await hub.exec.azurerm.keyvault.vault.create_or_update(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         location=location,
@@ -450,7 +451,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             return ret
 
     vault = await hub.exec.azurerm.keyvault.vault.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in vault:
@@ -468,7 +469,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.keyvault.vault.delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:

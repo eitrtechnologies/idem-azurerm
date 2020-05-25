@@ -157,6 +157,7 @@ async def present(
             return ret
 
     policy = await hub.exec.azurerm.postgresql.server_security_alert_policy.get(
+        ctx=ctx,
         server_name=server_name,
         resource_group=resource_group,
         azurerm_log_level="info",
@@ -260,6 +261,7 @@ async def present(
     policy_kwargs.update(connection_auth)
 
     policy = await hub.exec.azurerm.postgresql.server_security_alert_policy.create_or_update(
+        ctx=ctx,
         server_name=server_name,
         resource_group=resource_group,
         policy_state=policy_state,

@@ -184,7 +184,7 @@ async def present(
         sku = {"name": sku.capitalize()}
 
     pub_ip = await hub.exec.azurerm.network.public_ip_address.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in pub_ip:
@@ -280,6 +280,7 @@ async def present(
     pub_ip_kwargs.update(connection_auth)
 
     pub_ip = await hub.exec.azurerm.network.public_ip_address.create_or_update(
+        ctx=ctx,
         name=name,
         resource_group=resource_group,
         sku=sku,
@@ -333,7 +334,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             return ret
 
     pub_ip = await hub.exec.azurerm.network.public_ip_address.get(
-        name, resource_group, azurerm_log_level="info", **connection_auth
+        ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" in pub_ip:
@@ -351,7 +352,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.network.public_ip_address.delete(
-        name, resource_group, **connection_auth
+        ctx, name, resource_group, **connection_auth
     )
 
     if deleted:

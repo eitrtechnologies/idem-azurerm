@@ -134,6 +134,7 @@ async def present(
             return ret
 
     rule = await hub.exec.azurerm.postgresql.virtual_network_rule.get(
+        ctx=ctx,
         name=name,
         server_name=server_name,
         resource_group=resource_group,
@@ -186,6 +187,7 @@ async def present(
     rule_kwargs.update(connection_auth)
 
     rule = await hub.exec.azurerm.postgresql.virtual_network_rule.create_or_update(
+        ctx=ctx,
         name=name,
         server_name=server_name,
         resource_group=resource_group,
@@ -248,6 +250,7 @@ async def absent(
             return ret
 
     rule = await hub.exec.azurerm.postgresql.virtual_network_rule.get(
+        ctx=ctx,
         name=name,
         server_name=server_name,
         resource_group=resource_group,
@@ -270,6 +273,7 @@ async def absent(
         return ret
 
     deleted = await hub.exec.azurerm.postgresql.virtual_network_rule.delete(
+        ctx=ctx,
         name=name,
         server_name=server_name,
         resource_group=resource_group,
