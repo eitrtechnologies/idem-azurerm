@@ -108,7 +108,9 @@ async def create_or_update(
 
     """
     if "location" not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
+        rg_props = await hub.exec.azurerm.resource.group.get(
+            ctx, resource_group, **kwargs
+        )
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
@@ -120,6 +122,7 @@ async def create_or_update(
     if source_vm:
         # Use VM name to link to the IDs of existing VMs.
         vm_instance = await hub.exec.azurerm.compute.virtual_machine.get(
+            ctx=ctx,
             name=source_vm,
             resource_group=(source_vm_group or resource_group),
             log_level="info",

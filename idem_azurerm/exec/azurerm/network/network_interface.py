@@ -166,7 +166,9 @@ async def create_or_update(
 
     """
     if "location" not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
+        rg_props = await hub.exec.azurerm.resource.group.get(
+            ctx, resource_group, **kwargs
+        )
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
@@ -178,6 +180,7 @@ async def create_or_update(
     # Use NSG name to link to the ID of an existing NSG.
     if kwargs.get("network_security_group"):
         nsg = await hub.exec.azurerm.network.network_security_group.get(
+            ctx=ctx,
             name=kwargs["network_security_group"],
             resource_group=resource_group,
             **kwargs,
@@ -188,7 +191,10 @@ async def create_or_update(
     # Use VM name to link to the ID of an existing VM.
     if kwargs.get("virtual_machine"):
         vm_instance = await hub.exec.azurerm.compute.virtual_machine.get(
-            name=kwargs["virtual_machine"], resource_group=resource_group, **kwargs
+            ctx=ctx,
+            name=kwargs["virtual_machine"],
+            resource_group=resource_group,
+            **kwargs,
         )
         if "error" not in vm_instance:
             kwargs["virtual_machine"] = {"id": str(vm_instance["id"])}
@@ -196,6 +202,7 @@ async def create_or_update(
     # Loop through IP Configurations and build each dictionary to pass to model creation.
     if isinstance(ip_configurations, list):
         subnet = await hub.exec.azurerm.network.virtual_network.subnet_get(
+            ctx=ctx,
             name=subnet,
             virtual_network=virtual_network,
             resource_group=resource_group,
@@ -223,6 +230,7 @@ async def create_or_update(
                         pass
                     if ipconfig.get("public_ip_address"):
                         pub_ip = await hub.exec.azurerm.network.public_ip_address.get(
+                            ctx=ctx,
                             name=ipconfig["public_ip_address"],
                             resource_group=resource_group,
                             **kwargs,

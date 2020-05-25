@@ -108,7 +108,9 @@ async def connection_create_or_update(
 
     """
     if "location" not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
+        rg_props = await hub.exec.azurerm.resource.group.get(
+            ctx, resource_group, **kwargs
+        )
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
@@ -134,8 +136,8 @@ async def connection_create_or_update(
         )
         return False
 
-    vnetgw1 = virtual_network_gateway_get(
-        name=vnetgw1_name, resource_group=vnetgw1_rg, **kwargs
+    vnetgw1 = await hub.exec.azurerm.network.virtual_network_gateway.get(
+        ctx=ctx, name=vnetgw1_name, resource_group=vnetgw1_rg, **kwargs
     )
 
     if "error" in vnetgw1:
@@ -477,7 +479,9 @@ async def create_or_update(
 
     """
     if "location" not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
+        rg_props = await hub.exec.azurerm.resource.group.get(
+            ctx, resource_group, **kwargs
+        )
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
@@ -488,7 +492,8 @@ async def create_or_update(
 
     # Loop through IP Configurations and build each dictionary to pass to model creation.
     if isinstance(ip_configurations, list):
-        subnet = subnet_get(
+        subnet = await hub.exec.azurerm.network.virtual_network.subnet_get(
+            ctx=ctx,
             name="GatewaySubnet",
             virtual_network=virtual_network,
             resource_group=resource_group,
@@ -500,7 +505,8 @@ async def create_or_update(
                 if "name" in ipconfig:
                     ipconfig["subnet"] = subnet
                     if ipconfig.get("public_ip_address"):
-                        pub_ip = public_ip_address_get(
+                        pub_ip = await hub.exec.azurerm.network.public_ip_address.get(
+                            ctx=ctx,
                             name=ipconfig["public_ip_address"],
                             resource_group=resource_group,
                             **kwargs,

@@ -183,7 +183,9 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
 
     """
     if "location" not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
+        rg_props = await hub.exec.azurerm.resource.group.get(
+            ctx, resource_group, **kwargs
+        )
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
@@ -196,7 +198,8 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
         for idx in six_range(0, len(kwargs["frontend_ip_configurations"])):
             # Use Public IP Address name to link to the ID of an existing Public IP
             if "public_ip_address" in kwargs["frontend_ip_configurations"][idx]:
-                pub_ip = public_ip_address_get(
+                pub_ip = await hub.exec.azurerm.network.public_ip_address.get(
+                    ctx=ctx,
                     name=kwargs["frontend_ip_configurations"][idx]["public_ip_address"],
                     resource_group=resource_group,
                     **kwargs,
@@ -207,10 +210,13 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
                     }
             # Use Subnet name to link to the ID of an existing Subnet
             elif "subnet" in kwargs["frontend_ip_configurations"][idx]:
-                vnets = virtual_networks_list(resource_group=resource_group, **kwargs)
+                vnets = await hub.exec.azurerm.network.virtual_network.list(
+                    ctx=ctx, resource_group=resource_group, **kwargs
+                )
                 if "error" not in vnets:
                     for vnet in vnets:
-                        subnets = subnets_list(
+                        subnets = await hub.exec.azurerm.network.virtual_network.subnets_list(
+                            ctx=ctx,
                             virtual_network=vnet,
                             resource_group=resource_group,
                             **kwargs,

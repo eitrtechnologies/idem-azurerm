@@ -97,8 +97,8 @@ async def default_security_rule_get(
     """
     result = {}
 
-    default_rules = default_security_rules_list(
-        security_group=security_group, resource_group=resource_group, **kwargs
+    default_rules = await hub.exec.azurerm.network.network_security_group.default_security_rules_list(
+        ctx=ctx, security_group=security_group, resource_group=resource_group, **kwargs
     )
 
     if isinstance(default_rules, dict) and "error" in default_rules:
@@ -141,8 +141,8 @@ async def default_security_rules_list(
     """
     result = {}
 
-    secgroup = network_security_group_get(
-        security_group=security_group, resource_group=resource_group, **kwargs
+    secgroup = await hub.exec.azurerm.network.network_security_group.get(
+        ctx=ctx, security_group=security_group, resource_group=resource_group, **kwargs
     )
 
     if "error" in secgroup:
@@ -442,7 +442,9 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
 
     """
     if "location" not in kwargs:
-        rg_props = await hub.exec.azurerm.resource.group.get(resource_group, **kwargs)
+        rg_props = await hub.exec.azurerm.resource.group.get(
+            ctx, resource_group, **kwargs
+        )
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
