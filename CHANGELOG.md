@@ -5,13 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2020-05-27
+
+### Added
+
+- [#71](https://github.com/eitrtechnologies/idem-azurerm/pull/71) - Added acct support for exec modules.
+- [#68](https://github.com/eitrtechnologies/idem-azurerm/pull/68) - Added basic module docs.
+- [#62](https://github.com/eitrtechnologies/idem-azurerm/pull/62) - Added a model for integration tests.
+
+### Changed
+
+### Fixed
+
+- [#76](https://github.com/eitrtechnologies/idem-azurerm/pull/76) - Pinned new idem version.
+- [#75](https://github.com/eitrtechnologies/idem-azurerm/pull/75) - Cleaned up some references to legacy Salt code and
+  added some transparent requisites to ensure proper ordering of deployment.
+
+### Deprecated
+
+### Removed
+
 ## [2.1.0] - 2020-05-14
 
 ### Added
 
 - [#61](https://github.com/eitrtechnologies/idem-azurerm/pull/61) - Added pre-commit to enforce black formatting and
   ran black to reformat code
-- [#60](https://github.com/eitrtechnologies/idem-azurerm/pull/61) - Added support for passing credentials through the
+- [#60](https://github.com/eitrtechnologies/idem-azurerm/pull/60) - Added support for passing credentials through the
   [acct](https://gitlab.com/saltstack/pop/acct) plugin
 - [#58](https://github.com/eitrtechnologies/idem-azurerm/pull/58) - Added code of conduct
 
@@ -82,6 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release of execution and state modules from Salt along with some additional functionality ported from
   salt-cloud for virtual machines.
 
+[2.2.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/eitrtechnologies/idem-azurerm/releases/tag/v1.0.0
