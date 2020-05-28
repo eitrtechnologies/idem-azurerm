@@ -1,6 +1,6 @@
 # Contributing Guidelines
 
-Thanks for your interest in contributing to `idem-azurem`. The following is a set of guidelines for contributing to this project. The `idem-azurem` project is open and encouraging to code contributions.
+Thanks for your interest in contributing to `idem-azurerm`. The following is a set of guidelines for contributing to this project. The `idem-azurerm` project is open and encouraging to code contributions.
 
 ### License Notice
 
@@ -40,19 +40,18 @@ as resources can be reasonably allocated.
 
 ## Features
 
-The `idem-azurem` project is always working to be more powerful. Feature additions and requests are
+The `idem-azurerm` project is always working to be more powerful. Feature additions and requests are
 welcomed. When requesting a feature it will be categorized for a release or
 placed under the "Feature" label.
 
-If a new feature is desired, the fastest way to get it into `idem-azurem` is to
+If a new feature is desired, the fastest way to get it into `idem-azurerm` is to
 contribute the code. Before starting on a new feature, an issue should be filed
 for it. The one requesting the feature will be able to then discuss the feature
-with the `idem-azurem` team and discover the best way to get the feature into `idem-azurem` and
+with the `idem-azurerm` team and discover the best way to get the feature into `idem-azurerm` and
 if the feature makes sense.
 
 It is extremely common that the desired feature has already been completed.
-Look for it in the docs, ask about it first in IRC, and on the mailing list
-before filing the request. It is also common that the problem which would be
+Look for it in the docs before filing the request. It is also common that the problem which would be
 solved by the new feature can be easily solved another way, which is a great
 reason to ask first.
 
@@ -62,32 +61,32 @@ If you wish to help us fix the issue you're reporting,
 please see the sections below regarding development environment setup, testing, and standards. This information will ensure code and branches are maintained in the expected manner.
 
 The development team will review each fix and if everything is accepted, the fix
-will be merged into the `idem-azurem` codebase.
+will be merged into the `idem-azurerm` codebase.
 
 # Development
 
 ## Contribution Workflow
 
-Code contributions—bug fixes, new development, test improvement—all follow a GitHub-centered workflow. To participate in `idem-azurem` development, set up a GitHub account. Then:
+Code contributions—bug fixes, new development, test improvement—all follow a GitHub-centered workflow. To participate in `idem-azurerm` development, set up a GitHub account. Then:
 
 1. Fork the repo you plan to work on. Go to the project repo page and use the Fork button. This will create a copy of the repo, under your username. (For more details on how to fork a repository see this guide.)
 2. Clone down the repo to your local system.
 ```
-git clone git@github.com:your-user-name/project-name.git
+git clone git@github.com:<your-user-name>/<project-name.git>
 ```
 3. Create a new branch to hold your work.
 ```
-git checkout -b new-branch-name
+git checkout -b <new-branch-name>
 ```
 4. Work on your new code. Write and run tests.
 5. Commit your changes.
 ```
-git add -A
-git commit -m "commit message here"
+git add <files>
+git commit -m "<commit message here>"
 ```
 6. Push your changes to your GitHub repo.
 ```
-git push origin branch-name
+git push origin <branch-name>
 ```
 7. Open a Pull Request (PR). Go to the original project repo on GitHub. There will be a message about your recently pushed branch, asking if you would like to open a pull request. Follow the prompts, compare across repositories, and submit the PR. This will send an email to the committers. You may want to consider sending an email to the mailing list for more visibility. (For more details, see the [GitHub guide on PRs.](https://help.github.com/articles/creating-a-pull-request-from-a-fork))
 
@@ -95,7 +94,7 @@ git push origin branch-name
 
 1. Set the upstream remote. (You only have to do this once per project, not every time.)
 ```
-git remote add upstream git@github.com:idem-azurem/project-repo-name
+git remote add upstream git@github.com:eitrtechnologies/idem-azurerm
 ```
 2. Switch to the local master branch.
 ```
@@ -111,7 +110,7 @@ git push origin master
 ```
 5. Create a new branch if you are starting new work.
 ```
-git checkout -b branch-name
+git checkout -b <branch-name>
 ```
 
 ## Pull Requests (PR)
