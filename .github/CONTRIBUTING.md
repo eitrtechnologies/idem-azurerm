@@ -1,6 +1,7 @@
 # Contributing Guidelines
 
-Thanks for your interest in contributing to `idem-azurerm`. The following is a set of guidelines for contributing to this project. The `idem-azurerm` project is open and encouraging to code contributions.
+Thanks for your interest in contributing to `idem-azurerm`. The following is a set of guidelines for contributing to
+this project. The `idem-azurerm` project is open and encouraging to code contributions.
 
 ### License Notice
 
@@ -14,7 +15,8 @@ than Apache 2.0 without explicit exception.
 
 A bug is a *demonstrable problem* that is caused by the code in the repository.
 
-Please read the following guidelines and check the [list of known issues](https://github.com/eitrtechnologies/idem-azurerm/issues) before you
+Please read the following guidelines and check the
+[list of known issues](https://github.com/eitrtechnologies/idem-azurerm/issues) before you
 [report an issue](https://github.com/eitrtechnologies/idem-azurerm/issues/new/choose).
 
 1. **Use the GitHub issue search** -- check if the issue has
@@ -57,26 +59,28 @@ reason to ask first.
 
 # Fixing issues
 
-If you wish to help us fix the issue you're reporting,
-please see the sections below regarding development environment setup, testing, and standards. This information will ensure code and branches are maintained in the expected manner.
+If you wish to help us fix the issue you're reporting, please see the sections below regarding development environment
+setup, testing, and standards. This information will ensure code and branches are maintained in the expected manner.
 
-The development team will review each fix and if everything is accepted, the fix
-will be merged into the `idem-azurerm` codebase.
+The development team will review each fix and if everything is accepted, the fix will be merged into the `idem-azurerm`
+codebase.
 
 # Development
 
 ## Contribution Workflow
 
-Code contributions—bug fixes, new development, test improvement—all follow a GitHub-centered workflow. To participate in `idem-azurerm` development, set up a GitHub account. Then:
+Code contributions—bug fixes, new development, test improvement—all follow a GitHub-centered workflow. To participate
+in `idem-azurerm` development, set up a GitHub account. Then:
 
-1. Fork the repo you plan to work on. Go to the project repo page and use the Fork button. This will create a copy of the repo, under your username. (For more details on how to fork a repository see this guide.)
+1. Fork the repo you plan to work on. Go to the project repo page and use the Fork button. This will create a copy of
+   the repo, under your username. (For more details on how to fork a repository see this guide.)
 2. Clone down the repo to your local system.
 ```
-git clone git@github.com:<your-user-name>/<project-name.git>
+git clone git@github.com:<your-user-name>/idem-azurerm.git
 ```
 3. Create a new branch to hold your work.
 ```
-git checkout -b <new-branch-name>
+git checkout -b <branch-name>
 ```
 4. Work on your new code. Write and run tests.
 5. Commit your changes.
@@ -88,7 +92,11 @@ git commit -m "<commit message here>"
 ```
 git push origin <branch-name>
 ```
-7. Open a Pull Request (PR). Go to the original project repo on GitHub. There will be a message about your recently pushed branch, asking if you would like to open a pull request. Follow the prompts, compare across repositories, and submit the PR. This will send an email to the committers. You may want to consider sending an email to the mailing list for more visibility. (For more details, see the [GitHub guide on PRs.](https://help.github.com/articles/creating-a-pull-request-from-a-fork))
+7. Open a Pull Request (PR). Go to the original project repo on GitHub. There will be a message about your recently
+   pushed branch, asking if you would like to open a pull request. Follow the prompts, compare across repositories, and
+   submit the PR. This will send an email to the committers. You may want to consider sending an email to the mailing
+   list for more visibility. (For more details, see the
+   [GitHub guide on PRs.](https://help.github.com/articles/creating-a-pull-request-from-a-fork))
 
 **Before working on your next contribution, make sure your local repository is up to date.**
 
@@ -115,13 +123,15 @@ git checkout -b <branch-name>
 
 ## Pull Requests (PR)
 
-When code is complete and ready for review follow the steps below to ensure code is properly formatted and functioning as expected. Remember to rebase against updated `master` branch **before** creating a PR to have linear git history.
+When code is complete and ready for review follow the steps below to ensure code is properly formatted and functioning
+as expected. Remember to rebase against updated `master` branch **before** creating a PR to have linear git history.
 
-1. Run [black code formatter](https://github.com/psf/black) to make sure our code is [PEP8](https://www.python.org/dev/peps/pep-0008/) compliant
+1. Run [black code formatter](https://github.com/psf/black) to make sure our code is
+   [PEP8](https://www.python.org/dev/peps/pep-0008/) compliant.
 2. Use [pre-commit](https://pre-commit.com) which is managed via the `.pre-commit-config.yaml` config file.
-For additional information see [usage instructions for pre-commit](https://pre-commit.com/#usage)
+   For additional information see [usage instructions for pre-commit](https://pre-commit.com/#usage)
 3. Cover new code with a test case (new or existing one).
 4. Ensure all tests pass during build
-5. Assign reviewers.
 
-Maintainers and other contributors will review your PR. Please participate in the conversation, and try to make any requested changes. Once the PR is approved, the code will be merged.
+Maintainers and other contributors will review your PR. Please participate in the conversation, and try to make any
+requested changes. Once the PR is approved, the code will be merged.
