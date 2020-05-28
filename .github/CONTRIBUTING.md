@@ -95,7 +95,7 @@ git push origin branch-name
 
 1. Set the upstream remote. (You only have to do this once per project, not every time.)
 ```
-git remote add upstream git@github.com:tensorflow/project-repo-name
+git remote add upstream git@github.com:idem-azurem/project-repo-name
 ```
 2. Switch to the local master branch.
 ```
@@ -119,7 +119,7 @@ git checkout -b branch-name
 When code is complete and ready for review follow the steps below to ensure code is properly formatted and functioning as expected. Remember to rebase against updated `master` branch **before** creating a PR to have linear git history.
 
 1. Run [black code formatter](https://github.com/psf/black) to make sure our code is [PEP8](https://www.python.org/dev/peps/pep-0008/) compliant
-2. Use `pre-commit`. There's a [pre-commit](https://pre-commit.com) config file in [.pre-commit-config.yaml](.pre-commit-config.yaml).
+2. Use [pre-commit](https://pre-commit.com) which is managed via the `.pre-commit-config.yaml` config file.
 For additional information see [usage instructions for pre-commit](https://pre-commit.com/#usage)
 3. Cover new code with a test case (new or existing one).
 4. Ensure all tests pass during build
