@@ -21,4 +21,4 @@ azure-mgmt-resource==2.2.0
 azure-mgmt-storage==2.0.0
 azure-mgmt-web==0.35.0
 msrest==0.6.10
-msrestazure==0.6.2
+msrestazure==0.6.3
