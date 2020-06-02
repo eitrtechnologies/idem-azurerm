@@ -23,7 +23,7 @@ After installation the Azure Resource Manager Idem Provider execution and state 
 The provider authenticates with a service principal, so all state and execution modules require that a dictionary
 populated with the data shown below be passed to them.
 
-Lets call the file myawesomecreds.yml 
+Lets call the file myawesomecreds.yml
 ```
 {% set profile = {
     'client_id': '<YOUR CLIENT ID>',
@@ -31,9 +31,9 @@ Lets call the file myawesomecreds.yml
     'subscription_id': '<YOUR SUBSCRIPTION ID>',
     'tenant': '<YOUR TENANT>' } %}
 ```
-The following example uses an azurerm state module to ensure the existence of a resource group. 
+The following example uses an azurerm state module to ensure the existence of a resource group.
 
-Lets call this file myTest.sls 
+Lets call this file myTest.sls
 ```
 Resource group exists:
   azurerm.resource.group.present:
@@ -44,35 +44,35 @@ Resource group exists:
     - connection_auth: {{ profile }}
 ```
 
-# Security 
- 
-To make the file more secure, use the acct comand to encrpt the file with the Fernet algorithm  
+# Security
+
+To make the file more secure, use the acct comand to encrpt the file with the Fernet algorithm
 
 ~~~
-(env) $ acct myawesomecreds.yml 
+(env) $ acct myawesomecreds.yml
 New encrypted file at:myawesomecreds.yml.fernet
 The file was encrypted with this key:
 71Gbz2oDSv40Er9YUFBJPzOjtCi6Z2-5niBHPekkvqs=
 ~~~
 Now we have an encryted file containing the file and a symmetric key. You can use that key to decrpyt the encrypted file.
 
-Since you have the encypted file with the key you can remove the original file 
+Since you have the encypted file with the key you can remove the original file
 
 ~~~
 (env) $ rm my awesomecreditals.yml
- 
+
 ~~~
 
  # Setting up Envirmoent Variables
 
- All we ahve to do now is to tell idem where to get the file and key for acct. So we will set up envirmoemtn variables to do those tasks 
+ All we ahve to do now is to tell idem where to get the file and key for acct. So we will set up envirmoemtn variables to do those tasks
 
 ~~~
 (env) $ export ACCT_FILE="<location_of_ferment_file>"
 (env) $ export ACCT_KEY="1Gbz2oDSv40Er9YUFBJPzOjtCi6Z2-5niBHPekkvqs="
 ~~~
 
-# Testing 
+# Testing
 ~~~
 (env) $ idem state mytest.sls
 ~~~
