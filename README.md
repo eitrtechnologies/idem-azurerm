@@ -31,7 +31,9 @@ Lets call the file myawesomecreds.yml
     'subscription_id': '<YOUR SUBSCRIPTION ID>',
     'tenant': '<YOUR TENANT>' } %}
 ```
-The following example uses an azurerm state module to ensure the existence of a resource group.
+The following example uses an azurerm state module to ensure the existence of a resource group. 
+
+Lets call this file myTest.sls 
 ```
 Resource group exists:
   azurerm.resource.group.present:
@@ -57,7 +59,7 @@ Now we have an encryted file containing the file and a symmetric key. You can us
 Since you have the encypted file with the key you can remove the original file 
 
 ~~~
-(env) rm my awesomecreditals.yml
+(env) $ rm my awesomecreditals.yml
  
 ~~~
 
@@ -70,4 +72,7 @@ Since you have the encypted file with the key you can remove the original file
 (env) $ export ACCT_KEY="1Gbz2oDSv40Er9YUFBJPzOjtCi6Z2-5niBHPekkvqs="
 ~~~
 
-
+# Testing 
+~~~
+(env) $ idem state mytest.sls
+~~~
