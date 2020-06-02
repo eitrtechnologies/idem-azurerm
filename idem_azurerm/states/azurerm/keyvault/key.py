@@ -66,6 +66,7 @@ Azure Resource Manager (ARM) Key State Module
 """
 # Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import logging
 
 log = logging.getLogger(__name__)
@@ -153,7 +154,7 @@ async def present(
 
     if "error" not in key:
         if tags:
-            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            tag_changes = differ.deep_diff(
                 key.get("properties", {}).get("tags", {}) or {}, tags or {}
             )
             if tag_changes:

@@ -63,6 +63,7 @@ Azure Resource Manager (ARM) Storage Account State Module
 """
 # Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import logging
 
 log = logging.getLogger(__name__)
@@ -163,9 +164,7 @@ async def present(
     )
 
     if "error" not in account:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
-            account.get("tags", {}), tags or {}
-        )
+        tag_changes = differ.deep_diff(account.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
 
@@ -190,14 +189,14 @@ async def present(
                 }
 
         if network_rule_set:
-            rule_set_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            rule_set_changes = differ.deep_diff(
                 account.get("network_rule_set", {}), network_rule_set or {}
             )
             if rule_set_changes:
                 ret["changes"]["network_rule_set"] = rule_set_changes
 
         if encryption:
-            encryption_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            encryption_changes = differ.deep_diff(
                 account.get("encryption", {}), encryption or {}
             )
             if encryption_changes:
@@ -205,7 +204,7 @@ async def present(
 
         # The Custom Domain can only be added on once, so if it already exists then this cannot be changed
         if custom_domain:
-            domain_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            domain_changes = differ.deep_diff(
                 account.get("custom_domain", {}), custom_domain or {}
             )
             if domain_changes:

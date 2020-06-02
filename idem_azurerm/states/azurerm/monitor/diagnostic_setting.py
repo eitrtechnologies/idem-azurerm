@@ -63,6 +63,7 @@ Azure Resource Manager (ARM) Diagnostic Setting State Module
 """
 # Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import logging
 from operator import itemgetter
 
@@ -182,9 +183,7 @@ async def present(
                 setting.get("metrics", []), key=itemgetter("category", "enabled")
             )
             for index, metric in enumerate(new_metrics_sorted):
-                changes = await hub.exec.utils.dictdiffer.deep_diff(
-                    old_metrics_sorted[index], metric
-                )
+                changes = differ.deep_diff(old_metrics_sorted[index], metric)
                 if changes:
                     ret["changes"]["metrics"] = {
                         "old": setting.get("metrics", []),
@@ -204,9 +203,7 @@ async def present(
                 setting.get("logs", []), key=itemgetter("category", "enabled")
             )
             for log in new_logs_sorted:
-                changes = await hub.exec.utils.dictdiffer.deep_diff(
-                    old_logs_sorted("logs")[index], log
-                )
+                changes = differ.deep_diff(old_logs_sorted("logs")[index], log)
                 if changes:
                     ret["changes"]["logs"] = {
                         "old": setting.get("logs", []),

@@ -82,6 +82,7 @@ parameters are sensitive, it's recommended to pass them to the states via pillar
 """
 # Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import logging
 
 log = logging.getLogger(__name__)
@@ -181,9 +182,7 @@ async def present(
     )
 
     if "error" not in zone:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
-            zone.get("tags", {}), tags or {}
-        )
+        tag_changes = differ.deep_diff(zone.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
 
