@@ -22,6 +22,8 @@ After installation the Azure Resource Manager Idem Provider execution and state 
 
 The provider authenticates with a service principal, so all state and execution modules require that a dictionary
 populated with the data shown below be passed to them.
+
+Lets call the file myawesomecreds.yml 
 ```
 {% set profile = {
     'client_id': '<YOUR CLIENT ID>',
@@ -39,3 +41,15 @@ Resource group exists:
         organization: EITR Technologies
     - connection_auth: {{ profile }}
 ```
+
+# Security 
+ 
+To make the file more secure, going to use the acct comanf to encrpt the file with the Fernet algorithm  
+
+~~~
+(env) $ acct myawesomecreds.yml 
+New encrypted file at:myawesomecreds.yml.fernet
+The file was encrypted with this key:
+~~~
+
+
