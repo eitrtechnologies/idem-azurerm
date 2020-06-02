@@ -87,6 +87,7 @@ Azure Resource Manager (ARM) Network Route State Module
 """
 # Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import logging
 import re
 
@@ -178,9 +179,7 @@ async def table_present(
 
     if "error" not in rt_tbl:
         # tag changes
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
-            rt_tbl.get("tags", {}), tags or {}
-        )
+        tag_changes = differ.deep_diff(rt_tbl.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
 

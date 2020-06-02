@@ -87,6 +87,7 @@ Azure Resource Manager (ARM) Network Interface State Module
 """
 # Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import logging
 import re
 
@@ -224,9 +225,7 @@ async def present(
 
     if "error" not in iface:
         # tag changes
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
-            iface.get("tags", {}), tags or {}
-        )
+        tag_changes = differ.deep_diff(iface.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
 

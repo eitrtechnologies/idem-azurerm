@@ -64,6 +64,7 @@ Azure Resource Manager (ARM) Redis Operations State Module
 """
 # Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import logging
 
 log = logging.getLogger(__name__)
@@ -173,25 +174,23 @@ async def present(
         new_cache = False
 
         if tags:
-            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
-                cache.get("tags", {}), tags
-            )
+            tag_changes = differ.deep_diff(cache.get("tags", {}), tags)
             if tag_changes:
                 ret["changes"]["tags"] = tag_changes
 
-        sku_changes = await hub.exec.utils.dictdiffer.deep_diff(cache.get("sku"), sku)
+        sku_changes = differ.deep_diff(cache.get("sku"), sku)
         if sku_changes:
             ret["changes"]["sku"] = sku_changes
 
         if tenant_settings:
-            tenant_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            tenant_changes = differ.deep_diff(
                 cache.get("tenant_settings", {}), tenant_settings
             )
             if tenant_changes:
                 ret["changes"]["tenant_settings"] = tenant_changes
 
         if redis_configuration:
-            config_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            config_changes = differ.deep_diff(
                 cache.get("redis_configuration", {}), redis_configuration
             )
             if config_changes:

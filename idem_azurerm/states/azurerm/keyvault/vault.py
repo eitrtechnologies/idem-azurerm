@@ -64,6 +64,7 @@ Azure Resource Manager (ARM) Key Vault State Module
 """
 # Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import logging
 from operator import itemgetter
 
@@ -209,9 +210,7 @@ async def present(
     )
 
     if "error" not in vault:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
-            vault.get("tags", {}), tags or {}
-        )
+        tag_changes = differ.deep_diff(vault.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
 

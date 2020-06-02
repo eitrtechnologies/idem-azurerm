@@ -89,6 +89,7 @@ parameters are sensitive, it's recommended to pass them to the states via pillar
 """
 # Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import logging
 
 import six
@@ -280,9 +281,7 @@ async def present(
     )
 
     if "error" not in rec_set:
-        metadata_changes = await hub.exec.utils.dictdiffer.deep_diff(
-            rec_set.get("metadata", {}), metadata or {}
-        )
+        metadata_changes = differ.deep_diff(rec_set.get("metadata", {}), metadata or {})
         if metadata_changes:
             ret["changes"]["metadata"] = metadata_changes
 

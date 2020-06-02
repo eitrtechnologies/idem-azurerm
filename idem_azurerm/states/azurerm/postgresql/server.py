@@ -64,6 +64,7 @@ Azure Resource Manager (ARM) PostgreSQL Server Operations State Module
 """
 # Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import logging
 
 log = logging.getLogger(__name__)
@@ -175,21 +176,17 @@ async def present(
         new_server = False
 
         if tags:
-            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
-                server.get("tags", {}), tags or {}
-            )
+            tag_changes = differ.deep_diff(server.get("tags", {}), tags or {})
             if tag_changes:
                 ret["changes"]["tags"] = tag_changes
 
         if sku:
-            sku_changes = await hub.exec.utils.dictdiffer.deep_diff(
-                server.get("sku", {}), sku
-            )
+            sku_changes = differ.deep_diff(server.get("sku", {}), sku)
             if sku_changes:
                 ret["changes"]["sku"] = sku_changes
 
         if storage_profile:
-            profile_changes = await hub.exec.utils.dictdiffer.deep_diff(
+            profile_changes = differ.deep_diff(
                 server.get("storage_profile", {}), storage_profile
             )
             if profile_changes:

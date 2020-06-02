@@ -87,6 +87,7 @@ Azure Resource Manager (ARM) Local Network Gateway State Module
 """
 # Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import logging
 import re
 
@@ -178,9 +179,7 @@ async def present(
     )
 
     if "error" not in gateway:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
-            gateway.get("tags", {}), tags or {}
-        )
+        tag_changes = differ.deep_diff(gateway.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
 

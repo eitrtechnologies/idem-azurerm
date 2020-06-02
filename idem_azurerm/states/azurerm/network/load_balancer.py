@@ -87,6 +87,7 @@ Azure Resource Manager (ARM) Network Load Balancer State Module
 """
 # Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import logging
 import re
 
@@ -302,17 +303,13 @@ async def present(
 
     if "error" not in load_bal:
         # tag changes
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
-            load_bal.get("tags", {}), tags or {}
-        )
+        tag_changes = differ.deep_diff(load_bal.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
 
         # sku changes
         if sku:
-            sku_changes = await hub.exec.utils.dictdiffer.deep_diff(
-                load_bal.get("sku", {}), sku
-            )
+            sku_changes = differ.deep_diff(load_bal.get("sku", {}), sku)
             if sku_changes:
                 ret["changes"]["sku"] = sku_changes
 
