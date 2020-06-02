@@ -44,7 +44,7 @@ Resource group exists:
 
 # Security 
  
-To make the file more secure, going to use the acct comanf to encrpt the file with the Fernet algorithm  
+To make the file more secure, use the acct comand to encrpt the file with the Fernet algorithm  
 
 ~~~
 (env) $ acct myawesomecreds.yml 
