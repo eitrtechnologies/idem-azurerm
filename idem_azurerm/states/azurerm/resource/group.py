@@ -140,12 +140,9 @@ async def present(
 
     group = {}
 
-    present = await hub.exec.azurerm.resource.group.check_existence(
-        ctx, name, **connection_auth
-    )
+    group = await hub.exec.azurerm.resource.group.get(ctx, name, **connection_auth)
 
-    if present:
-        group = await hub.exec.azurerm.resource.group.get(ctx, name, **connection_auth)
+    if "error" not in group:
         ret["changes"] = differ.deep_diff(group.get("tags", {}), tags or {})
 
         if not ret["changes"]:
@@ -179,11 +176,8 @@ async def present(
     group = await hub.exec.azurerm.resource.group.create_or_update(
         ctx, name, location, managed_by=managed_by, tags=tags, **group_kwargs
     )
-    present = await hub.exec.azurerm.resource.group.check_existence(
-        ctx, name, **connection_auth
-    )
 
-    if present:
+    if "error" not in group:
         ret["result"] = True
         ret["comment"] = "Resource group {0} has been created.".format(name)
         ret["changes"] = {"old": {}, "new": group}
@@ -224,18 +218,14 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
 
     group = {}
 
-    present = await hub.exec.azurerm.resource.group.check_existence(
-        ctx, name, **connection_auth
-    )
+    group = await hub.exec.azurerm.resource.group.get(ctx, name, **connection_auth)
 
-    if not present:
+    if "error" in group:
         ret["result"] = True
         ret["comment"] = "Resource group {0} is already absent.".format(name)
         return ret
 
     elif ctx["test"]:
-        group = await hub.exec.azurerm.resource.group.get(ctx, name, **connection_auth)
-
         ret["comment"] = "Resource group {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {
@@ -244,17 +234,9 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
         }
         return ret
 
-    group = await hub.exec.azurerm.resource.group.get(ctx, name, **connection_auth)
     deleted = await hub.exec.azurerm.resource.group.delete(ctx, name, **connection_auth)
 
     if deleted:
-        present = False
-    else:
-        present = await hub.exec.azurerm.resource.group.check_existence(
-            ctx, name, **connection_auth
-        )
-
-    if not present:
         ret["result"] = True
         ret["comment"] = "Resource group {0} has been deleted.".format(name)
         ret["changes"] = {"old": group, "new": {}}
