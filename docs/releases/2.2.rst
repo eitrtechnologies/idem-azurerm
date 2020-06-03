@@ -4,6 +4,13 @@
 
 Added Acct Support for Exec Modules
 ===================================
-We have updated the exec modules to pass context to get_cleint.
-We have also  updated the state modules to pass context to exec modules.
-In addtion to that, we have  updated teh utiles to recive context on get_client and pass to determine_auth
+We updated the exec modules to pass context to get_cleint.
+We  also  updated the state modules to pass context to exec modules.
+In addtion to that, we have  updated the utiles to recive context on get_client and pass to determine_auth
+
+Other Updates
+=============
+
+We added some basic module documents.
+
+We also added a model for intergration tests.
