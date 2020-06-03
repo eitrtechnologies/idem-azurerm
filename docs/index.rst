@@ -6,6 +6,7 @@ Welcome to idem-azurerm's documentation!
    :caption: Contents:
 
    ref/index
+   releases/index
 
 
 Indices and tables
