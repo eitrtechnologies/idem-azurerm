@@ -11,7 +11,7 @@ The azurerm idem provider can be installed via pip:
 `pip install idem-azurerm`
 
 ## INSTALLATION FOR DEVELOPMENT
-1. Clone the `idem_provider_azurerm` repository and install with pip:
+1. Clone the `idem-azurerm` repository and install with pip:
 `pip install -r requirements.txt`
 2. Run `pip install -e <path to provider>` from your project's root directory
 
@@ -24,13 +24,7 @@ The provider authenticates with a service principal, so all state and execution 
 populated with the data shown below be passed to them.
 
 Lets call the file myawesomecreds.yml
-```
-{% set profile = {
-    'client_id': '<YOUR CLIENT ID>',
-    'secret': '<YOUR SECRET>',
-    'subscription_id': '<YOUR SUBSCRIPTION ID>',
-    'tenant': '<YOUR TENANT>' } %}
-```
+
 The following example uses an azurerm state module to ensure the existence of a resource group.
 
 Lets call this file myTest.sls
@@ -46,33 +40,38 @@ Resource group exists:
 
 # Security
 
-To make the file more secure, use the acct comand to encrpt the file with the Fernet algorithm
+To make the file more secure, use the acct command to encrypt the file with the Fernet algorithm.
 
-~~~
+```
 (env) $ acct myawesomecreds.yml
 New encrypted file at:myawesomecreds.yml.fernet
 The file was encrypted with this key:
 71Gbz2oDSv40Er9YUFBJPzOjtCi6Z2-5niBHPekkvqs=
-~~~
-Now we have an encryted file containing the file and a symmetric key. You can use that key to decrpyt the encrypted file.
+```
+Now we have an encrypted file containing the file and a symmetric key. You can use that key to decrypt the encrypted file.
 
-Since you have the encypted file with the key you can remove the original file
+Since you have the encrypted file with the key you can remove the original file.
 
-~~~
-(env) $ rm my awesomecreditals.yml
+```
+(env) $ rm myawesomecreds.yml
 
-~~~
+```
 
- # Setting up Envirmoent Variables
+ # Setting up Environment Variables
 
- All we ahve to do now is to tell idem where to get the file and key for acct. So we will set up envirmoemtn variables to do those tasks
+ All we have to do now is to tell idem where to get the file and key for acct. So we will set up environment variables to do those tasks.
 
-~~~
-(env) $ export ACCT_FILE="<location_of_ferment_file>"
+```
+(env) $ export ACCT_FILE="<location_of_fernent_file>"
 (env) $ export ACCT_KEY="1Gbz2oDSv40Er9YUFBJPzOjtCi6Z2-5niBHPekkvqs="
-~~~
+```
 
-# Testing
-~~~
-(env) $ idem state mytest.sls
-~~~
+# Testing and Building
+Before you build the sls file you will need to to test the file. To do this,  please use the following code.
+```
+(env) $ idem state myTest.sls --test
+```
+Once you got that to work, then you can build the file by using the following code.
+```
+(env) $ idem state myTest.sls
+```
