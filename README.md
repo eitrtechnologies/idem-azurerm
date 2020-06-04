@@ -18,12 +18,6 @@ The azurerm idem provider can be installed via pip:
 You are now fully set up to begin developing additional functionality for this provider.
 
 ## EXECUTION
-After installation the Azure Resource Manager Idem Provider execution and state modules will be accessible to the hub.
-
-The provider authenticates with a service principal, so all state and execution modules require that a dictionary
-populated with the data shown below be passed to them.
-
-Lets call the file myawesomecreds.yml
 
 The following example uses an azurerm state module to ensure the existence of a resource group.
 
@@ -67,7 +61,7 @@ Since you have the encrypted file with the key you can remove the original file.
 ```
 
 # Testing and Building
-Before you build the sls file you will need to to test the file. To do this,  please use the following code.
+Before you build the .sls file you will need to to test the file. To do this, please use the following code.
 ```
 (env) $ idem state myTest.sls --test
 ```
