@@ -1,0 +1,145 @@
+[1mdiff --git a/README.md b/README.md[m
+[1mindex d78b62c..324c178 100644[m
+[1m--- a/README.md[m
+[1m+++ b/README.md[m
+[36m@@ -1,71 +1,89 @@[m
+ # Microsoft Azure Cloud Provider for Idem[m
+[31m-[m
+ Azure is a cloud service offered by Microsoft that provides virtual machines, SQL services, media services, and more.[m
+[31m-Azure Resource Manager is the next generation of the Azure portal and API. This provider is a [POP](https://gitlab.com/saltstack/pop/pop)[m
+[31m-plugin and an extension of [Idem](https://gitlab.com/saltstack/pop/idem), allowing Idem users to leverage Microsoft[m
+[31m-Azure Resource Manager functionality to enforce the state of cloud infrastructure, applications, configurations, and[m
+[31m-more.[m
+[32m+[m[32mAzure Resource Manager is the next generation of the Azure portal and API. This provider is a[m
+[32m+[m[32m[POP](https://gitlab.com/saltstack/pop/pop) plugin and an extension of [Idem](https://gitlab.com/saltstack/pop/idem),[m
+[32m+[m[32mallowing Idem users to leverage Microsoft Azure Resource Manager functionality to enforce the state of cloud[m
+[32m+[m[32minfrastructure, applications, configurations, and more.[m
+ [m
+ ## INSTALLATION[m
+ The azurerm idem provider can be installed via pip:[m
+[31m-`pip install idem-azurerm`[m
+[32m+[m[32m```[m
+[32m+[m[32mpip install idem-azurerm[m
+[32m+[m[32m```[m
+ [m
+ ## INSTALLATION FOR DEVELOPMENT[m
+[31m-1. Clone the `idem-azurerm` repository and install with pip:[m
+[31m-`pip install -r requirements.txt`[m
+[31m-2. Run `pip install -e <path to provider>` from your project's root directory[m
+[31m-[m
+[32m+[m[32m1. Clone the `idem-azurerm` repository.[m
+[32m+[m[32m2. Install requirements with pip:[m
+[32m+[m[32m```[m
+[32m+[m[32mpip install -r requirements.txt[m
+[32m+[m[32m```[m
+[32m+[m[32m3. Install `idem-azurerm` in "editable" mode:[m
+[32m+[m[32m```[m
+[32m+[m[32mpip install -e <path cloned repo>[m
+[32m+[m[32m```[m
+ You are now fully set up to begin developing additional functionality for this provider.[m
+ [m
+[31m-## EXECUTION[m
+[32m+[m[32m## CREDENTIALS[m
+[32m+[m[32mThis provider requires that a dictionary populated with valid Azure credentials be passed via[m
+[32m+[m[32m[acct](https://gitlab.com/saltstack/pop/acct).[m
+ [m
+[31m-The following example uses an azurerm state module to ensure the existence of a resource group.[m
+[31m-[m
+[31m-Lets call this file myTest.sls[m
+[32m+[m[32mThe credentials can be stored in an arbitrarily named file, such as `myawesomecreds.yml`[m
+ ```[m
+[31m-Resource group exists:[m
+[31m-  azurerm.resource.group.present:[m
+[31m-    - name: idem[m
+[31m-    - location: eastus[m
+[31m-    - tags:[m
+[31m-        organization: EITR Technologies[m
+[31m-    - connection_auth: {{ profile }}[m
+[32m+[m[32m#!yaml[m
+[32m+[m
+[32m+[m[32mazurerm:[m
+[32m+[m[32m  default:[m
+[32m+[m[32m    client_id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"[m
+[32m+[m[32m    secret: "X2KRwdcdsQn9mwjdt0EbxsQR3w5TuBOR"[m
+[32m+[m[32m    subscription_id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"[m
+[32m+[m[32m    tenant: "cccccccc-cccc-cccc-cccc-cccccccccccc"[m
+ ```[m
+ [m
+[31m-# Security[m
+[31m-[m
+[31m-To make the file more secure, use the acct command to encrypt the file with the Fernet algorithm.[m
+[31m-[m
+[32m+[m[32mIn order to prepare the credentials file for use, the acct command can be run to encrypt the file with the Fernet[m
+[32m+[m[32malgorithm.[m
+ ```[m
+ (env) $ acct myawesomecreds.yml[m
+[31m-New encrypted file at:myawesomecreds.yml.fernet[m
+[32m+[m[32mNew encrypted file at: myawesomecreds.yml.fernet[m
+ The file was encrypted with this key:[m
+ 71Gbz2oDSv40Er9YUFBJPzOjtCi6Z2-5niBHPekkvqs=[m
+ ```[m
+[31m-Now we have an encrypted file containing the file and a symmetric key. You can use that key to decrypt the encrypted file.[m
+[31m-[m
+[31m-Since you have the encrypted file with the key you can remove the original file.[m
+ [m
+[32m+[m[32mNow we have an encrypted file containing the credentials and a symmetric key for decryption. Since you have encrypted[m
+[32m+[m[32mthe file with the key, you can now remove the original plaintext file.[m
+ ```[m
+ (env) $ rm myawesomecreds.yml[m
+[32m+[m[32m```[m
+ [m
+[32m+[m[32mAll we have to do now is to tell idem where to get the file and key for acct. This information can be passed to acct on[m
+[32m+[m[32mthe command line as parameters, but we will set up environment variables for the purposes of this tutorial.[m
+[32m+[m[32m```[m
+[32m+[m[32m(env) $ export ACCT_FILE="/path/to/myawesomecreds.yml.fernet"[m
+[32m+[m[32m(env) $ export ACCT_KEY="1Gbz2oDSv40Er9YUFBJPzOjtCi6Z2-5niBHPekkvqs="[m
+ ```[m
+ [m
+[31m- # Setting up Environment Variables[m
+[32m+[m[32m## RESOURCE DEFINITION[m
+[32m+[m[32mAfter installation, the Azure Resource Manager Idem Provider execution and state modules will be accessible to the hub.[m
+ [m
+[31m- All we have to do now is to tell idem where to get the file and key for acct. So we will set up environment variables to do those tasks.[m
+[32m+[m[32mThe following example uses an azurerm state module to ensure the existence of a resource group.[m
+ [m
+[32m+[m[32mLet's call this file "mytest.sls"[m
+ ```[m
+[31m-(env) $ export ACCT_FILE="<location_of_fernent_file>"[m
+[31m-(env) $ export ACCT_KEY="1Gbz2oDSv40Er9YUFBJPzOjtCi6Z2-5niBHPekkvqs="[m
+[32m+[m[32mResource group exists:[m
+[32m+[m[32m  azurerm.resource.group.present:[m
+[32m+[m[32m    - name: idem[m
+[32m+[m[32m    - location: eastus[m
+[32m+[m[32m    - tags:[m
+[32m+[m[32m        organization: EITR Technologies[m
+ ```[m
+ [m
+[31m-# Testing and Building[m
+[31m-Before you build the .sls file you will need to to test the file. To do this, please use the following code.[m
+[32m+[m[32m## TESTING AND BUILDING RESOURCES[m
+[32m+[m[32mBefore you build the resources defined in the ".sls" file you may want to test what will happen when the state file is[m
+[32m+[m[32mrun. To do this, run idem with the `--test` option.[m
+ ```[m
+[31m-(env) $ idem state myTest.sls --test[m
+[32m+[m[32m(env) $ idem state mytest.sls --test[m
+ ```[m
+[31m-Once you got that to work, then you can build the file by using the following code.[m
+[32m+[m[32mOnce you determine that your state file will perform the intended operations, then you can build the defined resources[m
+[32m+[m[32mby running idem like so:[m
+ ```[m
+[31m-(env) $ idem state myTest.sls[m
+[32m+[m[32m(env) $ idem state mytest.sls[m
+ ```[m
+[1mdiff --git a/docs/releases/2.2.rst b/docs/releases/2.2.rst[m
+[1mindex 50a7e5d..0a02afe 100644[m
+[1m--- a/docs/releases/2.2.rst[m
+[1m+++ b/docs/releases/2.2.rst[m
+[36m@@ -6,7 +6,7 @@[m [mAdded Acct Support for Exec Modules[m
+ ===================================[m
+ We updated the exec modules to pass context to ``get_client``.[m
+ We also updated the state modules to pass context to exec modules.[m
+[31m-In addition to that, we have  updated the utiles to receive context on ``get_client`` and pass to ``determine_auth``[m
+[32m+[m[32mIn addition to that, we have updated the utilities to receive context on ``get_client`` and pass to ``determine_auth``[m
+ [m
+ Other Updates[m
+ =============[m
