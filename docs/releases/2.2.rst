@@ -6,7 +6,7 @@ Added Acct Support for Exec Modules
 ===================================
 We updated the exec modules to pass context to ``get_client``.
 We also updated the state modules to pass context to exec modules.
-In addition to that, we have updated the utilities to receive context on ``get_client`` and pass to ``determine_auth``
+In addition to that, we have  updated the utiles to receive context on ``get_client`` and pass to ``determine_auth``
 
 Other Updates
 =============
