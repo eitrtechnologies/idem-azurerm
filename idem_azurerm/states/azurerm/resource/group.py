@@ -81,6 +81,7 @@ Azure Resource Manager (ARM) Resource Group State Module
 """
 # Import Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import json
 import logging
 
@@ -145,9 +146,7 @@ async def present(
 
     if present:
         group = await hub.exec.azurerm.resource.group.get(ctx, name, **connection_auth)
-        ret["changes"] = await hub.exec.utils.dictdiffer.deep_diff(
-            group.get("tags", {}), tags or {}
-        )
+        ret["changes"] = differ.deep_diff(group.get("tags", {}), tags or {})
 
         if not ret["changes"]:
             ret["result"] = True

@@ -64,6 +64,7 @@ Azure Resource Manager (ARM) Log Analytics Workspace State Module
 """
 # Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import logging
 from operator import itemgetter
 
@@ -141,9 +142,7 @@ async def present(
 
     if "error" not in workspace:
         if tags:
-            tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
-                workspace.get("tags", {}), tags
-            )
+            tag_changes = differ.deep_diff(workspace.get("tags", {}), tags)
             if tag_changes:
                 ret["changes"]["tags"] = tag_changes
 

@@ -83,6 +83,7 @@ Azure Resource Manager (ARM) Resource Policy State Module
 """
 # Import Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import json
 import logging
 
@@ -282,21 +283,17 @@ async def definition_present(
                 "new": description,
             }
 
-        rule_changes = await hub.exec.utils.dictdiffer.deep_diff(
+        rule_changes = differ.deep_diff(
             policy.get("policy_rule", {}), policy_rule or {}
         )
         if rule_changes:
             ret["changes"]["policy_rule"] = rule_changes
 
-        meta_changes = await hub.exec.utils.dictdiffer.deep_diff(
-            policy.get("metadata", {}), metadata or {}
-        )
+        meta_changes = differ.deep_diff(policy.get("metadata", {}), metadata or {})
         if meta_changes:
             ret["changes"]["metadata"] = meta_changes
 
-        param_changes = await hub.exec.utils.dictdiffer.deep_diff(
-            policy.get("parameters", {}), parameters or {}
-        )
+        param_changes = differ.deep_diff(policy.get("parameters", {}), parameters or {})
         if param_changes:
             ret["changes"]["parameters"] = param_changes
 
@@ -520,9 +517,7 @@ async def assignment_present(
                 "new": description,
             }
 
-        param_changes = await hub.exec.utils.dictdiffer.deep_diff(
-            policy.get("parameters", {}), parameters or {}
-        )
+        param_changes = differ.deep_diff(policy.get("parameters", {}), parameters or {})
         if param_changes:
             ret["changes"]["parameters"] = param_changes
 

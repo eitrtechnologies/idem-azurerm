@@ -63,6 +63,7 @@ Azure Resource Manager (ARM) Blob Container State Module
 """
 # Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import logging
 
 log = logging.getLogger(__name__)
@@ -147,13 +148,11 @@ async def present(
     if "error" not in container:
         existed = True
 
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
-            container.get("tags", {}), tags or {}
-        )
+        tag_changes = differ.deep_diff(container.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
 
-        metadata_changes = await hub.exec.utils.dictdiffer.deep_diff(
+        metadata_changes = differ.deep_diff(
             container.get("metadata", {}), metadata or {}
         )
         if metadata_changes:
@@ -307,9 +306,7 @@ async def immutability_policy_present(
     )
 
     if "error" not in policy:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
-            policy.get("tags", {}), tags or {}
-        )
+        tag_changes = differ.deep_diff(policy.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
 

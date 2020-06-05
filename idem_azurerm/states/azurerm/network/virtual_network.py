@@ -87,6 +87,7 @@ Azure Resource Manager (ARM) Virtual Network State Module
 """
 # Python libs
 from __future__ import absolute_import
+from dict_tools import differ
 import logging
 import re
 
@@ -178,9 +179,7 @@ async def present(
     )
 
     if "error" not in vnet:
-        tag_changes = await hub.exec.utils.dictdiffer.deep_diff(
-            vnet.get("tags", {}), tags or {}
-        )
+        tag_changes = differ.deep_diff(vnet.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
 
