@@ -6,4 +6,4 @@ Releases
    :maxdepth: 1
    :glob:
 
-    2.2
+   *
