@@ -82,14 +82,14 @@ async def check_name_availability(hub, ctx, name, **kwargs):
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
+    vconn = await hub.exec.azurerm.utils.get_client(ctx, "keyvault", **kwargs)
 
     try:
         avail = vconn.vaults.check_name_availability(name=name,)
 
         result = avail.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("keyvault", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("keyvault", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -186,7 +186,7 @@ async def create_or_update(
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
+    vconn = await hub.exec.azurerm.utils.get_client(ctx, "keyvault", **kwargs)
 
     sku = {"name": sku}
 
@@ -195,7 +195,7 @@ async def create_or_update(
 
     # Create the VaultProperties object
     try:
-        propsmodel = await hub.exec.utils.azurerm.create_object_model(
+        propsmodel = await hub.exec.azurerm.utils.create_object_model(
             "keyvault",
             "VaultProperties",
             tenant_id=tenant_id,
@@ -217,7 +217,7 @@ async def create_or_update(
 
     # Create the VaultCreateOrUpdateParameters object
     try:
-        paramsmodel = await hub.exec.utils.azurerm.create_object_model(
+        paramsmodel = await hub.exec.azurerm.utils.create_object_model(
             "keyvault",
             "VaultCreateOrUpdateParameters",
             location=location,
@@ -239,7 +239,7 @@ async def create_or_update(
 
         result = vault.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("keyvault", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("keyvault", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -263,14 +263,14 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
+    vconn = await hub.exec.azurerm.utils.get_client(ctx, "keyvault", **kwargs)
 
     try:
         vault = vconn.vaults.delete(vault_name=name, resource_group_name=resource_group)
 
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("keyvault", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("keyvault", str(exc), **kwargs)
 
     return result
 
@@ -293,14 +293,14 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
+    vconn = await hub.exec.azurerm.utils.get_client(ctx, "keyvault", **kwargs)
 
     try:
         vault = vconn.vaults.get(vault_name=name, resource_group_name=resource_group)
 
         result = vault.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("keyvault", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("keyvault", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -324,14 +324,14 @@ async def get_deleted(hub, ctx, name, location, **kwargs):
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
+    vconn = await hub.exec.azurerm.utils.get_client(ctx, "keyvault", **kwargs)
 
     try:
         vault = vconn.vaults.get_deleted(vault_name=name, location=location)
 
         result = vault.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("keyvault", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("keyvault", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -353,17 +353,17 @@ async def list_(hub, ctx, top=None, **kwargs):
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
+    vconn = await hub.exec.azurerm.utils.get_client(ctx, "keyvault", **kwargs)
 
     try:
-        vaults = await hub.exec.utils.azurerm.paged_object_to_list(
+        vaults = await hub.exec.azurerm.utils.paged_object_to_list(
             vconn.vaults.list(top=top)
         )
 
         for vault in vaults:
             result[vault["name"]] = vault
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("keyvault", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("keyvault", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -388,10 +388,10 @@ async def list_by_resource_group(hub, ctx, resource_group, top=None, **kwargs):
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
+    vconn = await hub.exec.azurerm.utils.get_client(ctx, "keyvault", **kwargs)
 
     try:
-        vaults = await hub.exec.utils.azurerm.paged_object_to_list(
+        vaults = await hub.exec.azurerm.utils.paged_object_to_list(
             vconn.vaults.list_by_resource_group(
                 resource_group_name=resource_group, top=top
             )
@@ -400,7 +400,7 @@ async def list_by_resource_group(hub, ctx, resource_group, top=None, **kwargs):
         for vault in vaults:
             result[vault["name"]] = vault
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("keyvault", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("keyvault", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -422,17 +422,17 @@ async def list_by_subscription(hub, ctx, top=None, **kwargs):
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
+    vconn = await hub.exec.azurerm.utils.get_client(ctx, "keyvault", **kwargs)
 
     try:
-        vaults = await hub.exec.utils.azurerm.paged_object_to_list(
+        vaults = await hub.exec.azurerm.utils.paged_object_to_list(
             vconn.vaults.list_by_subscription(top=top)
         )
 
         for vault in vaults:
             result[vault["name"]] = vault
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("keyvault", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("keyvault", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -452,17 +452,17 @@ async def list_deleted(hub, ctx, **kwargs):
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
+    vconn = await hub.exec.azurerm.utils.get_client(ctx, "keyvault", **kwargs)
 
     try:
-        vaults = await hub.exec.utils.azurerm.paged_object_to_list(
+        vaults = await hub.exec.azurerm.utils.paged_object_to_list(
             vconn.vaults.list_deleted()
         )
 
         for vault in vaults:
             result[vault["name"]] = vault
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("keyvault", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("keyvault", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -486,14 +486,14 @@ async def purge_deleted(hub, ctx, name, location, **kwargs):
 
     """
     result = False
-    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
+    vconn = await hub.exec.azurerm.utils.get_client(ctx, "keyvault", **kwargs)
 
     try:
         vault = vconn.vaults.purge_deleted(vault_name=name, location=location)
 
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("keyvault", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("keyvault", str(exc), **kwargs)
 
     return result
 
@@ -541,11 +541,11 @@ async def update_access_policy(
 
     """
     result = {}
-    vconn = await hub.exec.utils.azurerm.get_client(ctx, "keyvault", **kwargs)
+    vconn = await hub.exec.azurerm.utils.get_client(ctx, "keyvault", **kwargs)
 
     # Create the VaultAccessPolicyProperties object
     try:
-        propsmodel = await hub.exec.utils.azurerm.create_object_model(
+        propsmodel = await hub.exec.azurerm.utils.create_object_model(
             "keyvault",
             "VaultAccessPolicyProperties",
             access_policies=access_policies,
@@ -567,7 +567,7 @@ async def update_access_policy(
 
         result = vault.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("keyvault", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("keyvault", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

@@ -97,7 +97,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
             }
         kwargs["location"] = rg_props["location"]
 
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
 
     # Use VM names to link to the IDs of existing VMs.
     if isinstance(kwargs.get("virtual_machines"), list):
@@ -111,7 +111,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
         kwargs["virtual_machines"] = vm_list
 
     try:
-        setmodel = await hub.exec.utils.azurerm.create_object_model(
+        setmodel = await hub.exec.azurerm.utils.create_object_model(
             "compute", "AvailabilitySet", **kwargs
         )
     except TypeError as exc:
@@ -129,7 +129,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
         result = av_set.as_dict()
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -158,7 +158,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         compconn.availability_sets.delete(
             resource_group_name=resource_group, availability_set_name=name
@@ -166,7 +166,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
         result = True
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
 
     return result
 
@@ -189,7 +189,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.compute.availability_set.get testset testgroup
 
     """
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         av_set = compconn.availability_sets.get(
             resource_group_name=resource_group, availability_set_name=name
@@ -197,7 +197,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         result = av_set.as_dict()
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -220,16 +220,16 @@ async def list_(hub, ctx, resource_group, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
-        avail_sets = await hub.exec.utils.azurerm.paged_object_to_list(
+        avail_sets = await hub.exec.azurerm.utils.paged_object_to_list(
             compconn.availability_sets.list(resource_group_name=resource_group)
         )
 
         for avail_set in avail_sets:
             result[avail_set["name"]] = avail_set
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -256,9 +256,9 @@ async def list_available_sizes(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
-        sizes = await hub.exec.utils.azurerm.paged_object_to_list(
+        sizes = await hub.exec.azurerm.utils.paged_object_to_list(
             compconn.availability_sets.list_available_sizes(
                 resource_group_name=resource_group, availability_set_name=name
             )
@@ -267,7 +267,7 @@ async def list_available_sizes(hub, ctx, name, resource_group, **kwargs):
         for size in sizes:
             result[size["name"]] = size
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

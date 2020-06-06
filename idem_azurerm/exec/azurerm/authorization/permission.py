@@ -98,13 +98,13 @@ async def permissions_list_for_resource(
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
+    authconn = await hub.exec.azurerm.utils.get_client(ctx, "authorization", **kwargs)
 
     if parent_resource_path is None:
         parent_resource_path = ""
 
     try:
-        perms = await hub.exec.utils.azurerm.paged_object_to_list(
+        perms = await hub.exec.azurerm.utils.paged_object_to_list(
             authconn.permissions.list_for_resource(
                 resource_name=name,
                 resource_group_name=resource_group,
@@ -117,7 +117,7 @@ async def permissions_list_for_resource(
 
         result = perms
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error(
+        await hub.exec.azurerm.utils.log_cloud_error(
             "authorization", str(exc), **kwargs
         )
         result = {"error": str(exc)}
@@ -141,10 +141,10 @@ async def permissions_list_for_resource_group(hub, ctx, name, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
+    authconn = await hub.exec.azurerm.utils.get_client(ctx, "authorization", **kwargs)
 
     try:
-        perms = await hub.exec.utils.azurerm.paged_object_to_list(
+        perms = await hub.exec.azurerm.utils.paged_object_to_list(
             authconn.permissions.list_for_resource_group(
                 resource_group_name=name, **kwargs
             )
@@ -152,7 +152,7 @@ async def permissions_list_for_resource_group(hub, ctx, name, **kwargs):
 
         result = perms
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error(
+        await hub.exec.azurerm.utils.log_cloud_error(
             "authorization", str(exc), **kwargs
         )
         result = {"error": str(exc)}

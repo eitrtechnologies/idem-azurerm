@@ -86,16 +86,16 @@ async def list_all(hub, ctx, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        load_balancers = await hub.exec.utils.azurerm.paged_object_to_list(
+        load_balancers = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.load_balancers.list_all()
         )
 
         for load_balancer in load_balancers:
             result[load_balancer["name"]] = load_balancer
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -118,16 +118,16 @@ async def list_(hub, ctx, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        load_balancers = await hub.exec.utils.azurerm.paged_object_to_list(
+        load_balancers = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.load_balancers.list(resource_group_name=resource_group)
         )
 
         for load_balancer in load_balancers:
             result[load_balancer["name"]] = load_balancer
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -151,14 +151,14 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.load_balancer.get testlb testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         load_balancer = netconn.load_balancers.get(
             load_balancer_name=name, resource_group_name=resource_group
         )
         result = load_balancer.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -192,7 +192,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     if isinstance(kwargs.get("frontend_ip_configurations"), list):
         for idx in six_range(0, len(kwargs["frontend_ip_configurations"])):
@@ -327,7 +327,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
                 }
 
     try:
-        lbmodel = await hub.exec.utils.azurerm.create_object_model(
+        lbmodel = await hub.exec.azurerm.utils.create_object_model(
             "network", "LoadBalancer", **kwargs
         )
     except TypeError as exc:
@@ -346,7 +346,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
         lb_result = load_balancer.result()
         result = lb_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -375,7 +375,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         load_balancer = netconn.load_balancers.delete(
             load_balancer_name=name, resource_group_name=resource_group
@@ -383,6 +383,6 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
         load_balancer.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
 
     return result

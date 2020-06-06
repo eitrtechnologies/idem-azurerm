@@ -83,12 +83,12 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         compconn.disks.delete(resource_group_name=resource_group, disk_name=name)
         result = True
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
 
     return result

@@ -91,7 +91,7 @@ async def filter_rule_delete(hub, ctx, name, route_filter, resource_group, **kwa
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         rule = netconn.route_filter_rules.delete(
             resource_group_name=resource_group,
@@ -101,7 +101,7 @@ async def filter_rule_delete(hub, ctx, name, route_filter, resource_group, **kwa
         rule.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
@@ -127,7 +127,7 @@ async def filter_rule_get(hub, ctx, name, route_filter, resource_group, **kwargs
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         rule = netconn.route_filter_rules.get(
             resource_group_name=resource_group,
@@ -137,7 +137,7 @@ async def filter_rule_get(hub, ctx, name, route_filter, resource_group, **kwargs
 
         result = rule.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -184,10 +184,10 @@ async def filter_rule_create_or_update(
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
-        rule_model = await hub.exec.utils.azurerm.create_object_model(
+        rule_model = await hub.exec.azurerm.utils.create_object_model(
             "network",
             "RouteFilterRule",
             access=access,
@@ -214,7 +214,7 @@ async def filter_rule_create_or_update(
         message = str(exc)
         if kwargs.get("subscription_id") == str(message).strip():
             message = "Subscription not authorized for this operation!"
-        await hub.exec.utils.azurerm.log_cloud_error("network", message, **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", message, **kwargs)
         result = {"error": message}
     except SerializationError as exc:
         result = {
@@ -243,9 +243,9 @@ async def filter_rules_list(hub, ctx, route_filter, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        rules = await hub.exec.utils.azurerm.paged_object_to_list(
+        rules = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.route_filter_rules.list_by_route_filter(
                 resource_group_name=resource_group, route_filter_name=route_filter
             )
@@ -254,7 +254,7 @@ async def filter_rules_list(hub, ctx, route_filter, resource_group, **kwargs):
         for rule in rules:
             result[rule["name"]] = rule
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -279,7 +279,7 @@ async def filter_delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         route_filter = netconn.route_filters.delete(
             route_filter_name=name, resource_group_name=resource_group
@@ -287,7 +287,7 @@ async def filter_delete(hub, ctx, name, resource_group, **kwargs):
         route_filter.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
@@ -312,7 +312,7 @@ async def filter_get(hub, ctx, name, resource_group, **kwargs):
     """
     expand = kwargs.get("expand")
 
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
         route_filter = netconn.route_filters.get(
@@ -320,7 +320,7 @@ async def filter_get(hub, ctx, name, resource_group, **kwargs):
         )
         result = route_filter.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -354,10 +354,10 @@ async def filter_create_or_update(hub, ctx, name, resource_group, **kwargs):
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
-        rt_filter_model = await hub.exec.utils.azurerm.create_object_model(
+        rt_filter_model = await hub.exec.azurerm.utils.create_object_model(
             "network", "RouteFilter", **kwargs
         )
     except TypeError as exc:
@@ -376,7 +376,7 @@ async def filter_create_or_update(hub, ctx, name, resource_group, **kwargs):
         rt_result = rt_filter.result()
         result = rt_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -403,9 +403,9 @@ async def filters_list(hub, ctx, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        filters = await hub.exec.utils.azurerm.paged_object_to_list(
+        filters = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.route_filters.list_by_resource_group(
                 resource_group_name=resource_group
             )
@@ -414,7 +414,7 @@ async def filters_list(hub, ctx, resource_group, **kwargs):
         for route_filter in filters:
             result[route_filter["name"]] = route_filter
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -434,16 +434,16 @@ async def filters_list_all(hub, ctx, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        filters = await hub.exec.utils.azurerm.paged_object_to_list(
+        filters = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.route_filters.list()
         )
 
         for route_filter in filters:
             result[route_filter["name"]] = route_filter
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -470,7 +470,7 @@ async def delete(hub, ctx, name, route_table, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         route = netconn.routes.delete(
             resource_group_name=resource_group,
@@ -480,7 +480,7 @@ async def delete(hub, ctx, name, route_table, resource_group, **kwargs):
         route.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
@@ -506,7 +506,7 @@ async def get(hub, ctx, name, route_table, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         route = netconn.routes.get(
             resource_group_name=resource_group,
@@ -516,7 +516,7 @@ async def get(hub, ctx, name, route_table, resource_group, **kwargs):
 
         result = route.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -560,10 +560,10 @@ async def create_or_update(
         azurerm.network.route.create_or_update test-rt '10.0.0.0/8' test-rt-table testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
-        rt_model = await hub.exec.utils.azurerm.create_object_model(
+        rt_model = await hub.exec.azurerm.utils.create_object_model(
             "network",
             "Route",
             address_prefix=address_prefix,
@@ -588,7 +588,7 @@ async def create_or_update(
         rt_result = route.result()
         result = rt_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -617,9 +617,9 @@ async def routes_list(hub, ctx, route_table, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        routes = await hub.exec.utils.azurerm.paged_object_to_list(
+        routes = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.routes.list(
                 resource_group_name=resource_group, route_table_name=route_table
             )
@@ -628,7 +628,7 @@ async def routes_list(hub, ctx, route_table, resource_group, **kwargs):
         for route in routes:
             result[route["name"]] = route
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -653,7 +653,7 @@ async def table_delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         table = netconn.route_tables.delete(
             route_table_name=name, resource_group_name=resource_group
@@ -661,7 +661,7 @@ async def table_delete(hub, ctx, name, resource_group, **kwargs):
         table.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
@@ -686,7 +686,7 @@ async def table_get(hub, ctx, name, resource_group, **kwargs):
     """
     expand = kwargs.get("expand")
 
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
         table = netconn.route_tables.get(
@@ -694,7 +694,7 @@ async def table_get(hub, ctx, name, resource_group, **kwargs):
         )
         result = table.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -728,10 +728,10 @@ async def table_create_or_update(hub, ctx, name, resource_group, **kwargs):
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
-        rt_tbl_model = await hub.exec.utils.azurerm.create_object_model(
+        rt_tbl_model = await hub.exec.azurerm.utils.create_object_model(
             "network", "RouteTable", **kwargs
         )
     except TypeError as exc:
@@ -750,7 +750,7 @@ async def table_create_or_update(hub, ctx, name, resource_group, **kwargs):
         tbl_result = table.result()
         result = tbl_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -777,16 +777,16 @@ async def tables_list(hub, ctx, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        tables = await hub.exec.utils.azurerm.paged_object_to_list(
+        tables = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.route_tables.list(resource_group_name=resource_group)
         )
 
         for table in tables:
             result[table["name"]] = table
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -806,16 +806,16 @@ async def tables_list_all(hub, ctx, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        tables = await hub.exec.utils.azurerm.paged_object_to_list(
+        tables = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.route_tables.list_all()
         )
 
         for table in tables:
             result[table["name"]] = table
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

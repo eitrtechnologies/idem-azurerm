@@ -78,15 +78,15 @@ async def list_(hub, ctx, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
-        skus = await hub.exec.utils.azurerm.paged_object_to_list(storconn.skus.list())
+        skus = await hub.exec.azurerm.utils.paged_object_to_list(storconn.skus.list())
 
         for sku in skus:
             result[sku["name"]] = sku
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

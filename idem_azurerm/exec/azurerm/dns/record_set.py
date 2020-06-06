@@ -90,10 +90,10 @@ async def create_or_update(
             arecords='[{ipv4_address: 10.0.0.1}]' ttl=300
 
     """
-    dnsconn = await hub.exec.utils.azurerm.get_client(ctx, "dns", **kwargs)
+    dnsconn = await hub.exec.azurerm.utils.get_client(ctx, "dns", **kwargs)
 
     try:
-        record_set_model = await hub.exec.utils.azurerm.create_object_model(
+        record_set_model = await hub.exec.azurerm.utils.create_object_model(
             "dns", "RecordSet", **kwargs
         )
     except TypeError as exc:
@@ -114,7 +114,7 @@ async def create_or_update(
         )
         result = record_set.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("dns", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("dns", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -148,7 +148,7 @@ async def delete(hub, ctx, name, zone_name, resource_group, record_type, **kwarg
 
     """
     result = False
-    dnsconn = await hub.exec.utils.azurerm.get_client(ctx, "dns", **kwargs)
+    dnsconn = await hub.exec.azurerm.utils.get_client(ctx, "dns", **kwargs)
     try:
         record_set = dnsconn.record_sets.delete(
             relative_record_set_name=name,
@@ -159,7 +159,7 @@ async def delete(hub, ctx, name, zone_name, resource_group, record_type, **kwarg
         )
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("dns", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("dns", str(exc), **kwargs)
 
     return result
 
@@ -186,7 +186,7 @@ async def get(hub, ctx, name, zone_name, resource_group, record_type, **kwargs):
         azurerm.dns.record_set.get '@' myzone testgroup SOA
 
     """
-    dnsconn = await hub.exec.utils.azurerm.get_client(ctx, "dns", **kwargs)
+    dnsconn = await hub.exec.azurerm.utils.get_client(ctx, "dns", **kwargs)
     try:
         record_set = dnsconn.record_sets.get(
             relative_record_set_name=name,
@@ -197,7 +197,7 @@ async def get(hub, ctx, name, zone_name, resource_group, record_type, **kwargs):
         result = record_set.as_dict()
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("dns", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("dns", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -239,9 +239,9 @@ async def list_by_type(
 
     """
     result = {}
-    dnsconn = await hub.exec.utils.azurerm.get_client(ctx, "dns", **kwargs)
+    dnsconn = await hub.exec.azurerm.utils.get_client(ctx, "dns", **kwargs)
     try:
-        record_sets = await hub.exec.utils.azurerm.paged_object_to_list(
+        record_sets = await hub.exec.azurerm.utils.paged_object_to_list(
             dnsconn.record_sets.list_by_type(
                 zone_name=zone_name,
                 resource_group_name=resource_group,
@@ -254,7 +254,7 @@ async def list_by_type(
         for record_set in record_sets:
             result[record_set["name"]] = record_set
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("dns", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("dns", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -286,9 +286,9 @@ async def list_by_dns_zone(
 
     """
     result = {}
-    dnsconn = await hub.exec.utils.azurerm.get_client(ctx, "dns", **kwargs)
+    dnsconn = await hub.exec.azurerm.utils.get_client(ctx, "dns", **kwargs)
     try:
-        record_sets = await hub.exec.utils.azurerm.paged_object_to_list(
+        record_sets = await hub.exec.azurerm.utils.paged_object_to_list(
             dnsconn.record_sets.list_by_dns_zone(
                 zone_name=zone_name,
                 resource_group_name=resource_group,
@@ -300,7 +300,7 @@ async def list_by_dns_zone(
         for record_set in record_sets:
             result[record_set["name"]] = record_set
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("dns", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("dns", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

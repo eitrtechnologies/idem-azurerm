@@ -91,7 +91,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         pub_ip = netconn.public_ip_addresses.delete(
             public_ip_address_name=name, resource_group_name=resource_group
@@ -99,7 +99,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
         pub_ip.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
@@ -124,7 +124,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     """
     expand = kwargs.get("expand")
 
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
         pub_ip = netconn.public_ip_addresses.get(
@@ -134,7 +134,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         )
         result = pub_ip.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -168,10 +168,10 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
-        pub_ip_model = await hub.exec.utils.azurerm.create_object_model(
+        pub_ip_model = await hub.exec.azurerm.utils.create_object_model(
             "network", "PublicIPAddress", **kwargs
         )
     except TypeError as exc:
@@ -190,7 +190,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
         ip_result = ip.result()
         result = ip_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -214,16 +214,16 @@ async def list_all(hub, ctx, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        pub_ips = await hub.exec.utils.azurerm.paged_object_to_list(
+        pub_ips = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.public_ip_addresses.list_all()
         )
 
         for ip in pub_ips:
             result[ip["name"]] = ip
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -246,16 +246,16 @@ async def list_(hub, ctx, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        pub_ips = await hub.exec.utils.azurerm.paged_object_to_list(
+        pub_ips = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.public_ip_addresses.list(resource_group_name=resource_group)
         )
 
         for ip in pub_ips:
             result[ip["name"]] = ip
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

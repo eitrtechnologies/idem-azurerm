@@ -117,7 +117,7 @@ async def create_or_update(
             return False
         kwargs["location"] = rg_props["location"]
 
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
 
     if source_vm:
         # Use VM name to link to the IDs of existing VMs.
@@ -159,7 +159,7 @@ async def create_or_update(
                 return result
 
         try:
-            spmodel = await hub.exec.utils.azurerm.create_object_model(
+            spmodel = await hub.exec.azurerm.utils.create_object_model(
                 "compute",
                 "ImageStorageProfile",
                 os_disk=os_disk,
@@ -174,7 +174,7 @@ async def create_or_update(
             return result
 
     try:
-        imagemodel = await hub.exec.utils.azurerm.create_object_model(
+        imagemodel = await hub.exec.azurerm.utils.create_object_model(
             "compute",
             "Image",
             source_virtual_machine=source_vm,
@@ -196,7 +196,7 @@ async def create_or_update(
         result = image_result.as_dict()
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -224,13 +224,13 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         compconn.images.delete(resource_group_name=resource_group, image_name=name)
         result = True
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
 
     return result
 
@@ -252,13 +252,13 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.compute.image.get testimage testgroup
 
     """
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         image = compconn.images.get(resource_group_name=resource_group, image_name=name)
         result = image.as_dict()
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -280,16 +280,16 @@ async def images_list_by_resource_group(hub, ctx, resource_group, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
-        images = await hub.exec.utils.azurerm.paged_object_to_list(
+        images = await hub.exec.azurerm.utils.paged_object_to_list(
             compconn.images.list_by_resource_group(resource_group_name=resource_group)
         )
 
         for image in images:
             result[image["name"]] = image
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -309,16 +309,16 @@ async def images_list(hub, ctx, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
-        images = await hub.exec.utils.azurerm.paged_object_to_list(
+        images = await hub.exec.azurerm.utils.paged_object_to_list(
             compconn.images.list()
         )
 
         for image in images:
             result[image["name"]] = image
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

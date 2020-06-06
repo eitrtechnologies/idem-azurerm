@@ -86,14 +86,14 @@ async def check_dns_name_availability(hub, ctx, name, region, **kwargs):
          azurerm.network.check_dns_name_availability testdnsname westus
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         check_dns_name = netconn.check_dns_name_availability(
             location=region, domain_name_label=name
         )
         result = check_dns_name.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -123,7 +123,7 @@ async def check_ip_address_availability(
          azurerm.network.check_ip_address_availability 10.0.0.4 testnet testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         check_ip = netconn.virtual_networks.check_ip_address_availability(
             resource_group_name=resource_group,
@@ -132,7 +132,7 @@ async def check_ip_address_availability(
         )
         result = check_ip.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -153,13 +153,13 @@ async def usages_list(hub, ctx, location, **kwargs):
          azurerm.network.usages_list westus
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        result = await hub.exec.utils.azurerm.paged_object_to_list(
+        result = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.usages.list(location)
         )
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

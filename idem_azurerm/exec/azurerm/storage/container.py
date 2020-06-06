@@ -89,7 +89,7 @@ async def clear_legal_hold(hub, ctx, name, account, resource_group, tags, **kwar
         azurerm.storage.container.clear_legal_hold test_name test_account test_group test_tags
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         hold = storconn.blob_containers.clear_legal_hold(
@@ -101,7 +101,7 @@ async def clear_legal_hold(hub, ctx, name, account, resource_group, tags, **kwar
 
         result = hold.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -138,7 +138,7 @@ async def create(
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         container = storconn.blob_containers.create(
@@ -152,7 +152,7 @@ async def create(
 
         result = container.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -202,7 +202,7 @@ async def create_or_update_immutability_policy(
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         policy = storconn.blob_containers.create_or_update_immutability_policy(
@@ -216,7 +216,7 @@ async def create_or_update_immutability_policy(
 
         result = policy.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -249,7 +249,7 @@ async def delete(hub, ctx, name, account, resource_group, **kwargs):
 
     """
     result = False
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         container = storconn.blob_containers.delete(
@@ -260,7 +260,7 @@ async def delete(hub, ctx, name, account, resource_group, **kwargs):
 
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
 
     return result
 
@@ -296,7 +296,7 @@ async def delete_immutability_policy(
 
     """
     result = False
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         policy = storconn.blob_containers.delete_immutability_policy(
@@ -308,7 +308,7 @@ async def delete_immutability_policy(
 
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
 
     return result
 
@@ -345,7 +345,7 @@ async def extend_immutability_policy(
         azurerm.storage.container.extend_immutability_policy test_name test_account test_group test_period test_if_match
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         policy = storconn.blob_containers.extend_immutability_policy(
@@ -359,7 +359,7 @@ async def extend_immutability_policy(
 
         result = policy
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -388,7 +388,7 @@ async def get(hub, ctx, name, account, resource_group, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         container = storconn.blob_containers.get(
@@ -399,7 +399,7 @@ async def get(hub, ctx, name, account, resource_group, **kwargs):
 
         result = container.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -434,7 +434,7 @@ async def get_immutability_policy(
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         policy = storconn.blob_containers.get_immutability_policy(
@@ -446,7 +446,7 @@ async def get_immutability_policy(
 
         result = policy.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -472,7 +472,7 @@ async def list_(hub, ctx, account, resource_group, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         containers = storconn.blob_containers.list(
@@ -483,7 +483,7 @@ async def list_(hub, ctx, account, resource_group, **kwargs):
         for container in containers_list:
             result[container["name"]] = container
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -515,7 +515,7 @@ async def lock_immutability_policy(
         azurerm.storage.container.lock_immutability_policy test_name test_account test_group test_if_match
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         policy = storconn.blob_containers.lock_immutability_policy(
@@ -528,7 +528,7 @@ async def lock_immutability_policy(
 
         result = policy
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -559,7 +559,7 @@ async def set_legal_hold(hub, ctx, name, account, resource_group, tags, **kwargs
         azurerm.storage.container.set_legal_hold test_name test_account test_group test_tags
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         hold = storconn.blob_containers.set_legal_hold(
@@ -571,7 +571,7 @@ async def set_legal_hold(hub, ctx, name, account, resource_group, tags, **kwargs
 
         result = hold.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -607,7 +607,7 @@ async def update(
         azurerm.storage.container.update test_name test_account test_group test_access test_metadata
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         container = storconn.blob_containers.update(
@@ -621,7 +621,7 @@ async def update(
 
         result = container.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {

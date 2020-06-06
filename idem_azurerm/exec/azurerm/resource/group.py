@@ -81,16 +81,16 @@ async def list_(hub, ctx, **kwargs):
 
     """
     result = {}
-    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
+    resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     try:
-        groups = await hub.exec.utils.azurerm.paged_object_to_list(
+        groups = await hub.exec.azurerm.utils.paged_object_to_list(
             resconn.resource_groups.list()
         )
 
         for group in groups:
             result[group["name"]] = group
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -112,12 +112,12 @@ async def check_existence(hub, ctx, name, **kwargs):
 
     """
     result = False
-    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
+    resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     try:
         result = resconn.resource_groups.check_existence(name)
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
 
     return result
 
@@ -138,13 +138,13 @@ async def get(hub, ctx, name, **kwargs):
 
     """
     result = {}
-    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
+    resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     try:
         group = resconn.resource_groups.get(name)
         result = group.as_dict()
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -169,7 +169,7 @@ async def create_or_update(hub, ctx, name, location, **kwargs):
 
     """
     result = {}
-    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
+    resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     resource_group_params = {
         "location": location,
         "managed_by": kwargs.get("managed_by"),
@@ -179,7 +179,7 @@ async def create_or_update(hub, ctx, name, location, **kwargs):
         group = resconn.resource_groups.create_or_update(name, resource_group_params)
         result = group.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -201,12 +201,12 @@ async def delete(hub, ctx, name, **kwargs):
 
     """
     result = False
-    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
+    resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     try:
         group = resconn.resource_groups.delete(name)
         group.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
 
     return result

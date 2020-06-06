@@ -355,7 +355,7 @@ async def create_or_update(
     if not network_interfaces:
         network_interfaces = []
 
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
 
     params = kwargs.copy()
 
@@ -622,7 +622,7 @@ async def create_or_update(
         params["additional_capabilities"] = {"ultra_ssd_enabled": ultra_ssd_enabled}
 
     try:
-        vmmodel = await hub.exec.utils.azurerm.create_object_model(
+        vmmodel = await hub.exec.azurerm.utils.create_object_model(
             "compute", "VirtualMachine", **params
         )
     except TypeError as exc:
@@ -770,7 +770,7 @@ async def create_or_update(
 
         result["network_profile"]["network_interfaces"] = network_interfaces
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -807,7 +807,7 @@ async def delete(
 
     """
     result = False
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
 
     vm = await hub.exec.azurerm.compute.virtual_machine.get(
         ctx=ctx, resource_group=resource_group, name=name, **kwargs
@@ -875,7 +875,7 @@ async def delete(
         result = True
 
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
 
     return result
 
@@ -919,7 +919,7 @@ async def capture(
         azure.mgmt.compute.models, "VirtualMachineCaptureParameters"
     )
 
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.capture(
@@ -935,7 +935,7 @@ async def capture(
         vm_result = vm.result()
         result = vm_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -962,7 +962,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     """
     expand = kwargs.get("expand")
 
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.get(
@@ -970,7 +970,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         )
         result = vm.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -997,7 +997,7 @@ async def convert_to_managed_disks(
         azurerm.compute.virtual_machine.convert_to_managed_disks testvm testgroup
 
     """
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.convert_to_managed_disks(
@@ -1007,7 +1007,7 @@ async def convert_to_managed_disks(
         vm_result = vm.result()
         result = vm_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -1031,7 +1031,7 @@ async def deallocate(hub, ctx, name, resource_group, **kwargs):
         azurerm.compute.virtual_machine.deallocate testvm testgroup
 
     """
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     result = False
     try:
         # pylint: disable=invalid-name
@@ -1041,7 +1041,7 @@ async def deallocate(hub, ctx, name, resource_group, **kwargs):
         vm.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -1066,14 +1066,14 @@ async def generalize(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         compconn.virtual_machines.generalize(
             resource_group_name=resource_group, vm_name=name
         )
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
 
     return result
 
@@ -1095,15 +1095,15 @@ async def list_(hub, ctx, resource_group, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
-        vms = await hub.exec.utils.azurerm.paged_object_to_list(
+        vms = await hub.exec.azurerm.utils.paged_object_to_list(
             compconn.virtual_machines.list(resource_group_name=resource_group)
         )
         for vm in vms:  # pylint: disable=invalid-name
             result[vm["name"]] = vm
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -1123,15 +1123,15 @@ async def list_all(hub, ctx, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
-        vms = await hub.exec.utils.azurerm.paged_object_to_list(
+        vms = await hub.exec.azurerm.utils.paged_object_to_list(
             compconn.virtual_machines.list_all()
         )
         for vm in vms:  # pylint: disable=invalid-name
             result[vm["name"]] = vm
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -1159,9 +1159,9 @@ async def list_available_sizes(
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
-        sizes = await hub.exec.utils.azurerm.paged_object_to_list(
+        sizes = await hub.exec.azurerm.utils.paged_object_to_list(
             compconn.virtual_machines.list_available_sizes(
                 resource_group_name=resource_group, vm_name=name
             )
@@ -1169,7 +1169,7 @@ async def list_available_sizes(
         for size in sizes:
             result[size["name"]] = size
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -1193,7 +1193,7 @@ async def power_off(hub, ctx, name, resource_group, **kwargs):
         azurerm.compute.virtual_machine.power_off testvm testgroup
 
     """
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.power_off(
@@ -1203,7 +1203,7 @@ async def power_off(hub, ctx, name, resource_group, **kwargs):
         vm_result = vm.result()
         result = vm_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -1227,7 +1227,7 @@ async def restart(hub, ctx, name, resource_group, **kwargs):
         azurerm.compute.virtual_machine.restart testvm testgroup
 
     """
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.restart(
@@ -1237,7 +1237,7 @@ async def restart(hub, ctx, name, resource_group, **kwargs):
         vm_result = vm.result()
         result = vm_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -1261,7 +1261,7 @@ async def start(hub, ctx, name, resource_group, **kwargs):
         azurerm.compute.virtual_machine.start testvm testgroup
 
     """
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.start(
@@ -1271,7 +1271,7 @@ async def start(hub, ctx, name, resource_group, **kwargs):
         vm_result = vm.result()
         result = vm_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -1295,7 +1295,7 @@ async def redeploy(hub, ctx, name, resource_group, **kwargs):
         azurerm.compute.virtual_machine.redeploy testvm testgroup
 
     """
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.redeploy(
@@ -1305,7 +1305,7 @@ async def redeploy(hub, ctx, name, resource_group, **kwargs):
         vm_result = vm.result()
         result = vm_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

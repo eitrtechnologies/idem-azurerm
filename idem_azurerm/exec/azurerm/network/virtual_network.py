@@ -91,9 +91,9 @@ async def subnets_list(hub, ctx, virtual_network, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        subnets = await hub.exec.utils.azurerm.paged_object_to_list(
+        subnets = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.subnets.list(
                 resource_group_name=resource_group, virtual_network_name=virtual_network
             )
@@ -102,7 +102,7 @@ async def subnets_list(hub, ctx, virtual_network, resource_group, **kwargs):
         for subnet in subnets:
             result[subnet["name"]] = subnet
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -129,7 +129,7 @@ async def subnet_get(hub, ctx, name, virtual_network, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.subnet_get testsubnet testnet testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         subnet = netconn.subnets.get(
             resource_group_name=resource_group,
@@ -139,7 +139,7 @@ async def subnet_get(hub, ctx, name, virtual_network, resource_group, **kwargs):
 
         result = subnet.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -171,7 +171,7 @@ async def subnet_create_or_update(
                   '10.0.0.0/24' testnet testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     # Use NSG name to link to the ID of an existing NSG.
     if kwargs.get("network_security_group"):
@@ -193,7 +193,7 @@ async def subnet_create_or_update(
             kwargs["route_table"] = {"id": str(rt_table["id"])}
 
     try:
-        snetmodel = await hub.exec.utils.azurerm.create_object_model(
+        snetmodel = await hub.exec.azurerm.utils.create_object_model(
             "network",
             "Subnet",
             address_prefix=address_prefix,
@@ -217,7 +217,7 @@ async def subnet_create_or_update(
         sn_result = subnet.result()
         result = sn_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -249,7 +249,7 @@ async def subnet_delete(hub, ctx, name, virtual_network, resource_group, **kwarg
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         subnet = netconn.subnets.delete(
             resource_group_name=resource_group,
@@ -259,7 +259,7 @@ async def subnet_delete(hub, ctx, name, virtual_network, resource_group, **kwarg
         subnet.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
@@ -278,16 +278,16 @@ async def list_all(hub, ctx, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        vnets = await hub.exec.utils.azurerm.paged_object_to_list(
+        vnets = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.virtual_networks.list_all()
         )
 
         for vnet in vnets:
             result[vnet["name"]] = vnet
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -310,16 +310,16 @@ async def list_(hub, ctx, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        vnets = await hub.exec.utils.azurerm.paged_object_to_list(
+        vnets = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.virtual_networks.list(resource_group_name=resource_group)
         )
 
         for vnet in vnets:
             result[vnet["name"]] = vnet
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -362,13 +362,13 @@ async def create_or_update(hub, ctx, name, address_prefixes, resource_group, **k
         log.error("Address prefixes must be specified as a list!")
         return False
 
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     address_space = {"address_prefixes": address_prefixes}
     dhcp_options = {"dns_servers": kwargs.get("dns_servers")}
 
     try:
-        vnetmodel = await hub.exec.utils.azurerm.create_object_model(
+        vnetmodel = await hub.exec.azurerm.utils.create_object_model(
             "network",
             "VirtualNetwork",
             address_space=address_space,
@@ -391,7 +391,7 @@ async def create_or_update(hub, ctx, name, address_prefixes, resource_group, **k
         vnet_result = vnet.result()
         result = vnet_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -420,7 +420,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         vnet = netconn.virtual_networks.delete(
             virtual_network_name=name, resource_group_name=resource_group
@@ -428,7 +428,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
         vnet.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
@@ -451,14 +451,14 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.virtual_network.get testnet testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         vnet = netconn.virtual_networks.get(
             virtual_network_name=name, resource_group_name=resource_group
         )
         result = vnet.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

@@ -198,7 +198,7 @@ async def present(
             ret["changes"]["tags"] = tag_changes
 
         if security_rules:
-            comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(
+            comp_ret = await hub.exec.azurerm.utils.compare_list_of_dicts(
                 nsg.get("security_rules", []), security_rules
             )
 

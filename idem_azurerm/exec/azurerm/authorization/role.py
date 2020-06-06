@@ -82,7 +82,7 @@ async def definitions_get(hub, ctx, role_id, scope, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
+    authconn = await hub.exec.azurerm.utils.get_client(ctx, "authorization", **kwargs)
 
     try:
         defs = authconn.role_definitions.get(
@@ -91,7 +91,7 @@ async def definitions_get(hub, ctx, role_id, scope, **kwargs):
 
         result = defs.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error(
+        await hub.exec.azurerm.utils.log_cloud_error(
             "authorization", str(exc), **kwargs
         )
         result = {"error": str(exc)}
@@ -118,14 +118,14 @@ async def definitions_get_by_id(hub, ctx, role_id, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
+    authconn = await hub.exec.azurerm.utils.get_client(ctx, "authorization", **kwargs)
 
     try:
         defs = authconn.role_definitions.get_by_id(role_definition_id=role_id, **kwargs)
 
         result = defs.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error(
+        await hub.exec.azurerm.utils.log_cloud_error(
             "authorization", str(exc), **kwargs
         )
         result = {"error": str(exc)}
@@ -149,10 +149,10 @@ async def definitions_list(hub, ctx, scope, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
+    authconn = await hub.exec.azurerm.utils.get_client(ctx, "authorization", **kwargs)
 
     try:
-        defs = await hub.exec.utils.azurerm.paged_object_to_list(
+        defs = await hub.exec.azurerm.utils.paged_object_to_list(
             authconn.role_definitions.list(
                 scope=scope, filter=kwargs.get("filter"), **kwargs
             )
@@ -160,7 +160,7 @@ async def definitions_list(hub, ctx, scope, **kwargs):
 
         result = defs
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error(
+        await hub.exec.azurerm.utils.log_cloud_error(
             "authorization", str(exc), **kwargs
         )
         result = {"error": str(exc)}
@@ -186,7 +186,7 @@ async def assignments_get(hub, ctx, name, scope, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
+    authconn = await hub.exec.azurerm.utils.get_client(ctx, "authorization", **kwargs)
 
     try:
         assigns = authconn.role_assignments.get(
@@ -195,7 +195,7 @@ async def assignments_get(hub, ctx, name, scope, **kwargs):
 
         result = assigns.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error(
+        await hub.exec.azurerm.utils.log_cloud_error(
             "authorization", str(exc), **kwargs
         )
         result = {"error": str(exc)}
@@ -221,7 +221,7 @@ async def assignments_get_by_id(hub, ctx, assignment_id, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
+    authconn = await hub.exec.azurerm.utils.get_client(ctx, "authorization", **kwargs)
 
     try:
         assigns = authconn.role_assignments.get_by_id(
@@ -230,7 +230,7 @@ async def assignments_get_by_id(hub, ctx, assignment_id, **kwargs):
 
         result = assigns.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error(
+        await hub.exec.azurerm.utils.log_cloud_error(
             "authorization", str(exc), **kwargs
         )
         result = {"error": str(exc)}
@@ -252,16 +252,16 @@ async def assignments_list(hub, ctx, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
+    authconn = await hub.exec.azurerm.utils.get_client(ctx, "authorization", **kwargs)
 
     try:
-        assigns = await hub.exec.utils.azurerm.paged_object_to_list(
+        assigns = await hub.exec.azurerm.utils.paged_object_to_list(
             authconn.role_assignments.list(filter=kwargs.get("filter"), **kwargs)
         )
 
         result = assigns
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error(
+        await hub.exec.azurerm.utils.log_cloud_error(
             "authorization", str(exc), **kwargs
         )
         result = {"error": str(exc)}
@@ -303,13 +303,13 @@ async def assignments_list_for_resource(
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
+    authconn = await hub.exec.azurerm.utils.get_client(ctx, "authorization", **kwargs)
 
     if parent_resource_path is None:
         parent_resource_path = ""
 
     try:
-        assigns = await hub.exec.utils.azurerm.paged_object_to_list(
+        assigns = await hub.exec.azurerm.utils.paged_object_to_list(
             authconn.role_assignments.list_for_resource(
                 resource_name=name,
                 resource_group_name=resource_group,
@@ -323,7 +323,7 @@ async def assignments_list_for_resource(
 
         result = assigns
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error(
+        await hub.exec.azurerm.utils.log_cloud_error(
             "authorization", str(exc), **kwargs
         )
         result = {"error": str(exc)}
@@ -347,10 +347,10 @@ async def assignments_list_for_resource_group(hub, ctx, name, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
+    authconn = await hub.exec.azurerm.utils.get_client(ctx, "authorization", **kwargs)
 
     try:
-        assigns = await hub.exec.utils.azurerm.paged_object_to_list(
+        assigns = await hub.exec.azurerm.utils.paged_object_to_list(
             authconn.role_assignments.list_for_resource_group(
                 resource_group_name=name, filter=kwargs.get("filter"), **kwargs
             )
@@ -358,7 +358,7 @@ async def assignments_list_for_resource_group(hub, ctx, name, **kwargs):
 
         result = assigns
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error(
+        await hub.exec.azurerm.utils.log_cloud_error(
             "authorization", str(exc), **kwargs
         )
         result = {"error": str(exc)}
@@ -382,10 +382,10 @@ async def assignments_list_for_scope(hub, ctx, scope, **kwargs):
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
+    authconn = await hub.exec.azurerm.utils.get_client(ctx, "authorization", **kwargs)
 
     try:
-        assigns = await hub.exec.utils.azurerm.paged_object_to_list(
+        assigns = await hub.exec.azurerm.utils.paged_object_to_list(
             authconn.role_assignments.list_for_scope(
                 scope=scope, filter=kwargs.get("filter"), **kwargs
             )
@@ -393,7 +393,7 @@ async def assignments_list_for_scope(hub, ctx, scope, **kwargs):
 
         result = assigns
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error(
+        await hub.exec.azurerm.utils.log_cloud_error(
             "authorization", str(exc), **kwargs
         )
         result = {"error": str(exc)}
