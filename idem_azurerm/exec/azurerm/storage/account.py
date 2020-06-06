@@ -80,14 +80,14 @@ async def check_name_availability(hub, ctx, name, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         status = storconn.storage_accounts.check_name_availability(name=name)
 
         result = status.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -157,12 +157,12 @@ async def create(
         azurerm.storage.account.create test_name test_group test_sku test_kind test_location
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     sku = {"name": sku}
 
     try:
-        accountmodel = await hub.exec.utils.azurerm.create_object_model(
+        accountmodel = await hub.exec.azurerm.utils.create_object_model(
             "storage",
             "StorageAccountCreateParameters",
             sku=sku,
@@ -191,7 +191,7 @@ async def create(
 
         result = account.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -219,7 +219,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         account = storconn.storage_accounts.delete(
@@ -228,7 +228,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
 
     return result
 
@@ -251,7 +251,7 @@ async def get_properties(hub, ctx, name, resource_group, **kwargs):
         azurerm.storage.account.get_properties test_name test_group
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         props = storconn.storage_accounts.get_properties(
@@ -260,7 +260,7 @@ async def get_properties(hub, ctx, name, resource_group, **kwargs):
 
         result = props.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -281,17 +281,17 @@ async def list_(hub, ctx, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
-        accounts = await hub.exec.utils.azurerm.paged_object_to_list(
+        accounts = await hub.exec.azurerm.utils.paged_object_to_list(
             storconn.storage_accounts.list()
         )
 
         for account in accounts:
             result[account["name"]] = account
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -339,10 +339,10 @@ async def list_account_sas(
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
-        accountmodel = await hub.exec.utils.azurerm.create_object_model(
+        accountmodel = await hub.exec.azurerm.utils.create_object_model(
             "storage",
             "AccountSasParameters",
             permissions=permissions,
@@ -366,7 +366,7 @@ async def list_account_sas(
 
         result = creds.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -389,9 +389,9 @@ async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
     try:
-        accounts = await hub.exec.utils.azurerm.paged_object_to_list(
+        accounts = await hub.exec.azurerm.utils.paged_object_to_list(
             storconn.storage_accounts.list_by_resource_group(
                 resource_group_name=resource_group
             )
@@ -400,7 +400,7 @@ async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
         for account in accounts:
             result[account["name"]] = account
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -424,7 +424,7 @@ async def list_keys(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
     try:
         keys = storconn.storage_accounts.list_keys(
             account_name=name, resource_group_name=resource_group
@@ -432,7 +432,7 @@ async def list_keys(hub, ctx, name, resource_group, **kwargs):
 
         result = keys.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -474,10 +474,10 @@ async def list_service_sas(
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
-        servicemodel = await hub.exec.utils.azurerm.create_object_model(
+        servicemodel = await hub.exec.azurerm.utils.create_object_model(
             "storage",
             "ServiceSasParameters",
             permissions=permissions,
@@ -500,7 +500,7 @@ async def list_service_sas(
 
         result = creds.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -525,7 +525,7 @@ async def regenerate_key(hub, ctx, name, resource_group, key_name, **kwargs):
         azurerm.storage.account.renegerate_key test_name test_group test_key
 
     """
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
         keys = storconn.storage_accounts.regenerate_key(
@@ -537,7 +537,7 @@ async def regenerate_key(hub, ctx, name, resource_group, key_name, **kwargs):
 
         result = keys.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

@@ -89,9 +89,9 @@ async def list_locations(hub, ctx, subscription_id=None, **kwargs):
     elif not kwargs.get("subscription_id"):
         kwargs["subscription_id"] = subscription_id
 
-    subconn = await hub.exec.utils.azurerm.get_client(ctx, "subscription", **kwargs)
+    subconn = await hub.exec.azurerm.utils.get_client(ctx, "subscription", **kwargs)
     try:
-        locations = await hub.exec.utils.azurerm.paged_object_to_list(
+        locations = await hub.exec.azurerm.utils.paged_object_to_list(
             subconn.subscriptions.list_locations(
                 subscription_id=kwargs["subscription_id"]
             )
@@ -100,7 +100,7 @@ async def list_locations(hub, ctx, subscription_id=None, **kwargs):
         for loc in locations:
             result[loc["name"]] = loc
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -128,7 +128,7 @@ async def get(hub, ctx, subscription_id=None, **kwargs):
     elif not kwargs.get("subscription_id"):
         kwargs["subscription_id"] = subscription_id
 
-    subconn = await hub.exec.utils.azurerm.get_client(ctx, "subscription", **kwargs)
+    subconn = await hub.exec.azurerm.utils.get_client(ctx, "subscription", **kwargs)
     try:
         subscription = subconn.subscriptions.get(
             subscription_id=kwargs.get("subscription_id")
@@ -136,7 +136,7 @@ async def get(hub, ctx, subscription_id=None, **kwargs):
 
         result = subscription.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -156,16 +156,16 @@ async def list_(hub, ctx, **kwargs):
 
     """
     result = {}
-    subconn = await hub.exec.utils.azurerm.get_client(ctx, "subscription", **kwargs)
+    subconn = await hub.exec.azurerm.utils.get_client(ctx, "subscription", **kwargs)
     try:
-        subs = await hub.exec.utils.azurerm.paged_object_to_list(
+        subs = await hub.exec.azurerm.utils.paged_object_to_list(
             subconn.subscriptions.list()
         )
 
         for sub in subs:
             result[sub["subscription_id"]] = sub
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

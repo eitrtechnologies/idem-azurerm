@@ -81,17 +81,17 @@ async def list_(hub, ctx, location, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
-        tiers = await hub.exec.utils.azurerm.paged_object_to_list(
+        tiers = await hub.exec.azurerm.utils.paged_object_to_list(
             postconn.location_based_performance_tier.list(location_name=location)
         )
 
         for tier in tiers:
             result[tier["id"]] = tier
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

@@ -299,7 +299,7 @@ async def present(
                     break
 
         # ip_configurations changes
-        comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(
+        comp_ret = await hub.exec.azurerm.utils.compare_list_of_dicts(
             iface.get("ip_configurations", []),
             ip_configurations,
             ["public_ip_address", "subnet"],

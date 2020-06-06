@@ -84,7 +84,7 @@ async def operations_metadata_get(
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
+    authconn = await hub.exec.azurerm.utils.get_client(ctx, "authorization", **kwargs)
     try:
         data = authconn.provider_operations_metadata.get(
             resource_provider_namespace=resource_provider_namespace,
@@ -94,7 +94,7 @@ async def operations_metadata_get(
 
         result = data.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error(
+        await hub.exec.azurerm.utils.log_cloud_error(
             "authorization", str(exc), **kwargs
         )
         result = {"error": str(exc)}
@@ -118,10 +118,10 @@ async def operations_metadata_list(hub, ctx, api_version="2015-07-01", **kwargs)
 
     """
     result = {}
-    authconn = await hub.exec.utils.azurerm.get_client(ctx, "authorization", **kwargs)
+    authconn = await hub.exec.azurerm.utils.get_client(ctx, "authorization", **kwargs)
 
     try:
-        providers = await hub.exec.utils.azurerm.paged_object_to_list(
+        providers = await hub.exec.azurerm.utils.paged_object_to_list(
             authconn.provider_operations_metadata.list(
                 api_version=api_version, **kwargs
             )
@@ -130,7 +130,7 @@ async def operations_metadata_list(hub, ctx, api_version="2015-07-01", **kwargs)
         for provider in providers:
             result[provider["name"]] = provider
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error(
+        await hub.exec.azurerm.utils.log_cloud_error(
             "authorization", str(exc), **kwargs
         )
         result = {"error": str(exc)}

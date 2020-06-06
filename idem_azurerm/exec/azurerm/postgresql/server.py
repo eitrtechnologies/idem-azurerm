@@ -129,10 +129,10 @@ async def create(
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
-        propsmodel = await hub.exec.utils.azurerm.create_object_model(
+        propsmodel = await hub.exec.azurerm.utils.create_object_model(
             "rdbms.postgresql",
             "ServerPropertiesForDefaultCreate",
             version=version,
@@ -150,7 +150,7 @@ async def create(
         return result
 
     try:
-        servermodel = await hub.exec.utils.azurerm.create_object_model(
+        servermodel = await hub.exec.azurerm.utils.create_object_model(
             "rdbms.postgresql",
             "ServerForCreate",
             sku=sku,
@@ -172,7 +172,7 @@ async def create(
         server.wait()
         result = server.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
     except ValidationError as exc:
         result = {"error": str(exc)}
@@ -198,7 +198,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
         server = postconn.servers.delete(
@@ -208,7 +208,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
         server.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -232,7 +232,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
         server = postconn.servers.get(
@@ -241,7 +241,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
         result = server.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -261,17 +261,17 @@ async def list_(hub, ctx, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
-        servers = await hub.exec.utils.azurerm.paged_object_to_list(
+        servers = await hub.exec.azurerm.utils.paged_object_to_list(
             postconn.servers.list()
         )
 
         for server in servers:
             result[server["name"]] = server
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -293,17 +293,17 @@ async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
-        servers = await hub.exec.utils.azurerm.paged_object_to_list(
+        servers = await hub.exec.azurerm.utils.paged_object_to_list(
             postconn.servers.list_by_resource_group(resource_group_name=resource_group)
         )
 
         for server in servers:
             result[server["name"]] = server
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -327,7 +327,7 @@ async def restart(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
         server = postconn.servers.restart(
@@ -337,7 +337,7 @@ async def restart(hub, ctx, name, resource_group, **kwargs):
         server.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -397,10 +397,10 @@ async def update(
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
-        paramsmodel = await hub.exec.utils.azurerm.create_object_model(
+        paramsmodel = await hub.exec.azurerm.utils.create_object_model(
             "rdbms.postgresql",
             "ServerUpdateParameters",
             sku=sku,
@@ -425,7 +425,7 @@ async def update(
         server.wait()
         result = server.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

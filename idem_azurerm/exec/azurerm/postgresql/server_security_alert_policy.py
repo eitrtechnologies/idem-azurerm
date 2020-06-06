@@ -114,10 +114,10 @@ async def create_or_update(
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
-        paramsmodel = await hub.exec.utils.azurerm.create_object_model(
+        paramsmodel = await hub.exec.azurerm.utils.create_object_model(
             "rdbms.postgresql",
             "ServerSecurityAlertPolicy",
             state=policy_state,
@@ -144,7 +144,7 @@ async def create_or_update(
         policy.wait()
         result = policy.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -168,7 +168,7 @@ async def get(hub, ctx, server_name, resource_group, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
         policy = postconn.server_security_alert_policies.get(
@@ -177,7 +177,7 @@ async def get(hub, ctx, server_name, resource_group, **kwargs):
 
         result = policy.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

@@ -195,7 +195,7 @@ async def table_present(
 
         # routes changes
         if routes:
-            comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(
+            comp_ret = await hub.exec.azurerm.utils.compare_list_of_dicts(
                 rt_tbl.get("routes", []), routes
             )
 

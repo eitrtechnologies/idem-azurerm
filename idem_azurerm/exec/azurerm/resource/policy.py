@@ -84,7 +84,7 @@ async def assignment_delete(hub, ctx, name, scope, **kwargs):
 
     """
     result = False
-    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
+    polconn = await hub.exec.azurerm.utils.get_client(ctx, "policy", **kwargs)
     try:
         # pylint: disable=unused-variable
         policy = polconn.policy_assignments.delete(
@@ -92,7 +92,7 @@ async def assignment_delete(hub, ctx, name, scope, **kwargs):
         )
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
 
     return result
 
@@ -117,7 +117,7 @@ async def assignment_create(hub, ctx, name, scope, definition_name, **kwargs):
         /subscriptions/bc75htn-a0fhsi-349b-56gh-4fghti-f84852 testpolicy
 
     """
-    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
+    polconn = await hub.exec.azurerm.utils.get_client(ctx, "policy", **kwargs)
 
     # "get" doesn't work for built-in policies per https://github.com/Azure/azure-cli/issues/692
     # Uncomment this section when the ticket above is resolved.
@@ -152,7 +152,7 @@ async def assignment_create(hub, ctx, name, scope, definition_name, **kwargs):
         policy_kwargs.update(prop_kwargs)
 
         try:
-            policy_model = await hub.exec.utils.azurerm.create_object_model(
+            policy_model = await hub.exec.azurerm.utils.create_object_model(
                 "resource.policy", "PolicyAssignment", **policy_kwargs
             )
         except TypeError as exc:
@@ -167,7 +167,7 @@ async def assignment_create(hub, ctx, name, scope, definition_name, **kwargs):
             )
             result = policy.as_dict()
         except CloudError as exc:
-            await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+            await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
             result = {"error": str(exc)}
         except SerializationError as exc:
             result = {
@@ -201,14 +201,14 @@ async def assignment_get(hub, ctx, name, scope, **kwargs):
         /subscriptions/bc75htn-a0fhsi-349b-56gh-4fghti-f84852
 
     """
-    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
+    polconn = await hub.exec.azurerm.utils.get_client(ctx, "policy", **kwargs)
     try:
         policy = polconn.policy_assignments.get(
             policy_assignment_name=name, scope=scope
         )
         result = policy.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -232,9 +232,9 @@ async def assignments_list_for_resource_group(
 
     """
     result = {}
-    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
+    polconn = await hub.exec.azurerm.utils.get_client(ctx, "policy", **kwargs)
     try:
-        policy_assign = await hub.exec.utils.azurerm.paged_object_to_list(
+        policy_assign = await hub.exec.azurerm.utils.paged_object_to_list(
             polconn.policy_assignments.list_for_resource_group(
                 resource_group_name=resource_group, filter=kwargs.get("filter")
             )
@@ -243,7 +243,7 @@ async def assignments_list_for_resource_group(
         for assign in policy_assign:
             result[assign["name"]] = assign
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -263,16 +263,16 @@ async def assignments_list(hub, ctx, **kwargs):
 
     """
     result = {}
-    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
+    polconn = await hub.exec.azurerm.utils.get_client(ctx, "policy", **kwargs)
     try:
-        policy_assign = await hub.exec.utils.azurerm.paged_object_to_list(
+        policy_assign = await hub.exec.azurerm.utils.paged_object_to_list(
             polconn.policy_assignments.list()
         )
 
         for assign in policy_assign:
             result[assign["name"]] = assign
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -302,7 +302,7 @@ async def definition_create_or_update(
         result = {"error": "The policy rule must be a dictionary!"}
         return result
 
-    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
+    polconn = await hub.exec.azurerm.utils.get_client(ctx, "policy", **kwargs)
 
     # Convert OrderedDict to dict
     prop_kwargs = {"policy_rule": loads(dumps(policy_rule))}
@@ -311,7 +311,7 @@ async def definition_create_or_update(
     policy_kwargs.update(prop_kwargs)
 
     try:
-        policy_model = await hub.exec.utils.azurerm.create_object_model(
+        policy_model = await hub.exec.azurerm.utils.create_object_model(
             "resource.policy", "PolicyDefinition", **policy_kwargs
         )
     except TypeError as exc:
@@ -326,7 +326,7 @@ async def definition_create_or_update(
         )
         result = policy.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -352,13 +352,13 @@ async def definition_delete(hub, ctx, name, **kwargs):
 
     """
     result = False
-    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
+    polconn = await hub.exec.azurerm.utils.get_client(ctx, "policy", **kwargs)
     try:
         # pylint: disable=unused-variable
         policy = polconn.policy_definitions.delete(policy_definition_name=name)
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
 
     return result
 
@@ -378,12 +378,12 @@ async def definition_get(hub, ctx, name, **kwargs):
         azurerm.resource.policy.definition_get testpolicy
 
     """
-    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
+    polconn = await hub.exec.azurerm.utils.get_client(ctx, "policy", **kwargs)
     try:
         policy_def = polconn.policy_definitions.get(policy_definition_name=name)
         result = policy_def.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -405,9 +405,9 @@ async def definitions_list(hub, ctx, hide_builtin=False, **kwargs):
 
     """
     result = {}
-    polconn = await hub.exec.utils.azurerm.get_client(ctx, "policy", **kwargs)
+    polconn = await hub.exec.azurerm.utils.get_client(ctx, "policy", **kwargs)
     try:
-        policy_defs = await hub.exec.utils.azurerm.paged_object_to_list(
+        policy_defs = await hub.exec.azurerm.utils.paged_object_to_list(
             polconn.policy_definitions.list()
         )
 
@@ -415,7 +415,7 @@ async def definitions_list(hub, ctx, hide_builtin=False, **kwargs):
             if not (hide_builtin and policy["policy_type"] == "BuiltIn"):
                 result[policy["name"]] = policy
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

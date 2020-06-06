@@ -722,7 +722,7 @@ async def present(
             ret["changes"]["tags"] = tag_changes
 
         if ip_configurations:
-            comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(
+            comp_ret = await hub.exec.azurerm.utils.compare_list_of_dicts(
                 gateway.get("ip_configurations", []),
                 ip_configurations,
                 ["public_ip_address", "subnet"],

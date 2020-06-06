@@ -85,7 +85,7 @@ async def get_key_client(hub, ctx, vault_url, **kwargs):
 
     :param vault_url: The URL of the vault that the client will access.
     """
-    credential = await hub.exec.utils.azurerm.get_identity_credentials(ctx, **kwargs)
+    credential = await hub.exec.azurerm.utils.get_identity_credentials(ctx, **kwargs)
 
     key_client = KeyClient(vault_url=vault_url, credential=credential)
 
@@ -545,7 +545,7 @@ async def import_key(hub, ctx, name, vault_url, **kwargs):
         kwargs["key_type"] = kwargs.get("key_type").upper().replace("_", "-")
 
     try:
-        keymodel = await hub.exec.utils.azurerm.create_object_model(
+        keymodel = await hub.exec.azurerm.utils.create_object_model(
             "keyvault-keys", "JsonWebKey", **kwargs
         )
     except TypeError as exc:
