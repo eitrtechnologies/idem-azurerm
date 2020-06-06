@@ -78,17 +78,17 @@ async def list_(hub, ctx, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
-        usages = await hub.exec.utils.azurerm.paged_object_to_list(
+        usages = await hub.exec.azurerm.utils.paged_object_to_list(
             storconn.usage.list()
         )
 
         for usage in usages:
             result[usage["name"]["value"]] = usage
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -110,17 +110,17 @@ async def list_by_location(hub, ctx, location, **kwargs):
 
     """
     result = {}
-    storconn = await hub.exec.utils.azurerm.get_client(ctx, "storage", **kwargs)
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
-        usages = await hub.exec.utils.azurerm.paged_object_to_list(
+        usages = await hub.exec.azurerm.utils.paged_object_to_list(
             storconn.usage.list_by_location(location)
         )
 
         for usage in usages:
             result[usage["name"]["value"]] = usage
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("storage", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

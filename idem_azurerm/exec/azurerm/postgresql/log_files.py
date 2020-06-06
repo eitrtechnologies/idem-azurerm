@@ -81,10 +81,10 @@ async def list_by_server(hub, ctx, server_name, resource_group, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
-        files = await hub.exec.utils.azurerm.paged_object_to_list(
+        files = await hub.exec.azurerm.utils.paged_object_to_list(
             postconn.log_files.list_by_server(
                 server_name=server_name, resource_group_name=resource_group
             )
@@ -93,7 +93,7 @@ async def list_by_server(hub, ctx, server_name, resource_group, **kwargs):
         for file in files:
             result[file["name"]] = file
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

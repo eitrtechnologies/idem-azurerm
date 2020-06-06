@@ -117,7 +117,7 @@ async def connection_create_or_update(
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     # Converts the Resource ID of virtual_network_gateway into a VirtualNetworkGateway Object.
     # This endpoint will be where the connection originates.
@@ -171,7 +171,7 @@ async def connection_create_or_update(
         kwargs["local_network_gateway2"] = {"id": kwargs.get("local_network_gateway2")}
 
     try:
-        connectionmodel = await hub.exec.utils.azurerm.create_object_model(
+        connectionmodel = await hub.exec.azurerm.utils.create_object_model(
             "network",
             "VirtualNetworkGatewayConnection",
             virtual_network_gateway1=virtual_network_gateway,
@@ -194,7 +194,7 @@ async def connection_create_or_update(
         connection_result = connection.result()
         result = connection_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -221,7 +221,7 @@ async def connection_get(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.connection_get test_name test_group
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         connection = netconn.virtual_network_gateway_connections.get(
             resource_group_name=resource_group,
@@ -230,7 +230,7 @@ async def connection_get(hub, ctx, name, resource_group, **kwargs):
 
         result = connection.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -254,7 +254,7 @@ async def connection_delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         connection = netconn.virtual_network_gateway_connections.delete(
             resource_group_name=resource_group,
@@ -263,7 +263,7 @@ async def connection_delete(hub, ctx, name, resource_group, **kwargs):
         connection.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
@@ -289,7 +289,7 @@ async def connection_set_shared_key(hub, ctx, name, resource_group, value, **kwa
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
         key = netconn.virtual_network_gateway_connections.set_shared_key(
@@ -301,7 +301,7 @@ async def connection_set_shared_key(hub, ctx, name, resource_group, value, **kwa
         key.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -325,7 +325,7 @@ async def connection_get_shared_key(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.connection_get_shared_key test_name test_group
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         key = netconn.virtual_network_gateway_connections.get_shared_key(
             resource_group_name=resource_group,
@@ -334,7 +334,7 @@ async def connection_get_shared_key(hub, ctx, name, resource_group, **kwargs):
 
         result = key.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -365,7 +365,7 @@ async def connection_reset_shared_key(
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         rkey = netconn.virtual_network_gateway_connections.reset_shared_key(
             resource_group_name=resource_group,
@@ -376,7 +376,7 @@ async def connection_reset_shared_key(
         rkey.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -398,9 +398,9 @@ async def connections_list(hub, ctx, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        connections = await hub.exec.utils.azurerm.paged_object_to_list(
+        connections = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.virtual_network_gateway_connections.list(
                 resource_group_name=resource_group
             )
@@ -409,7 +409,7 @@ async def connections_list(hub, ctx, resource_group, **kwargs):
         for connection in connections:
             result[connection["name"]] = connection
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -431,16 +431,16 @@ async def list_(hub, ctx, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        gateways = await hub.exec.utils.azurerm.paged_object_to_list(
+        gateways = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.virtual_network_gateways.list(resource_group_name=resource_group)
         )
 
         for gateway in gateways:
             result[gateway["name"]] = gateway
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -488,7 +488,7 @@ async def create_or_update(
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     # Loop through IP Configurations and build each dictionary to pass to model creation.
     if isinstance(ip_configurations, list):
@@ -515,7 +515,7 @@ async def create_or_update(
                             ipconfig["public_ip_address"] = {"id": str(pub_ip["id"])}
 
     try:
-        gatewaymodel = await hub.exec.utils.azurerm.create_object_model(
+        gatewaymodel = await hub.exec.azurerm.utils.create_object_model(
             "network",
             "VirtualNetworkGateway",
             ip_configurations=ip_configurations,
@@ -537,7 +537,7 @@ async def create_or_update(
         gateway_result = gateway.result()
         result = gateway_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -564,7 +564,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.get test_name test_group
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         gateway = netconn.virtual_network_gateways.get(
             resource_group_name=resource_group, virtual_network_gateway_name=name
@@ -572,7 +572,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
         result = gateway.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -596,7 +596,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         gateway = netconn.virtual_network_gateways.delete(
             resource_group_name=resource_group, virtual_network_gateway_name=name
@@ -604,7 +604,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
         gateway.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
@@ -627,9 +627,9 @@ async def list_connections(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        connections = await hub.exec.utils.azurerm.paged_object_to_list(
+        connections = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.virtual_network_gateways.list_connections(
                 resource_group_name=resource_group, virtual_network_gateway_name=name
             )
@@ -637,7 +637,7 @@ async def list_connections(hub, ctx, name, resource_group, **kwargs):
         for connection in connections:
             result[connection["name"]] = connection
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -664,7 +664,7 @@ async def reset(hub, ctx, name, resource_group, gateway_vip=None, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         reset = netconn.virtual_network_gateways.reset(
             resource_group_name=resource_group,
@@ -674,7 +674,7 @@ async def reset(hub, ctx, name, resource_group, gateway_vip=None, **kwargs):
         reset.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -698,7 +698,7 @@ async def reset_vpn_client_shared_key(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         reset = netconn.virtual_network_gateways.reset_vpn_client_shared_key(
             resource_group_name=resource_group, virtual_network_gateway_name=name
@@ -707,7 +707,7 @@ async def reset_vpn_client_shared_key(hub, ctx, name, resource_group, **kwargs):
         reset_result = reset.result()
         result = reset_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -752,10 +752,10 @@ async def generatevpnclientpackage(
         azurerm.network.virtual_network_gateway.generatevpnclientpackage test_name test_group test_params
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
-        pkgmodel = await hub.exec.utils.azurerm.create_object_model(
+        pkgmodel = await hub.exec.azurerm.utils.create_object_model(
             "network",
             "VpnClientParameters",
             processor_architecture=processor_architecture,
@@ -779,7 +779,7 @@ async def generatevpnclientpackage(
 
         result = pkg
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -828,10 +828,10 @@ async def generate_vpn_profile(
         azurerm.network.virtual_network_gateway.generate_vpn_profile test_name test_group test_params
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
-        profilemodel = await hub.exec.utils.azurerm.create_object_model(
+        profilemodel = await hub.exec.azurerm.utils.create_object_model(
             "network",
             "VpnClientParameters",
             processor_architecture=processor_architecture,
@@ -855,7 +855,7 @@ async def generate_vpn_profile(
 
         result = profile
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -883,7 +883,7 @@ async def get_vpn_profile_package_url(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.get_vpn_profile_package_url test_name test_group
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         url = netconn.virtual_network_gateways.get_vpn_profile_package_url(
             resource_group_name=resource_group, virtual_network_gateway_name=name
@@ -891,7 +891,7 @@ async def get_vpn_profile_package_url(hub, ctx, name, resource_group, **kwargs):
 
         result = url.result()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -917,7 +917,7 @@ async def get_bgp_peer_status(hub, ctx, name, resource_group, peer=None, **kwarg
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         peers = netconn.virtual_network_gateways.get_bgp_peer_status(
             resource_group_name=resource_group,
@@ -929,7 +929,7 @@ async def get_bgp_peer_status(hub, ctx, name, resource_group, peer=None, **kwarg
         for bgp_peer in peers_result["value"]:
             result["BGP peer"] = bgp_peer
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -952,7 +952,7 @@ async def supported_vpn_devices(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.supported_vpn_devices test_name test_group
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         devices = netconn.virtual_network_gateways.supported_vpn_devices(
             resource_group_name=resource_group, virtual_network_gateway_name=name
@@ -960,7 +960,7 @@ async def supported_vpn_devices(hub, ctx, name, resource_group, **kwargs):
 
         result = devices
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -984,7 +984,7 @@ async def get_learned_routes(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         routes = netconn.virtual_network_gateways.get_learned_routes(
             resource_group_name=resource_group, virtual_network_gateway_name=name
@@ -994,7 +994,7 @@ async def get_learned_routes(hub, ctx, name, resource_group, **kwargs):
         for route in routes_result["value"]:
             result["route_list"] = route
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -1019,7 +1019,7 @@ async def get_advertised_routes(hub, ctx, name, resource_group, peer, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         routes = netconn.virtual_network_gateways.get_advertised_routes(
             resource_group_name=resource_group,
@@ -1031,7 +1031,7 @@ async def get_advertised_routes(hub, ctx, name, resource_group, peer, **kwargs):
         for route in routes_result["value"]:
             result["route_list"] = route
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -1097,9 +1097,9 @@ async def set_vpnclient_ipsec_parameters(
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        paramsmodel = await hub.exec.utils.azurerm.create_object_model(
+        paramsmodel = await hub.exec.azurerm.utils.create_object_model(
             "network",
             "VpnClientIPsecParameters",
             sa_life_time_seconds=sa_life_time_seconds,
@@ -1128,7 +1128,7 @@ async def set_vpnclient_ipsec_parameters(
         params_result = params.result()
         result = params_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -1151,7 +1151,7 @@ async def get_vpnclient_ipsec_parameters(hub, ctx, name, resource_group, **kwarg
         azurerm.network.virtual_network_gateway.get_vpnclient_ipsec_parameters test_name test_group
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         policy = netconn.virtual_network_gateways.get_vpnclient_ipsec_parameters(
             resource_group_name=resource_group, virtual_network_gateway_name=name
@@ -1160,7 +1160,7 @@ async def get_vpnclient_ipsec_parameters(hub, ctx, name, resource_group, **kwarg
         policy_result = policy.result()
         result = policy_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -1192,10 +1192,10 @@ async def vpn_device_configuration_script(
                   test_vendor test_device_fam test_version
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
-        scriptmodel = await hub.exec.utils.azurerm.create_object_model(
+        scriptmodel = await hub.exec.azurerm.utils.create_object_model(
             "network",
             "VpnDeviceScriptParameters",
             vendor=vendor,
@@ -1218,7 +1218,7 @@ async def vpn_device_configuration_script(
 
         result = script
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {

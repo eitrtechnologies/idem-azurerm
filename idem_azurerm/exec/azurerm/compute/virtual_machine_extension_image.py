@@ -84,7 +84,7 @@ async def get(hub, ctx, location, publisher, extension_type, version, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
 
     try:
         image = compconn.virtual_machine_extension_images.get(
@@ -97,7 +97,7 @@ async def get(hub, ctx, location, publisher, extension_type, version, **kwargs):
 
         result = image.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -121,7 +121,7 @@ async def list_types(hub, ctx, location, publisher, **kwargs):
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
 
     try:
         images = compconn.virtual_machine_extension_images.list_types(
@@ -132,7 +132,7 @@ async def list_types(hub, ctx, location, publisher, **kwargs):
             img = image.as_dict()
             result[img["name"]] = img
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -158,7 +158,7 @@ async def list_versions(hub, ctx, location, publisher, extension_type, **kwargs)
 
     """
     result = {}
-    compconn = await hub.exec.utils.azurerm.get_client(ctx, "compute", **kwargs)
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
 
     try:
         images = compconn.virtual_machine_extension_images.list_versions(
@@ -169,7 +169,7 @@ async def list_versions(hub, ctx, location, publisher, extension_type, **kwargs)
             img = image.as_dict()
             result[img["name"]] = img
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("compute", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

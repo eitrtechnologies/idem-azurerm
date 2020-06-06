@@ -92,7 +92,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     result = False
 
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         nic = netconn.network_interfaces.delete(
             network_interface_name=name, resource_group_name=resource_group
@@ -100,7 +100,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
         nic.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
@@ -123,14 +123,14 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.network_interface.get test-iface0 testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         nic = netconn.network_interfaces.get(
             network_interface_name=name, resource_group_name=resource_group
         )
         result = nic.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -175,7 +175,7 @@ async def create_or_update(
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     # Use NSG name to link to the ID of an existing NSG.
     if kwargs.get("network_security_group"):
@@ -239,7 +239,7 @@ async def create_or_update(
                             ipconfig["public_ip_address"] = {"id": str(pub_ip["id"])}
 
     try:
-        nicmodel = await hub.exec.utils.azurerm.create_object_model(
+        nicmodel = await hub.exec.azurerm.utils.create_object_model(
             "network", "NetworkInterface", ip_configurations=ip_configurations, **kwargs
         )
     except TypeError as exc:
@@ -258,7 +258,7 @@ async def create_or_update(
         nic_result = interface.result()
         result = nic_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -282,16 +282,16 @@ async def list_all(hub, ctx, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        nics = await hub.exec.utils.azurerm.paged_object_to_list(
+        nics = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.network_interfaces.list_all()
         )
 
         for nic in nics:
             result[nic["name"]] = nic
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -314,16 +314,16 @@ async def list_(hub, ctx, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        nics = await hub.exec.utils.azurerm.paged_object_to_list(
+        nics = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.network_interfaces.list(resource_group_name=resource_group)
         )
 
         for nic in nics:
             result[nic["name"]] = nic
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -347,7 +347,7 @@ async def get_effective_route_table(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.network_interface.get_effective_route_table test-iface0 testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         nic = netconn.network_interfaces.get_effective_route_table(
             network_interface_name=name, resource_group_name=resource_group
@@ -357,7 +357,7 @@ async def get_effective_route_table(hub, ctx, name, resource_group, **kwargs):
         tables = tables.as_dict()
         result = tables["value"]
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -383,7 +383,7 @@ async def list_effective_network_security_groups(
         azurerm.network.network_interface.list_effective_network_security_groups test-iface0 testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         nic = netconn.network_interfaces.list_effective_network_security_groups(
             network_interface_name=name, resource_group_name=resource_group
@@ -393,7 +393,7 @@ async def list_effective_network_security_groups(
         groups = groups.as_dict()
         result = groups["value"]
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -422,9 +422,9 @@ async def list_virtual_machine_scale_set_vm_network_interfaces(
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        nics = await hub.exec.utils.azurerm.paged_object_to_list(
+        nics = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.network_interfaces.list_virtual_machine_scale_set_vm_network_interfaces(
                 virtual_machine_scale_set_name=scale_set,
                 virtualmachine_index=vm_index,
@@ -435,7 +435,7 @@ async def list_virtual_machine_scale_set_vm_network_interfaces(
         for nic in nics:
             result[nic["name"]] = nic
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -462,9 +462,9 @@ async def list_virtual_machine_scale_set_network_interfaces(
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        nics = await hub.exec.utils.azurerm.paged_object_to_list(
+        nics = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.network_interfaces.list_virtual_machine_scale_set_network_interfaces(
                 virtual_machine_scale_set_name=scale_set,
                 resource_group_name=resource_group,
@@ -474,7 +474,7 @@ async def list_virtual_machine_scale_set_network_interfaces(
         for nic in nics:
             result[nic["name"]] = nic
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -507,7 +507,7 @@ async def get_virtual_machine_scale_set_network_interface(
     """
     expand = kwargs.get("expand")
 
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         nic = netconn.network_interfaces.list_virtual_machine_scale_set_vm_network_interfaces(
             network_interface_name=name,
@@ -519,7 +519,7 @@ async def get_virtual_machine_scale_set_network_interface(
 
         result = nic.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

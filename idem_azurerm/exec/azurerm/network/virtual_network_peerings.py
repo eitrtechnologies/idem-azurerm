@@ -90,9 +90,9 @@ async def list_(hub, ctx, virtual_network, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        peerings = await hub.exec.utils.azurerm.paged_object_to_list(
+        peerings = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.virtual_network_peerings.list(
                 resource_group_name=resource_group, virtual_network_name=virtual_network
             )
@@ -101,7 +101,7 @@ async def list_(hub, ctx, virtual_network, resource_group, **kwargs):
         for peering in peerings:
             result[peering["name"]] = peering
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -129,7 +129,7 @@ async def delete(hub, ctx, name, virtual_network, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         peering = netconn.virtual_network_peerings.delete(
             resource_group_name=resource_group,
@@ -139,7 +139,7 @@ async def delete(hub, ctx, name, virtual_network, resource_group, **kwargs):
         peering.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
@@ -165,7 +165,7 @@ async def get(hub, ctx, name, virtual_network, resource_group, **kwargs):
         azurerm.network.virtual_network_peering.get peer1 testnet testgroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         peering = netconn.virtual_network_peerings.get(
             resource_group_name=resource_group,
@@ -175,7 +175,7 @@ async def get(hub, ctx, name, virtual_network, resource_group, **kwargs):
 
         result = peering.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -217,7 +217,7 @@ async def create_or_update(
                   remotenet testnet testgroup remote_vnet_group=remotegroup
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     # Use Remote Virtual Network name to link to the ID of an existing object
     remote_vnet = await hub.exec.azurerm.network.virtual_network.get(
@@ -230,7 +230,7 @@ async def create_or_update(
         remote_virtual_network = {"id": str(remote_vnet["id"])}
 
     try:
-        peermodel = await hub.exec.utils.azurerm.create_object_model(
+        peermodel = await hub.exec.azurerm.utils.create_object_model(
             "network",
             "VirtualNetworkPeering",
             remote_virtual_network=remote_virtual_network,
@@ -253,7 +253,7 @@ async def create_or_update(
         peer_result = peering.result()
         result = peer_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {

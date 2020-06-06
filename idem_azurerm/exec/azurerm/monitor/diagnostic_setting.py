@@ -142,10 +142,10 @@ async def create_or_update(
 
     """
     result = {}
-    moniconn = await hub.exec.utils.azurerm.get_client(ctx, "monitor", **kwargs)
+    moniconn = await hub.exec.azurerm.utils.get_client(ctx, "monitor", **kwargs)
 
     try:
-        diagmodel = await hub.exec.utils.azurerm.create_object_model(
+        diagmodel = await hub.exec.azurerm.utils.create_object_model(
             "monitor",
             "DiagnosticSettingsResource",
             metrics=metrics,
@@ -170,7 +170,7 @@ async def create_or_update(
 
         result = diag.as_dict()
     except (CloudError, ErrorResponseException) as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("monitor", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("monitor", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -194,7 +194,7 @@ async def delete(hub, ctx, name, resource_uri, **kwargs):
 
     """
     result = False
-    moniconn = await hub.exec.utils.azurerm.get_client(ctx, "monitor", **kwargs)
+    moniconn = await hub.exec.azurerm.utils.get_client(ctx, "monitor", **kwargs)
     try:
         diag = moniconn.diagnostic_settings.delete(
             name=name, resource_uri=resource_uri, **kwargs
@@ -202,7 +202,7 @@ async def delete(hub, ctx, name, resource_uri, **kwargs):
 
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("monitor", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("monitor", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -226,7 +226,7 @@ async def get(hub, ctx, name, resource_uri, **kwargs):
 
     """
     result = {}
-    moniconn = await hub.exec.utils.azurerm.get_client(ctx, "monitor", **kwargs)
+    moniconn = await hub.exec.azurerm.utils.get_client(ctx, "monitor", **kwargs)
 
     try:
         diag = moniconn.diagnostic_settings.get(
@@ -235,7 +235,7 @@ async def get(hub, ctx, name, resource_uri, **kwargs):
 
         result = diag.as_dict()
     except (CloudError, ErrorResponseException) as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("monitor", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("monitor", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -257,7 +257,7 @@ async def list_(hub, ctx, resource_uri, **kwargs):
 
     """
     result = {}
-    moniconn = await hub.exec.utils.azurerm.get_client(ctx, "monitor", **kwargs)
+    moniconn = await hub.exec.azurerm.utils.get_client(ctx, "monitor", **kwargs)
 
     try:
         diag = moniconn.diagnostic_settings.list(resource_uri=resource_uri, **kwargs)
@@ -266,7 +266,7 @@ async def list_(hub, ctx, resource_uri, **kwargs):
         for value in values:
             result[value["name"]] = value
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("monitor", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("monitor", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

@@ -195,7 +195,7 @@ async def get_client(hub, ctx, client_type, **kwargs):
         credentials,
         subscription_id,
         cloud_env,
-    ) = await hub.exec.utils.azurerm.determine_auth(ctx, **kwargs)
+    ) = await hub.exec.azurerm.utils.determine_auth(ctx, **kwargs)
 
     if client_type == "subscription":
         client = Client(

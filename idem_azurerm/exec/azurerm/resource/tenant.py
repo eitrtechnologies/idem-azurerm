@@ -81,16 +81,16 @@ async def list_(hub, ctx, **kwargs):
 
     """
     result = {}
-    subconn = await hub.exec.utils.azurerm.get_client(ctx, "subscription", **kwargs)
+    subconn = await hub.exec.azurerm.utils.get_client(ctx, "subscription", **kwargs)
     try:
-        tenants = await hub.exec.utils.azurerm.paged_object_to_list(
+        tenants = await hub.exec.azurerm.utils.paged_object_to_list(
             subconn.tenants.list()
         )
 
         for tenant in tenants:
             result[tenant["tenant_id"]] = tenant
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

@@ -103,10 +103,10 @@ async def create_or_update(
             return False
         kwargs["location"] = rg_props["location"]
 
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
-        gatewaymodel = await hub.exec.utils.azurerm.create_object_model(
+        gatewaymodel = await hub.exec.azurerm.utils.create_object_model(
             "network",
             "LocalNetworkGateway",
             gateway_ip_address=gateway_ip_address,
@@ -128,7 +128,7 @@ async def create_or_update(
         gateway_result = gateway.result()
         result = gateway_result.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -155,7 +155,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.local_network_gateway.get test_name test_group
 
     """
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         gateway = netconn.local_network_gateways.get(
             resource_group_name=resource_group, local_network_gateway_name=name
@@ -163,7 +163,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
         result = gateway.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -187,7 +187,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         gateway = netconn.local_network_gateways.delete(
             resource_group_name=resource_group, local_network_gateway_name=name
@@ -195,7 +195,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
         gateway.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
 
     return result
 
@@ -216,16 +216,16 @@ async def list_(hub, ctx, resource_group, **kwargs):
 
     """
     result = {}
-    netconn = await hub.exec.utils.azurerm.get_client(ctx, "network", **kwargs)
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        gateways = await hub.exec.utils.azurerm.paged_object_to_list(
+        gateways = await hub.exec.azurerm.utils.paged_object_to_list(
             netconn.local_network_gateways.list(resource_group_name=resource_group)
         )
 
         for gateway in gateways:
             result[gateway["name"]] = gateway
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("network", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

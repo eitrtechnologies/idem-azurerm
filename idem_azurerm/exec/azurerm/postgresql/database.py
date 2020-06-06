@@ -90,7 +90,7 @@ async def create_or_update(
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
         database = postconn.databases.create_or_update(
@@ -104,7 +104,7 @@ async def create_or_update(
         database.wait()
         result = database.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -130,7 +130,7 @@ async def delete(hub, ctx, name, server_name, resource_group, **kwargs):
 
     """
     result = False
-    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
         database = postconn.databases.delete(
@@ -142,7 +142,7 @@ async def delete(hub, ctx, name, server_name, resource_group, **kwargs):
         database.wait()
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -168,7 +168,7 @@ async def get(hub, ctx, name, server_name, resource_group, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
         database = postconn.databases.get(
@@ -179,7 +179,7 @@ async def get(hub, ctx, name, server_name, resource_group, **kwargs):
 
         result = database.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -203,10 +203,10 @@ async def list_by_server(hub, ctx, server_name, resource_group, **kwargs):
 
     """
     result = {}
-    postconn = await hub.exec.utils.azurerm.get_client(ctx, "postgresql", **kwargs)
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
-        databases = await hub.exec.utils.azurerm.paged_object_to_list(
+        databases = await hub.exec.azurerm.utils.paged_object_to_list(
             postconn.databases.list_by_server(
                 server_name=server_name, resource_group_name=resource_group
             )
@@ -215,7 +215,7 @@ async def list_by_server(hub, ctx, server_name, resource_group, **kwargs):
         for database in databases:
             result[database["name"]] = database
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("postgresql", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

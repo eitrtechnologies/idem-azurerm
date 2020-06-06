@@ -81,16 +81,16 @@ async def list_(hub, ctx, **kwargs):
 
     """
     result = {}
-    moniconn = await hub.exec.utils.azurerm.get_client(ctx, "monitor", **kwargs)
+    moniconn = await hub.exec.azurerm.utils.get_client(ctx, "monitor", **kwargs)
     try:
-        profiles = await hub.exec.utils.azurerm.paged_object_to_list(
+        profiles = await hub.exec.azurerm.utils.paged_object_to_list(
             moniconn.log_profiles.list()
         )
 
         for profile in profiles:
             result[profile["name"]] = profile
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("monitor", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("monitor", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

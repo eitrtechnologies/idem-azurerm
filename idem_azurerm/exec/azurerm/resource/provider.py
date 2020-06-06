@@ -86,20 +86,20 @@ async def list_(hub, ctx, top=None, expand=None, **kwargs):
 
     """
     result = {}
-    resconn = await hub.exec.utils.azurerm.get_client(ctx, "resource", **kwargs)
+    resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
 
     if not expand:
         expand = "resourceTypes/aliases"
 
     try:
-        groups = await hub.exec.utils.azurerm.paged_object_to_list(
+        groups = await hub.exec.azurerm.utils.paged_object_to_list(
             resconn.providers.list(top=top, expand=expand)
         )
 
         for group in groups:
             result[group["namespace"]] = group
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("resource", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result

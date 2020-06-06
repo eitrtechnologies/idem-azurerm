@@ -82,7 +82,7 @@ async def check_name_availability(hub, ctx, name, **kwargs):
 
     """
     result = False
-    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
+    redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:
         avail = redconn.redis.check_name_availability(
@@ -92,7 +92,7 @@ async def check_name_availability(hub, ctx, name, **kwargs):
         if avail is None:
             result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -161,10 +161,10 @@ async def create(
         azurerm.redis.operations.create test_name test_rg test_location test_sku
 
     """
-    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
+    redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:
-        paramsmodel = await hub.exec.utils.azurerm.create_object_model(
+        paramsmodel = await hub.exec.azurerm.utils.create_object_model(
             "redis",
             "RedisCreateParameters",
             sku=sku,
@@ -192,7 +192,7 @@ async def create(
 
         result = cache.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {
@@ -220,14 +220,14 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
+    redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:
         cache = redconn.redis.delete(name=name, resource_group_name=resource_group)
 
         result = True
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
 
     return result
 
@@ -258,11 +258,11 @@ async def export_data(
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
+    redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     # Create a ExportRDBParameters object
     try:
-        paramsmodel = await hub.exec.utils.azurerm.create_object_model(
+        paramsmodel = await hub.exec.azurerm.utils.create_object_model(
             "redis",
             "ExportRDBParameters",
             prefix=prefix,
@@ -282,7 +282,7 @@ async def export_data(
 
         result = cache.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -314,7 +314,7 @@ async def force_reboot(
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
+    redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:
         cache = redconn.redis.force_reboot(
@@ -326,7 +326,7 @@ async def force_reboot(
 
         result = cache.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -350,14 +350,14 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
+    redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:
         cache = redconn.redis.get(name=name, resource_group_name=resource_group)
 
         result = cache.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -385,7 +385,7 @@ async def import_data(hub, ctx, name, resource_group, files, format=None, **kwar
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
+    redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:
         cache = redconn.redis.import_data(
@@ -394,7 +394,7 @@ async def import_data(hub, ctx, name, resource_group, files, format=None, **kwar
 
         result = cache.result().as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -414,15 +414,15 @@ async def list_(hub, ctx, **kwargs):
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
+    redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:
-        caches = await hub.exec.utils.azurerm.paged_object_to_list(redconn.redis.list())
+        caches = await hub.exec.azurerm.utils.paged_object_to_list(redconn.redis.list())
 
         for cache in caches:
             result[cache["name"]] = cache
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -444,17 +444,17 @@ async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
+    redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:
-        caches = await hub.exec.utils.azurerm.paged_object_to_list(
+        caches = await hub.exec.azurerm.utils.paged_object_to_list(
             redconn.redis.list_by_resource_group(resource_group_name=resource_group,)
         )
 
         for cache in caches:
             result[cache["name"]] = cache
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -478,14 +478,14 @@ async def list_keys(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
+    redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:
         keys = redconn.redis.list_keys(name=name, resource_group_name=resource_group)
 
         result = keys.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -511,7 +511,7 @@ async def list_upgrade_notifications(hub, ctx, name, resource_group, history, **
 
     """
     result = {}
-    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
+    redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:
         notifications = redconn.redis.list_upgrade_notifications(
@@ -520,7 +520,7 @@ async def list_upgrade_notifications(hub, ctx, name, resource_group, history, **
 
         result = notifications.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -545,7 +545,7 @@ async def regenerate_key(hub, ctx, name, resource_group, key_type, **kwargs):
         azurerm.redis.operations.renegerate_key test_name test_rg test_type
 
     """
-    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
+    redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:
         keys = redconn.redis.regenerate_key(
@@ -554,7 +554,7 @@ async def regenerate_key(hub, ctx, name, resource_group, key_type, **kwargs):
 
         result = keys.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
         result = {"error": str(exc)}
 
     return result
@@ -610,10 +610,10 @@ async def update(
         azurerm.redis.operations.update test_name test_rg test_location test_sku
 
     """
-    redconn = await hub.exec.utils.azurerm.get_client(ctx, "redis", **kwargs)
+    redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:
-        paramsmodel = await hub.exec.utils.azurerm.create_object_model(
+        paramsmodel = await hub.exec.azurerm.utils.create_object_model(
             "redis",
             "RedisUpdateParameters",
             sku=sku,
@@ -637,7 +637,7 @@ async def update(
 
         result = cache.as_dict()
     except CloudError as exc:
-        await hub.exec.utils.azurerm.log_cloud_error("redis", str(exc), **kwargs)
+        await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
         result = {

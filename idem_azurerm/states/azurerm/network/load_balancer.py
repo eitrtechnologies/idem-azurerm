@@ -315,7 +315,7 @@ async def present(
 
         # frontend_ip_configurations changes
         if frontend_ip_configurations:
-            comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(
+            comp_ret = await hub.exec.azurerm.utils.compare_list_of_dicts(
                 load_bal.get("frontend_ip_configurations", []),
                 frontend_ip_configurations,
                 ["public_ip_address", "subnet"],
@@ -332,7 +332,7 @@ async def present(
 
         # backend_address_pools changes
         if backend_address_pools:
-            comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(
+            comp_ret = await hub.exec.azurerm.utils.compare_list_of_dicts(
                 load_bal.get("backend_address_pools", []), backend_address_pools
             )
 
@@ -347,7 +347,7 @@ async def present(
 
         # probes changes
         if probes:
-            comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(
+            comp_ret = await hub.exec.azurerm.utils.compare_list_of_dicts(
                 load_bal.get("probes", []), probes
             )
 
@@ -360,7 +360,7 @@ async def present(
 
         # load_balancing_rules changes
         if load_balancing_rules:
-            comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(
+            comp_ret = await hub.exec.azurerm.utils.compare_list_of_dicts(
                 load_bal.get("load_balancing_rules", []),
                 load_balancing_rules,
                 ["frontend_ip_configuration", "backend_address_pool", "probe"],
@@ -377,7 +377,7 @@ async def present(
 
         # inbound_nat_rules changes
         if inbound_nat_rules:
-            comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(
+            comp_ret = await hub.exec.azurerm.utils.compare_list_of_dicts(
                 load_bal.get("inbound_nat_rules", []),
                 inbound_nat_rules,
                 ["frontend_ip_configuration"],
@@ -392,7 +392,7 @@ async def present(
 
         # inbound_nat_pools changes
         if inbound_nat_pools:
-            comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(
+            comp_ret = await hub.exec.azurerm.utils.compare_list_of_dicts(
                 load_bal.get("inbound_nat_pools", []),
                 inbound_nat_pools,
                 ["frontend_ip_configuration"],
@@ -407,7 +407,7 @@ async def present(
 
         # outbound_nat_rules changes
         if outbound_nat_rules:
-            comp_ret = await hub.exec.utils.azurerm.compare_list_of_dicts(
+            comp_ret = await hub.exec.azurerm.utils.compare_list_of_dicts(
                 load_bal.get("outbound_nat_rules", []),
                 outbound_nat_rules,
                 ["frontend_ip_configuration"],
