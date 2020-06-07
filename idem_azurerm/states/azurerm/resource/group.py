@@ -140,7 +140,9 @@ async def present(
 
     group = {}
 
-    group = await hub.exec.azurerm.resource.group.get(ctx, name, **connection_auth)
+    group = await hub.exec.azurerm.resource.group.get(
+        ctx, name, azurerm_log_level="info", **connection_auth
+    )
 
     if "error" not in group:
         ret["changes"] = differ.deep_diff(group.get("tags", {}), tags or {})
@@ -218,7 +220,9 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
 
     group = {}
 
-    group = await hub.exec.azurerm.resource.group.get(ctx, name, **connection_auth)
+    group = await hub.exec.azurerm.resource.group.get(
+        ctx, name, azurerm_log_level="info", **connection_auth
+    )
 
     if "error" in group:
         ret["result"] = True
