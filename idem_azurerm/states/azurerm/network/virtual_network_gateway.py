@@ -543,7 +543,7 @@ async def connection_absent(
         )
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret[
             "comment"
         ] = "Virtual network gateway connection {0} would be deleted.".format(name)
@@ -909,7 +909,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         )
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Virtual network gateway object {0} would be deleted.".format(
             name
         )

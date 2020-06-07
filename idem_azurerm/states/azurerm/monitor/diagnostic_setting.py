@@ -202,8 +202,8 @@ async def present(
             old_logs_sorted = sorted(
                 setting.get("logs", []), key=itemgetter("category", "enabled")
             )
-            for log in new_logs_sorted:
-                changes = differ.deep_diff(old_logs_sorted("logs")[index], log)
+            for index, log in enumerate(new_logs_sorted):
+                changes = differ.deep_diff(old_logs_sorted[index], log)
                 if changes:
                     ret["changes"]["logs"] = {
                         "old": setting.get("logs", []),
@@ -362,7 +362,7 @@ async def absent(hub, ctx, name, resource_uri, connection_auth=None, **kwargs):
         ret["comment"] = "Diagnostic setting {0} was not found.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Diagnostic setting {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {

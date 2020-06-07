@@ -425,7 +425,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         ret["comment"] = "Network interface {0} was not found.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Network interface {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {

@@ -292,7 +292,7 @@ async def absent(hub, ctx, name, vault_url, connection_auth=None, **kwargs):
         ret["comment"] = "Key {0} was not found.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Key {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {

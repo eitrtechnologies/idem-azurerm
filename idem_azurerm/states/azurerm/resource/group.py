@@ -225,7 +225,7 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
         ret["comment"] = "Resource group {0} is already absent.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Resource group {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {

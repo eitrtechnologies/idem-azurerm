@@ -327,7 +327,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         ret["comment"] = "Local network gateway object {0} was not found.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Local network gateway object {0} would be deleted.".format(
             name
         )

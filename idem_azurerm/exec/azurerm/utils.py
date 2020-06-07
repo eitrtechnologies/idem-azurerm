@@ -32,12 +32,6 @@ import six
 import sys
 import os
 
-try:
-    from six.moves import range as six_range
-    import six
-except ImportError:
-    six_range = range
-
 # Import third party libs
 try:
     from azure.common.credentials import (
@@ -107,27 +101,25 @@ async def determine_auth(hub, ctx, resource=None, **kwargs):
                 "The client_id, secret, and tenant parameters must all be "
                 "populated if using service principals."
             )
-        else:
-            credentials = ServicePrincipalCredentials(
-                kwargs["client_id"],
-                kwargs["secret"],
-                tenant=kwargs["tenant"],
-                cloud_environment=cloud_env,
-                **cred_kwargs,
-            )
+        credentials = ServicePrincipalCredentials(
+            kwargs["client_id"],
+            kwargs["secret"],
+            tenant=kwargs["tenant"],
+            cloud_environment=cloud_env,
+            **cred_kwargs,
+        )
     elif set(user_pass_creds_kwargs).issubset(kwargs):
         if not (kwargs["username"] and kwargs["password"]):
             raise Exception(
                 "The username and password parameters must both be "
                 "populated if using username/password authentication."
             )
-        else:
-            credentials = UserPassCredentials(
-                kwargs["username"],
-                kwargs["password"],
-                cloud_environment=cloud_env,
-                **cred_kwargs,
-            )
+        credentials = UserPassCredentials(
+            kwargs["username"],
+            kwargs["password"],
+            cloud_environment=cloud_env,
+            **cred_kwargs,
+        )
     else:
         raise Exception(
             "Unable to determine credentials. "
@@ -334,9 +326,9 @@ async def compare_list_of_dicts(hub, old, new, convert_id_to_name=None):
         ret["comment"] = 'configuration dictionaries must contain the "name" key!'
         return ret
 
-    for idx in six_range(0, len(local_configs)):
-        for key in local_configs[idx]:
-            local_val = local_configs[idx][key]
+    for idx, cfg in enumerate(local_configs):
+        for key, val in cfg.items():
+            local_val = val
             if key in convert_id_to_name:
                 remote_val = (
                     remote_configs[idx].get(key, {}).get("id", "").split("/")[-1]

@@ -91,11 +91,6 @@ from dict_tools import differ
 import logging
 import re
 
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
-
 log = logging.getLogger(__name__)
 
 TREQ = {
@@ -309,7 +304,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         ret["comment"] = "Network security group {0} was not found.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Network security group {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {
@@ -579,8 +574,8 @@ async def security_rule_present(
                     sorted(destination_address_prefixes),
                     sorted(rule.get("destination_address_prefixes")),
                 )
-                for idx in six_range(0, len(local_dst_addrs)):
-                    if local_dst_addrs[idx].lower() != remote_dst_addrs[idx].lower():
+                for idx, local_dst_addr in enumerate(local_dst_addrs):
+                    if local_dst_addr.lower() != remote_dst_addrs[idx].lower():
                         ret["changes"]["destination_address_prefixes"] = {
                             "old": rule.get("destination_address_prefixes"),
                             "new": destination_address_prefixes,
@@ -603,8 +598,8 @@ async def security_rule_present(
                     sorted(source_address_prefixes),
                     sorted(rule.get("source_address_prefixes")),
                 )
-                for idx in six_range(0, len(local_src_addrs)):
-                    if local_src_addrs[idx].lower() != remote_src_addrs[idx].lower():
+                for idx, local_src_addr in enumerate(local_src_addrs):
+                    if local_src_addr.lower() != remote_src_addrs[idx].lower():
                         ret["changes"]["source_address_prefixes"] = {
                             "old": rule.get("source_address_prefixes"),
                             "new": source_address_prefixes,
@@ -742,7 +737,7 @@ async def security_rule_absent(
         ret["comment"] = "Security rule {0} was not found.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Security rule {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {
