@@ -1,4 +1,9 @@
 # Microsoft Azure Cloud Provider for Idem
+
+[![CodeFactor](https://www.codefactor.io/repository/github/eitrtechnologies/idem-azurerm/badge/master)](https://www.codefactor.io/repository/github/eitrtechnologies/idem-azurerm/overview/master)
+[![Python](https://img.shields.io/pypi/pyversions/idem-azurerm.svg?maxAge=2592000)](https://pypi.python.org/pypi/idem-azurerm)
+[![Slack](https://img.shields.io/badge/Slack-saltstackcommunity.slack.com-blue.svg)](https://saltstackcommunity.slack.com)
+
 Azure is a cloud service offered by Microsoft that provides virtual machines, SQL services, media services, and more.
 Azure Resource Manager is the next generation of the Azure portal and API. This provider is a
 [POP](https://gitlab.com/saltstack/pop/pop) plugin and an extension of [Idem](https://gitlab.com/saltstack/pop/idem),
