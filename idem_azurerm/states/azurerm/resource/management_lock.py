@@ -252,7 +252,7 @@ async def absent_by_scope(hub, ctx, name, scope, connection_auth=None, **kwargs)
         ret["comment"] = "Management lock {0} was not found.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Management lock {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {
@@ -518,7 +518,7 @@ async def absent_at_resource_level(
         ret["comment"] = "Management lock {0} was not found.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Management lock {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {
@@ -746,7 +746,7 @@ async def absent(hub, ctx, name, resource_group=None, connection_auth=None, **kw
         ret["comment"] = "Management lock {0} was not found.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Management lock {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {

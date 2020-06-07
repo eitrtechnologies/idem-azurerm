@@ -63,7 +63,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def execute(hub, ctx, name, type=None, **kwargs):
+async def execute(hub, ctx, name, resource_type=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -71,7 +71,7 @@ async def execute(hub, ctx, name, type=None, **kwargs):
 
     :param name: The resource name to verify.
 
-    :param type: The resource type used for verification. Default value is None.
+    :param resource_type: The resource type used for verification. Default value is None.
 
     CLI Example:
 
@@ -84,7 +84,9 @@ async def execute(hub, ctx, name, type=None, **kwargs):
     postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
-        availability = postconn.check_name_availability.execute(name=name, type=type,)
+        availability = postconn.check_name_availability.execute(
+            name=name, type=resource_type,
+        )
 
         result = availability.as_dict()
     except CloudError as exc:

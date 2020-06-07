@@ -233,7 +233,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
 
 async def export_data(
-    hub, ctx, name, resource_group, prefix, container, format=None, **kwargs
+    hub, ctx, name, resource_group, prefix, container, file_format=None, **kwargs
 ):
     """
     .. versionadded:: 2.0.0
@@ -248,7 +248,7 @@ async def export_data(
 
     :param container: The name of the container to export to.
 
-    :param format: An optional file format.
+    :param file_format: An optional file format.
 
     CLI Example:
 
@@ -267,7 +267,7 @@ async def export_data(
             "ExportRDBParameters",
             prefix=prefix,
             container=container,
-            format=format,
+            format=file_format,
         )
     except TypeError as exc:
         result = {
@@ -363,7 +363,9 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def import_data(hub, ctx, name, resource_group, files, format=None, **kwargs):
+async def import_data(
+    hub, ctx, name, resource_group, files, file_format=None, **kwargs
+):
     """
     .. versionadded:: 2.0.0
 
@@ -375,7 +377,7 @@ async def import_data(hub, ctx, name, resource_group, files, format=None, **kwar
 
     :param files: A list of strings that represent the names of files to import.
 
-    :param format: An optional file format.
+    :param file_format: An optional file format.
 
     CLI Example:
 
@@ -389,7 +391,10 @@ async def import_data(hub, ctx, name, resource_group, files, format=None, **kwar
 
     try:
         cache = redconn.redis.import_data(
-            name=name, resource_group_name=resource_group, files=files, format=format
+            name=name,
+            resource_group_name=resource_group,
+            files=files,
+            format=file_format,
         )
 
         result = cache.result().as_dict()

@@ -187,7 +187,7 @@ async def delete(hub, ctx, name, **kwargs):
     return result
 
 
-async def get(hub, ctx, name, expand=None, recurse=None, filter=None, **kwargs):
+async def get(hub, ctx, name, expand=None, recurse=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 

@@ -261,7 +261,7 @@ async def absent(
         ret["comment"] = "Firewall Rule {0} was not found.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Firewall Rule {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {

@@ -295,7 +295,7 @@ async def table_absent(hub, ctx, name, resource_group, connection_auth=None, **k
         ret["comment"] = "Route table {0} was not found.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Route table {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {
@@ -514,7 +514,7 @@ async def absent(
         ret["comment"] = "Route {0} was not found.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Route {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {

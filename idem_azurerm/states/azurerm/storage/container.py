@@ -445,7 +445,7 @@ async def absent(
         ret["comment"] = "Blob container {0} was not found.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Blob container {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {
@@ -535,7 +535,7 @@ async def immutability_policy_absent(
         )
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret[
             "comment"
         ] = "The immutability policy of the blob container {0} would be deleted.".format(

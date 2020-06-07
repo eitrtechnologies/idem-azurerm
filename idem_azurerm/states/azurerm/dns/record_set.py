@@ -94,11 +94,6 @@ import logging
 
 import six
 
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
-
 log = logging.getLogger(__name__)
 
 TREQ = {
@@ -319,9 +314,9 @@ async def present(
                     local, remote = [
                         sorted(config) for config in (record, rec_set[record_str])
                     ]
-                    for idx in six_range(0, len(local)):
-                        for key in local[idx]:
-                            local_val = local[idx][key]
+                    for idx, local_dict in enumerate(local):
+                        for key, val in local_dict.items():
+                            local_val = val
                             remote_val = remote[idx].get(key)
                             if isinstance(local_val, six.string_types):
                                 local_val = local_val.lower()
@@ -453,7 +448,7 @@ async def absent(
         )
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Record set {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {

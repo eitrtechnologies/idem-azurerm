@@ -396,7 +396,7 @@ async def definition_absent(hub, name, connection_auth=None, **kwargs):
         ret["comment"] = "Policy definition {0} is already absent.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Policy definition {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {
@@ -617,7 +617,7 @@ async def assignment_absent(hub, ctx, name, scope, connection_auth=None, **kwarg
         ret["comment"] = "Policy assignment {0} is already absent.".format(name)
         return ret
 
-    elif ctx["test"]:
+    if ctx["test"]:
         ret["comment"] = "Policy assignment {0} would be deleted.".format(name)
         ret["result"] = None
         ret["changes"] = {

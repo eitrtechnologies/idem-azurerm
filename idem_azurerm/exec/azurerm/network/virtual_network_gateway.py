@@ -143,8 +143,8 @@ async def connection_create_or_update(
     if "error" in vnetgw1:
         log.error("Unable to find the resource specified in virtual_network_gateway!")
         return False
-    else:
-        virtual_network_gateway = {"id": str(vnetgw1["id"])}
+
+    virtual_network_gateway = {"id": str(vnetgw1["id"])}
 
     # Check the Resource ID path of virtual_network_gateway2
     # We can't guarantee the validity of the object, so we hope you have the path correct...
