@@ -7,20 +7,6 @@ Azure Resource Manager (ARM) Utilities
 .. versionchanged:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
-:maturity: stable
-:depends:
-    * `azure <https://pypi.python.org/pypi/azure>`_ >= 2.0.0rc6
-    * `azure-common <https://pypi.python.org/pypi/azure-common>`_ >= 1.1.4
-    * `azure-mgmt <https://pypi.python.org/pypi/azure-mgmt>`_ >= 0.30.0rc6
-    * `azure-mgmt-compute <https://pypi.python.org/pypi/azure-mgmt-compute>`_ >= 0.33.0
-    * `azure-mgmt-network <https://pypi.python.org/pypi/azure-mgmt-network>`_ >= 0.30.0rc6
-    * `azure-mgmt-rdbms <https://pypi.org/project/azure-mgmt-rdbms/>`_ >= 1.9.0
-    * `azure-mgmt-resource <https://pypi.python.org/pypi/azure-mgmt-resource>`_ >= 0.30.0
-    * `azure-mgmt-storage <https://pypi.python.org/pypi/azure-mgmt-storage>`_ >= 0.30.0rc6
-    * `azure-mgmt-web <https://pypi.python.org/pypi/azure-mgmt-web>`_ >= 0.30.0rc6
-    * `azure-storage <https://pypi.python.org/pypi/azure-storage>`_ >= 0.32.0
-    * `msrestazure <https://pypi.python.org/pypi/msrestazure>`_ >= 0.4.21
-:platform: linux
 
 """
 # Import Python libs
