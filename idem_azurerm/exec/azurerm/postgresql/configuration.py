@@ -6,7 +6,7 @@ Azure Resource Manager (ARM) PostgreSQL Server Configuration Operations Executio
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
-    to every function in order to work properly.
+    to every function or via acct in order to work properly.
 
     Required provider parameters:
 
