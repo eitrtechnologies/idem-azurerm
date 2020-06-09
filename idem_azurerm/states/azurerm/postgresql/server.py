@@ -234,7 +234,7 @@ async def present(
         if login:
             ret["changes"]["new"]["administrator_login"] = login
         if login_password:
-            ret["changes"]["new"]["administrator_login_password"] = "REDACTED"
+            ret["changes"]["new"]["administrator_login_password"] = "REDACTED"  # nosec
 
     if ctx["test"]:
         ret["comment"] = "Server {0} would be created.".format(name)
