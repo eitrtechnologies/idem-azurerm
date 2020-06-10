@@ -21,8 +21,8 @@ sys.path.insert(0, os.path.abspath("../"))
 project = "idem-azurerm"
 copyright = "2020, EITR Technologies, LLC"
 author = "EITR Technologies, LLC"
-version = "2.2"
-release = "2.2.0"
+version = "2.3"
+release = "2.3.0"
 
 # -- General configuration ---------------------------------------------------
 
