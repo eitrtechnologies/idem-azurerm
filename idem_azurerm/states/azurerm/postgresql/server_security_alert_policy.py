@@ -5,9 +5,8 @@ Azure Resource Manager (ARM) PostgreSQL Server Security Alert Policy Operations 
 .. versionadded:: 2.0.0
 
 :maintainer: <devops@eitr.tech>
-:configuration: This module requires Azure Resource Manager credentials to be passed as a dictionary of
-    keyword arguments to the ``connection_auth`` parameter in order to work properly. Since the authentication
-    parameters are sensitive, it's recommended to pass them to the states via pillar.
+:configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
+    authentication parameters are case sensitive.
 
     Required provider parameters:
 
@@ -30,21 +29,24 @@ Azure Resource Manager (ARM) PostgreSQL Server Security Alert Policy Operations 
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-    Example Pillar for Azure Resource Manager authentication:
+    Example acct setup for Azure Resource Manager authentication:
 
     .. code-block:: yaml
 
         azurerm:
-            user_pass_auth:
-                subscription_id: 3287abc8-f98a-c678-3bde-326766fd3617
-                username: fletch
-                password: 123pass
-            mysubscription:
+            default:
                 subscription_id: 3287abc8-f98a-c678-3bde-326766fd3617
                 tenant: ABCDEFAB-1234-ABCD-1234-ABCDEFABCDEF
                 client_id: ABCDEFAB-1234-ABCD-1234-ABCDEFABCDEF
                 secret: XXXXXXXXXXXXXXXXXXXXXXXX
                 cloud_environment: AZURE_PUBLIC_CLOUD
+            user_pass_auth:
+                subscription_id: 3287abc8-f98a-c678-3bde-326766fd3617
+                username: fletch
+                password: 123pass
+
+    The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
+    parameter of each state, but this is not preferred and could be deprecated in the future.
 
 """
 # Python libs
