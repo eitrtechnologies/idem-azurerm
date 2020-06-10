@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2020-06-09
+
+### Added
+
+- [#92](https://github.com/eitrtechnologies/idem-azurerm/pull/92) - Added CodeFactor tests.
+- [#74](https://github.com/eitrtechnologies/idem-azurerm/pull/74) - Added contributing guide.
+
+### Changed
+
+- [#91](https://github.com/eitrtechnologies/idem-azurerm/pull/91) - Moved azurerm utils under the azurerm directory to
+  keep all code in one spot on the hub.
+- [#85](https://github.com/eitrtechnologies/idem-azurerm/pull/85) - Changed to use external dict-toolbox for detecting
+  changes in dictionaries for states.
+
+### Fixed
+
+- [#98](https://github.com/eitrtechnologies/idem-azurerm/pull/98) - Fixed module docstrings in order to get better
+  documentation from the autodoc process.
+- [#95](https://github.com/eitrtechnologies/idem-azurerm/pull/95) - Fixed resource group "get" errors after the change
+  in logic from #89.
+- [#89](https://github.com/eitrtechnologies/idem-azurerm/pull/89) - Fixed unnecessary execution modules calls in the
+  resource group states.
+- [#86](https://github.com/eitrtechnologies/idem-azurerm/pull/86) - Fixed README documentation about credential usage.
+- [#84](https://github.com/eitrtechnologies/idem-azurerm/pull/84) - Fixed decode of unicode characters in error.
+  messages from msrestazure.
+
+### Deprecated
+
+### Removed
+
 ## [2.2.0] - 2020-05-27
 
 ### Added
@@ -102,6 +132,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release of execution and state modules from Salt along with some additional functionality ported from
   salt-cloud for virtual machines.
 
+[2.3.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v1.0.0...v2.0.0
