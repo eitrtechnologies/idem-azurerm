@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath("../"))
 # -- Project information -----------------------------------------------------
 
 project = "idem-azurerm"
-copyright = "2020, EITR Technologies, LLC"
+copyright = "2020, EITR Technologies, LLC"  # pylint: disable=redefined-builtin
 author = "EITR Technologies, LLC"
 version = "2.3"
 release = "2.3.0"
