@@ -116,6 +116,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -138,6 +139,7 @@ async def present(
         key_type = key_type.upper().replace("_", "-")
 
     if "error" not in key:
+        action = "update"
         if tags:
             tag_changes = differ.deep_diff(
                 key.get("properties", {}).get("tags", {}) or {}, tags or {}
@@ -220,10 +222,12 @@ async def present(
 
     if "error" not in key:
         ret["result"] = True
-        ret["comment"] = "Key {0} has been created.".format(name)
+        ret["comment"] = f"Key {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create Key {0}! ({1})".format(name, key.get("error"))
+    ret["comment"] = "Failed to {0} Key {1}! ({2})".format(
+        action, name, key.get("error")
+    )
     if not ret["result"]:
         ret["changes"] = {}
     return ret

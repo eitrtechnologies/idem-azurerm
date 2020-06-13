@@ -182,6 +182,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -197,6 +198,7 @@ async def present(
     )
 
     if "error" not in vault:
+        action = "update"
         tag_changes = differ.deep_diff(vault.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
@@ -390,11 +392,11 @@ async def present(
 
     if "error" not in vault:
         ret["result"] = True
-        ret["comment"] = "Key Vault {0} has been created.".format(name)
+        ret["comment"] = f"Key Vault {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create Key Vault {0}! ({1})".format(
-        name, vault.get("error")
+    ret["comment"] = "Failed to {0} Key Vault {1}! ({2})".format(
+        action, name, vault.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
