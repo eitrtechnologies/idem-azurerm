@@ -116,6 +116,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -133,6 +134,7 @@ async def present(
     )
 
     if "error" not in group:
+        action = "update"
         ret["changes"] = differ.deep_diff(group.get("tags", {}), tags or {})
 
         if not ret["changes"]:
@@ -169,12 +171,12 @@ async def present(
 
     if "error" not in group:
         ret["result"] = True
-        ret["comment"] = "Resource group {0} has been created.".format(name)
+        ret["comment"] = f"Resource group {name} has been {action}d."
         ret["changes"] = {"old": {}, "new": group}
         return ret
 
-    ret["comment"] = "Failed to create resource group {0}! ({1})".format(
-        name, group.get("error")
+    ret["comment"] = "Failed to {0} resource group {1}! ({2})".format(
+        action, name, group.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
