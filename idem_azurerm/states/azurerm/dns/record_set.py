@@ -230,6 +230,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     record_vars = [
         "arecords",
@@ -264,6 +265,7 @@ async def present(
     )
 
     if "error" not in rec_set:
+        action = "update"
         metadata_changes = differ.deep_diff(rec_set.get("metadata", {}), metadata or {})
         if metadata_changes:
             ret["changes"]["metadata"] = metadata_changes
@@ -376,11 +378,11 @@ async def present(
 
     if "error" not in rec_set:
         ret["result"] = True
-        ret["comment"] = "Record set {0} has been created.".format(name)
+        ret["comment"] = f"Record set {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create record set {0}! ({1})".format(
-        name, rec_set.get("error")
+    ret["comment"] = "Failed to {0} record set {1}! ({2})".format(
+        action, name, rec_set.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
