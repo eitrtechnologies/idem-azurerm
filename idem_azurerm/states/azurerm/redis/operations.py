@@ -141,6 +141,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -155,10 +156,8 @@ async def present(
         ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    new_cache = True
-
     if "error" not in cache:
-        new_cache = False
+        action = "update"
 
         if tags:
             tag_changes = differ.deep_diff(cache.get("tags", {}), tags)
@@ -251,7 +250,7 @@ async def present(
     cache_kwargs = kwargs.copy()
     cache_kwargs.update(connection_auth)
 
-    if new_cache:
+    if action == "create":
         cache = await hub.exec.azurerm.redis.operations.create(
             ctx=ctx,
             name=name,
@@ -286,11 +285,11 @@ async def present(
 
     if "error" not in cache:
         ret["result"] = True
-        ret["comment"] = "Redis cache {0} has been created.".format(name)
+        ret["comment"] = f"Redis cache {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create Redis cache {0}! ({1})".format(
-        name, cache.get("error")
+    ret["comment"] = "Failed to {0} Redis cache {1}! ({2})".format(
+        action, name, cache.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
