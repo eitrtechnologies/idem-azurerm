@@ -335,7 +335,9 @@ async def create_or_update(
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
-            return False
+            return {
+                "error": "Unable to determine location from resource group specified."
+            }
         kwargs["location"] = rg_props["location"]
 
     if not network_interfaces:

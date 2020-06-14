@@ -341,12 +341,14 @@ async def create_or_update(hub, ctx, name, address_prefixes, resource_group, **k
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
-            return False
+            return {
+                "error": "Unable to determine location from resource group specified."
+            }
         kwargs["location"] = rg_props["location"]
 
     if not isinstance(address_prefixes, list):
         log.error("Address prefixes must be specified as a list!")
-        return False
+        return {"error": "Address prefixes must be specified as a list!"}
 
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
