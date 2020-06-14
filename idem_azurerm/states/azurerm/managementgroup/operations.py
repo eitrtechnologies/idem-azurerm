@@ -86,6 +86,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -101,6 +102,7 @@ async def present(
     )
 
     if "error" not in mgroup:
+        action = "update"
         if parent:
             if parent != mgroup.get("parent", {}).get("id"):
                 ret["changes"]["parent"] = {
@@ -147,11 +149,11 @@ async def present(
 
     if "error" not in mgroup:
         ret["result"] = True
-        ret["comment"] = "Management Group {0} has been created.".format(name)
+        ret["comment"] = f"Management Group {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create Management Group {0}! ({1})".format(
-        name, mgroup.get("error")
+    ret["comment"] = "Failed to {0} Management Group {1}! ({2})".format(
+        action, name, mgroup.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
