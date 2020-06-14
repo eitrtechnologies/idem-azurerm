@@ -152,6 +152,7 @@ async def present(
                 - connection_auth: {{ profile }}
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -167,6 +168,7 @@ async def present(
     )
 
     if "error" not in gateway:
+        action = "update"
         tag_changes = differ.deep_diff(gateway.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
@@ -258,11 +260,11 @@ async def present(
 
     if "error" not in gateway:
         ret["result"] = True
-        ret["comment"] = "Local network gateway {0} has been created.".format(name)
+        ret["comment"] = f"Local network gateway {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create local network gateway {0}! ({1})".format(
-        name, gateway.get("error")
+    ret["comment"] = "Failed to {0} local network gateway {1}! ({2})".format(
+        action, name, gateway.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

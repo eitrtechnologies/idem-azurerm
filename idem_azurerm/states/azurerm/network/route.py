@@ -151,6 +151,7 @@ async def table_present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -166,6 +167,7 @@ async def table_present(
     )
 
     if "error" not in rt_tbl:
+        action = "update"
         # tag changes
         tag_changes = differ.deep_diff(rt_tbl.get("tags", {}), tags or {})
         if tag_changes:
@@ -235,11 +237,11 @@ async def table_present(
 
     if "error" not in rt_tbl:
         ret["result"] = True
-        ret["comment"] = "Route table {0} has been created.".format(name)
+        ret["comment"] = f"Route table {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create route table {0}! ({1})".format(
-        name, rt_tbl.get("error")
+    ret["comment"] = "Failed to {0} route table {1}! ({2})".format(
+        action, name, rt_tbl.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
@@ -362,6 +364,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -382,6 +385,7 @@ async def present(
     )
 
     if "error" not in route:
+        action = "update"
         if address_prefix != route.get("address_prefix"):
             ret["changes"]["address_prefix"] = {
                 "old": route.get("address_prefix"),
@@ -444,11 +448,11 @@ async def present(
 
     if "error" not in route:
         ret["result"] = True
-        ret["comment"] = "Route {0} has been created.".format(name)
+        ret["comment"] = f"Route {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create route {0}! ({1})".format(
-        name, route.get("error")
+    ret["comment"] = "Failed to {0} route {1}! ({2})".format(
+        action, name, route.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

@@ -159,6 +159,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -177,6 +178,7 @@ async def present(
     )
 
     if "error" not in pub_ip:
+        action = "update"
         # tag changes
         tag_changes = differ.deep_diff(pub_ip.get("tags", {}), tags or {})
         if tag_changes:
@@ -279,11 +281,11 @@ async def present(
 
     if "error" not in pub_ip:
         ret["result"] = True
-        ret["comment"] = "Public IP address {0} has been created.".format(name)
+        ret["comment"] = f"Public IP address {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create public IP address {0}! ({1})".format(
-        name, pub_ip.get("error")
+    ret["comment"] = "Failed to {0} public IP address {1}! ({2})".format(
+        action, name, pub_ip.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

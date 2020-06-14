@@ -161,6 +161,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -176,6 +177,7 @@ async def present(
     )
 
     if "error" not in nsg:
+        action = "update"
         tag_changes = differ.deep_diff(nsg.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
@@ -234,11 +236,11 @@ async def present(
 
     if "error" not in nsg:
         ret["result"] = True
-        ret["comment"] = "Network security group {0} has been created.".format(name)
+        ret["comment"] = f"Network security group {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create network security group {0}! ({1})".format(
-        name, nsg.get("error")
+    ret["comment"] = "Failed to {0} network security group {1}! ({2})".format(
+        action, name, nsg.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
@@ -427,6 +429,7 @@ async def security_rule_present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -470,6 +473,7 @@ async def security_rule_present(
     )
 
     if "error" not in rule:
+        action = "update"
         # access changes
         if access.capitalize() != rule.get("access"):
             ret["changes"]["access"] = {"old": rule.get("access"), "new": access}
@@ -656,11 +660,11 @@ async def security_rule_present(
 
     if "error" not in rule:
         ret["result"] = True
-        ret["comment"] = "Security rule {0} has been created.".format(name)
+        ret["comment"] = f"Security rule {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create security rule {0}! ({1})".format(
-        name, rule.get("error")
+    ret["comment"] = "Failed to {0} security rule {1}! ({2})".format(
+        action, name, rule.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

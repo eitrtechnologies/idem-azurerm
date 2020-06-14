@@ -197,6 +197,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -212,6 +213,7 @@ async def present(
     )
 
     if "error" not in iface:
+        action = "update"
         # tag changes
         tag_changes = differ.deep_diff(iface.get("tags", {}), tags or {})
         if tag_changes:
@@ -355,11 +357,11 @@ async def present(
 
     if "error" not in iface:
         ret["result"] = True
-        ret["comment"] = "Network interface {0} has been created.".format(name)
+        ret["comment"] = f"Network interface {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create network interface {0}! ({1})".format(
-        name, iface.get("error")
+    ret["comment"] = "Failed to {0} network interface {1}! ({2})".format(
+        action, name, iface.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

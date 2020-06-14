@@ -245,6 +245,7 @@ async def connection_present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -260,6 +261,7 @@ async def connection_present(
     )
 
     if "error" not in connection:
+        action = "update"
         tag_changes = differ.deep_diff(connection.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
@@ -467,13 +469,13 @@ async def connection_present(
         ret["result"] = True
         ret[
             "comment"
-        ] = "Virtual network gateway connection {0} has been created.".format(name)
+        ] = f"Virtual network gateway connection {name} has been {action}d."
         return ret
 
     ret[
         "comment"
-    ] = "Failed to create virtual network gateway connection {0}! ({1})".format(
-        name, con.get("error")
+    ] = "Failed to {0} virtual network gateway connection {1}! ({2})".format(
+        action, name, con.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
@@ -690,6 +692,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -705,6 +708,7 @@ async def present(
     )
 
     if "error" not in gateway:
+        action = "update"
         tag_changes = differ.deep_diff(gateway.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
@@ -837,11 +841,11 @@ async def present(
 
     if "error" not in gateway:
         ret["result"] = True
-        ret["comment"] = "Virtual network gateway {0} has been created.".format(name)
+        ret["comment"] = f"Virtual network gateway {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create virtual network gateway {0}! ({1})".format(
-        name, gateway.get("error")
+    ret["comment"] = "Failed to {0} virtual network gateway {1}! ({2})".format(
+        action, name, gateway.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
