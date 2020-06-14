@@ -1,5 +1,5 @@
-2.2 Update
-==========
+Version 2.2.0
+=============
 
 Added Acct Support for Exec Modules
 ***********************************
@@ -9,5 +9,4 @@ Added Acct Support for Exec Modules
 
 Other Updates
 *************
-
 Added some basic module documents and also added a model for integration tests.

@@ -1,0 +1,22 @@
+Version 2.3.0
+=============
+
+Documentation
+*************
+Lately we've been focusing on documentation. In this release, we've added a Contributing Guide to encourage development
+contributions to the project. We also modifed the README and module docstrings in an effort to make them more helpful
+in getting started quickly. Be on the lookout for more documentation additions in the near future!
+
+Utils Structure
+***************
+This repository should only contain Azure-specific code for Idem. In the beginning of Idem, there weren't any
+centralized utility functions. This caused us to include the ``dictdiffer`` functionality as a utility within this code.
+Recently, the `dict-toolbox <https://pypi.org/project/dict-toolbox/>`_ was released and we removed our internal utility.
+This allows us to import ``dict-toolbox`` as an external resource and focus on Azure.
+
+Performance
+***********
+The resource group state modules were the first to be developed back when this code was first committed to the Salt open
+source project. Since that time, the state logic has become a little more refined. We circled back and updated those
+modules to be more efficient and cut out some superfluous API calls that slowed down operation slightly. It's not much,
+but we're always looking for ways to make ``idem-azurerm`` better!

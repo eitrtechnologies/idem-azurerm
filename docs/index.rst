@@ -5,6 +5,7 @@ Welcome to idem-azurerm's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   topics/index
    ref/index
    releases/index
 
