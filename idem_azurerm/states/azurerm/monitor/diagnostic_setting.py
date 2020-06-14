@@ -149,6 +149,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -164,6 +165,7 @@ async def present(
     )
 
     if "error" not in setting:
+        action = "update"
         # Checks for changes in the metrics parameter
         if len(metrics) == len(setting.get("metrics", [])):
             new_metrics_sorted = sorted(metrics, key=itemgetter("category", "enabled"))
@@ -295,11 +297,11 @@ async def present(
 
     if "error" not in setting:
         ret["result"] = True
-        ret["comment"] = "Diagnostic setting {0} has been created.".format(name)
+        ret["comment"] = f"Diagnostic setting {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create diagnostic setting {0}! ({1})".format(
-        name, setting.get("error")
+    ret["comment"] = "Failed to {0} diagnostic setting {1}! ({2})".format(
+        action, name, setting.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
