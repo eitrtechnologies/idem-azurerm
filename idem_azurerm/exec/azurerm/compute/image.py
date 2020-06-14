@@ -100,7 +100,9 @@ async def create_or_update(
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
-            return False
+            return {
+                "error": "Unable to determine location from resource group specified."
+            }
         kwargs["location"] = rg_props["location"]
 
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)

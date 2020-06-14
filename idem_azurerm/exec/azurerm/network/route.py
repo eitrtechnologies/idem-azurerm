@@ -158,7 +158,7 @@ async def filter_rule_create_or_update(
     """
     if not isinstance(communities, list):
         log.error("The communities parameter must be a list of strings!")
-        return False
+        return {"error": "The communities parameter must be a list of strings!"}
 
     if "location" not in kwargs:
         rg_props = await hub.exec.azurerm.resource.group.get(
@@ -167,7 +167,9 @@ async def filter_rule_create_or_update(
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
-            return False
+            return {
+                "error": "Unable to determine location from resource group specified."
+            }
         kwargs["location"] = rg_props["location"]
 
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
@@ -337,7 +339,9 @@ async def filter_create_or_update(hub, ctx, name, resource_group, **kwargs):
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
-            return False
+            return {
+                "error": "Unable to determine location from resource group specified."
+            }
         kwargs["location"] = rg_props["location"]
 
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
@@ -711,7 +715,9 @@ async def table_create_or_update(hub, ctx, name, resource_group, **kwargs):
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
-            return False
+            return {
+                "error": "Unable to determine location from resource group specified."
+            }
         kwargs["location"] = rg_props["location"]
 
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)

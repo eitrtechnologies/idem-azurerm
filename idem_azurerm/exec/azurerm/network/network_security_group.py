@@ -273,12 +273,11 @@ async def security_rule_create_or_update(
     for params in exclusive_params:
         # pylint: disable=eval-used
         if not eval(params[0]) and not eval(params[1]):
-            log.error(
-                "Either the {0} or {1} parameter must be provided!".format(
-                    params[0], params[1]
-                )
+            errmsg = "Either the {0} or {1} parameter must be provided!".format(
+                params[0], params[1]
             )
-            return False
+            log.error(errmsg)
+            return {"error": errmsg}
         # pylint: disable=eval-used
         if eval(params[0]):
             # pylint: disable=exec-used
@@ -434,7 +433,9 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
-            return False
+            return {
+                "error": "Unable to determine location from resource group specified."
+            }
         kwargs["location"] = rg_props["location"]
 
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
