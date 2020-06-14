@@ -35,7 +35,7 @@ async def test_changes(hub, ctx, resource_group, location, tags):
             },
             "old": {},
         },
-        "comment": f"Resource group {resource_group} has been created.",
+        "comment": f"Resource group {resource_group} has been updated.",
         "name": resource_group,
         "result": True,
     }

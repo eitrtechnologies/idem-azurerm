@@ -109,6 +109,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -129,6 +130,7 @@ async def present(
     )
 
     if "error" not in rule:
+        action = "update"
         if start_ip_address != rule.get("start_ip_address"):
             ret["changes"]["start_ip_address"] = {
                 "old": rule.get("start_ip_address"),
@@ -183,11 +185,11 @@ async def present(
 
     if "error" not in rule:
         ret["result"] = True
-        ret["comment"] = "Firewall Rule {0} has been created.".format(name)
+        ret["comment"] = f"Firewall Rule {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create Firewall Rule {0}! ({1})".format(
-        name, rule.get("error")
+    ret["comment"] = "Failed to {0} Firewall Rule {1}! ({2})".format(
+        action, name, rule.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

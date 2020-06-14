@@ -106,6 +106,7 @@ async def present_by_scope(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -121,6 +122,7 @@ async def present_by_scope(
     )
 
     if "error" not in lock:
+        action = "update"
         if lock_level != lock.get("level"):
             ret["changes"]["level"] = {"old": lock.get("level"), "new": lock_level}
 
@@ -181,11 +183,11 @@ async def present_by_scope(
 
     if "error" not in lock:
         ret["result"] = True
-        ret["comment"] = "Management lock {0} has been created.".format(name)
+        ret["comment"] = f"Management lock {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create management lock {0}! ({1})".format(
-        name, lock.get("error")
+    ret["comment"] = "Failed to {0} management lock {1}! ({2})".format(
+        action, name, lock.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
@@ -324,6 +326,7 @@ async def present_at_resource_level(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -347,6 +350,7 @@ async def present_at_resource_level(
     )
 
     if "error" not in lock:
+        action = "update"
         if lock_level != lock.get("level"):
             ret["changes"]["level"] = {"old": lock.get("level"), "new": lock_level}
 
@@ -420,11 +424,11 @@ async def present_at_resource_level(
 
     if "error" not in lock:
         ret["result"] = True
-        ret["comment"] = "Management lock {0} has been created.".format(name)
+        ret["comment"] = f"Management lock {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create management lock {0}! ({1})".format(
-        name, lock.get("error")
+    ret["comment"] = "Failed to {0} management lock {1}! ({2})".format(
+        action, name, lock.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
@@ -583,6 +587,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -603,6 +608,7 @@ async def present(
         )
 
     if "error" not in lock:
+        action = "update"
         if lock_level != lock.get("level"):
             ret["changes"]["level"] = {"old": lock.get("level"), "new": lock_level}
 
@@ -672,11 +678,11 @@ async def present(
 
     if "error" not in lock:
         ret["result"] = True
-        ret["comment"] = "Management lock {0} has been created.".format(name)
+        ret["comment"] = f"Management lock {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create management lock {0}! ({1})".format(
-        name, lock.get("error")
+    ret["comment"] = "Failed to {0} management lock {1}! ({2})".format(
+        action, name, lock.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

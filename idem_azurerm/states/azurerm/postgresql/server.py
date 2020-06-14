@@ -139,6 +139,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -157,10 +158,8 @@ async def present(
         **connection_auth,
     )
 
-    new_server = True
-
     if "error" not in server:
-        new_server = False
+        action = "update"
 
         if tags:
             tag_changes = differ.deep_diff(server.get("tags", {}), tags or {})
@@ -244,7 +243,7 @@ async def present(
     server_kwargs = kwargs.copy()
     server_kwargs.update(connection_auth)
 
-    if new_server:
+    if action == "create":
         server = await hub.exec.azurerm.postgresql.server.create(
             ctx=ctx,
             name=name,
@@ -276,11 +275,11 @@ async def present(
 
     if "error" not in server:
         ret["result"] = True
-        ret["comment"] = "Server {0} has been created.".format(name)
+        ret["comment"] = f"Server {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create Server {0}! ({1})".format(
-        name, server.get("error")
+    ret["comment"] = "Failed to {0} Server {1}! ({2})".format(
+        action, name, server.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

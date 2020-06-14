@@ -155,6 +155,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -170,6 +171,7 @@ async def present(
     )
 
     if "error" not in zone:
+        action = "update"
         tag_changes = differ.deep_diff(zone.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
@@ -273,11 +275,11 @@ async def present(
 
     if "error" not in zone:
         ret["result"] = True
-        ret["comment"] = "DNS zone {0} has been created.".format(name)
+        ret["comment"] = f"DNS zone {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create DNS zone {0}! ({1})".format(
-        name, zone.get("error")
+    ret["comment"] = "Failed to {0} DNS zone {1}! ({2})".format(
+        action, name, zone.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

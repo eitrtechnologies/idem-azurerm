@@ -118,6 +118,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -131,10 +132,9 @@ async def present(
     container = await hub.exec.azurerm.storage.container.get(
         ctx, name, account, resource_group, **connection_auth
     )
-    existed = False
 
     if "error" not in container:
-        existed = True
+        action = "update"
 
         tag_changes = differ.deep_diff(container.get("tags", {}), tags or {})
         if tag_changes:
@@ -187,7 +187,7 @@ async def present(
     container_kwargs = kwargs.copy()
     container_kwargs.update(connection_auth)
 
-    if not existed:
+    if action == "create":
         container = await hub.exec.azurerm.storage.container.create(
             ctx=ctx,
             name=name,
@@ -213,11 +213,11 @@ async def present(
 
     if "error" not in container:
         ret["result"] = True
-        ret["comment"] = "Blob container {0} has been created.".format(name)
+        ret["comment"] = f"Blob container {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create blob container {0}! ({1})".format(
-        name, container.get("error")
+    ret["comment"] = "Failed to {0} blob container {1}! ({2})".format(
+        action, name, container.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
@@ -279,6 +279,7 @@ async def immutability_policy_present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -294,6 +295,7 @@ async def immutability_policy_present(
     )
 
     if "error" not in policy:
+        action = "update"
         tag_changes = differ.deep_diff(policy.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
@@ -367,15 +369,13 @@ async def immutability_policy_present(
         ret["result"] = True
         ret[
             "comment"
-        ] = "The immutability policy of the blob container {0} has been created.".format(
-            name
-        )
+        ] = f"The immutability policy of the blob container {name} has been {action}d."
         return ret
 
     ret[
         "comment"
-    ] = "Failed to create the immutability policy of the blob container {0}! ({1})".format(
-        name, policy.get("error")
+    ] = "Failed to {0} the immutability policy of the blob container {1}! ({2})".format(
+        action, name, policy.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

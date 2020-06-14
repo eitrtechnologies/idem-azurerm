@@ -394,6 +394,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -408,10 +409,8 @@ async def present(
         ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
-    new_vm = True
-
     if "error" not in vm:
-        new_vm = False
+        action = "update"
 
         tag_changes = differ.deep_diff(vm.get("tags", {}), tags or {})
         if tag_changes:
@@ -742,16 +741,16 @@ async def present(
         **vm_kwargs,
     )
 
-    if new_vm:
+    if action == "create":
         ret["changes"] = {"old": {}, "new": vm}
 
     if "error" not in vm:
         ret["result"] = True
-        ret["comment"] = "Virtual machine {0} has been created.".format(name)
+        ret["comment"] = f"Virtual machine {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create virtual machine {0}! ({1})".format(
-        name, vm.get("error")
+    ret["comment"] = "Failed to {0} virtual machine {1}! ({2})".format(
+        action, name, vm.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

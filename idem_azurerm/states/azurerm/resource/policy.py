@@ -183,6 +183,7 @@ async def definition_present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -250,6 +251,7 @@ async def definition_present(
     )
 
     if "error" not in policy:
+        action = "update"
         if policy_type and policy_type.lower() != policy.get("policy_type", "").lower():
             ret["changes"]["policy_type"] = {
                 "old": policy.get("policy_type"),
@@ -339,11 +341,11 @@ async def definition_present(
 
     if "error" not in policy:
         ret["result"] = True
-        ret["comment"] = "Policy definition {0} has been created.".format(name)
+        ret["comment"] = f"Policy definition {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create policy definition {0}! ({1})".format(
-        name, policy.get("error")
+    ret["comment"] = "Failed to {0} policy definition {1}! ({2})".format(
+        action, name, policy.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
@@ -465,6 +467,7 @@ async def assignment_present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -480,6 +483,7 @@ async def assignment_present(
     )
 
     if "error" not in policy:
+        action = "update"
         if (
             assignment_type
             and assignment_type.lower() != policy.get("type", "").lower()
@@ -557,11 +561,11 @@ async def assignment_present(
 
     if "error" not in policy:
         ret["result"] = True
-        ret["comment"] = "Policy assignment {0} has been created.".format(name)
+        ret["comment"] = f"Policy assignment {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create policy assignment {0}! ({1})".format(
-        name, policy.get("error")
+    ret["comment"] = "Failed to {0} policy assignment {1}! ({2})".format(
+        action, name, policy.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

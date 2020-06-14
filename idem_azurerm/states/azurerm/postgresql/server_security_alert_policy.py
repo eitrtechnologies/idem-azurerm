@@ -133,6 +133,7 @@ async def present(
     name = "Default"
 
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -152,6 +153,7 @@ async def present(
     )
 
     if "error" not in policy:
+        action = "update"
         if policy_state != policy.get("state"):
             ret["changes"]["state"] = {"old": policy.get("state"), "new": policy_state}
 
@@ -263,13 +265,11 @@ async def present(
 
     if "error" not in policy:
         ret["result"] = True
-        ret["comment"] = "Server Security Alert Policy {0} has been created.".format(
-            name
-        )
+        ret["comment"] = f"Server Security Alert Policy {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create Server Security Alert Policy {0}! ({1})".format(
-        name, policy.get("error")
+    ret["comment"] = "Failed to {0} Server Security Alert Policy {1}! ({2})".format(
+        action, name, policy.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

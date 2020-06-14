@@ -152,6 +152,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -167,6 +168,7 @@ async def present(
     )
 
     if "error" not in vnet:
+        action = "update"
         tag_changes = differ.deep_diff(vnet.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
@@ -251,11 +253,11 @@ async def present(
 
     if "error" not in vnet:
         ret["result"] = True
-        ret["comment"] = "Virtual network {0} has been created.".format(name)
+        ret["comment"] = f"Virtual network {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create virtual network {0}! ({1})".format(
-        name, vnet.get("error")
+    ret["comment"] = "Failed to {0} virtual network {1}! ({2})".format(
+        action, name, vnet.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
@@ -377,6 +379,7 @@ async def subnet_present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -397,6 +400,7 @@ async def subnet_present(
     )
 
     if "error" not in snet:
+        action = "update"
         if address_prefix != snet.get("address_prefix"):
             ret["changes"]["address_prefix"] = {
                 "old": snet.get("address_prefix"),
@@ -462,11 +466,11 @@ async def subnet_present(
 
     if "error" not in snet:
         ret["result"] = True
-        ret["comment"] = "Subnet {0} has been created.".format(name)
+        ret["comment"] = f"Subnet {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create subnet {0}! ({1})".format(
-        name, snet.get("error")
+    ret["comment"] = "Failed to {0} subnet {1}! ({2})".format(
+        action, name, snet.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
