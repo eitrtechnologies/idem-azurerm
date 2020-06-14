@@ -110,6 +110,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -130,6 +131,7 @@ async def present(
     )
 
     if "error" not in rule:
+        action = "update"
         if ignore_missing_endpoint is not None:
             if ignore_missing_endpoint != rule.get(
                 "ignore_missing_vnet_service_endpoint"
@@ -185,11 +187,11 @@ async def present(
 
     if "error" not in rule:
         ret["result"] = True
-        ret["comment"] = "Virtual Network Rule {0} has been created.".format(name)
+        ret["comment"] = f"Virtual Network Rule {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create Virtual Network Rule {0}! ({1})".format(
-        name, rule.get("error")
+    ret["comment"] = "Failed to {0} Virtual Network Rule {1}! ({2})".format(
+        action, name, rule.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

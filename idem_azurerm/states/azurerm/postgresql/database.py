@@ -107,6 +107,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -127,6 +128,7 @@ async def present(
     )
 
     if "error" not in database:
+        action = "update"
         if charset:
             if charset != database.get("charset"):
                 ret["changes"]["charset"] = {
@@ -186,11 +188,11 @@ async def present(
 
     if "error" not in database:
         ret["result"] = True
-        ret["comment"] = "Database {0} has been created.".format(name)
+        ret["comment"] = f"Database {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create Database {0}! ({1})".format(
-        name, database.get("error")
+    ret["comment"] = "Failed to {0} Database {1}! ({2})".format(
+        action, name, database.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

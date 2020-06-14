@@ -108,6 +108,7 @@ async def present(
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
+    action = "create"
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -128,6 +129,7 @@ async def present(
     )
 
     if "error" not in config:
+        action = "update"
         if value:
             if value != config.get("value"):
                 ret["changes"]["value"] = {"old": config.get("value"), "new": value}
@@ -176,11 +178,11 @@ async def present(
 
     if "error" not in config:
         ret["result"] = True
-        ret["comment"] = "Configuraton Setting {0} has been updated.".format(name)
+        ret["comment"] = f"Configuraton Setting {name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to create Configuration Setting {0}! ({1})".format(
-        name, config.get("error")
+    ret["comment"] = "Failed to {0} Configuration Setting {1}! ({2})".format(
+        action, name, config.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
