@@ -1,6 +1,6 @@
-=============================
-idem-azurerm Module Reference
-=============================
+================
+Module Reference
+================
 
 This section contains a list of the Python modules that are used to extend the various Azure subsystems within Idem.
 
