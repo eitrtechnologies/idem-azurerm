@@ -129,7 +129,7 @@ run. To do this, run idem with the ``--test`` option.
 
     (idemenv) $ idem state mytest.sls --test
 
-Once you determine that your state file with perform the intended operations, then you can build the defined resources
+Once you determine that your state file will perform the intended operations, then you can build the defined resources
 by running idem like so:
 
 .. code-block:: bash

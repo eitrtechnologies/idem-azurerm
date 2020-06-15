@@ -1,7 +1,7 @@
 ============================
 Quickstart - Virtual Machine
 ============================
-This quickstart is guide is meant to give you a state file you can modify to deploy a simple Linux virtual machine
+This quickstart guide is meant to give you a state file you can modify to deploy a simple Linux virtual machine
 that's accessible via SSH over a public IP address. Refer to the "Installation" and "Credentials" sections of the
 `Getting Started Guide <gettingstarted.html>`_ to get any prerequisites set up if this is your first time with
 ``idem-azurerm``.
@@ -74,7 +74,7 @@ run. To do this, run idem with the ``--test`` option.
 
     (idemenv) $ idem state basicvm.sls --test
 
-Once you determine that your state file with perform the intended operations, then you can build the defined resources
+Once you determine that your state file will perform the intended operations, then you can build the defined resources
 by running idem like so:
 
 .. code-block:: bash
