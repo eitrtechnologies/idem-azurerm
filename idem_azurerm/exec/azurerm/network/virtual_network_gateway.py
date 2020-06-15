@@ -100,7 +100,9 @@ async def connection_create_or_update(
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
-            return False
+            return {
+                "error": "Unable to determine location from resource group specified."
+            }
         kwargs["location"] = rg_props["location"]
 
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
@@ -109,7 +111,9 @@ async def connection_create_or_update(
     # This endpoint will be where the connection originates.
     if not is_valid_resource_id(virtual_network_gateway):
         log.error("Invalid Resource ID was specified as virtual_network_gateway!")
-        return False
+        return {
+            "error": "Invalid Resource ID was specified as virtual_network_gateway!"
+        }
 
     vnetgw1_parsed_id = parse_resource_id(virtual_network_gateway)
 
@@ -120,7 +124,11 @@ async def connection_create_or_update(
         log.error(
             "Invalid Resource ID was specified as virtual_network_gateway! (%s)", esc
         )
-        return False
+        return {
+            "error": "Invalid Resource ID was specified as virtual_network_gateway! ({0})".format(
+                esc
+            )
+        }
 
     vnetgw1 = await hub.exec.azurerm.network.virtual_network_gateway.get(
         ctx=ctx, name=vnetgw1_name, resource_group=vnetgw1_rg, **kwargs
@@ -128,7 +136,9 @@ async def connection_create_or_update(
 
     if "error" in vnetgw1:
         log.error("Unable to find the resource specified in virtual_network_gateway!")
-        return False
+        return {
+            "error": "Unable to find the resource specified in virtual_network_gateway!"
+        }
 
     virtual_network_gateway = {"id": str(vnetgw1["id"])}
 
@@ -138,7 +148,9 @@ async def connection_create_or_update(
         kwargs["virtual_network_gateway2"]
     ):
         log.error("Invalid Resource ID was specified as virtual_network_gateway2!")
-        return False
+        return {
+            "error": "Invalid Resource ID was specified as virtual_network_gateway2!"
+        }
 
     # Check the Resource ID path of local_network_gateway2
     # We can't guarantee the validity of the object, so we hope you have the path correct...
@@ -146,7 +158,7 @@ async def connection_create_or_update(
         kwargs["local_network_gateway2"]
     ):
         log.error("Invalid Resource ID was specified as local_network_gateway2!")
-        return False
+        return {"error": "Invalid Resource ID was specified as local_network_gateway2!"}
 
     if kwargs.get("virtual_network_gateway2"):
         kwargs["virtual_network_gateway2"] = {
@@ -471,7 +483,9 @@ async def create_or_update(
 
         if "error" in rg_props:
             log.error("Unable to determine location from resource group specified.")
-            return False
+            return {
+                "error": "Unable to determine location from resource group specified."
+            }
         kwargs["location"] = rg_props["location"]
 
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
