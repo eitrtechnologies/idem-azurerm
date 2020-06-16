@@ -4,7 +4,7 @@ Azure Resource Manager (ARM) Resource Policy State Module
 
 .. versionadded:: 1.0.0
 
-.. versionchanged:: 2.0.0
+.. versionchanged:: 2.3.2, 2.0.0
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
@@ -417,13 +417,14 @@ async def assignment_present(
     definition_name,
     display_name=None,
     description=None,
-    assignment_type=None,
     parameters=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 2.3.2
 
     Ensure a security policy assignment exists.
 
@@ -441,9 +442,6 @@ async def assignment_present(
 
     :param description:
         The policy assignment description.
-
-    :param assignment_type:
-        The type of policy assignment.
 
     :param parameters:
         Required dictionary if a parameter is used in the policy rule.
@@ -484,12 +482,6 @@ async def assignment_present(
 
     if "error" not in policy:
         action = "update"
-        if (
-            assignment_type
-            and assignment_type.lower() != policy.get("type", "").lower()
-        ):
-            ret["changes"]["type"] = {"old": policy.get("type"), "new": assignment_type}
-
         if scope.lower() != policy["scope"].lower():
             ret["changes"]["scope"] = {"old": policy["scope"], "new": scope}
 
@@ -530,7 +522,6 @@ async def assignment_present(
                 "name": name,
                 "scope": scope,
                 "definition_name": definition_name,
-                "type": assignment_type,
                 "display_name": display_name,
                 "description": description,
                 "parameters": parameters,
@@ -552,7 +543,6 @@ async def assignment_present(
         name=name,
         scope=scope,
         definition_name=definition_name,
-        type=assignment_type,
         display_name=display_name,
         description=description,
         parameters=parameters,
