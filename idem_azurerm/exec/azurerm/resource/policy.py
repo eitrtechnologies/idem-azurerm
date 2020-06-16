@@ -41,6 +41,7 @@ import logging
 HAS_LIBS = False
 try:
     import azure.mgmt.resource.resources.models  # pylint: disable=unused-import
+    from azure.mgmt.resource.policy.models import ErrorResponseException
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
 
@@ -193,7 +194,7 @@ async def assignment_get(hub, ctx, name, scope, **kwargs):
             policy_assignment_name=name, scope=scope
         )
         result = policy.as_dict()
-    except CloudError as exc:
+    except (CloudError, ErrorResponseException) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 

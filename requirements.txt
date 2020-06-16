@@ -18,7 +18,7 @@ azure-mgmt-monitor==0.5.2
 azure-mgmt-network==2.7.0
 azure-mgmt-rdbms==1.9.0
 azure-mgmt-redis==5.0.0
-azure-mgmt-resource==2.2.0
+azure-mgmt-resource==3.0.0
 azure-mgmt-storage==2.0.0
 azure-mgmt-web==0.35.0
 msrest==0.6.10
