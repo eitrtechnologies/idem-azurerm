@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Resource Policy Execution Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 2.3.2
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -35,6 +37,7 @@ Azure Resource Manager (ARM) Resource Policy Execution Module
 # Python libs
 from __future__ import absolute_import
 from json import loads, dumps
+from uuid import UUID
 import logging
 
 # Azure libs
@@ -88,6 +91,8 @@ async def assignment_create(hub, ctx, name, scope, definition_name, **kwargs):
     """
     .. versionadded:: 1.0.0
 
+    .. versionchanged:: 2.3.2
+
     Create a policy assignment.
 
     :param name: The name of the policy assignment to create.
@@ -106,29 +111,9 @@ async def assignment_create(hub, ctx, name, scope, definition_name, **kwargs):
     """
     polconn = await hub.exec.azurerm.utils.get_client(ctx, "policy", **kwargs)
 
-    # "get" doesn't work for built-in policies per https://github.com/Azure/azure-cli/issues/692
-    # Uncomment this section when the ticket above is resolved.
-    #  BEGIN
-    # definition = definition_get(
-    #     name=definition_name,
-    #     **kwargs
-    # )
-    #  END
-
-    # Delete this section when the ticket above is resolved.
-    #  BEGIN
-    definition_list = await hub.exec.azurerm.resource.policy.definitions_list(
-        ctx=ctx, **kwargs
+    definition = await hub.exec.azurerm.resource.policy.definition_get(
+        ctx=ctx, name=definition_name, **kwargs
     )
-    if definition_name in definition_list:
-        definition = definition_list[definition_name]
-    else:
-        definition = {
-            "error": 'The policy definition named "{0}" could not be found.'.format(
-                definition_name
-            )
-        }
-    #  END
 
     if "error" not in definition:
         definition_id = str(definition["id"])
@@ -350,13 +335,17 @@ async def definition_delete(hub, ctx, name, **kwargs):
     return result
 
 
-async def definition_get(hub, ctx, name, **kwargs):
+async def definition_get(hub, ctx, name, policy_type=None, **kwargs):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 2.3.2
 
     Get details about a specific policy definition.
 
     :param name: The name of the policy definition to query.
+
+    :param policy_type: Set to "BuiltIn" to get a built-in policy definition.
 
     CLI Example:
 
@@ -366,8 +355,21 @@ async def definition_get(hub, ctx, name, **kwargs):
 
     """
     polconn = await hub.exec.azurerm.utils.get_client(ctx, "policy", **kwargs)
+
     try:
-        policy_def = polconn.policy_definitions.get(policy_definition_name=name)
+        if not policy_type:
+            UUID(name, version=4)
+            policy_type = "BuiltIn"
+    except ValueError:
+        pass
+
+    try:
+        if policy_type and policy_type.lower() == "builtin":
+            policy_def = polconn.policy_definitions.get_built_in(
+                policy_definition_name=name
+            )
+        else:
+            policy_def = polconn.policy_definitions.get(policy_definition_name=name)
         result = policy_def.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
