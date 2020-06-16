@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.1] - 2020-06-16
+
+### Added
+
+- [#104](https://github.com/eitrtechnologies/idem-azurerm/pull/104) - Updated docs for Getting Started and VM
+  Quickstart.
+
+### Changed
+
+### Fixed
+
+- [#105](https://github.com/eitrtechnologies/idem-azurerm/pull/105) - Catch policy assignment exceptions properly.
+- [#103](https://github.com/eitrtechnologies/idem-azurerm/pull/103) - Always return a dict on error in exec modules.
+- [#102](https://github.com/eitrtechnologies/idem-azurerm/pull/102) - Fix updated language in state modules.
+
+### Deprecated
+
+### Removed
+
 ## [2.3.0] - 2020-06-09
 
 ### Added
@@ -132,6 +151,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release of execution and state modules from Salt along with some additional functionality ported from
   salt-cloud for virtual machines.
 
+[2.3.1]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.0.0...v2.1.0
