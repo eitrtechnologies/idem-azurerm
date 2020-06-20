@@ -444,7 +444,8 @@ async def assignment_present(
         The policy assignment description.
 
     :param parameters:
-        Required dictionary if a parameter is used in the policy rule.
+        Required dictionary if a parameter is used in the policy rule. Note that parameters will require a "value" key
+        underneath the actual parameter name before specifying the values being passed. See the example for details.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
@@ -454,14 +455,24 @@ async def assignment_present(
 
     .. code-block:: yaml
 
-        Ensure policy assignment exists:
-            azurerm.resource.policy.assignment_present:
-                - name: testassign
+        Restrict Allowed Locations :
+            azurerm.resource.policy.assignment_present :
+                - name: AllowedLocations
                 - scope: /subscriptions/bc75htn-a0fhsi-349b-56gh-4fghti-f84852
-                - definition_name: testpolicy
-                - display_name: Test Assignment
-                - description: Test assignment for testing assignments.
-                - connection_auth: {{ profile }}
+                - definition_name: e56962a6-4747-49cd-b67b-bf8b01975c4c
+                - display_name: Allowed Locations
+                - description: This policy enables restriction of locations you can specify when deploying resources
+                - parameters:
+                      listOfAllowedLocations:
+                          value:
+                              - centralus
+                              - eastus
+                              - eastus2
+                              - northcentralus
+                              - southcentralus
+                              - westcentralus
+                              - westus
+                              - westus2
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
