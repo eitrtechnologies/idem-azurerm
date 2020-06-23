@@ -81,7 +81,7 @@ async def assignment_delete(hub, ctx, name, scope, **kwargs):
             policy_assignment_name=name, scope=scope
         )
         result = True
-    except CloudError as exc:
+    except (CloudError, ErrorResponseException) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
 
     return result
@@ -138,7 +138,9 @@ async def assignment_create(hub, ctx, name, scope, definition_name, **kwargs):
                 scope=scope, policy_assignment_name=name, parameters=policy_model
             )
             result = policy.as_dict()
-        except CloudError as exc:
+        except (CloudError, ErrorResponseException) as exc:
+            if hasattr(exc, "error"):
+                exc = exc.error
             await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
             result = {"error": str(exc)}
         except SerializationError as exc:
@@ -214,7 +216,7 @@ async def assignments_list_for_resource_group(
 
         for assign in policy_assign:
             result[assign["name"]] = assign
-    except CloudError as exc:
+    except (CloudError, ErrorResponseException) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
@@ -243,7 +245,7 @@ async def assignments_list(hub, ctx, **kwargs):
 
         for assign in policy_assign:
             result[assign["name"]] = assign
-    except CloudError as exc:
+    except (CloudError, ErrorResponseException) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
@@ -297,7 +299,7 @@ async def definition_create_or_update(
             policy_definition_name=name, parameters=policy_model
         )
         result = policy.as_dict()
-    except CloudError as exc:
+    except (CloudError, ErrorResponseException) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
     except SerializationError as exc:
@@ -329,7 +331,7 @@ async def definition_delete(hub, ctx, name, **kwargs):
         # pylint: disable=unused-variable
         policy = polconn.policy_definitions.delete(policy_definition_name=name)
         result = True
-    except CloudError as exc:
+    except (CloudError, ErrorResponseException) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
 
     return result
@@ -371,7 +373,7 @@ async def definition_get(hub, ctx, name, policy_type=None, **kwargs):
         else:
             policy_def = polconn.policy_definitions.get(policy_definition_name=name)
         result = policy_def.as_dict()
-    except CloudError as exc:
+    except (CloudError, ErrorResponseException) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
@@ -403,7 +405,7 @@ async def definitions_list(hub, ctx, hide_builtin=False, **kwargs):
         for policy in policy_defs:
             if not (hide_builtin and policy["policy_type"] == "BuiltIn"):
                 result[policy["name"]] = policy
-    except CloudError as exc:
+    except (CloudError, ErrorResponseException) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
