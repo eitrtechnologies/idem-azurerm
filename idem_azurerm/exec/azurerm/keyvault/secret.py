@@ -169,7 +169,8 @@ async def delete_secret(hub, ctx, name, vault_url, wait=False, **kwargs):
     :param vault_url: The URL of the vault that the client will access.
 
     :param wait: When this method returns, Key Vault has begun deleting the secret. Deletion may take several seconds in
-    a vault with soft-delete enabled. Setting this parameter to ``True`` enables you to wait for deletion to complete.
+        a vault with soft-delete enabled. Setting this parameter to ``True`` enables you to wait for deletion to
+        complete.
 
     CLI Example:
 
@@ -211,7 +212,7 @@ async def recover_deleted_secret(hub, ctx, name, vault_url, wait=False, **kwargs
     :param vault_url: The URL of the vault that the client will access.
 
     :param wait: When this method returns, Key Vault has begun recovering the secret. Recovery may take several seconds.
-    Setting this parameter to ``True`` enables you to wait for recovery to complete.
+        Setting this parameter to ``True`` enables you to wait for recovery to complete.
 
     CLI Example:
 
