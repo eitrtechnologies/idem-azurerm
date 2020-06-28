@@ -63,6 +63,7 @@ async def present(
     hub,
     ctx,
     name,
+    value,
     vault_url,
     content_type=None,
     enabled=None,
@@ -157,7 +158,7 @@ async def present(
         if content_type:
             if (
                 content_type.lower()
-                != secret.get("properties", {}).get("content_type", "").lower()
+                != (secret.get("properties", {}).get("content_type", "") or "").lower()
             ):
                 ret["changes"]["content_type"] = {
                     "old": secret.get("properties", {}).get("content_type"),
@@ -197,20 +198,20 @@ async def present(
 
     else:
         ret["changes"] = {
-            "old": {},
-            "new": {"name": name, "value": "REDACTED_NEW_VALUE"},
+            "name": {"new": name},
+            "value": {"new": "REDACTED_VALUE"},
         }
 
         if tags:
-            ret["changes"]["new"]["tags"] = tags
+            ret["changes"]["tags"] = {"new": tags}
         if content_type:
-            ret["changes"]["new"]["content_type"] = content_type
+            ret["changes"]["content_type"] = {"new": content_type}
         if enabled is not None:
-            ret["changes"]["new"]["enabled"] = enabled
+            ret["changes"]["enabled"] = {"new": enabled}
         if expires_on:
-            ret["changes"]["new"]["expires_on"] = expires_on
+            ret["changes"]["expires_on"] = {"new": expires_on}
         if not_before:
-            ret["changes"]["new"]["not_before"] = not_before
+            ret["changes"]["not_before"] = {"new": not_before}
 
     if ctx["test"]:
         ret["comment"] = "Secret {0} would be created.".format(name)
@@ -221,12 +222,12 @@ async def present(
     secret_kwargs.update(connection_auth)
     secret = {}
 
-    if ret["changes"]["new"].get("value"):
+    if ret["changes"].get("value"):
         secret = await hub.exec.azurerm.keyvault.secret.set_secret(
             ctx=ctx, name=name, value=value, vault_url=vault_url, **secret_kwargs
         )
 
-    if [key for key in ret["changes"]["new"] if key not in ["name", "value"]]:
+    if [key for key in ret["changes"] if key not in ["name", "value"]]:
         secret = await hub.exec.azurerm.keyvault.secret.update_secret_properties(
             ctx=ctx,
             name=name,
