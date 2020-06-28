@@ -5,6 +5,7 @@ import string
 
 @pytest.fixture
 def hub(hub):
+    hub.pop.sub.add(dyne_name="acct")
     hub.pop.sub.add(dyne_name="exec")
     hub.pop.sub.load_subdirs(hub.exec, recurse=True)
     hub.pop.sub.add(dyne_name="states")
