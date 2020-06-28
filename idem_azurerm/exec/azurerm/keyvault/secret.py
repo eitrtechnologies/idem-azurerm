@@ -300,7 +300,7 @@ async def get_secret(hub, ctx, name, vault_url, version=None, **kwargs):
         secret = sconn.get_secret(name=name, version=version,)
 
         result = _secret_as_dict(secret)
-    except ResourceNotFoundError as exc:
+    except (HttpResponseError, ResourceNotFoundError) as exc:
         result = {"error": str(exc)}
 
     return result
@@ -477,7 +477,7 @@ async def restore_secret_backup(hub, ctx, backup, vault_url, **kwargs):
     return result
 
 
-async def set_secret(hub, ctx, name, secret, vault_url, **kwargs):
+async def set_secret(hub, ctx, name, value, vault_url, **kwargs):
     """
     .. versionadded:: 2.4.0
 
@@ -497,10 +497,15 @@ async def set_secret(hub, ctx, name, secret, vault_url, **kwargs):
     )
 
     try:
-        secret = sconn.set_secret(name=name, value=secret)
+        secret = sconn.set_secret(name=name, value=value)
 
         result = _secret_as_dict(secret)
-    except (ResourceExistsError, SerializationError) as exc:
+    except (
+        HttpResponseError,
+        ResourceNotFoundError,
+        ResourceExistsError,
+        SerializationError,
+    ) as exc:
         result = {"error": str(exc)}
 
     return result
