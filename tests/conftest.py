@@ -36,6 +36,15 @@ def pytest_runtest_teardown(item):
     log.debug("<<<<< END <<<<<<< {0}".format(item.name))
 
 
+def pytest_configure(config):
+    config.addinivalue_line("markers", "first: mark test to run first")
+    config.addinivalue_line("markers", "second: mark test to run second")
+    config.addinivalue_line(
+        "markers", "second_to_last: mark test to run second to last"
+    )
+    config.addinivalue_line("markers", "last: mark test to run last")
+
+
 @pytest.fixture
 def os_sleep_secs():
     if "CI_RUN" in os.environ:
