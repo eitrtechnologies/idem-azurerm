@@ -6,8 +6,10 @@ takara==1.2
 dict-toolbox==1.5
 azure-common==1.1.23
 azure-core==1.3.0
+azure-graphrbac==0.40.0
 azure-identity==1.3.0
 azure-keyvault-keys==4.0.0
+azure-keyvault-secrets==4.1.0
 azure-mgmt-authorization==0.50.0
 azure-mgmt-compute==4.6.2
 azure-mgmt-dns==2.1.0

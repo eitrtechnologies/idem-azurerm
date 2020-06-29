@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.mark.run(before="test_absent")
+@pytest.mark.first
 @pytest.mark.asyncio
 async def test_present(hub, ctx, resource_group, location):
     expected = {
@@ -9,6 +9,7 @@ async def test_present(hub, ctx, resource_group, location):
             "new": {
                 "location": location,
                 "name": resource_group,
+                "type": "Microsoft.Resources/resourceGroups",
                 "properties": {"provisioning_state": "Succeeded"},
             },
             "old": {},
@@ -32,6 +33,7 @@ async def test_changes(hub, ctx, resource_group, location, tags):
                 "name": resource_group,
                 "properties": {"provisioning_state": "Succeeded"},
                 "tags": tags,
+                "type": "Microsoft.Resources/resourceGroups",
             },
             "old": {},
         },
@@ -46,7 +48,7 @@ async def test_changes(hub, ctx, resource_group, location, tags):
     assert ret == expected
 
 
-@pytest.mark.run(after="test_present")
+@pytest.mark.last
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, location, tags):
     expected = {
@@ -57,6 +59,7 @@ async def test_absent(hub, ctx, resource_group, location, tags):
                 "name": resource_group,
                 "properties": {"provisioning_state": "Succeeded"},
                 "tags": tags,
+                "type": "Microsoft.Resources/resourceGroups",
             },
         },
         "comment": f"Resource group {resource_group} has been deleted.",
