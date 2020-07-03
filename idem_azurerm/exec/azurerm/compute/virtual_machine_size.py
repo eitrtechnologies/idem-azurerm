@@ -3,6 +3,7 @@
 Azure Resource Manager (ARM) Compute Virtual Machine Size Execution Module
 
 .. versionadded:: 2.4.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -29,8 +30,8 @@ Azure Resource Manager (ARM) Compute Virtual Machine Size Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
+
 # Python libs
-from __future__ import absolute_import
 import logging
 
 # Azure libs
@@ -51,12 +52,18 @@ log = logging.getLogger(__name__)
 async def list_(hub, ctx, location, **kwargs):
     """
     .. versionadded:: 2.4.0
-    The operation to get all extensions of a Virtual Machine.
-    :param  location: The name of the location of all possible vm sizes in that location
+
+    Get all supported sizes of Virtual Machine in a given region.
+
+    :param  location: The name of the location to query for all possible vm sizes.
         This parameter is required.
+
     CLI Example:
+
     .. code-block:: bash
-        azurerm.compute.virtual_machine_sizes.list location
+
+        azurerm.compute.virtual_machine_size.list eastus
+
     """
     result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
