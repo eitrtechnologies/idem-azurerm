@@ -29,11 +29,9 @@ try:
         MetadataEndpointError,
         get_cloud_from_metadata_endpoint,
     )
-    from msrestazure.azure_exceptions import CloudError
-    from requests.exceptions import (
-        ConnectionError,
-        HTTPError,
-    )
+    from msrestazure.azure_exceptions import CloudError, MSIAuthenticationTimeoutError
+    from msrest.exceptions import AuthenticationError, TokenExpiredError
+    from requests.exceptions import HTTPError
 
     HAS_AZURE = True
 except ImportError:
@@ -114,7 +112,12 @@ async def determine_auth(hub, ctx, resource=None, **kwargs):
     elif "subscription_id" in kwargs:
         try:
             credentials = MSIAuthentication(cloud_environment=cloud_env, **cred_kwargs)
-        except (ConnectionError, HTTPError) as exc:
+        except (
+            AuthenticationError,
+            HTTPError,
+            MSIAuthenticationTimeoutError,
+            TokenExpiredError,
+        ) as exc:
             raise Exception(
                 "Fell through to MSI authentication and was unable to authenticate."
                 "Please check your credentials and try again. ({0})".format(exc)
