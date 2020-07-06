@@ -4,7 +4,7 @@ Azure Resource Manager (ARM) Utilities
 
 .. versionadded:: 1.0.0
 
-.. versionchanged:: 2.0.0
+.. versionchanged:: 2.4.0, 2.0.0
 
 :maintainer: <devops@eitr.tech>
 
@@ -24,11 +24,14 @@ try:
         UserPassCredentials,
         ServicePrincipalCredentials,
     )
+    from msrestazure.azure_active_directory import MSIAuthentication
     from msrestazure.azure_cloud import (
         MetadataEndpointError,
         get_cloud_from_metadata_endpoint,
     )
-    from msrestazure.azure_exceptions import CloudError
+    from msrestazure.azure_exceptions import CloudError, MSIAuthenticationTimeoutError
+    from msrest.exceptions import AuthenticationError, TokenExpiredError
+    from requests.exceptions import HTTPError
 
     HAS_AZURE = True
 except ImportError:
@@ -106,6 +109,19 @@ async def determine_auth(hub, ctx, resource=None, **kwargs):
             cloud_environment=cloud_env,
             **cred_kwargs,
         )
+    elif "subscription_id" in kwargs:
+        try:
+            credentials = MSIAuthentication(cloud_environment=cloud_env, **cred_kwargs)
+        except (
+            AuthenticationError,
+            HTTPError,
+            MSIAuthenticationTimeoutError,
+            TokenExpiredError,
+        ) as exc:
+            raise Exception(
+                "Fell through to MSI authentication and was unable to authenticate."
+                "Please check your credentials and try again. ({0})".format(exc)
+            )
     else:
         raise Exception(
             "Unable to determine credentials. "
