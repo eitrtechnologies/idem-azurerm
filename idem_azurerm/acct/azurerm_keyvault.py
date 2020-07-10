@@ -23,10 +23,10 @@ Azure Key Vault Backend for Acct
 
     To use this backend, configure the backend YAML as shown above for the
     credentials which can be used to access the Key Vault URL provided. A
-    username and password can be used in lieu of the service principal
-    credentials shown in the example. Any identity used will need secrets/list
-    and secrets/get permissions to the vault in order to retrieve the
-    credentials.
+    username and password or Managed Service Identities can be used in lieu of
+    the service principal credentials shown in the example. Any identity used
+    will need secrets/list and secrets/get permissions to the vault in order to
+    retrieve the credentials.
 
     Credentials stored in the Key Vault will need to be named in a prescribed
     way in order to be properly retrieved and used for acct:

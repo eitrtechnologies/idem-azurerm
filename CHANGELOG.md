@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2020-07-09
+
+### Added
+
+- [#120](https://github.com/eitrtechnologies/idem-azurerm/pull/120) - Added Managed Service Identity authentication
+  support.
+- [#115](https://github.com/eitrtechnologies/idem-azurerm/pull/115) - Added exec modules for listing virtual machine
+  sizes.
+- [#114](https://github.com/eitrtechnologies/idem-azurerm/pull/114) - Added acct backend for pulling credentials out of
+  Key Vault secrets to be used for any other authentication purpose in Idem.
+- [#112](https://github.com/eitrtechnologies/idem-azurerm/pull/112) - Added exec and state modules for Key Vault
+  secrets.
+
+### Changed
+
+### Fixed
+
+- [#108](https://github.com/eitrtechnologies/idem-azurerm/pull/108) - Fixed exceptions that are being thrown from failed
+  policy assignments.
+
+### Deprecated
+
+### Removed
+
 ## [2.3.2] - 2020-06-16
 
 ### Added
@@ -165,6 +189,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release of execution and state modules from Salt along with some additional functionality ported from
   salt-cloud for virtual machines.
 
+[2.4.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.3.2...v2.4.0
 [2.3.2]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.3.1...v2.3.2
 [2.3.1]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.2.0...v2.3.0

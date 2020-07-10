@@ -1,0 +1,58 @@
+Version 2.4.0
+=============
+
+Managed Service Identities for Authentication
+*********************************************
+Up to this release, username and password or service principal credentials were required in order to use
+``idem-azurerm``. Now, we can use managed identities in order to authorize ``idem-azurerm`` to perform work in Azure. A
+great example of this use case is a provisioning host in Azure that's assigned a role in order to create more
+infrastructure. It's magic! Look Ma, no creds!
+
+Key Vault Secrets Modules
+*************************
+We already had support for keys in Key Vault. Now we have secrets too! All secret lifecycle actions should be supported
+at this time.
+
+Key Vault Backend for Acct
+**************************
+Backends for Acct are a great way to pull stored credentials from secure locations for use with Idem. In this release,
+we added the ability to get secrets from Azure Key Vault in order to use them for any purpose in Idem. That's right, you
+can use secrets stored in Key Vault to access AWS, Vultr, or any other Idem provider coming in the future!
+
+Here's an example of the backend configuration:
+
+.. code-block:: yaml
+
+    acct-backend:
+        azurerm_keyvault:
+            designator: "acct-provider-"
+            vault_url: "https://myvault.vault.azure.net"
+            client_id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+            secret: "X2KRwdcdsQn9mwjdt0EbxsQR3w5TuBOR"
+            subscription_id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
+            tenant: "cccccccc-cccc-cccc-cccc-cccccccccccc"
+
+To use this backend, configure the backend YAML as shown above for the credentials which can be used to access the Key
+Vault URL provided. A username and password can be used in lieu of the service principal credentials shown in the
+example, or just use the new Managed Service Identity support in this release! Any identity used will need secrets/list
+and secrets/get permissions to the vault in order to retrieve the credentials.
+
+Credentials stored in the Key Vault will need to be named in a prescribed way in order to be properly retrieved and used
+for acct:
+
+.. code-block::
+
+    {designator}{provider}-{profile}-{parameter}
+
+So, an example of secret names stored in Key Vault to be used for ``idem-azurerm`` would be:
+
+.. code-block::
+
+    acct-provider-azurerm-default-client-id
+    acct-provider-azurerm-default-secret
+    acct-provider-azurerm-default-subscription-id
+    acct-provider-azurerm-default-tenant
+
+This backend will only retrieve the latest version of a given secret, and the secret's value will only be retrieved from
+the vault if the naming matches the expected format. Note that any dashes after the profile field will be converted to
+underscores. This is due to limitations in secret naming and the fact that Python parameters shouldn't have dashes.

@@ -202,7 +202,7 @@ async def get_client(hub, ctx, client_type, **kwargs):
             base_url=cloud_env.endpoints.resource_manager,
         )
 
-    client.config.add_user_agent("idem-azurerm/2.0.0")
+    client.config.add_user_agent("idem-azurerm")
 
     return client
 
