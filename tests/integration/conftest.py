@@ -48,3 +48,16 @@ def keyvault():
     yield "kv-idem-inttest-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
+
+
+@pytest.fixture(scope="session")
+def storage_account():
+    yield "idemacc" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(16)
+    )
+
+@pytest.fixture(scope="session")
+def storage_container():
+    yield "idem-container" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(32)
+    )
