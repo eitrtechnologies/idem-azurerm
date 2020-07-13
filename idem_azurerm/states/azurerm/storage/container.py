@@ -145,6 +145,8 @@ async def present(
         )
         if metadata_changes:
             ret["changes"]["metadata"] = metadata_changes
+            if not metadata:
+                metadata = {}
 
         if public_access and public_access != container.get("public_access"):
             ret["changes"]["public_access"] = {
