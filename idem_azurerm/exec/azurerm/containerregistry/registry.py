@@ -446,3 +446,132 @@ async def regenerate_credential(
         result = {"error": str(exc)}
 
     return result
+
+
+async def delete():
+    pass
+
+
+async def import_image(
+    hub,
+    ctx,
+    name,
+    resource_group,
+    source_image,
+    source_resource_id=None,
+    source_registry_uri=None,
+    source_username=None,
+    source_password=None,
+    target_tags=None,
+    untagged_target_repositories=None,
+    mode=None,
+    **kwargs,
+):
+    """
+    .. versionadded:: 3.0.0
+
+    Creates a container registry with the specified parameters.
+
+    :param name: The name of the container registry.
+
+    :param resource_group: The name of the resource group to which the container registry belongs.
+
+    :param source_image: Repository name of the source image. Specify an image by repository ('hello-world').
+        This will use the 'latest' tag. Specify an image by tag ('hello-world:latest'). Specify an image by
+        sha256-based manifest digest ('hello-world@sha256:abc123').
+
+    :param source_resource_id: The resource identifier of the source Azure Container Registry.
+
+    :param source_registry_uri: The address of the source registry (e.g. 'docker.io').
+
+    :param source_username: The username to authenticate with the source registry.
+
+    :param source_password: The password used to authenticate with the source registry.
+
+    :param target_tags: List of strings of the form repo[:tag]. When tag is omitted the source will be
+        used (or 'latest' if source tag is also omitted).
+
+    :param untagged_target_repositories: List of strings of repository names to do a manifest only copy.
+        No tag will be created.
+
+    :param mode: When Force, any existing target tags will be overwritten. When NoForce, any existing
+        target tags will fail the operation before any copying begins. Possible values include: 'NoForce',
+        'Force'. Default value: 'NoForce'.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.containerregistry.registry.import_image testrepo testgroup library/hello-world:latest \
+            source_registry_uri=docker.io
+
+    """
+    result = False
+
+    regconn = await hub.exec.azurerm.utils.get_client(
+        ctx, "containerregistry", **kwargs
+    )
+
+    source_credentials = None
+
+    if source_password:
+        source_credentials = {
+            "username": source_username,
+            "password": source_password,
+        }
+
+    if not target_tags:
+        index = source_image.find("@")
+        if index > 0:
+            target_tags = [source_image[:index]]
+        else:
+            target_tags = [source_image]
+
+    try:
+        importmodel = await hub.exec.azurerm.utils.create_object_model(
+            "containerregistry",
+            "ImportImageParameters",
+            source={
+                "source_image": source_image,
+                "resource_id": source_resource_id,
+                "registry_uri": source_registry_uri,
+                "credentials": source_credentials,
+            },
+            target_tags=target_tags,
+            untagged_target_repositories=untagged_target_repositories,
+            mode=mode,
+            **kwargs,
+        )
+    except TypeError as exc:
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
+        return result
+
+    try:
+        ret = regconn.registries.import_image(
+            registry_name=name,
+            resource_group_name=resource_group,
+            parameters=importmodel,
+        )
+        ret.wait()
+        result = True
+    except (CloudError, SerializationError) as exc:
+        await hub.exec.azurerm.utils.log_cloud_error(
+            "containerregistry", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def schedule_run():
+    pass
+
+
+async def update():
+    pass
+
+
+async def update_policies():
+    pass
