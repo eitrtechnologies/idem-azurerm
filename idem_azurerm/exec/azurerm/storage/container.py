@@ -605,7 +605,7 @@ async def update(
             **kwargs,
         )
 
-        result = container.result().as_dict()
+        result = container.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
