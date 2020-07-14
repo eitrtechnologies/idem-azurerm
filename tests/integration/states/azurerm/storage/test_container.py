@@ -1,27 +1,10 @@
 import pytest
-'''
---------
-      ID: Ensure container exists
-Function: azurerm.storage.container.present
-  Result: True
- Comment: Blob container testcontainer has been created.
- Changes: old:
-    ----------
-new:
-    ----------
-    name:
-        testcontainer
-    account:
-        eitrdelete
-    resource_group:
-        rg-tests
-    public_access:
-        Blob
-'''
+
+
 @pytest.mark.run(order=3)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, resource_group, location, storage_account, storage_container):
-    public_access = 'Standard_LRS'
+    public_access = 'Blob'
     expected = {
         "changes": {
             "new": {
@@ -40,49 +23,81 @@ async def test_present(hub, ctx, resource_group, location, storage_account, stor
         ctx,
         name=storage_container,
         account=storage_account,
+        location=location,
         resource_group=resource_group,
         public_access=public_access,
     )
     assert ret == expected
 
 
-@pytest.mark.run(after="test_present", before="test_absent")
+@pytest.mark.run(after="test_present", before="test_policy_present_and_changes")
 @pytest.mark.asyncio
-async def test_changes(hub, ctx, resource_group, tags, location, storage_account):
-    sku = 'Standard_LRS'
+async def test_changes(hub, ctx, resource_group, location, storage_account, storage_container):
+    public_access = 'Blob'
+    metadata = {"Company": "EITR Technologies"}
     expected = {
-        "changes": {"tags": {"new": tags,},},
-        "comment": f"Storage account {storage_account} has been updated.",
-        "name": storage_account,
+        "changes": {"metadata": {"new": metadata,},},
+        "comment": f"Blob container {storage_container} has been updated.",
+        "name": storage_container,
         "result": True,
     }
-    ret = await hub.states.azurerm.storage.account.present(
+    ret = await hub.states.azurerm.storage.container.present(
         ctx,
-        name=storage_account,
+        name=storage_container,
+        account=storage_account,
         resource_group=resource_group,
         location=location,
-        sku=sku,
-        kind=kind,
-        tags=tags,
+        metadata=metadata,
+        public_access=public_access
+    )
+    assert ret == expected
+
+
+@pytest.mark.run(after="test_changes", before="test_absent")
+@pytest.mark.asyncio
+async def test_immutability_policy_present_and_changes(hub, ctx, resource_group, storage_account, storage_container):
+    immutability_period = 10
+    expected = {
+        "changes": {"immutability_period_since_creation_in_days": {"old": 0, "new": 10},},
+        "comment": f"The immutability policy of the blob container {storage_container} has been updated.",
+        "name": storage_container,
+        "result": True,
+    }
+    ret = await hub.states.azurerm.storage.container.immutability_policy_present(
+        ctx,
+        name=storage_container,
+        account=storage_account,
+        resource_group=resource_group,
+        immutability_period=immutability_period,
+    )
+    assert ret == expected
+    expected["changes"] = {}
+    expected["comment"] = f"The immutability policy of the blob container {storage_container} is already present."
+    ret = await hub.states.azurerm.storage.container.immutability_policy_present(
+        ctx,
+        name=storage_container,
+        account=storage_account,
+        resource_group=resource_group,
+        immutability_period=immutability_period,
     )
     assert ret == expected
 
 
 @pytest.mark.run(order=-3)
 @pytest.mark.asyncio
-async def test_absent(hub, ctx, resource_group, storage_account):
+async def test_absent(hub, ctx, resource_group, storage_account, storage_container):
     expected = {
         "changes": {
             "new": {},
             "old": {
-                "name": storage_account,
+                "name": storage_container,
             },
         },
-        "comment": f"Storage account {storage_account} has been deleted.",
-        "name": storage_account,
+        "comment": f"Storage container {storage_container} has been deleted.",
+        "name": storage_container,
         "result": True,
     }
-    ret = await hub.states.azurerm.storage.account.absent(ctx, storage_account, resource_group)
+    ret = await hub.states.azurerm.storage.container.absent(ctx, storage_container, storage_account, resource_group)
     assert ret["changes"]["new"] == expected["changes"]["new"]
     assert ret["changes"]["old"]["name"] == expected["changes"]["old"]["name"]
     assert ret["result"] == expected["result"]
