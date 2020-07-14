@@ -130,7 +130,7 @@ async def present(
 
     if "error" not in container:
         action = "update"
-        
+
         metadata = metadata or {}
         metadata_changes = differ.deep_diff(container.get("metadata", {}), metadata)
         if metadata_changes:
