@@ -69,3 +69,10 @@ def log_analytics_workspace():
     yield "idem-law-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(32)
     )
+
+
+@pytest.fixture(scope="session")
+def postgresql_server():
+    yield "idem-psql-server-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
