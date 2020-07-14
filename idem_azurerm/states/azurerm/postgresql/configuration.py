@@ -178,7 +178,7 @@ async def present(
 
     if "error" not in config:
         ret["result"] = True
-        ret["comment"] = f"Configuraton Setting {name} has been {action}d."
+        ret["comment"] = f"Configuration Setting {name} has been {action}d."
         return ret
 
     ret["comment"] = "Failed to {0} Configuration Setting {1}! ({2})".format(
