@@ -1,25 +1,6 @@
 import pytest
 
 
-"""
---------
-      ID: Ensure log analytics workspace exists
-Function: azurerm.log_analytics.workspace.present
-  Result: True
- Comment: Log Analytics Workspace idem-law-alex has been created.
- Changes: old:
-    ----------
-new:
-    ----------
-    name:
-        idem-law-alex
-    resource_group:
-        rg-tests
-    location:
-        eastus
-"""
-
-
 @pytest.mark.run(order=2)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, resource_group, location, log_analytics_workspace):
