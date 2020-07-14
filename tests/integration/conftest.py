@@ -56,8 +56,16 @@ def storage_account():
         random.choice(string.ascii_lowercase + string.digits) for _ in range(16)
     )
 
+
 @pytest.fixture(scope="session")
 def storage_container():
     yield "idem-container" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(32)
+    )
+
+
+@pytest.fixture(scope="session")
+def log_analytics_workspace():
+    yield "idem-law-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(32)
     )

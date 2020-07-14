@@ -4,8 +4,8 @@ import pytest
 @pytest.mark.run(order=2)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, resource_group, location, storage_account):
-    sku = 'Standard_LRS'
-    kind = 'StorageV2'
+    sku = "Standard_LRS"
+    kind = "StorageV2"
     expected = {
         "changes": {
             "new": {
@@ -35,8 +35,8 @@ async def test_present(hub, ctx, resource_group, location, storage_account):
 @pytest.mark.run(after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, resource_group, tags, location, storage_account):
-    sku = 'Standard_LRS'
-    kind = 'StorageV2'
+    sku = "Standard_LRS"
+    kind = "StorageV2"
     expected = {
         "changes": {"tags": {"new": tags,},},
         "comment": f"Storage account {storage_account} has been updated.",
@@ -59,17 +59,14 @@ async def test_changes(hub, ctx, resource_group, tags, location, storage_account
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, storage_account):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": storage_account,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": storage_account,},},
         "comment": f"Storage account {storage_account} has been deleted.",
         "name": storage_account,
         "result": True,
     }
-    ret = await hub.states.azurerm.storage.account.absent(ctx, storage_account, resource_group)
+    ret = await hub.states.azurerm.storage.account.absent(
+        ctx, storage_account, resource_group
+    )
     assert ret["changes"]["new"] == expected["changes"]["new"]
     assert ret["changes"]["old"]["name"] == expected["changes"]["old"]["name"]
     assert ret["result"] == expected["result"]
