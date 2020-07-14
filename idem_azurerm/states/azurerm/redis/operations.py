@@ -67,7 +67,7 @@ async def present(
     location,
     sku,
     redis_configuration=None,
-    enable_non_ssl_port=False,
+    enable_non_ssl_port=None,
     tenant_settings=None,
     shard_count=None,
     minimum_tls_version=None,
