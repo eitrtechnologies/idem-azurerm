@@ -297,12 +297,6 @@ async def present(
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
 
-        # sku changes
-        if sku:
-            sku_changes = differ.deep_diff(load_bal.get("sku", {}), sku)
-            if sku_changes:
-                ret["changes"]["sku"] = sku_changes
-
         # frontend_ip_configurations changes
         if frontend_ip_configurations:
             comp_ret = await hub.exec.azurerm.utils.compare_list_of_dicts(
