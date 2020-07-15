@@ -76,3 +76,24 @@ def postgresql_server():
     yield "idem-psql-server-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
+
+
+@pytest.fixture(scope="session")
+def vnet():
+    yield "idem-vnet-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
+
+
+@pytest.fixture(scope="session")
+def subnet():
+    yield "idem-subnet-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
+
+
+@pytest.fixture(scope="session")
+def public_ip_addr():
+    yield "idem-public-ip-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
