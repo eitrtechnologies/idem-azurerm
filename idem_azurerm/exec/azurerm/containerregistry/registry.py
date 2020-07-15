@@ -703,6 +703,10 @@ async def schedule_run(
         azurerm.containerregistry.registry.schedule_run testrepo testgroup TaskRun task_name=testtask
 
     """
+    raise NotImplementedError(
+        "Well... I guess this is too new... it'll be here when the SDK catches up with us."
+    )
+
     agent_configuration = None
     credentials = None
     result = {}
@@ -740,7 +744,7 @@ async def schedule_run(
 
     if run_type.upper() == "FILETASKRUN":
         try:
-            importmodel = await hub.exec.azurerm.utils.create_object_model(
+            runmodel = await hub.exec.azurerm.utils.create_object_model(
                 "containerregistry",
                 "FileTaskRunRequest",
                 is_archive_enabled=is_archive_enabled,
@@ -767,7 +771,7 @@ async def schedule_run(
 
     elif run_type.upper() == "TASKRUN":
         try:
-            importmodel = await hub.exec.azurerm.utils.create_object_model(
+            runmodel = await hub.exec.azurerm.utils.create_object_model(
                 "containerregistry",
                 "TaskRunRequest",
                 is_archive_enabled=is_archive_enabled,
@@ -784,7 +788,7 @@ async def schedule_run(
 
     elif run_type.upper() == "ENCODEDTASKRUN":
         try:
-            importmodel = await hub.exec.azurerm.utils.create_object_model(
+            runmodel = await hub.exec.azurerm.utils.create_object_model(
                 "containerregistry",
                 "EncodedTaskRunRequest",
                 is_archive_enabled=is_archive_enabled,
@@ -811,7 +815,7 @@ async def schedule_run(
 
     elif run_type.upper() == "DOCKERBUILD":
         try:
-            importmodel = await hub.exec.azurerm.utils.create_object_model(
+            runmodel = await hub.exec.azurerm.utils.create_object_model(
                 "containerregistry",
                 "DockerBuildRequest",
                 is_archive_enabled=is_archive_enabled,
