@@ -90,7 +90,7 @@ async def check_name_availability(hub, ctx, name, **kwargs):
     return result
 
 
-async def create(
+async def create_or_update(
     hub,
     ctx,
     name,
@@ -106,7 +106,7 @@ async def create(
     """
     .. versionadded:: 3.0.0
 
-    Creates a container registry with the specified parameters.
+    Creates or updates a container registry with the specified parameters.
 
     :param name: The name of the container registry.
 
@@ -134,7 +134,7 @@ async def create(
 
     .. code-block:: bash
 
-        azurerm.containerregistry.registry.create testrepo testgroup
+        azurerm.containerregistry.registry.create_or_update testrepo testgroup
 
     """
     if "location" not in kwargs:
@@ -448,8 +448,40 @@ async def regenerate_credential(
     return result
 
 
-async def delete():
-    pass
+async def delete(hub, ctx, name, resource_group, **kwargs):
+    """
+    .. versionadded:: 3.0.0
+
+    Deletes a container registry.
+
+    :param name: The name of the container registry.
+
+    :param resource_group: The name of the resource group to which the container registry belongs.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.containerregistry.registry.delete testrepo testgroup
+
+    """
+    result = False
+    regconn = await hub.exec.azurerm.utils.get_client(
+        ctx, "containerregistry", **kwargs
+    )
+    try:
+        ret = regconn.registries.delete(
+            registry_name=name, resource_group_name=resource_group
+        )
+        ret.wait()
+        result = True
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error(
+            "containerregistry", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
+
+    return result
 
 
 async def import_image(
@@ -470,7 +502,7 @@ async def import_image(
     """
     .. versionadded:: 3.0.0
 
-    Creates a container registry with the specified parameters.
+    Copies an image to this container registry from the specified container registry.
 
     :param name: The name of the container registry.
 
@@ -565,13 +597,325 @@ async def import_image(
     return result
 
 
-async def schedule_run():
-    pass
+async def schedule_run(
+    hub,
+    ctx,
+    name,
+    resource_group,
+    run_type,
+    is_archive_enabled=None,
+    task_name=None,
+    task_file_path=None,
+    values_file_path=None,
+    encoded_task_content=None,
+    encoded_values_content=None,
+    image_names=None,
+    is_push_enabled=None,
+    no_cache=None,
+    target=None,
+    values_dict=None,
+    timeout=None,
+    platform_os=None,
+    platform_arch=None,
+    platform_variant=None,
+    agent_num_cores=None,
+    source_location=None,
+    credential_login_mode=None,
+    credential_login_server=None,
+    username=None,
+    password=None,
+    **kwargs,
+):
+    """
+    .. versionadded:: 3.0.0
+
+    Schedules a new run based on the request parameters and add it to the run queue.
+
+    :param name: The name of the container registry.
+
+    :param resource_group: The name of the resource group to which the container registry belongs.
+
+    :param run_type: The type of run to be scheduled. Must be FileTaskRun, TaskRun, EncodedTaskRun, or DockerBuild.
+
+    :param is_archive_enabled: The value that indicates whether archiving is enabled for the run or not.
+
+    :param task_name: (TaskRun REQUIRED) The name of task against which run has to be queued.
+
+    :param task_file_path: (FileTaskRun, DockerBuild REQUIRED) The template/definition file (or Dockerfile) path
+        relative to the source.
+
+    :param values_file_path: (FileTaskRun) The values/parameters file path relative to the source.
+
+    :param encoded_task_content: (EncodedTaskRun REQUIRED) Base64 encoded value of the template/definition file content.
+
+    :param encoded_values_content: (DockerBuild) Base64 encoded value of the parameters/values file content.
+
+    :param image_names: (DockerBuild) A list of strings containing the fully qualified image names including the
+        repository and tag.
+
+    :param is_push_enabled: (DockerBuild) The value of this property indicates whether the image built should be pushed
+        to the registry or not. SDK default value: True
+
+    :param no_cache: (DockerBuild) The value of this property indicates whether the image cache is enabled or not. SDK
+        default value: False
+
+    :param target: (DockerBuild) The name of the target build stage for the docker build.
+
+    :param values_dict: The collection of overridable values or arguments that can be passed when running a task. This
+        is a list of dictionaries containing the following keys: 'name', 'value', and 'is_secret'
+
+    :param timeout: (FileTaskRun, DockerBuild, EncodedTaskRun) Run timeout in seconds. SDK default value: 3600
+
+    :param platform_os: (FileTaskRun, DockerBuild, EncodedTaskRun REQUIRED) The platform OS property against which the
+        run has to happen. Accepts 'Windows' or 'Linux'.
+
+    :param platform_arch: (FileTaskRun, DockerBuild, EncodedTaskRun REQUIRED) The platform architecture property against
+        which the run has to happen. Accepts 'amd64', 'x86', or 'arm'
+
+    :param platform_variant: (FileTaskRun, DockerBuild, EncodedTaskRun REQUIRED) The platform CPU variant property
+        against which the run has to happen. Accepts 'v6', 'v7', or 'v8'
+
+    :param agent_num_cores: (FileTaskRun, DockerBuild, EncodedTaskRun) The CPU configuration in terms of number of cores
+        required for the run.
+
+    :param source_location: (FileTaskRun, DockerBuild, EncodedTaskRun) The URL(absolute or relative) of the source
+        context.  It can be an URL to a tar or git repository. If it is relative URL, the relative path should be
+        obtained from calling get_build_source_upload_url.
+
+    :param credential_login_mode: (FileTaskRun, DockerBuild, EncodedTaskRun) The authentication mode which determines
+        the source registry login scope. The credentials for the source registry will be generated using the given
+        scope. These credentials will be used to login to the source registry during the run. Possible values include:
+        'None', 'Default'
+
+    :param credential_login_server: (FileTaskRun, DockerBuild, EncodedTaskRun) Describes the registry login server
+        (myregistry.azurecr.io) for accessing other custom registries.
+
+    :param username: (FileTaskRun, DockerBuild, EncodedTaskRun) Username for accessing the registry defined in
+        credential_login_server
+
+    :param password: (FileTaskRun, DockerBuild, EncodedTaskRun) Password for accessing the registry defined in
+        credential_login_server
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.containerregistry.registry.schedule_run testrepo testgroup TaskRun task_name=testtask
+
+    """
+    agent_configuration = None
+    credentials = None
+    result = {}
+
+    regconn = await hub.exec.azurerm.utils.get_client(
+        ctx, "containerregistry", **kwargs
+    )
+
+    if not isinstance(run_type, str) and run_type.upper() not in [
+        "FILETASKRUN",
+        "TASKRUN",
+        "ENCODEDTASKRUN",
+        "DOCKERBUILD",
+    ]:
+        result = {
+            "error": "Invalid run type. Must be FileTaskRun, TaskRun, EncodedTaskRun, or DockerBuild."
+        }
+        return result
+
+    if credential_login_server:
+        credentials = {
+            "source_registry": {
+                "login_mode": credential_login_mode,
+                "custom_registries": {
+                    credential_login_server: {
+                        "username": username,
+                        "password": password,
+                    }
+                },
+            }
+        }
+
+    if agent_num_cores:
+        agent_configuration = {"cpu": agent_num_cores}
+
+    if run_type.upper() == "FILETASKRUN":
+        try:
+            importmodel = await hub.exec.azurerm.utils.create_object_model(
+                "containerregistry",
+                "FileTaskRunRequest",
+                is_archive_enabled=is_archive_enabled,
+                type="FileTaskRunRequest",
+                task_file_path=task_file_path,  # REQUIRED
+                values_file_path=values_file_path,
+                values=values_dict,
+                timeout=timeout,
+                platform={
+                    "os": platform_os,
+                    "architecture": platform_arch,
+                    "variant": platform_variant,
+                },  # REQUIRED
+                agent_configuration=agent_configuration,
+                source_location=source_location,
+                credentials=credentials,
+                **kwargs,
+            )
+        except TypeError as exc:
+            result = {
+                "error": "The object model could not be built. ({0})".format(str(exc))
+            }
+            return result
+
+    elif run_type.upper() == "TASKRUN":
+        try:
+            importmodel = await hub.exec.azurerm.utils.create_object_model(
+                "containerregistry",
+                "TaskRunRequest",
+                is_archive_enabled=is_archive_enabled,
+                type="TaskRunRequest",
+                task_name=task_name,  # REQUIRED
+                values=values_dict,
+                **kwargs,
+            )
+        except TypeError as exc:
+            result = {
+                "error": "The object model could not be built. ({0})".format(str(exc))
+            }
+            return result
+
+    elif run_type.upper() == "ENCODEDTASKRUN":
+        try:
+            importmodel = await hub.exec.azurerm.utils.create_object_model(
+                "containerregistry",
+                "EncodedTaskRunRequest",
+                is_archive_enabled=is_archive_enabled,
+                type="EncodedTaskRunRequest",
+                encoded_task_content=encoded_task_content,  # REQUIRED
+                encoded_values_content=encoded_values_content,
+                values=values_dict,
+                timeout=timeout,
+                platform={
+                    "os": platform_os,
+                    "architecture": platform_arch,
+                    "variant": platform_variant,
+                },  # REQUIRED
+                agent_configuration=agent_configuration,
+                source_location=source_location,
+                credentials=credentials,
+                **kwargs,
+            )
+        except TypeError as exc:
+            result = {
+                "error": "The object model could not be built. ({0})".format(str(exc))
+            }
+            return result
+
+    elif run_type.upper() == "DOCKERBUILD":
+        try:
+            importmodel = await hub.exec.azurerm.utils.create_object_model(
+                "containerregistry",
+                "DockerBuildRequest",
+                is_archive_enabled=is_archive_enabled,
+                type="DockerBuildRequest",
+                image_names=image_names,
+                is_push_enabled=is_push_enabled,
+                no_cache=no_cache,
+                docker_file_path=task_file_path,  # REQUIRED
+                target=target,
+                arguments=values_dict,
+                timeout=timeout,
+                platform={
+                    "os": platform_os,
+                    "architecture": platform_arch,
+                    "variant": platform_variant,
+                },  # REQUIRED
+                agent_configuration=agent_configuration,
+                source_location=source_location,
+                credentials=credentials,
+                **kwargs,
+            )
+        except TypeError as exc:
+            result = {
+                "error": "The object model could not be built. ({0})".format(str(exc))
+            }
+            return result
+
+    try:
+        ret = regconn.registries.schedule_run(
+            registry_name=name, resource_group_name=resource_group, parameters=runmodel,
+        )
+        ret.wait()
+        result = ret.result().as_dict()
+    except (CloudError, SerializationError) as exc:
+        await hub.exec.azurerm.utils.log_cloud_error(
+            "containerregistry", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
+
+    return result
 
 
-async def update():
-    pass
+async def update_policies(
+    hub, ctx, name, resource_group, quarantine_policy=None, trust_policy=None, **kwargs,
+):
+    """
+    .. versionadded:: 3.0.0
 
+    Updates the policies for the specified container registry.
 
-async def update_policies():
-    pass
+    :param name: The name of the container registry.
+
+    :param resource_group: The name of the resource group to which the container registry belongs.
+
+    :param trust_policy: Accepts boolean True/False or string "enabled"/"disabled" to configure.
+        Image publishers can sign their container images and image consumers can verify their integrity.
+        Container Registry supports both by implementing Docker's content trust model.
+
+    :param quarantine_policy: Accepts boolean True/False or string "enabled"/"disabled" to configure.
+        To assure a registry only contains images that have been vulnerability scanned, ACR introduces
+        the Quarantine pattern. When a registries policy is set to Quarantine Enabled, all images pushed
+        to that registry are put in quarantine by default. Only after the image has been verifed, and the
+        quarantine flag removed may a subsequent pull be completed.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.containerregistry.registry.update_policies testrepo testgroup quarantine_policy=True
+
+    """
+    result = {}
+    q_status = None
+    t_status = None
+
+    regconn = await hub.exec.azurerm.utils.get_client(
+        ctx, "containerregistry", **kwargs
+    )
+
+    if quarantine_policy is not None:
+        if isinstance(quarantine_policy, bool) and not quarantine_policy:
+            q_status = "disabled"
+        elif isinstance(quarantine_policy, bool):
+            q_status = "enabled"
+
+    if trust_policy is not None:
+        if isinstance(trust_policy, bool) and not trust_policy:
+            t_status = "disabled"
+        elif isinstance(quarantine_policy, bool):
+            t_status = "enabled"
+
+    try:
+        pol = regconn.registries.update_policies(
+            registry_name=name,
+            resource_group_name=resource_group,
+            quarantine_policy={"status": q_status,},
+            trust_policy={"type": "Notary", "status": t_status,},
+        )
+        pol.wait()
+        result = pol.result().as_dict()
+    except (CloudError, SerializationError) as exc:
+        await hub.exec.azurerm.utils.log_cloud_error(
+            "containerregistry", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
+
+    return result
