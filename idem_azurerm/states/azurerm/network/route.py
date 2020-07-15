@@ -175,7 +175,7 @@ async def table_present(
 
         # disable_bgp_route_propagation changes
         # pylint: disable=line-too-long
-        if disable_bgp_route_propagation and (
+        if disable_bgp_route_propagation is not None and (
             disable_bgp_route_propagation != rt_tbl.get("disable_bgp_route_propagation")
         ):
             ret["changes"]["disable_bgp_route_propagation"] = {
