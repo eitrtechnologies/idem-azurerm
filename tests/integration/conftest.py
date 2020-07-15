@@ -118,3 +118,10 @@ def load_balancer():
     yield "idem-load-bal-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
+
+
+@pytest.fixture(scope="session")
+def nsg():
+    yield "idem-nsg-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
