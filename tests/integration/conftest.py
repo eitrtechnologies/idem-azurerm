@@ -97,3 +97,10 @@ def public_ip_addr():
     yield "idem-public-ip-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
+
+
+@pytest.fixture(scope="session")
+def route_table():
+    yield "idem-rt-table-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
