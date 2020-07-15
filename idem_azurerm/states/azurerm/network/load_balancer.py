@@ -122,7 +122,8 @@ async def present(
         The resource group assigned to the load balancer.
 
     :param sku:
-        The load balancer SKU, which can be 'Basic' or 'Standard'.
+        The load balancer SKU, which can be 'Basic' or 'Standard'. This property cannot be changed once the load
+        balancer is created.
 
     :param tags:
         A dictionary of strings can be passed as tag metadata to the load balancer object.
@@ -301,7 +302,15 @@ async def present(
         if sku:
             sku_changes = differ.deep_diff(load_bal.get("sku", {}), sku)
             if sku_changes:
-                ret["changes"]["sku"] = sku_changes
+                log.error(
+                    "The sku of a load balancer can only be set at creation time."
+                )
+                ret["result"] = False
+                ret[
+                    "comment"
+                ] = "The sku of a load balancer can only be set at creation time."
+                ret["changes"] = {}
+                return ret
 
         # frontend_ip_configurations changes
         if frontend_ip_configurations:
