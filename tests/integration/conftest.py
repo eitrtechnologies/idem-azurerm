@@ -125,3 +125,10 @@ def nsg():
     yield "idem-nsg-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
+
+
+@pytest.fixture(scope="session")
+def zone():
+    yield "idem.zone." + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
