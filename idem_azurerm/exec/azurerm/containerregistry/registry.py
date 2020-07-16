@@ -100,6 +100,10 @@ async def create_or_update(
     default_action=None,
     virtual_network_rules=None,
     ip_rules=None,
+    trust_policy=None,
+    quarantine_policy=None,
+    retention_policy=None,
+    retention_days=None,
     tags=None,
     **kwargs,
 ):
@@ -113,20 +117,38 @@ async def create_or_update(
     :param resource_group: The name of the resource group to which the container registry belongs.
 
     :param sku: The SKU name of the container registry. Required for registry creation. Possible
-        values include: 'Classic', 'Basic', 'Standard', 'Premium'
+        values include: 'Basic', 'Standard', 'Premium'
 
     :param admin_user_enabled: This value that indicates whether the admin user is enabled.
 
     :param default_action: The default action of allow or deny when no other rules match.
-        Possible values include: 'Allow', 'Deny'. Not available for 'Basic' tier.
+        Possible values include: 'Allow', 'Deny'. Only available for the 'Premium' tier.
 
     :param virtual_network_rules: A list of virtual network rule dictionaries where one key is the "action"
         of the rule (Allow/Deny) and the other key is the "virtual_network_resource_id" which is the full
-        resource ID path of a subnet. Not available for 'Basic' tier.
+        resource ID path of a subnet. Only available for the 'Premium' tier.
 
     :param ip_rules: A list of IP rule dictionaries where one key is the "action" of the rule (Allow/Deny)
         and the other key is the "ip_address_or_range" which specifies the IP or IP range in CIDR format.
-        Only IPV4 addresses are allowed. Not available for 'Basic' tier.
+        Only IPV4 addresses are allowed. Only available for the 'Premium' tier.
+
+    :param trust_policy: Accepts boolean True/False or string "enabled"/"disabled" to configure.
+        Image publishers can sign their container images and image consumers can verify their integrity.
+        Container Registry supports both by implementing Docker's content trust model. Only available
+        for the 'Premium' tier.
+
+    :param quarantine_policy: Accepts boolean True/False or string "enabled"/"disabled" to configure.
+        To assure a registry only contains images that have been vulnerability scanned, ACR introduces
+        the Quarantine pattern. When a registries policy is set to Quarantine Enabled, all images pushed
+        to that registry are put in quarantine by default. Only after the image has been verifed, and the
+        quarantine flag removed may a subsequent pull be completed. Only available for the 'Premium' tier.
+
+    :param retention_policy: Accepts boolean True/False or string "enabled"/"disabled" to configure.
+        Indicates whether retention policy is enabled. Only available for the 'Premium' tier.
+
+    :param retention_days: The number of days to retain an untagged manifest after which it gets purged
+        (Range: 0 to 365). Value "0" will delete untagged manifests immediately. Only available for the
+        'Premium' tier.
 
     :param tags: The tags of the resource.
 
@@ -137,6 +159,8 @@ async def create_or_update(
         azurerm.containerregistry.registry.create_or_update testrepo testgroup
 
     """
+    result = {}
+
     if "location" not in kwargs:
         rg_props = await hub.exec.azurerm.resource.group.get(
             ctx, resource_group, **kwargs
@@ -149,17 +173,63 @@ async def create_or_update(
             }
         kwargs["location"] = rg_props["location"]
 
-    result = {}
-
     regconn = await hub.exec.azurerm.utils.get_client(
         ctx, "containerregistry", **kwargs
     )
 
-    if sku.title() != "Basic":
+    if quarantine_policy is not None:
+        if isinstance(quarantine_policy, bool) and not quarantine_policy:
+            quarantine_policy = "disabled"
+        elif isinstance(quarantine_policy, bool):
+            quarantine_policy = "enabled"
+        quarantine_policy = {
+            "status": quarantine_policy,
+        }
+
+    if trust_policy is not None:
+        if isinstance(trust_policy, bool) and not trust_policy:
+            trust_policy = "disabled"
+        elif isinstance(trust_policy, bool):
+            trust_policy = "enabled"
+        trust_policy = {
+            "type": "Notary",
+            "status": trust_policy,
+        }
+
+    if retention_policy is not None or retention_days is not None:
+        if isinstance(retention_policy, bool) and not retention_policy:
+            retention_policy = "disabled"
+        elif isinstance(retention_policy, bool):
+            retention_policy = "enabled"
+        retention_policy = {
+            "days": retention_days,
+            "status": retention_policy,
+        }
+
+    if sku.title() == "Premium":
         kwargs["network_rule_set"] = {
             "default_action": default_action,
             "virtual_network_rules": virtual_network_rules,
             "ip_rules": ip_rules,
+        }
+        kwargs["policies"] = {
+            "quarantine_policy": quarantine_policy,
+            "trust_policy": trust_policy,
+            "retention_policy": retention_policy,
+        }
+    elif any(
+        [
+            default_action,
+            virtual_network_rules,
+            ip_rules,
+            quarantine_policy,
+            trust_policy,
+            retention_policy,
+        ]
+    ):
+        log.error("The configured options are only available in the Premium SKU.")
+        return {
+            "error": "The configured options are only available in the Premium SKU."
         }
 
     try:
@@ -329,41 +399,6 @@ async def list_credentials(hub, ctx, name, resource_group, **kwargs):
             registry_name=name, resource_group_name=resource_group
         )
         result = creds.as_dict()
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error(
-            "containerregistry", str(exc), **kwargs
-        )
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def list_policies(hub, ctx, name, resource_group, **kwargs):
-    """
-    .. versionadded:: 3.0.0
-
-    Lists the policies for the specified container registry.
-
-    :param name: The name of the container registry.
-
-    :param resource_group: The name of the resource group to which the container registry belongs.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.containerregistry.registry.list_policies testrepo testgroup
-
-    """
-    result = {}
-    regconn = await hub.exec.azurerm.utils.get_client(
-        ctx, "containerregistry", **kwargs
-    )
-    try:
-        policies = regconn.registries.list_policies(
-            registry_name=name, resource_group_name=resource_group
-        )
-        result = policies.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error(
             "containerregistry", str(exc), **kwargs
@@ -703,10 +738,6 @@ async def schedule_run(
         azurerm.containerregistry.registry.schedule_run testrepo testgroup TaskRun task_name=testtask
 
     """
-    raise NotImplementedError(
-        "Well... I guess this is too new... it'll be here when the SDK catches up with us."
-    )
-
     agent_configuration = None
     credentials = None
     result = {}
@@ -845,77 +876,12 @@ async def schedule_run(
 
     try:
         ret = regconn.registries.schedule_run(
-            registry_name=name, resource_group_name=resource_group, parameters=runmodel,
+            registry_name=name,
+            resource_group_name=resource_group,
+            run_request=runmodel,
         )
         ret.wait()
         result = ret.result().as_dict()
-    except (CloudError, SerializationError) as exc:
-        await hub.exec.azurerm.utils.log_cloud_error(
-            "containerregistry", str(exc), **kwargs
-        )
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def update_policies(
-    hub, ctx, name, resource_group, quarantine_policy=None, trust_policy=None, **kwargs,
-):
-    """
-    .. versionadded:: 3.0.0
-
-    Updates the policies for the specified container registry.
-
-    :param name: The name of the container registry.
-
-    :param resource_group: The name of the resource group to which the container registry belongs.
-
-    :param trust_policy: Accepts boolean True/False or string "enabled"/"disabled" to configure.
-        Image publishers can sign their container images and image consumers can verify their integrity.
-        Container Registry supports both by implementing Docker's content trust model.
-
-    :param quarantine_policy: Accepts boolean True/False or string "enabled"/"disabled" to configure.
-        To assure a registry only contains images that have been vulnerability scanned, ACR introduces
-        the Quarantine pattern. When a registries policy is set to Quarantine Enabled, all images pushed
-        to that registry are put in quarantine by default. Only after the image has been verifed, and the
-        quarantine flag removed may a subsequent pull be completed.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.containerregistry.registry.update_policies testrepo testgroup quarantine_policy=True
-
-    """
-    result = {}
-    q_status = None
-    t_status = None
-
-    regconn = await hub.exec.azurerm.utils.get_client(
-        ctx, "containerregistry", **kwargs
-    )
-
-    if quarantine_policy is not None:
-        if isinstance(quarantine_policy, bool) and not quarantine_policy:
-            q_status = "disabled"
-        elif isinstance(quarantine_policy, bool):
-            q_status = "enabled"
-
-    if trust_policy is not None:
-        if isinstance(trust_policy, bool) and not trust_policy:
-            t_status = "disabled"
-        elif isinstance(quarantine_policy, bool):
-            t_status = "enabled"
-
-    try:
-        pol = regconn.registries.update_policies(
-            registry_name=name,
-            resource_group_name=resource_group,
-            quarantine_policy={"status": q_status,},
-            trust_policy={"type": "Notary", "status": t_status,},
-        )
-        pol.wait()
-        result = pol.result().as_dict()
     except (CloudError, SerializationError) as exc:
         await hub.exec.azurerm.utils.log_cloud_error(
             "containerregistry", str(exc), **kwargs
