@@ -145,7 +145,7 @@ async def present(
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
-    if not isinstance(sku, dict):
+    if not isinstance(sku, dict) and sku:
         sku = {"name": sku}
 
     server = await hub.exec.azurerm.postgresql.server.get(
