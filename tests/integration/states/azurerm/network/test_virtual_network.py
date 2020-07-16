@@ -13,7 +13,7 @@ def subnet_addr_prefix():
 
 @pytest.mark.run(order=2)
 @pytest.mark.asyncio
-async def test_vnet_present(hub, ctx, vnet, resource_group, vnet_addr_prefixes):
+async def test_present(hub, ctx, vnet, resource_group, vnet_addr_prefixes):
     expected = {
         "changes": {
             "new": {
@@ -65,13 +65,16 @@ async def test_subnet_present(
         virtual_network=vnet,
         resource_group=resource_group,
         address_prefix=subnet_addr_prefix,
+        service_endpoints=[
+            {"service": "Microsoft.sql"}
+        ],  # Used for testing postgresql vnet rules
     )
     assert ret == expected
 
 
-@pytest.mark.run(after="test_vnet_present", before="test_vnet_absent")
+@pytest.mark.run(after="test_present", before="test_absent")
 @pytest.mark.asyncio
-async def test_vnet_changes(hub, ctx, vnet, resource_group, vnet_addr_prefixes):
+async def test_changes(hub, ctx, vnet, resource_group, vnet_addr_prefixes):
     changed_vnet_addr_prefixes = ["10.0.0.0/8", "192.168.0.0/16"]
     expected = {
         "changes": {
@@ -124,7 +127,7 @@ async def test_subnet_changes(
 
 @pytest.mark.run(order=-2)
 @pytest.mark.asyncio
-async def test_vnet_absent(hub, ctx, vnet, resource_group):
+async def test_absent(hub, ctx, vnet, resource_group):
     expected = {
         "changes": {"new": {}, "old": {"name": vnet,},},
         "comment": f"Virtual network {vnet} has been deleted.",

@@ -11,10 +11,15 @@ def password():
     yield "zH#y66Q7vSWvMY#p"
 
 
+@pytest.fixture(scope="module")
+def sku():
+    yield "GP_Gen5_4"
+
+
 @pytest.mark.run(order=2)
 @pytest.mark.asyncio
 async def test_present(
-    hub, ctx, postgresql_server, resource_group, location, login, password
+    hub, ctx, postgresql_server, resource_group, location, login, password, sku
 ):
     expected = {
         "changes": {
@@ -23,6 +28,7 @@ async def test_present(
                 "location": location,
                 "resource_group": resource_group,
                 "create_mode": "Default",
+                "sku": {"name": sku},
                 "administrator_login": login,
                 "administrator_login_password": "REDACTED",
             },
@@ -39,6 +45,7 @@ async def test_present(
         location=location,
         login=login,
         login_password=password,
+        sku=sku,
     )
     assert ret == expected
 
