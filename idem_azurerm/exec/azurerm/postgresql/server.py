@@ -111,7 +111,7 @@ async def create(
     result = {}
     postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
-    if not isinstance(sku, dict):
+    if sku and not isinstance(sku, dict):
         sku = {"name": sku}
 
     try:
@@ -377,7 +377,7 @@ async def update(
     result = {}
     postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
-    if not isinstance(sku, dict):
+    if sku and not isinstance(sku, dict):
         sku = {"name": sku}
 
     try:
