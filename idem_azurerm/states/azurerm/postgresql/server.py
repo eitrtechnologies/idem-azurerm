@@ -88,13 +88,8 @@ async def present(
 
     :param location: The location the resource resides in.
 
-    :param sku: A dictionary representing the SKU (pricing tier) of the server. Parameters include:
-        - ``name``: The name of the SKU, typically, tier + family + cores, e.g. B_Gen4_1, GP_Gen5_8.
-        - ``tier``: The tier of the particular SKU, e.g. Basic. Possible values include: 'Basic', 'GeneralPurpose',
-            and 'MemoryOptimized'.
-        - ``capacity``: The scale up/out capacity, representing server's compute units.
-        - ``size``: The size code, to be interpreted by resource as appropriate.
-        - ``family``: The family of hardware.
+    :param sku: The name of the SKU (pricing tier) of the server. Typically, the name of the sku is in the form
+        tier_family_cores, e.g. B_Gen4_1, GP_Gen5_8.
 
     :param version: Server version. Possible values include: '9.5', '9.6', '10', '10.0', '10.2', '11'.
 
@@ -150,6 +145,9 @@ async def present(
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
+    if not isinstance(sku, dict):
+        sku = {"name": sku}
+
     server = await hub.exec.azurerm.postgresql.server.get(
         ctx=ctx,
         name=name,
@@ -167,9 +165,11 @@ async def present(
                 ret["changes"]["tags"] = tag_changes
 
         if sku:
-            sku_changes = differ.deep_diff(server.get("sku", {}), sku)
-            if sku_changes:
-                ret["changes"]["sku"] = sku_changes
+            if sku.get("name") != server.get("sku", {}).get("name"):
+                ret["changes"]["sku"] = {
+                    "old": server.get("sku").get("name"),
+                    "new": sku.get("name"),
+                }
 
         if storage_profile:
             profile_changes = differ.deep_diff(
