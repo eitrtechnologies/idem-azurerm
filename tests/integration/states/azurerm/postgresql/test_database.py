@@ -3,7 +3,7 @@ import string
 import random
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def postgresql_db():
     yield "idem-db-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)

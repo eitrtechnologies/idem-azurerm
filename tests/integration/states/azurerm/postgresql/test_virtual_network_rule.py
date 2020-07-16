@@ -1,9 +1,11 @@
 import pytest
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def vnet_rule():
-    yield "idem-vnet-rule"
+    yield "idem-vnet-rule-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
 
 
 @pytest.fixture(scope="module")
