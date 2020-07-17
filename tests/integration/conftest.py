@@ -114,6 +114,13 @@ def public_ip_addr():
 
 
 @pytest.fixture(scope="session")
+def test_public_ip_addr():
+    yield "idem-test-public-ip-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
+
+
+@pytest.fixture(scope="session")
 def route_table():
     yield "idem-rt-table-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
@@ -144,5 +151,26 @@ def nsg():
 @pytest.fixture(scope="session")
 def zone():
     yield "idem.zone." + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
+
+
+@pytest.fixture(scope="session")
+def availability_set():
+    yield "idem-avail-set-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
+
+
+@pytest.fixture(scope="session")
+def network_interface():
+    yield "idem-net-iface-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
+
+
+@pytest.fixture(scope="session")
+def test_network_interface():
+    yield "idem-test-net-iface-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
