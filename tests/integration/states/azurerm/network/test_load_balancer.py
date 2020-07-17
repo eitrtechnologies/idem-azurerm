@@ -6,7 +6,7 @@ def sku():
     yield "Basic"
 
 
-@pytest.mark.run(order=2)
+@pytest.mark.run(order=3)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, load_balancer, resource_group, sku):
     expected = {
@@ -50,7 +50,7 @@ async def test_changes(hub, ctx, load_balancer, resource_group, tags):
     assert ret == expected
 
 
-@pytest.mark.run(order=-2)
+@pytest.mark.run(order=-3)
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, load_balancer, resource_group):
     expected = {

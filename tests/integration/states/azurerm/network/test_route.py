@@ -16,7 +16,7 @@ def next_hop_type():
     yield "vnetlocal"
 
 
-@pytest.mark.run(order=2)
+@pytest.mark.run(order=3)
 @pytest.mark.asyncio
 async def test_table_present(hub, ctx, route_table, resource_group):
     expected = {
@@ -141,7 +141,7 @@ async def test_absent(hub, ctx, route, route_table, resource_group):
 
 
 @pytest.mark.asyncio
-@pytest.mark.run(order=-2)
+@pytest.mark.run(order=-3)
 async def test_table_absent(hub, ctx, route_table, resource_group):
     expected = {
         "changes": {"new": {}, "old": {"name": route_table,},},

@@ -18,7 +18,7 @@ def sku():
 @pytest.mark.skip(
     reason="Need to figure out what to do about Redis creation taking a long time"
 )
-@pytest.mark.run(order=2)
+@pytest.mark.run(order=3)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, resource_group, location, sku, redis_cache):
     expected = {
@@ -72,7 +72,7 @@ async def test_changes(hub, ctx, resource_group, location, sku, redis_cache):
 @pytest.mark.skip(
     reason="Need to figure out what to do about Redis creation taking a long time"
 )
-@pytest.mark.run(order=-2)
+@pytest.mark.run(order=-3)
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, redis_cache):
     expected = {

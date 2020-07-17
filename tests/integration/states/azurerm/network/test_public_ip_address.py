@@ -6,7 +6,7 @@ def idle_timeout():
     yield 10
 
 
-@pytest.mark.run(order=2)
+@pytest.mark.run(order=3)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, public_ip_addr, resource_group, idle_timeout):
     expected = {
@@ -56,7 +56,7 @@ async def test_changes(hub, ctx, public_ip_addr, resource_group, idle_timeout):
     assert ret == expected
 
 
-@pytest.mark.run(order=-2)
+@pytest.mark.run(order=-3)
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, public_ip_addr, resource_group):
     expected = {

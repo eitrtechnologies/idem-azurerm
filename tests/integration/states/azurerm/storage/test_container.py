@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.mark.run(order=3)
+@pytest.mark.run(order=4)
 @pytest.mark.asyncio
 async def test_present(
     hub, ctx, resource_group, location, storage_account, storage_container
@@ -93,7 +93,7 @@ async def test_immutability_policy_present_and_changes(
     assert ret == expected
 
 
-@pytest.mark.run(order=-3)
+@pytest.mark.run(order=-4)
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, storage_account, storage_container):
     expected = {

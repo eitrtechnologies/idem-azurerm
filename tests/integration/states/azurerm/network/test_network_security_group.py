@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.mark.run(order=2)
+@pytest.mark.run(order=3)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, nsg, resource_group):
     expected = {
@@ -52,7 +52,7 @@ async def test_changes(hub, ctx, nsg, resource_group, tags):
     assert ret == expected
 
 
-@pytest.mark.run(order=-2)
+@pytest.mark.run(order=-3)
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, nsg, resource_group):
     expected = {

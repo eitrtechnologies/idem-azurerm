@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.mark.run(order=2)
+@pytest.mark.run(order=3)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, resource_group, location, storage_account):
     sku = "Standard_LRS"
@@ -55,7 +55,7 @@ async def test_changes(hub, ctx, resource_group, tags, location, storage_account
     assert ret == expected
 
 
-@pytest.mark.run(order=-2)
+@pytest.mark.run(order=-3)
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, storage_account):
     expected = {

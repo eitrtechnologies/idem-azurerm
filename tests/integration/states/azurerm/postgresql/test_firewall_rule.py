@@ -16,7 +16,7 @@ def end_addr():
     yield "10.0.0.255"
 
 
-@pytest.mark.run(order=3)
+@pytest.mark.run(order=4)
 @pytest.mark.asyncio
 async def test_present(
     hub, ctx, fw_rule, postgresql_server, resource_group, start_addr, end_addr
@@ -70,7 +70,7 @@ async def test_changes(
     assert ret == expected
 
 
-@pytest.mark.run(order=-3)
+@pytest.mark.run(order=-4)
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, fw_rule, postgresql_server, resource_group):
     expected = {

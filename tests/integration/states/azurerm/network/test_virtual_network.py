@@ -11,13 +11,18 @@ def subnet_addr_prefix():
     yield "10.0.0.0/16"
 
 
-@pytest.mark.run(order=2)
+@pytest.fixture(scope="module")
+def changed_subnet_addr_prefix():
+    yield "10.0.0.0/24"
+
+
+@pytest.mark.run(order=3)
 @pytest.mark.asyncio
-async def test_present(hub, ctx, vnet, resource_group, vnet_addr_prefixes):
+async def test_present(hub, ctx, test_vnet, resource_group, vnet_addr_prefixes):
     expected = {
         "changes": {
             "new": {
-                "name": vnet,
+                "name": test_vnet,
                 "resource_group": resource_group,
                 "address_space": {"address_prefixes": vnet_addr_prefixes},
                 "dhcp_options": {"dns_servers": None},
@@ -27,54 +32,30 @@ async def test_present(hub, ctx, vnet, resource_group, vnet_addr_prefixes):
             },
             "old": {},
         },
-        "comment": f"Virtual network {vnet} has been created.",
-        "name": vnet,
+        "comment": f"Virtual network {test_vnet} has been created.",
+        "name": test_vnet,
         "result": True,
     }
     ret = await hub.states.azurerm.network.virtual_network.present(
         ctx,
-        name=vnet,
+        name=test_vnet,
         resource_group=resource_group,
         address_prefixes=vnet_addr_prefixes,
     )
     assert ret == expected
 
 
-@pytest.mark.run(order=3)
+@pytest.mark.run(after="test_present", before="test_subnet_present")
 @pytest.mark.asyncio
-async def test_subnet_present(
-    hub, ctx, subnet, vnet, resource_group, subnet_addr_prefix
+async def test_changes(
+    hub,
+    ctx,
+    test_vnet,
+    resource_group,
+    vnet_addr_prefixes,
+    test_subnet,
+    changed_subnet_addr_prefix,
 ):
-    expected = {
-        "changes": {
-            "new": {
-                "name": subnet,
-                "address_prefix": subnet_addr_prefix,
-                "network_security_group": None,
-                "route_table": None,
-            },
-            "old": {},
-        },
-        "comment": f"Subnet {subnet} has been created.",
-        "name": subnet,
-        "result": True,
-    }
-    ret = await hub.states.azurerm.network.virtual_network.subnet_present(
-        ctx,
-        name=subnet,
-        virtual_network=vnet,
-        resource_group=resource_group,
-        address_prefix=subnet_addr_prefix,
-        service_endpoints=[
-            {"service": "Microsoft.sql"}
-        ],  # Used for testing postgresql vnet rules
-    )
-    assert ret == expected
-
-
-@pytest.mark.run(after="test_present", before="test_absent")
-@pytest.mark.asyncio
-async def test_changes(hub, ctx, vnet, resource_group, vnet_addr_prefixes):
     changed_vnet_addr_prefixes = ["10.0.0.0/8", "192.168.0.0/16"]
     expected = {
         "changes": {
@@ -85,15 +66,44 @@ async def test_changes(hub, ctx, vnet, resource_group, vnet_addr_prefixes):
                 }
             }
         },
-        "comment": f"Virtual network {vnet} has been updated.",
-        "name": vnet,
+        "comment": f"Virtual network {test_vnet} has been updated.",
+        "name": test_vnet,
         "result": True,
     }
     ret = await hub.states.azurerm.network.virtual_network.present(
         ctx,
-        name=vnet,
+        name=test_vnet,
         resource_group=resource_group,
         address_prefixes=changed_vnet_addr_prefixes,
+    )
+    assert ret == expected
+
+
+@pytest.mark.run(after="test_changes", before="test_subnet_changes")
+@pytest.mark.asyncio
+async def test_subnet_present(
+    hub, ctx, test_subnet, test_vnet, resource_group, subnet_addr_prefix
+):
+    expected = {
+        "changes": {
+            "new": {
+                "name": test_subnet,
+                "address_prefix": subnet_addr_prefix,
+                "network_security_group": None,
+                "route_table": None,
+            },
+            "old": {},
+        },
+        "comment": f"Subnet {test_subnet} has been created.",
+        "name": test_subnet,
+        "result": True,
+    }
+    ret = await hub.states.azurerm.network.virtual_network.subnet_present(
+        ctx,
+        name=test_subnet,
+        virtual_network=test_vnet,
+        resource_group=resource_group,
+        address_prefix=subnet_addr_prefix,
     )
     assert ret == expected
 
@@ -101,9 +111,14 @@ async def test_changes(hub, ctx, vnet, resource_group, vnet_addr_prefixes):
 @pytest.mark.run(after="test_subnet_present", before="test_subnet_absent")
 @pytest.mark.asyncio
 async def test_subnet_changes(
-    hub, ctx, subnet, vnet, resource_group, subnet_addr_prefix
+    hub,
+    ctx,
+    test_subnet,
+    test_vnet,
+    resource_group,
+    subnet_addr_prefix,
+    changed_subnet_addr_prefix,
 ):
-    changed_subnet_addr_prefix = "10.0.0.0/24"
     expected = {
         "changes": {
             "address_prefix": {
@@ -111,31 +126,32 @@ async def test_subnet_changes(
                 "old": subnet_addr_prefix,
             }
         },
-        "comment": f"Subnet {subnet} has been updated.",
-        "name": subnet,
+        "comment": f"Subnet {test_subnet} has been updated.",
+        "name": test_subnet,
         "result": True,
     }
+
     ret = await hub.states.azurerm.network.virtual_network.subnet_present(
         ctx,
-        name=subnet,
-        virtual_network=vnet,
+        name=test_subnet,
+        virtual_network=test_vnet,
         resource_group=resource_group,
         address_prefix=changed_subnet_addr_prefix,
     )
     assert ret == expected
 
 
-@pytest.mark.run(order=-2)
+@pytest.mark.run(order=-4)
 @pytest.mark.asyncio
-async def test_absent(hub, ctx, vnet, resource_group):
+async def test_subnet_absent(hub, ctx, test_subnet, test_vnet, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": vnet,},},
-        "comment": f"Virtual network {vnet} has been deleted.",
-        "name": vnet,
+        "changes": {"new": {}, "old": {"name": test_subnet,},},
+        "comment": f"Subnet {test_subnet} has been deleted.",
+        "name": test_subnet,
         "result": True,
     }
-    ret = await hub.states.azurerm.network.virtual_network.absent(
-        ctx, vnet, resource_group
+    ret = await hub.states.azurerm.network.virtual_network.subnet_absent(
+        ctx, test_subnet, test_vnet, resource_group
     )
     assert ret["changes"]["new"] == expected["changes"]["new"]
     assert ret["changes"]["old"]["name"] == expected["changes"]["old"]["name"]
@@ -144,15 +160,15 @@ async def test_absent(hub, ctx, vnet, resource_group):
 
 @pytest.mark.run(order=-3)
 @pytest.mark.asyncio
-async def test_subnet_absent(hub, ctx, subnet, vnet, resource_group):
+async def test_absent(hub, ctx, test_vnet, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": subnet,},},
-        "comment": f"Subnet {subnet} has been deleted.",
-        "name": subnet,
+        "changes": {"new": {}, "old": {"name": test_vnet,},},
+        "comment": f"Virtual network {test_vnet} has been deleted.",
+        "name": test_vnet,
         "result": True,
     }
-    ret = await hub.states.azurerm.network.virtual_network.subnet_absent(
-        ctx, subnet, vnet, resource_group
+    ret = await hub.states.azurerm.network.virtual_network.absent(
+        ctx, test_vnet, resource_group
     )
     assert ret["changes"]["new"] == expected["changes"]["new"]
     assert ret["changes"]["old"]["name"] == expected["changes"]["old"]["name"]
