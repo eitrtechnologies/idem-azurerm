@@ -206,8 +206,8 @@ async def present(
             ret["result"] = True
             ret[
                 "comment"
-            ] = "The server security alert policy for the server {0} is already present.".format(
-                name
+            ] = "The server security alert policy {0} for the server {1} is already present.".format(
+                name, server_name
             )
             return ret
 
@@ -215,8 +215,8 @@ async def present(
             ret["result"] = None
             ret[
                 "comment"
-            ] = "The server security alert policy for the server {0} would be updated.".format(
-                name
+            ] = "The server security alert policy {0} for the server {1} would be updated.".format(
+                name, server_name
             )
             return ret
 
@@ -246,8 +246,8 @@ async def present(
     if ctx["test"]:
         ret[
             "comment"
-        ] = "The server security alert policy for the server {0} would be created.".format(
-            name
+        ] = "The server security alert policy {0} for the server {1} would be created.".format(
+            name, server_name
         )
         ret["result"] = None
         return ret
@@ -273,13 +273,13 @@ async def present(
         ret["result"] = True
         ret[
             "comment"
-        ] = f"The server security alert policy for the server {name} has been {action}d."
+        ] = f"The server security alert policy {name} for the server {server_name} has been {action}d."
         return ret
 
     ret[
         "comment"
-    ] = "Failed to {0} the server security alert policy for the server {1}! ({2})".format(
-        action, name, policy.get("error")
+    ] = "Failed to {0} the server security alert policy {1} for the server {2}! ({3})".format(
+        action, name, server_name, policy.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}
