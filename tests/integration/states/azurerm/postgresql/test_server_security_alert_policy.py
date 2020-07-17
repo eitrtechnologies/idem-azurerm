@@ -9,17 +9,11 @@ def policy_state():
 @pytest.mark.run(order=4)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, postgresql_server, resource_group, policy_state):
+    name = "Default"
     expected = {
-        "changes": {
-            "new": {
-                "server_name": postgresql_server,
-                "resource_group": resource_group,
-                "state": policy_state,
-            },
-            "old": {},
-        },
-        "comment": f"The server security alert policy for the server {postgresql_server} has been created.",
-        "name": "Default",
+        "changes": {},
+        "comment": f"The server security alert policy {name} for the server {postgresql_server} is already present.",
+        "name": name,
         "result": True,
     }
     ret = await hub.states.azurerm.postgresql.server_security_alert_policy.present(
@@ -34,11 +28,12 @@ async def test_present(hub, ctx, postgresql_server, resource_group, policy_state
 @pytest.mark.run(after="test_present")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, postgresql_server, resource_group, policy_state):
+    name = "Default"
     new_state = "Enabled"
     expected = {
         "changes": {"state": {"new": new_state, "old": policy_state,},},
-        "comment": f"The server security alert policy for the server {postgresql_server} has been updated.",
-        "name": "Default",
+        "comment": f"The server security alert policy {name} for the server {postgresql_server} has been updated.",
+        "name": name,
         "result": True,
     }
     ret = await hub.states.azurerm.postgresql.server_security_alert_policy.present(
