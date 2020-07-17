@@ -3,7 +3,7 @@ import pytest
 
 @pytest.mark.run(order=4)
 @pytest.mark.asyncio
-async def test_present(hub, ctx, keyvault):
+async def test_present(hub, ctx, test_keyvault):
     expected = {
         "changes": {"name": {"new": "secretname"}, "value": {"new": "REDACTED_VALUE"},},
         "comment": "Secret secretname has been created.",
@@ -11,14 +11,14 @@ async def test_present(hub, ctx, keyvault):
         "result": True,
     }
     ret = await hub.states.azurerm.keyvault.secret.present(
-        ctx, "secretname", "supersecret", f"https://{keyvault}.vault.azure.net/",
+        ctx, "secretname", "supersecret", f"https://{test_keyvault}.vault.azure.net/",
     )
     assert ret == expected
 
 
 @pytest.mark.run(after="test_present", before="test_absent")
 @pytest.mark.asyncio
-async def test_changes(hub, ctx, keyvault, tags):
+async def test_changes(hub, ctx, test_keyvault, tags):
     expected = {
         "changes": {
             "tags": {"new": tags,},
@@ -32,7 +32,7 @@ async def test_changes(hub, ctx, keyvault, tags):
         ctx,
         "secretname",
         "supersecret",
-        f"https://{keyvault}.vault.azure.net/",
+        f"https://{test_keyvault}.vault.azure.net/",
         content_type="text/plain",
         tags=tags,
     )
@@ -41,7 +41,7 @@ async def test_changes(hub, ctx, keyvault, tags):
 
 @pytest.mark.run(order=-4)
 @pytest.mark.asyncio
-async def test_absent(hub, ctx, keyvault, tags):
+async def test_absent(hub, ctx, test_keyvault, tags):
     expected = {
         "changes": {
             "new": {},
@@ -55,7 +55,7 @@ async def test_absent(hub, ctx, keyvault, tags):
                     "not_before": None,
                     "key_id": None,
                     "recovery_level": "Purgeable",
-                    "vault_url": f"https://{keyvault}.vault.azure.net",
+                    "vault_url": f"https://{test_keyvault}.vault.azure.net",
                     "tags": tags,
                 },
                 "value": "supersecret",
@@ -66,7 +66,7 @@ async def test_absent(hub, ctx, keyvault, tags):
         "result": True,
     }
     ret = await hub.states.azurerm.keyvault.secret.absent(
-        ctx, "secretname", f"https://{keyvault}.vault.azure.net/",
+        ctx, "secretname", f"https://{test_keyvault}.vault.azure.net/",
     )
     expected["changes"]["old"]["id"] = ret["changes"]["old"]["id"]
     expected["changes"]["old"]["properties"]["id"] = ret["changes"]["old"][

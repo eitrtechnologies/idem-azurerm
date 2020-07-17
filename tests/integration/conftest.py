@@ -38,14 +38,35 @@ def tags():
 
 @pytest.fixture(scope="session")
 def resource_group():
-    yield "rg-idem-inttest-" + "".join(
+    yield "idem-rg-inttest-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(20)
     )
 
 
 @pytest.fixture(scope="session")
 def keyvault():
-    yield "kv-idem-inttest-" + "".join(
+    yield "idem-kv-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
+
+
+@pytest.fixture(scope="session")
+def test_keyvault():
+    yield "idem-test-kv-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
+
+
+@pytest.fixture(scope="session")
+def test_key():
+    yield "idem-test-key-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
+
+
+@pytest.fixture(scope="session")
+def key():
+    yield "idem-key-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
