@@ -13,16 +13,30 @@ def ip_config():
 @pytest.mark.run(order=2)
 @pytest.mark.asyncio
 # This setup function deploys the following to use within tests:
-# - Virtual Network
-# - Subnet
-# - Network Interface
-# - Keyvault
-# - Key
+# - 2 Virtual Networks
+# - 1 Subnet
+# - 1 Network Interface
+# - 1 Keyvault
+# - 1 Key
 async def test_setup(
-    hub, ctx, vnet, subnet, network_interface, resource_group, ip_config, key, keyvault
+    hub,
+    ctx,
+    vnet,
+    vnet2,
+    subnet,
+    network_interface,
+    resource_group,
+    ip_config,
+    key,
+    keyvault,
 ):
     ret = await hub.states.azurerm.network.virtual_network.present(
         ctx, name=vnet, resource_group=resource_group, address_prefixes=["172.0.0.0/8"],
+    )
+    assert ret["result"] == True
+
+    ret = await hub.states.azurerm.network.virtual_network.present(
+        ctx, name=vnet2, resource_group=resource_group, address_prefixes=["10.0.0.0/8"],
     )
     assert ret["result"] == True
 
@@ -107,7 +121,7 @@ async def test_setup(
 @pytest.mark.run(order=-2)
 @pytest.mark.asyncio
 async def test_teardown(
-    hub, ctx, vnet, subnet, network_interface, resource_group, keyvault
+    hub, ctx, vnet, vnet2, subnet, network_interface, resource_group, keyvault
 ):
     ret = await hub.states.azurerm.network.network_interface.absent(
         ctx, name=network_interface, resource_group=resource_group
@@ -121,6 +135,11 @@ async def test_teardown(
 
     ret = await hub.states.azurerm.network.virtual_network.absent(
         ctx, name=vnet, resource_group=resource_group
+    )
+    assert ret["result"] == True
+
+    ret = await hub.states.azurerm.network.virtual_network.absent(
+        ctx, name=vnet2, resource_group=resource_group
     )
     assert ret["result"] == True
 

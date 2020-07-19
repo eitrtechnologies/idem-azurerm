@@ -107,6 +107,13 @@ def vnet():
 
 
 @pytest.fixture(scope="session")
+def vnet2():
+    yield "idem-vnet2-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
+
+
+@pytest.fixture(scope="session")
 def subnet():
     yield "idem-subnet-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
