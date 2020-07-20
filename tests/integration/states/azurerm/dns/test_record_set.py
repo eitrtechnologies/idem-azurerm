@@ -45,7 +45,7 @@ async def test_present(hub, ctx, record_set, zone, resource_group, record_type):
     assert ret == expected
 
 
-@pytest.mark.run(after="test_present", before="test_absent")
+@pytest.mark.run(order=4, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, record_set, zone, resource_group, record_type):
     metadata = {"zone": zone}

@@ -32,7 +32,7 @@ async def test_present(hub, ctx, resource_group, location, storage_account):
     assert ret == expected
 
 
-@pytest.mark.run(after="test_present", before="test_absent")
+@pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, resource_group, tags, location, storage_account):
     sku = "Standard_LRS"

@@ -25,7 +25,7 @@ async def test_present(hub, ctx, postgresql_server, resource_group, policy_state
     assert ret == expected
 
 
-@pytest.mark.run(after="test_present")
+@pytest.mark.run(order=4, after="test_present")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, postgresql_server, resource_group, policy_state):
     name = "Default"

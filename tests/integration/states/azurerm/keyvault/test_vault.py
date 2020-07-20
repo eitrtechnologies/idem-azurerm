@@ -82,7 +82,7 @@ async def test_present(hub, ctx, resource_group, location, test_keyvault):
     assert ret == expected
 
 
-@pytest.mark.run(after="test_present", before="test_absent")
+@pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, resource_group, location, tags, test_keyvault):
     tenant_id = hub.acct.PROFILES["azurerm"].get("default", {}).get("tenant")

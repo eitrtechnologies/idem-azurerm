@@ -32,7 +32,9 @@ async def test_present(
     assert ret == expected
 
 
-@pytest.mark.run(after="test_present", before="test_policy_present_and_changes")
+@pytest.mark.run(
+    order=4, after="test_present", before="test_policy_present_and_changes"
+)
 @pytest.mark.asyncio
 async def test_changes(
     hub, ctx, resource_group, location, storage_account, storage_container
@@ -57,7 +59,7 @@ async def test_changes(
     assert ret == expected
 
 
-@pytest.mark.run(after="test_changes", before="test_absent")
+@pytest.mark.run(order=4, after="test_changes", before="test_absent")
 @pytest.mark.asyncio
 async def test_immutability_policy_present_and_changes(
     hub, ctx, resource_group, storage_account, storage_container

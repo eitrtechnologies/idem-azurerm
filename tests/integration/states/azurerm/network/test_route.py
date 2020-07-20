@@ -39,7 +39,7 @@ async def test_table_present(hub, ctx, route_table, resource_group):
     assert ret == expected
 
 
-@pytest.mark.run(after="test_table_present", before="test_present")
+@pytest.mark.run(order=3, after="test_table_present", before="test_present")
 @pytest.mark.asyncio
 async def test_table_changes(
     hub, ctx, route_table, resource_group, route, addr_prefix, next_hop_type

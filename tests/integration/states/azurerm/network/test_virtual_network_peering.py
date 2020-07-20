@@ -41,7 +41,7 @@ async def test_present(hub, ctx, vnet_peering, resource_group, vnet, vnet2):
     assert ret == expected
 
 
-@pytest.mark.run(after="test_present", before="test_absent")
+@pytest.mark.run(order=4, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, vnet_peering, resource_group, vnet, vnet2):
     expected = {

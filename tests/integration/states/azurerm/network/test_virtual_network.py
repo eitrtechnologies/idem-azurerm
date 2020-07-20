@@ -45,7 +45,7 @@ async def test_present(hub, ctx, test_vnet, resource_group, vnet_addr_prefixes):
     assert ret == expected
 
 
-@pytest.mark.run(after="test_present", before="test_subnet_present")
+@pytest.mark.run(order=3, after="test_present", before="test_subnet_present")
 @pytest.mark.asyncio
 async def test_changes(
     hub,

@@ -5,7 +5,7 @@ import string
 
 @pytest.fixture(scope="session")
 def def_name():
-    yield "idem-policy-" + "".join(
+    yield "idem-policy-definition-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
@@ -23,34 +23,6 @@ def def_policy_rule():
                 {"field": "location", "in": ["eastus", "eastus2", "centralus"]},
             ]
         },
-    }
-
-
-@pytest.fixture(scope="module")
-def assignment_name():
-    yield "AllowedLocations"
-
-
-@pytest.fixture(scope="module")
-def assignment_description():
-    yield "This policy enables restriction of locations you can specify when deploying resources"
-
-
-@pytest.fixture(scope="module")
-def assignment_params():
-    yield {
-        "listOfAllowedLocations": {
-            "value": [
-                "centralus",
-                "eastus",
-                "eastus2",
-                "northcentralus",
-                "southcentralus",
-                "westcentralus",
-                "westus",
-                "westus2",
-            ]
-        }
     }
 
 

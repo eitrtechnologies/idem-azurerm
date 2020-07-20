@@ -35,7 +35,7 @@ async def test_present(hub, ctx, test_public_ip_addr, resource_group, idle_timeo
     assert ret == expected
 
 
-@pytest.mark.run(after="test_present", before="test_absent")
+@pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, test_public_ip_addr, resource_group, idle_timeout):
     new_timeout = 4

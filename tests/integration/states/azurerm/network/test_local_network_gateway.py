@@ -43,7 +43,7 @@ async def test_present(
     assert ret == expected
 
 
-@pytest.mark.run(after="test_present", before="test_absent")
+@pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(
     hub, ctx, local_network_gateway, resource_group, gateway_ip_addr

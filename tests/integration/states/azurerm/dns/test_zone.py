@@ -27,7 +27,7 @@ async def test_present(hub, ctx, zone, resource_group):
     assert ret == expected
 
 
-@pytest.mark.run(after="test_present", before="test_absent")
+@pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, zone, resource_group, tags):
     expected = {

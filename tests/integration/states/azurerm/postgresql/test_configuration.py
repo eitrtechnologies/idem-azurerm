@@ -3,7 +3,7 @@ import pytest
 
 @pytest.mark.run(order=4)
 @pytest.mark.asyncio
-async def test_changes(hub, ctx, postgresql_server, resource_group):
+async def test_present_and_changes(hub, ctx, postgresql_server, resource_group):
     config_name = "log_retention_days"
     val = "5"
     old_val = "3"
