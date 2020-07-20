@@ -5,7 +5,7 @@ import string
 
 @pytest.fixture(scope="session")
 def def_name():
-    yield "idem-policy" + "".join(
+    yield "idem-policy-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
@@ -54,28 +54,6 @@ def assignment_params():
     }
 
 
-"""
-        Restrict Allowed Locations :
-            azurerm.resource.policy.assignment_present :
-                - name: AllowedLocations
-                - scope: /subscriptions/bc75htn-a0fhsi-349b-56gh-4fghti-f84852
-                - definition_name: e56962a6-4747-49cd-b67b-bf8b01975c4c
-                - display_name: Allowed Locations
-                - description: This policy enables restriction of locations you can specify when deploying resources
-                - parameters:
-                      listOfAllowedLocations:
-                          value:
-                              - centralus
-                              - eastus
-                              - eastus2
-                              - northcentralus
-                              - southcentralus
-                              - westcentralus
-                              - westus
-                              - westus2
-"""
-
-
 @pytest.mark.run(order=1)
 @pytest.mark.asyncio
 async def test_definition_present(hub, ctx, def_name, def_policy_rule):
@@ -103,18 +81,23 @@ async def test_definition_present(hub, ctx, def_name, def_policy_rule):
     assert ret == expected
 
 
-@pytest.mark.run(after="test_definition_present", before="test_definition_absent")
+@pytest.mark.skip(
+    reason="Need to inquire about the way changes are done in this module"
+)
+@pytest.mark.run(
+    order=1, after="test_definition_present", before="test_definition_absent"
+)
 @pytest.mark.asyncio
 async def test_definition_changes(hub, ctx, def_name, def_policy_rule):
-    metadata = {"policy_creator": "EITR Technologies"}
+    desc = "test"
     expected = {
-        "changes": {"metadata": {"new": metadata, "old": None},},
+        "changes": {"description": {"new": desc, "old": None},},
         "comment": f"Policy definition {def_name} has been updated.",
         "name": def_name,
         "result": True,
     }
     ret = await hub.states.azurerm.resource.policy.definition_present(
-        ctx, name=def_name, policy_rule=def_policy_rule, metadata=metadata
+        ctx, name=def_name, policy_rule=def_policy_rule, description=desc
     )
     assert ret == expected
 
@@ -128,7 +111,7 @@ async def test_definition_absent(hub, ctx, def_name):
         "name": def_name,
         "result": True,
     }
-    ret = await hub.states.azurerm.resource.policy.definition_absent(ctx, def_name)
+    ret = await hub.states.azurerm.resource.policy.definition_absent(ctx, name=def_name)
     assert ret["changes"]["new"] == expected["changes"]["new"]
     assert ret["changes"]["old"]["name"] == expected["changes"]["old"]["name"]
     assert ret["result"] == expected["result"]
