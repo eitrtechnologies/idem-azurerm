@@ -352,7 +352,7 @@ async def definition_present(
     return ret
 
 
-async def definition_absent(hub, name, connection_auth=None, **kwargs):
+async def definition_absent(hub, ctx, name, connection_auth=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
