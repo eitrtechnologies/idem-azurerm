@@ -79,7 +79,7 @@ async def test_changes(
     assert ret == expected
 
 
-@pytest.mark.run(after="test_changes", before="test_subnet_changes")
+@pytest.mark.run(order=3, after="test_changes", before="test_subnet_changes")
 @pytest.mark.asyncio
 async def test_subnet_present(
     hub, ctx, test_subnet, test_vnet, resource_group, subnet_addr_prefix
@@ -108,7 +108,7 @@ async def test_subnet_present(
     assert ret == expected
 
 
-@pytest.mark.run(after="test_subnet_present", before="test_subnet_absent")
+@pytest.mark.run(order=3, after="test_subnet_present", before="test_subnet_absent")
 @pytest.mark.asyncio
 async def test_subnet_changes(
     hub,
@@ -141,7 +141,7 @@ async def test_subnet_changes(
     assert ret == expected
 
 
-@pytest.mark.run(order=-4)
+@pytest.mark.run(order=-3, before="test_absent")
 @pytest.mark.asyncio
 async def test_subnet_absent(hub, ctx, test_subnet, test_vnet, resource_group):
     expected = {

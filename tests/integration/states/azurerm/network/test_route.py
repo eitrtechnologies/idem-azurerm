@@ -64,7 +64,7 @@ async def test_table_changes(
     assert ret == expected
 
 
-@pytest.mark.run(after="test_table_changes", before="test_changes")
+@pytest.mark.run(order=3, after="test_table_changes", before="test_changes")
 @pytest.mark.asyncio
 async def test_present(
     hub, ctx, route, route_table, resource_group, addr_prefix, next_hop_type
@@ -94,7 +94,7 @@ async def test_present(
     assert ret == expected
 
 
-@pytest.mark.run(after="test_present", before="test_absent")
+@pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(
     hub,
@@ -123,7 +123,7 @@ async def test_changes(
     assert ret == expected
 
 
-@pytest.mark.run(after="test_table_changes", before="test_table_absent")
+@pytest.mark.run(order=3, after="test_table_changes", before="test_table_absent")
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, route, route_table, resource_group):
     expected = {
