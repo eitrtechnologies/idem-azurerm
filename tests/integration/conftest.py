@@ -44,6 +44,13 @@ def resource_group():
 
 
 @pytest.fixture(scope="session")
+def vm():
+    yield "idem-vm-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
+
+
+@pytest.fixture(scope="session")
 def keyvault():
     yield "idem-kv-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)

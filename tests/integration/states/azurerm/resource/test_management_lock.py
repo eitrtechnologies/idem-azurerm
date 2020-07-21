@@ -44,7 +44,7 @@ def resource_provider_namespace():
     yield "Microsoft.Network"
 
 
-@pytest.mark.run(order=5)
+@pytest.mark.run(order=6)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, lock, level, resource_group):
     expected = {
@@ -66,7 +66,7 @@ async def test_present(hub, ctx, lock, level, resource_group):
     assert ret == expected
 
 
-@pytest.mark.run(order=5, after="test_present", before="test_absent")
+@pytest.mark.run(order=6, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, lock, level, resource_group, updated_notes):
     expected = {
@@ -85,7 +85,7 @@ async def test_changes(hub, ctx, lock, level, resource_group, updated_notes):
     assert ret == expected
 
 
-@pytest.mark.run(order=-5, before="test_absent_by_scope")
+@pytest.mark.run(order=-6, before="test_absent_by_scope")
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, lock, resource_group):
     expected = {
@@ -102,7 +102,7 @@ async def test_absent(hub, ctx, lock, resource_group):
     assert ret["result"] == expected["result"]
 
 
-@pytest.mark.run(order=5, after="test_absent")
+@pytest.mark.run(order=6, after="test_absent")
 @pytest.mark.asyncio
 async def test_present_by_scope(hub, ctx, scope_lock, level, resource_group):
     subscription_id = (
@@ -124,7 +124,7 @@ async def test_present_by_scope(hub, ctx, scope_lock, level, resource_group):
     assert ret == expected
 
 
-@pytest.mark.run(order=5, after="test_present_by_scope", before="test_absent_by_scope")
+@pytest.mark.run(order=6, after="test_present_by_scope", before="test_absent_by_scope")
 @pytest.mark.asyncio
 async def test_changes_by_scope(
     hub, ctx, scope_lock, level, resource_group, updated_notes
@@ -145,7 +145,7 @@ async def test_changes_by_scope(
     assert ret == expected
 
 
-@pytest.mark.run(order=-5, after="test_absent")
+@pytest.mark.run(order=-6, after="test_absent")
 @pytest.mark.asyncio
 async def test_absent_by_scope(hub, ctx, scope_lock, resource_group):
     subscription_id = (
@@ -166,7 +166,7 @@ async def test_absent_by_scope(hub, ctx, scope_lock, resource_group):
     assert ret["result"] == expected["result"]
 
 
-@pytest.mark.run(order=5, after="test_absent_by_scope")
+@pytest.mark.run(order=6, after="test_absent_by_scope")
 @pytest.mark.asyncio
 async def test_present_at_resource_level(
     hub,
@@ -207,7 +207,7 @@ async def test_present_at_resource_level(
 
 
 @pytest.mark.run(
-    order=5,
+    order=6,
     after="test_present_at_resource_level",
     before="test_absent_at_resource_level",
 )
@@ -242,7 +242,7 @@ async def test_changes_at_resource_level(
     assert ret == expected
 
 
-@pytest.mark.run(order=-5, after="test_absent_by_scope")
+@pytest.mark.run(order=-6, after="test_absent_by_scope")
 @pytest.mark.asyncio
 async def test_absent_at_resource_level(
     hub,
