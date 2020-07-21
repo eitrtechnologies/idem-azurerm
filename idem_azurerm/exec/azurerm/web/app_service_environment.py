@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Azure Resource Manager (ARM) Web App Service Plan Operations Execution Module
+Azure Resource Manager (ARM) Web App Service Environment Operations Execution Module
 
 .. versionadded:: VERSION
 
@@ -45,6 +45,7 @@ try:
     from azure.mgmt.web.v2019_08_01.models._models_py3 import (
         DefaultErrorResponseException,
     )
+    from msrestazure.tools import is_valid_resource_id, parse_resource_id
 
     HAS_LIBS = True
 except ImportError:
@@ -56,7 +57,7 @@ log = logging.getLogger(__name__)
 
 
 async def create_or_update(
-    hub, ctx, name, resource_group, location, sku=None, **kwargs,
+    hub, ctx, name, resource_group, location, virtual_network, subnet, **kwargs,
 ):
     """
     .. versionadded:: VERSION
@@ -69,29 +70,35 @@ async def create_or_update(
 
     :param location: The location the resource.
 
-    :param sku: A dictionary representing the sku (pricing tier) of the app service plan. Possible properties include:
-        - ``name``: Name of the resource SKU.
-        - ``tier``: Service tier of the resource SKU.
-        - ``size``: Size specifier of the resource SKU.
-        - ``family``: Family code of the resource SKU.
-        - ``capacity``: Current number of instances assigned to the resource. 
+    :param virtual_network: The resource ID of the virtual network for the App Service Environment.
+
+    :param subnet: The name of the subnet used for the App Service Environment.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.web.app_service_plan.create_or_update test_name test_group test_location
+        azurerm.web.app_service_environment.create_or_update test_name test_group test_location
 
     """
     result = {}
     webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
 
-    if sku and not isinstance(sku, dict):
-        sku = {"name": sku}
+    if not is_valid_resource_id(virtual_network):
+        result = {"error": "The given virtual network resource ID is invalid."}
+        return result
+
+    vnet_profile = {"id": virtual_network, "subnet": subnet}
 
     try:
-        planmodel = await hub.exec.azurerm.utils.create_object_model(
-            "web", "AppServicePlan", location=location, sku=sku, **kwargs,
+        environmentmodel = await hub.exec.azurerm.utils.create_object_model(
+            "web",
+            "AppServiceEnvironmentResource",
+            location=location,
+            app_service_environment_resource_name=name,
+            app_service_environment_resource_location=location,
+            virtual_network=vnet_profile,
+            **kwargs,
         )
     except TypeError as exc:
         result = {
@@ -99,63 +106,15 @@ async def create_or_update(
         }
         return result
 
-    log.error(planmodel.as_dict())
-
-    """
-    planmodel = {
-        "location": location,
-        "kind": "linux",
-        "sku": {"name": "F1", "tier": "Free", "size": "F1", "family": "F", "capacity": 1},
-        "per_site_scaling": False,
-        "reserved": True,
-        "is_xenon": False,
-        "hyper_v": False,
-        "is_spot": False,
-        "target_worker_count": 0,
-        "target_worker_size_id": 0,
-        "number_of_sites": 0,
-        "maximum_elastic_worker_count": 1,
-        "maximum_number_of_workers": 30,
-        "per_site_scaling": False,
-        "maximum_number_of_workers": 1
-        "hosting_environment_profile": {
-            "id": "/subscriptions/{subscription_id}/resourceGroups/rg-tests/providers/Microsoft.Web/hostingEnvironments/eitrappenv"
-        },
-    }
-    """
-
-    planmodel = {
-        "location": location,
-        "kind": "linux",
-        "sku": {
-            "name": "F1",
-            "tier": "Free",
-            "size": "F1",
-            "family": "F",
-            "capacity": 1,
-        },
-        "properties": {
-            "per_site_scaling": False,
-            "reserved": False,
-            "is_xenon": False,
-            "hyper_v": False,
-            "is_spot": False,
-            "target_worker_count": 0,
-            "target_worker_size_id": 0,
-            "maximum_elastic_worker_count": 1,
-            "per_site_scaling": False,
-            "hosting_environment_profile": {
-                "id": "/subscriptions/{subscription_id}/resourceGroups/rg-tests/providers/Microsoft.Web/hostingEnvironments/eitrappenv"
-            },
-        },
-    }
-
     try:
-        plan = webconn.app_service_plans.create_or_update(
-            name=name, resource_group_name=resource_group, app_service_plan=planmodel,
+        environment = webconn.app_service_environments.create_or_update(
+            name=name,
+            resource_group_name=resource_group,
+            hosting_environment_envelope=environmentmodel,
         )
 
-        result = plan.result().as_dict()
+        environment.wait()
+        result = environment.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -165,31 +124,35 @@ async def create_or_update(
     return result
 
 
-async def delete(hub, ctx, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, force_delete=None, **kwargs):
     """
     .. versionadded:: VERSION
 
-    Delete an App Service Plan.
+    Delete an App Service Environment.
 
-    :param name: The name of the App Service Plan.
+    :param name: The name of the App Service Environment.
 
     :param resource_group: The name of the resource group.
+
+    :param force_delete: Specify true to force the deletion even if the App Service Environment contains resources.
+        The default is false.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.web.app_service_plan.delete test_name test_group
+        azurerm.web.app_service_environment.delete test_name test_group
 
     """
     result = False
     webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
 
     try:
-        plan = webconn.app_service_plans.delete(
-            name=name, resource_group_name=resource_group,
+        environment = webconn.app_service_environments.delete(
+            name=name, resource_group_name=resource_group, force_delete=force_delete
         )
 
+        environment.wait()
         result = True
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
@@ -202,9 +165,9 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: VERSION
 
-    Get an App Service plan.
+    Get the properties of an App Service Environment.
 
-    :param name: The name of the App Service Plan.
+    :param name: The name of the App Service Environment.
 
     :param resource_group: The name of the resource group.
 
@@ -212,18 +175,18 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.web.app_service_plan.get test_name test_group
+        azurerm.web.app_service_environment.get test_name test_group
 
     """
     result = {}
     webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
 
     try:
-        plan = webconn.app_service_plans.get(
+        environment = webconn.app_service_environments.get(
             name=name, resource_group_name=resource_group,
         )
 
-        result = plan.as_dict()
+        result = environment.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -231,20 +194,51 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, ctx, detailed=None, **kwargs):
+async def list_(hub, ctx, **kwargs):
     """
     .. versionadded:: VERSION
 
-    Get all App Service plans for a subscription.
-
-    :param detailed: Specify true to return all App Service plan properties. The default is false, which returns a
-        subset of the properties. Retrieval of all properties may increase the API latency.
+    Get all App Service Environments for a subscription.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.web.app_service_plan.list
+        azurerm.web.app_service_environment.list
+
+    """
+    result = {}
+    webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
+
+    try:
+        environments = await hub.exec.azurerm.utils.paged_object_to_list(
+            webconn.app_service_environments.list()
+        )
+
+        for environment in environments:
+            result[environment["name"]] = environment
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def list_app_service_plans(hub, ctx, name, resource_group, **kwargs):
+    """
+    .. versionadded:: VERSION
+
+    Get all App Service Plans in an App Service Environment.
+
+    :param name: The name of the App Service Environment.
+
+    :param resource_group: The name of the resource group.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.web.app_service_environment.list_app_service_plans test_name test_group
 
     """
     result = {}
@@ -252,7 +246,9 @@ async def list_(hub, ctx, detailed=None, **kwargs):
 
     try:
         plans = await hub.exec.azurerm.utils.paged_object_to_list(
-            webconn.app_service_plans.list(detailed=detailed)
+            webconn.app_service_environments.list_app_service_plans(
+                name=name, resource_group_name=resource_group
+            )
         )
 
         for plan in plans:
@@ -268,7 +264,7 @@ async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: VERSION
 
-    Get all App Service plans in a resource group.
+    Get all App Service Environments in a resource group.
 
     :param resource_group: The name of the resource group.
 
@@ -276,7 +272,7 @@ async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.web.app_service_plan.list_by_resource_group test_group
+        azurerm.web.app_service_environment.list_by_resource_group test_group
 
     """
     result = {}
@@ -284,13 +280,13 @@ async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
 
     try:
         plans = await hub.exec.azurerm.utils.paged_object_to_list(
-            webconn.app_service_plans.list_by_resource_group(
+            webconn.app_service_environments.list_by_resource_group(
                 resource_group_name=resource_group
             )
         )
 
-        for plan in plans:
-            result[plan["name"]] = plan
+        for environment in environments:
+            result[environment["name"]] = environment
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
         result = {"error": str(exc)}
