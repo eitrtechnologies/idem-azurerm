@@ -258,20 +258,23 @@ async def definition_present(
                 "new": policy_type,
             }
 
-        if (mode or "").lower() != policy.get("mode", "").lower():
-            ret["changes"]["mode"] = {"old": policy.get("mode"), "new": mode}
+        if mode:
+            if mode.lower() != policy.get("mode", "").lower():
+                ret["changes"]["mode"] = {"old": policy.get("mode"), "new": mode}
 
-        if (display_name or "").lower() != policy.get("display_name", "").lower():
-            ret["changes"]["display_name"] = {
-                "old": policy.get("display_name"),
-                "new": display_name,
-            }
+        if display_name:
+            if display_name.lower() != policy.get("display_name", "").lower():
+                ret["changes"]["display_name"] = {
+                    "old": policy.get("display_name"),
+                    "new": display_name,
+                }
 
-        if (description or "").lower() != policy.get("description", "").lower():
-            ret["changes"]["description"] = {
-                "old": policy.get("description"),
-                "new": description,
-            }
+        if description:
+            if description.lower() != policy.get("description", "").lower():
+                ret["changes"]["description"] = {
+                    "old": policy.get("description"),
+                    "new": description,
+                }
 
         rule_changes = differ.deep_diff(
             policy.get("policy_rule", {}), policy_rule or {}
@@ -279,9 +282,10 @@ async def definition_present(
         if rule_changes:
             ret["changes"]["policy_rule"] = rule_changes
 
-        meta_changes = differ.deep_diff(policy.get("metadata", {}), metadata or {})
-        if meta_changes:
-            ret["changes"]["metadata"] = meta_changes
+        if metadata:
+            meta_changes = differ.deep_diff(policy.get("metadata", {}), metadata)
+            if meta_changes:
+                ret["changes"]["metadata"] = meta_changes
 
         param_changes = differ.deep_diff(policy.get("parameters", {}), parameters or {})
         if param_changes:

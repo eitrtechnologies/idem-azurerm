@@ -333,8 +333,7 @@ async def connection_present(
 
             if shared_key and shared_key != connection.get("shared_key"):
                 ret["changes"]["shared_key"] = {
-                    "old": connection.get("shared_key"),
-                    "new": shared_key,
+                    "new": "REDACTED",
                 }
 
         if connection_type == "ExpressRoute":
@@ -401,7 +400,7 @@ async def connection_present(
         if connection_protocol:
             ret["changes"]["new"]["connection_protocol"] = connection_protocol
         if shared_key:
-            ret["changes"]["new"]["shared_key"] = shared_key
+            ret["changes"]["new"]["shared_key"] = "REDACTED"
         if local_network_gateway2:
             ret["changes"]["new"]["local_network_gateway2"] = local_network_gateway2
         if ipsec_policies:
