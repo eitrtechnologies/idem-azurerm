@@ -46,6 +46,15 @@ async def test_setup(
     )
     assert ret["result"] == True
 
+    ret = await hub.states.azurerm.network.virtual_network.subnet_present(
+        ctx,
+        name="GatewaySubnet",
+        virtual_network=vnet,
+        resource_group=resource_group,
+        address_prefix="172.17.1.0/24",
+    )
+    assert ret["result"] == True
+
     ret = await hub.states.azurerm.network.public_ip_address.present(
         ctx, name=public_ip_addr, resource_group=resource_group,
     )

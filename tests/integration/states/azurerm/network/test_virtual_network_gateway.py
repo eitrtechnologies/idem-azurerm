@@ -38,6 +38,11 @@ def vpn_type():
 
 
 @pytest.fixture(scope="module")
+def sku():
+    yield {"name": "VpnGw1", "tier": "VpnGw1", "capacity": 2}
+
+
+@pytest.fixture(scope="module")
 def connection_type():
     yield "IPSec"
 
@@ -82,6 +87,7 @@ async def test_present(
     active_active,
     enable_bgp,
     vpn_type,
+    sku,
 ):
     configs = [
         {
@@ -101,6 +107,7 @@ async def test_present(
                 "enable_bgp": enable_bgp,
                 "active_active": active_active,
                 "vpn_type": vpn_type,
+                "sku": sku,
             },
             "old": {},
         },
@@ -118,6 +125,7 @@ async def test_present(
         enable_bgp=enable_bgp,
         active_active=active_active,
         vpn_type=vpn_type,
+        sku=sku,
     )
     assert ret == expected
 
@@ -137,6 +145,7 @@ async def test_changes(
     enable_bgp,
     vpn_type,
     tags,
+    sku,
 ):
     configs = [
         {
@@ -162,6 +171,7 @@ async def test_changes(
         active_active=active_active,
         vpn_type=vpn_type,
         tags=tags,
+        sku=sku,
     )
     assert ret == expected
 
@@ -181,16 +191,22 @@ async def test_connection_present(
     use_selectors,
     ipsec_policies,
 ):
+    subscription_id = (
+        hub.acct.PROFILES["azurerm"].get("default", {}).get("subscription_id")
+    )
+    lnet_gateway_id = f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Network/localNetworkGateways/{local_network_gateway}"
+    vnet_gateway_id = f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Network/virtualNetworkGateways/{vnet_gateway}"
+
     expected = {
         "changes": {
             "new": {
                 "name": vnet_gateway_connection,
                 "resource_group": resource_group,
-                "virtual_network_gateway": vnet_gateway,
+                "virtual_network_gateway": vnet_gateway_id,
                 "connection_type": connection_type,
-                "local_network_gateway2": local_network_gateway,
+                "local_network_gateway2": lnet_gateway_id,
                 "enable_bgp": enable_bgp,
-                "shared_key": shared_key,
+                "shared_key": "REDACTED",
                 "use_policy_based_traffic_selectors": use_selectors,
                 "ipsec_policies": ipsec_policies,
             },
@@ -203,9 +219,9 @@ async def test_connection_present(
     ret = await hub.states.azurerm.network.virtual_network_gateway.connection_present(
         ctx,
         name=vnet_gateway_connection,
-        virtual_network_gateway=vnet_gateway,
+        virtual_network_gateway=vnet_gateway_id,
         resource_group=resource_group,
-        local_network_gateway2=local_network_gateway,
+        local_network_gateway2=lnet_gateway_id,
         connection_type=connection_type,
         enable_bgp=enable_bgp,
         shared_key=shared_key,
@@ -232,6 +248,11 @@ async def test_connection_changes(
     use_selectors,
     ipsec_policies,
 ):
+    subscription_id = (
+        hub.acct.PROFILES["azurerm"].get("default", {}).get("subscription_id")
+    )
+    lnet_gateway_id = f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Network/localNetworkGateways/{local_network_gateway}"
+    vnet_gateway_id = f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Network/virtualNetworkGateways/{vnet_gateway}"
     updated_key = "updatedKey"
     expected = {
         "changes": {"shared_key": {"new": "REDACTED"}},
@@ -242,9 +263,9 @@ async def test_connection_changes(
     ret = await hub.states.azurerm.network.virtual_network_gateway.connection_present(
         ctx,
         name=vnet_gateway_connection,
-        virtual_network_gateway=vnet_gateway,
+        virtual_network_gateway=vnet_gateway_id,
         resource_group=resource_group,
-        local_network_gateway2=local_network_gateway,
+        local_network_gateway2=lnet_gateway_id,
         connection_type=connection_type,
         enable_bgp=enable_bgp,
         shared_key=updated_key,
