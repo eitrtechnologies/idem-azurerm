@@ -215,7 +215,6 @@ async def test_connection_present(
     assert ret == expected
 
 
-@pytest.mark.skip(reason="need to revamp the state first")
 @pytest.mark.run(
     order=4, after="test_connection_present", before="test_connection_absent"
 )
@@ -233,8 +232,9 @@ async def test_connection_changes(
     use_selectors,
     ipsec_policies,
 ):
+    updated_key = "updatedKey"
     expected = {
-        "changes": {},
+        "changes": {"shared_key": {"new": "REDACTED"}},
         "comment": f"Virtual network gateway connection {vnet_gateway_connection} has been updated.",
         "name": vnet_gateway_connection,
         "result": True,
@@ -247,7 +247,7 @@ async def test_connection_changes(
         local_network_gateway2=local_network_gateway,
         connection_type=connection_type,
         enable_bgp=enable_bgp,
-        shared_key=shared_key,
+        shared_key=updated_key,
         use_policy_based_traffic_selectors=use_selectors,
         ipsec_policies=ipsec_policies,
     )

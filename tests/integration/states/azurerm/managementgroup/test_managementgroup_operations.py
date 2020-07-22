@@ -10,7 +10,6 @@ def management_group():
     )
 
 
-@pytest.mark.skip(reason="Privilege permissions need to be discussed")
 @pytest.mark.run(order=1)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, management_group):
@@ -26,7 +25,6 @@ async def test_present(hub, ctx, management_group):
     assert ret == expected
 
 
-@pytest.mark.skip(reason="Privilege permissions need to be discussed")
 @pytest.mark.run(order=1, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, management_group):
@@ -45,7 +43,6 @@ async def test_changes(hub, ctx, management_group):
     assert ret == expected
 
 
-@pytest.mark.skip(reason="Privilege permissions need to be discussed")
 @pytest.mark.run(order=-1)
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, management_group):

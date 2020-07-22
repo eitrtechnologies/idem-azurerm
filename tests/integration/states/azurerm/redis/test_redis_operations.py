@@ -15,9 +15,6 @@ def sku():
     yield {"name": "Basic", "family": "C", "capacity": 2}
 
 
-@pytest.mark.skip(
-    reason="Need to figure out what to do about Redis creation taking a long time"
-)
 @pytest.mark.run(order=3)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, resource_group, location, sku, redis_cache):
@@ -45,9 +42,6 @@ async def test_present(hub, ctx, resource_group, location, sku, redis_cache):
     assert ret == expected
 
 
-@pytest.mark.skip(
-    reason="Need to figure out what to do about Redis creation taking a long time"
-)
 @pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, resource_group, location, sku, redis_cache):
@@ -69,9 +63,6 @@ async def test_changes(hub, ctx, resource_group, location, sku, redis_cache):
     assert ret == expected
 
 
-@pytest.mark.skip(
-    reason="Need to figure out what to do about Redis creation taking a long time"
-)
 @pytest.mark.run(order=-3)
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, redis_cache):
