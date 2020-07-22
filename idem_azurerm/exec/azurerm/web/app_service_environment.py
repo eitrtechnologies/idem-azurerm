@@ -57,7 +57,7 @@ log = logging.getLogger(__name__)
 
 
 async def create_or_update(
-    hub, ctx, name, resource_group, location, virtual_network, subnet, **kwargs,
+    hub, ctx, name, resource_group, virtual_network, subnet, **kwargs,
 ):
     """
     .. versionadded:: VERSION
@@ -68,8 +68,6 @@ async def create_or_update(
 
     :param resource_group: The name of the resource group.
 
-    :param location: The location the resource.
-
     :param virtual_network: The resource ID of the virtual network for the App Service Environment.
 
     :param subnet: The name of the subnet used for the App Service Environment.
@@ -78,9 +76,21 @@ async def create_or_update(
 
     .. code-block:: bash
 
-        azurerm.web.app_service_environment.create_or_update test_name test_group test_location
+        azurerm.web.app_service_environment.create_or_update test_name test_group test_vnet test_subnet
 
     """
+    if "location" not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(
+            ctx, resource_group, **kwargs
+        )
+
+        if "error" in rg_props:
+            log.error("Unable to determine location from resource group specified.")
+            return {
+                "error": "Unable to determine location from resource group specified."
+            }
+        kwargs["location"] = rg_props["location"]
+
     result = {}
     webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
 
@@ -94,10 +104,10 @@ async def create_or_update(
         environmentmodel = await hub.exec.azurerm.utils.create_object_model(
             "web",
             "AppServiceEnvironmentResource",
-            location=location,
             app_service_environment_resource_name=name,
-            app_service_environment_resource_location=location,
+            app_service_environment_resource_location=kwargs["location"],
             virtual_network=vnet_profile,
+            worker_pools=[],
             **kwargs,
         )
     except TypeError as exc:

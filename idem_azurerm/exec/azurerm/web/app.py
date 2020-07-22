@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Azure Resource Manager (ARM) Web App Service Plan Operations Execution Module
+Azure Resource Manager (ARM) Web App Operations Execution Module
 
 .. versionadded:: VERSION
 
@@ -55,32 +55,24 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(
-    hub, ctx, name, resource_group, kind, sku="F1", tags=None, **kwargs,
-):
+async def create_or_update(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: VERSION
 
-    Creates or updates an App Service Plan.
+    Create function for web site, or a deployment slot.
 
-    :param name: The name of the App Service Plan.
+    :param name: Unique name of the app to create or update. To create or update a deployment slot, use
+        the {slot} parameter.
 
     :param resource_group: The name of the resource group.
-
-    :param kind: The kind of the App Service Plan. Possible values include: "linux", "windows"
-
-    :param sku: The SKU (pricing tier) of the App Service Plan. Defaults to "F1".
-
-    :param tags: tags
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.web.app_service_plan.create_or_update test_name test_group test_kind test_sku
+        azurerm.web.app.create_or_update test_name test_site test_group
 
     """
-
     if "location" not in kwargs:
         rg_props = await hub.exec.azurerm.resource.group.get(
             ctx, resource_group, **kwargs
@@ -94,37 +86,11 @@ async def create_or_update(
         kwargs["location"] = rg_props["location"]
 
     result = {}
-
     webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
 
-    if not isinstance(sku, dict):
-        sku = {"name": sku}
-
-    ## FOR REFERENCE. DELETE ME.
-    #
-    # planmodel = {
-    #     "kind": kind,
-    #     "location": location,
-    #     "tags": tags,
-    #     "per_site_scaling": False,
-    #     "hosting_environment_profile": None,
-    #     "maximum_elastic_worker_count": 1,
-    #     "spot_expiration_time": None,
-    #     "free_offer_expiration_time": None,
-    #     "worker_tier_name": None,
-    #     "is_spot": False,
-    #     "reserved": True,
-    #     "hyper_v": False,
-    #     "target_worker_count": 0,
-    #     "target_worker_size_id": 0,
-    #     "sku": {
-    #         "name": "F1"
-    #     }
-    # }
-
     try:
-        planmodel = await hub.exec.azurerm.utils.create_object_model(
-            "web", "AppServicePlan", sku=sku, kind=kind, tags=tags, **kwargs,
+        envelope = await hub.exec.azurerm.utils.create_object_model(
+            "web", "Site", **kwargs,
         )
     except TypeError as exc:
         result = {
@@ -133,10 +99,64 @@ async def create_or_update(
         return result
 
     try:
-        plan = webconn.app_service_plans.create_or_update(
-            name=name, resource_group_name=resource_group, app_service_plan=planmodel,
+        app = webconn.web_apps.create_or_update(
+            name=name, resource_group_name=resource_group, site_envelope=envelope,
         )
 
+        app.wait()
+        result = app.result().as_dict()
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
+        result = {"error": str(exc)}
+    except (ValidationError, DefaultErrorResponseException) as exc:
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def create_function(
+    hub, ctx, name, resource_group, site, **kwargs,
+):
+    """
+    .. versionadded:: VERSION
+
+    Create function for web site, or a deployment slot.
+
+    :param name: The name of the function.
+
+    :param site: The name of the site.
+    
+    :param resource_group: The name of the resource group.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.web.app.create_function test_name test_site test_group
+
+    """
+    result = {}
+    webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
+
+    try:
+        envelope = await hub.exec.azurerm.utils.create_object_model(
+            "web", "FunctionEnvelope", **kwargs,
+        )
+    except TypeError as exc:
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
+        return result
+
+    try:
+        function = webconn.web_apps.create_function(
+            name=site,
+            function_name=name,
+            resource_group_name=resource_group,
+            function_envelope=envelope,
+        )
+
+        function.wait()
         result = plan.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
@@ -147,29 +167,45 @@ async def create_or_update(
     return result
 
 
-async def delete(hub, ctx, name, resource_group, **kwargs):
+async def delete(
+    hub,
+    ctx,
+    name,
+    resource_group,
+    delete_metrics=None,
+    delete_empty_server_farm=None,
+    **kwargs,
+):
     """
     .. versionadded:: VERSION
 
-    Delete an App Service Plan.
+    Deletes a web, mobile, or API app, or one of the deployment slots.
 
-    :param name: The name of the App Service Plan.
+    :param name: The name of the App to delete.
 
     :param resource_group: The name of the resource group.
+
+    :param delete_metrics: If true, web app metrics are also deleted.
+
+    :param delete_empty_server_farm: Specify false if you want to keep empty App Service plan. By default, empty App
+        Service plan is deleted.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.web.app_service_plan.delete test_name test_group
+        azurerm.web.app.delete test_name test_group
 
     """
     result = False
     webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
 
     try:
-        plan = webconn.app_service_plans.delete(
-            name=name, resource_group_name=resource_group,
+        plan = webconn.web_apps.delete(
+            name=name,
+            resource_group_name=resource_group,
+            delete_metrics=delete_metrics,
+            delete_empty_server_farm=delete_empty_server_farm,
         )
 
         result = True
@@ -184,9 +220,9 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: VERSION
 
-    Get an App Service plan.
+    Gets the details of a web, mobile, or API app.
 
-    :param name: The name of the App Service Plan.
+    :param name: The name of the App.
 
     :param resource_group: The name of the resource group.
 
@@ -194,16 +230,14 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.web.app_service_plan.get test_name test_group
+        azurerm.web.app.get test_name test_group
 
     """
     result = {}
     webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
 
     try:
-        plan = webconn.app_service_plans.get(
-            name=name, resource_group_name=resource_group,
-        )
+        plan = webconn.web_apps.get(name=name, resource_group_name=resource_group,)
 
         result = plan.as_dict()
     except CloudError as exc:
@@ -213,32 +247,29 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, ctx, detailed=None, **kwargs):
+async def list_(hub, ctx, **kwargs):
     """
     .. versionadded:: VERSION
 
-    Get all App Service plans for a subscription.
-
-    :param detailed: Specify true to return all App Service plan properties. The default is false, which returns a
-        subset of the properties. Retrieval of all properties may increase the API latency.
+    Get all apps for a subscription.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.web.app_service_plan.list
+        azurerm.web.app.list
 
     """
     result = {}
     webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
 
     try:
-        plans = await hub.exec.azurerm.utils.paged_object_to_list(
-            webconn.app_service_plans.list(detailed=detailed)
+        apps = await hub.exec.azurerm.utils.paged_object_to_list(
+            webconn.web_apps.list()
         )
 
-        for plan in plans:
-            result[plan["name"]] = plan
+        for app in apps:
+            result[app["name"]] = app
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -250,7 +281,7 @@ async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
     """
     .. versionadded:: VERSION
 
-    Get all App Service plans in a resource group.
+    Gets all web, mobile, and API apps in the specified resource group.
 
     :param resource_group: The name of the resource group.
 
@@ -258,21 +289,19 @@ async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.web.app_service_plan.list_by_resource_group test_group
+        azurerm.web.app.list_by_resource_group test_group
 
     """
     result = {}
     webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
 
     try:
-        plans = await hub.exec.azurerm.utils.paged_object_to_list(
-            webconn.app_service_plans.list_by_resource_group(
-                resource_group_name=resource_group
-            )
+        apps = await hub.exec.azurerm.utils.paged_object_to_list(
+            webconn.web_apps.list_by_resource_group(resource_group_name=resource_group)
         )
 
-        for plan in plans:
-            result[plan["name"]] = plan
+        for app in apps:
+            result[app["name"]] = apps
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
         result = {"error": str(exc)}
