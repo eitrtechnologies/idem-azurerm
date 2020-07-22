@@ -22,6 +22,6 @@ azure-mgmt-rdbms==1.9.0
 azure-mgmt-redis==5.0.0
 azure-mgmt-resource==3.1.0
 azure-mgmt-storage==2.0.0
-azure-mgmt-web==0.35.0
-msrest==0.6.10
-msrestazure==0.6.3
+azure-mgmt-web==0.47.0
+msrest==0.6.17
+msrestazure==0.6.4

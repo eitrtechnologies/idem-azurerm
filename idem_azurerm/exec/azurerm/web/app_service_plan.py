@@ -56,7 +56,7 @@ log = logging.getLogger(__name__)
 
 
 async def create_or_update(
-    hub, ctx, name, resource_group, location, sku=None, **kwargs,
+    hub, ctx, name, resource_group, kind, sku="F1", tags=None, **kwargs,
 ):
     """
     .. versionadded:: VERSION
@@ -67,88 +67,69 @@ async def create_or_update(
 
     :param resource_group: The name of the resource group.
 
-    :param location: The location the resource.
+    :param kind: linux or windows
 
-    :param sku: A dictionary representing the sku (pricing tier) of the app service plan. Possible properties include:
-        - ``name``: Name of the resource SKU.
-        - ``tier``: Service tier of the resource SKU.
-        - ``size``: Size specifier of the resource SKU.
-        - ``family``: Family code of the resource SKU.
-        - ``capacity``: Current number of instances assigned to the resource. 
+    :param sku: The SKU (pricing tier) of the app service plan. (F1, etc.)
+
+    :param tags: tags
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.web.app_service_plan.create_or_update test_name test_group test_location
+        azurerm.web.app_service_plan.create_or_update testplan testgroup linux
 
     """
+    if "location" not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(
+            ctx, resource_group, **kwargs
+        )
+
+        if "error" in rg_props:
+            log.error("Unable to determine location from resource group specified.")
+            return {
+                "error": "Unable to determine location from resource group specified."
+            }
+        kwargs["location"] = rg_props["location"]
+
     result = {}
+
     webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
 
-    if sku and not isinstance(sku, dict):
+    if not isinstance(sku, dict):
         sku = {"name": sku}
+
+    ## FOR REFERENCE. DELETE ME.
+    #
+    # planmodel = {
+    #     "kind": kind,
+    #     "location": location,
+    #     "tags": tags,
+    #     "per_site_scaling": False,
+    #     "hosting_environment_profile": None,
+    #     "maximum_elastic_worker_count": 1,
+    #     "spot_expiration_time": None,
+    #     "free_offer_expiration_time": None,
+    #     "worker_tier_name": None,
+    #     "is_spot": False,
+    #     "reserved": True,
+    #     "hyper_v": False,
+    #     "target_worker_count": 0,
+    #     "target_worker_size_id": 0,
+    #     "sku": {
+    #         "name": "F1"
+    #     }
+    # }
 
     try:
         planmodel = await hub.exec.azurerm.utils.create_object_model(
-            "web", "AppServicePlan", location=location, sku=sku, **kwargs,
+            "web", "AppServicePlan", sku=sku, kind=kind, tags=tags, **kwargs,
         )
     except TypeError as exc:
         result = {
             "error": "The object model could not be built. ({0})".format(str(exc))
         }
         return result
-
-    log.error(planmodel.as_dict())
-
-    """
-    planmodel = {
-        "location": location,
-        "kind": "linux",
-        "sku": {"name": "F1", "tier": "Free", "size": "F1", "family": "F", "capacity": 1},
-        "per_site_scaling": False,
-        "reserved": True,
-        "is_xenon": False,
-        "hyper_v": False,
-        "is_spot": False,
-        "target_worker_count": 0,
-        "target_worker_size_id": 0,
-        "number_of_sites": 0,
-        "maximum_elastic_worker_count": 1,
-        "maximum_number_of_workers": 30,
-        "per_site_scaling": False,
-        "maximum_number_of_workers": 1
-        "hosting_environment_profile": {
-            "id": "/subscriptions/{subscription_id}/resourceGroups/rg-tests/providers/Microsoft.Web/hostingEnvironments/eitrappenv"
-        },
-    }
-    """
-
-    planmodel = {
-        "location": location,
-        "kind": "linux",
-        "sku": {
-            "name": "F1",
-            "tier": "Free",
-            "size": "F1",
-            "family": "F",
-            "capacity": 1,
-        },
-        "properties": {
-            "per_site_scaling": False,
-            "reserved": False,
-            "is_xenon": False,
-            "hyper_v": False,
-            "is_spot": False,
-            "target_worker_count": 0,
-            "target_worker_size_id": 0,
-            "maximum_elastic_worker_count": 1,
-            "per_site_scaling": False,
-            "hosting_environment_profile": {
-                "id": "/subscriptions/{subscription_id}/resourceGroups/rg-tests/providers/Microsoft.Web/hostingEnvironments/eitrappenv"
-            },
-        },
-    }
 
     try:
         plan = webconn.app_service_plans.create_or_update(
