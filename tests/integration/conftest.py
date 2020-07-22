@@ -209,3 +209,17 @@ def test_network_interface():
     yield "idem-test-net-iface-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
+
+
+@pytest.fixture(scope="session")
+def local_network_gateway():
+    yield "idem-local-net-gateway-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
+
+
+@pytest.fixture(scope="session")
+def ip_config():
+    yield "idem-ip-config-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
