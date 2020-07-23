@@ -55,7 +55,9 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, ctx, name, resource_group, kind=None, server_farm_id=None, **kwargs):
+async def create_or_update(
+    hub, ctx, name, resource_group, kind=None, server_farm_id=None, **kwargs
+):
     """
     .. versionadded:: VERSION
 
@@ -119,7 +121,7 @@ async def create_or_update(hub, ctx, name, resource_group, kind=None, server_far
 
 
 async def create_function(
-    hub, ctx, name, resource_group, site, **kwargs,
+    hub, ctx, name, site, resource_group, **kwargs,
 ):
     """
     .. versionadded:: VERSION
@@ -161,7 +163,7 @@ async def create_function(
         )
 
         function.wait()
-        result = plan.result().as_dict()
+        result = function.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -241,9 +243,12 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
 
     try:
-        plan = webconn.web_apps.get(name=name, resource_group_name=resource_group,)
+        app = webconn.web_apps.get(name=name, resource_group_name=resource_group)
 
-        result = plan.as_dict()
+        if app:
+            result = app.as_dict()
+        else:
+            result = {"error": "The specified web, mobile, or API app does not exist."}
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -274,9 +279,14 @@ async def get_function(hub, ctx, name, site, resource_group, **kwargs):
     webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
 
     try:
-        func = webconn.web_apps.get_function(function_name=name, name=site, resource_group_name=resource_group)
+        func = webconn.web_apps.get_function(
+            function_name=name, name=site, resource_group_name=resource_group
+        )
 
-        result = func.as_dict()
+        if func:
+            result = func.as_dict()
+        else:
+            result = {"error": "The specified function does not exist."}
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
         result = {"error": str(exc)}

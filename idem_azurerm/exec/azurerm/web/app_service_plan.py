@@ -105,7 +105,13 @@ async def create_or_update(
 
     try:
         planmodel = await hub.exec.azurerm.utils.create_object_model(
-            "web", "AppServicePlan", sku=sku, kind=kind, reserved=reserved, tags=tags, **kwargs,
+            "web",
+            "AppServicePlan",
+            sku=sku,
+            kind=kind,
+            reserved=reserved,
+            tags=tags,
+            **kwargs,
         )
     except TypeError as exc:
         result = {
@@ -187,7 +193,42 @@ async def get(hub, ctx, name, resource_group, **kwargs):
             name=name, resource_group_name=resource_group,
         )
 
-        result = plan.as_dict()
+        if plan:
+            result = plan.as_dict()
+        else:
+            result = {"error": "The specified App Service Plan does not exist."}
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def get_server_farm_skus(hub, ctx, name, resource_group, **kwargs):
+    """
+     .. versionadded:: VERSION
+
+    Gets all selectable SKUs for a given App Service Plan.
+
+    :param name: The name of the App Service Plan.
+
+    :param resource_group: The name of the resource group.
+    
+    CLI Example:                                                                                                                                                                                          
+    .. code-block:: bash
+
+        azurerm.web.app_service_plan.get_server_farm_skus test_name test_group
+
+    """
+    result = {}
+    webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
+
+    try:
+        skus = webconn.app_service_plans.get_server_farm_skus(
+            name=name, resource_group_name=resource_group,
+        )
+
+        result = skus
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
         result = {"error": str(exc)}
