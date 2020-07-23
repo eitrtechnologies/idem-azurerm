@@ -137,7 +137,7 @@ async def test_assignment_changes(hub, ctx, assignment_name, def_name):
 
 
 @pytest.mark.run(
-    order=-1, after="test_assignment_changes", before="test_definition_absent"
+    order=1, after="test_assignment_changes", before="test_definition_absent"
 )
 @pytest.mark.asyncio
 async def test_assignment_absent(hub, ctx, assignment_name):
@@ -159,7 +159,7 @@ async def test_assignment_absent(hub, ctx, assignment_name):
     assert ret["result"] == expected["result"]
 
 
-@pytest.mark.run(order=-1)
+@pytest.mark.run(order=1, after="test_assignment_absent")
 @pytest.mark.asyncio
 async def test_definition_absent(hub, ctx, def_name):
     expected = {

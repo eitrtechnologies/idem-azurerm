@@ -43,7 +43,7 @@ async def test_changes(hub, ctx, management_group):
     assert ret == expected
 
 
-@pytest.mark.run(order=-1)
+@pytest.mark.run(order=1)
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, management_group):
     expected = {
