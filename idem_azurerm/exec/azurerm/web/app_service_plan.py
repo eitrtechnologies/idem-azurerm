@@ -56,7 +56,7 @@ log = logging.getLogger(__name__)
 
 
 async def create_or_update(
-    hub, ctx, name, resource_group, kind, sku="F1", tags=None, **kwargs,
+    hub, ctx, name, resource_group, kind, sku="F1", reserved=None, tags=None, **kwargs,
 ):
     """
     .. versionadded:: VERSION
@@ -67,11 +67,14 @@ async def create_or_update(
 
     :param resource_group: The name of the resource group.
 
-    :param kind: The kind of the App Service Plan. Possible values include: "linux", "windows"
+    :param kind: The kind of the App Service Plan. Possible values include: "linux", "windows", "functionapp"
 
     :param sku: The SKU (pricing tier) of the App Service Plan. Defaults to "F1".
 
-    :param tags: tags
+    :param reserved: This value should be True if you are using a Linux App Service Plan, False otherwise.
+        Defaults to False.
+
+    :param tags: Tags associated with the App Service Plan.
 
     CLI Example:
 
@@ -100,31 +103,9 @@ async def create_or_update(
     if not isinstance(sku, dict):
         sku = {"name": sku}
 
-    ## FOR REFERENCE. DELETE ME.
-    #
-    # planmodel = {
-    #     "kind": kind,
-    #     "location": location,
-    #     "tags": tags,
-    #     "per_site_scaling": False,
-    #     "hosting_environment_profile": None,
-    #     "maximum_elastic_worker_count": 1,
-    #     "spot_expiration_time": None,
-    #     "free_offer_expiration_time": None,
-    #     "worker_tier_name": None,
-    #     "is_spot": False,
-    #     "reserved": True,
-    #     "hyper_v": False,
-    #     "target_worker_count": 0,
-    #     "target_worker_size_id": 0,
-    #     "sku": {
-    #         "name": "F1"
-    #     }
-    # }
-
     try:
         planmodel = await hub.exec.azurerm.utils.create_object_model(
-            "web", "AppServicePlan", sku=sku, kind=kind, tags=tags, **kwargs,
+            "web", "AppServicePlan", sku=sku, kind=kind, reserved=reserved, tags=tags, **kwargs,
         )
     except TypeError as exc:
         result = {
@@ -137,6 +118,7 @@ async def create_or_update(
             name=name, resource_group_name=resource_group, app_service_plan=planmodel,
         )
 
+        plan.wait()
         result = plan.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
@@ -242,6 +224,8 @@ async def list_(hub, ctx, detailed=None, **kwargs):
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
         result = {"error": str(exc)}
+    except (DefaultErrorResponseException) as exc:
+        result = {"error": str(exc)}
 
     return result
 
@@ -275,6 +259,50 @@ async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
             result[plan["name"]] = plan
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
+        result = {"error": str(exc)}
+    except (DefaultErrorResponseException) as exc:
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def list_web_apps(hub, ctx, name, resource_group, skip_token=None, **kwargs):
+    """
+    .. versionadded:: VERSION
+
+    Get all apps associated with an App Service plan.
+
+    :param name: The name of the App Service Plan.
+
+    :param resource_group: The name of the resource group.
+
+    :param skip_token: Skip to a web app in the list of webapps associated with app service plan. If specified, the 
+        resulting list will contain web apps starting from (including) the skipToken. Otherwise, the resulting list
+        contains web apps from the start of the list.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.web.app_service_plan.list_web_apps test_name test_group
+
+    """
+    result = {}
+    webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
+
+    try:
+        apps = await hub.exec.azurerm.utils.paged_object_to_list(
+            webconn.app_service_plans.list_web_apps(
+                name=name, resource_group_name=resource_group, skip_token=skip_token
+            )
+        )
+
+        for app in apps:
+            result[app["name"]] = app
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
+        result = {"error": str(exc)}
+    except (DefaultErrorResponseException) as exc:
         result = {"error": str(exc)}
 
     return result

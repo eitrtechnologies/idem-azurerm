@@ -55,16 +55,20 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def create_or_update(hub, ctx, name, resource_group, **kwargs):
+async def create_or_update(hub, ctx, name, resource_group, kind=None, server_farm_id=None, **kwargs):
     """
     .. versionadded:: VERSION
 
     Create function for web site, or a deployment slot.
 
-    :param name: Unique name of the app to create or update. To create or update a deployment slot, use
-        the {slot} parameter.
+    :param name: Unique name of the app to create or update.
 
     :param resource_group: The name of the resource group.
+
+    :param kind: The kind of the App. Possible values include: "app", "functionapp"
+
+    :param server_farm_id: Resource ID of the associated App Service Plan, formatted as:
+        "/subscriptions/{subscriptionID}/resourceGroups/{groupName}/providers/Microsoft.Web/serverfarms/{appServicePlanName}"
 
     CLI Example:
 
@@ -90,7 +94,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
 
     try:
         envelope = await hub.exec.azurerm.utils.create_object_model(
-            "web", "Site", **kwargs,
+            "web", "Site", kind=kind, server_farm_id=server_farm_id, **kwargs,
         )
     except TypeError as exc:
         result = {
@@ -247,6 +251,39 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
+async def get_function(hub, ctx, name, site, resource_group, **kwargs):
+    """
+    .. versionadded:: VERSION
+
+    Get function information by its ID for web site, or a deployment slot.
+
+    :param name: The name of the function
+
+    :param site: The name of the site.
+
+    :param resource_group: The name of the resource group.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.web.app.get_function test_name test_site test_group
+
+    """
+    result = {}
+    webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
+
+    try:
+        func = webconn.web_apps.get_function(function_name=name, name=site, resource_group_name=resource_group)
+
+        result = func.as_dict()
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
 async def list_(hub, ctx, **kwargs):
     """
     .. versionadded:: VERSION
@@ -272,6 +309,8 @@ async def list_(hub, ctx, **kwargs):
             result[app["name"]] = app
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
+        result = {"error": str(exc)}
+    except DefaultErrorResponseException as exc:
         result = {"error": str(exc)}
 
     return result
@@ -304,6 +343,8 @@ async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
             result[app["name"]] = apps
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
+        result = {"error": str(exc)}
+    except DefaultErrorResponseException as exc:
         result = {"error": str(exc)}
 
     return result
