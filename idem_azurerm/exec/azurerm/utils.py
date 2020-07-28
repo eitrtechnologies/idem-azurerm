@@ -297,7 +297,9 @@ async def create_object_model(hub, module_name, object_name, **kwargs):
     return Model(**object_kwargs)
 
 
-async def compare_list_of_dicts(hub, old, new, convert_id_to_name=None):
+async def compare_list_of_dicts(
+    hub, old, new, convert_id_to_name=None, key_name="name"
+):
     """
     Compare lists of dictionaries representing Azure objects. Only keys found in the "new" dictionaries are compared to
     the "old" dictionaries, since getting Azure objects from the API returns some read-only data which should not be
@@ -320,13 +322,15 @@ async def compare_list_of_dicts(hub, old, new, convert_id_to_name=None):
 
     try:
         local_configs, remote_configs = [
-            sorted(config, key=itemgetter("name")) for config in (new, old)
+            sorted(config, key=itemgetter(key_name)) for config in (new, old)
         ]
     except TypeError:
         ret["comment"] = "configurations must be provided as a list of dictionaries!"
         return ret
     except KeyError:
-        ret["comment"] = 'configuration dictionaries must contain the "name" key!'
+        ret[
+            "comment"
+        ] = f'configuration dictionaries must contain the "{key_name}" key!'
         return ret
 
     for idx, cfg in enumerate(local_configs):
