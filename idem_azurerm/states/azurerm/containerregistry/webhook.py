@@ -167,7 +167,7 @@ async def present(
         "tags",
     ]:
         value = locals()[param]
-        if value:
+        if value is not None:
             new[param] = value
 
     # get existing container registry webhook if present
