@@ -67,7 +67,7 @@ async def create_or_update(
     task_type,
     platform_os,
     platform_arch,
-    platform_variant,
+    platform_variant=None,
     context_path=None,
     context_access_token=None,
     task_file_path=None,
