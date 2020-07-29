@@ -73,6 +73,9 @@ async def present(
     ctx,
     name,
     resource_group,
+    os_type,
+    storage_account,
+    runtime_stack,
     server_farm_id=None,
     plan_name=None,
     tags=None,
@@ -82,15 +85,27 @@ async def present(
     """
     .. versionadded:: VERSION
 
-    Ensure that a Function App exists. An App Service Plan will be built for the Function App unless the server_farm_id
-        parameter is specified.
+    Ensure that a Function App exists. An App Service (Consumption) Plan will be built for the Function App unless the
+        server_farm_id parameter is specified. 
 
     :param name: The name of the Function App.
 
     :param resource_group: The name of the resource group of the Function App.
 
-    :param server_farm_id: The resource ID of the App Service Plan used by the Function App. If this parameter is not 
-        provided then an App Service Plan will be built automatically for your Function App.
+    :param os_type: The operation system utilized by the Function App. Possible values are "Linux" or "Windows".
+
+    :param storage_account: The name of the storage account that will hold the Azure Functions used by the Function App.
+        This storage account must be of the kind "Storage" or "StorageV2" and inside of the specified resource group.
+
+    :param runtime_stack: The language stack to be used for functions in this Function App. Possible values are
+        "dotnet", "node", "java", "python", or "powershell".
+
+    :param stack_version: The version of the runtime stack used. If nothing is specified then the Function App will
+        just use its default version for that runtime stack. LOOK INTO HOW TO DO THIS AND ADD PARAM.
+
+    :param server_farm_id: The resource ID of the App Service (Consumption) Plan used by the Function App. If this
+        parameter is not provided then an App Service (Consumption) Plan will be built automatically for the Function
+        App. This plan should use the same OS as specified by the os_type parameter.
   
     :param plan_name: The name of the App Service Plan to create when the server_farm_id parameter is not specified.
         Defaults to "ASP-{name}"
@@ -108,9 +123,12 @@ async def present(
             azurerm.web.function_app.present:
                 - name: my_app
                 - resource_group: my_group
+                - os_type: "Linux"
+                - runtime_stack: "python"
+                - storage_account: my_account
                 - server_farm_id: my_id
                 - tags:
-                    "owner": "EITR Technologies"
+                    "Owner": "EITR Technologies"
                 - connection_auth: {{ profile }}
 
     """
@@ -126,10 +144,35 @@ async def present(
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
+    storage_acct = await hub.exec.azurerm.storage.account.get_properties(
+        ctx, name=storage_account, resource_group=resource_group
+    )
+
+    if "error" in storage_acct:
+        log.error(
+            "The specified storage account does not exist within the given resource group."
+        )
+        ret[
+            "comment"
+        ] = "The specified storage account does not exist within the given resource group."
+        return ret
+
+    storage_acct_keys = await hub.exec.azurerm.storage.account.list_keys(
+        ctx, name=storage_account, resource_group=resource_group
+    )
+    for key in storage_acct_keys["keys"]:
+        if key["key_name"] == "key1":
+            storage_acct_key = key["value"]
+
     if server_farm_id and not is_valid_resource_id(server_farm_id):
         log.error("The specified server_farm_id is invalid.")
         ret["comment"] = "The specified server_farm_id is invalid."
         return ret
+
+    if os_type == "Windows":
+        reserved = False
+    elif os_type == "Linux":
+        reserved = True
 
     if not server_farm_id:
         if not plan_name:
@@ -145,7 +188,7 @@ async def present(
                 name=plan_name,
                 resource_group=resource_group,
                 kind="functionapp",
-                reserved=True,
+                reserved=reserved,
                 sku="Y1",
                 **connection_auth,
             )
@@ -158,8 +201,38 @@ async def present(
                     "comment"
                 ] = f"Unable to create the App Service Plan {plan_name} in the resource group {resource_group}."
                 return ret
+        else:
+            if plan["reserved"] != reserved:
+                log.error(
+                    "The OS of the App Service Plan specified within the server_farm_id parameter does not match the specified OS type for the function app."
+                )
+                ret[
+                    "comment"
+                ] = "The OS of the App Service Plan specified within the server_farm_id parameter does not match the specified OS type for the function app."
+                return ret
 
         server_farm_id = plan["id"]
+
+    app_settings = [
+        {
+            "name": "AzureWebJobsStorage",
+            "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
+        },
+        {
+            "name": "AzureWebJobsDashboard",
+            "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
+        },
+        {"name": "FUNCTIONS_WORKER_RUNTIME", "value": runtime_stack},
+    ]
+
+    if os_type == "Windows":
+        app_settings.append(
+            {
+                "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
+            }
+        )
+        app_settings.append({"name": "WEBSITE_CONTENTSHARE", "value": name.lower()})
 
     function_app = await hub.exec.azurerm.web.app.get(
         ctx, name, resource_group, azurerm_log_level="info", **connection_auth
@@ -205,6 +278,10 @@ async def present(
 
     app_kwargs = kwargs.copy()
     app_kwargs.update(connection_auth)
+    kind = "functionapp"
+
+    if os_type == "Linux":
+        kind = kind + ",Linux"
 
     function_app = await hub.exec.azurerm.web.app.create_or_update(
         ctx=ctx,
@@ -212,7 +289,8 @@ async def present(
         resource_group=resource_group,
         tags=tags,
         server_farm_id=server_farm_id,
-        kind="functionapp",
+        kind=kind,
+        site_config={"app_settings": app_settings},
         **app_kwargs,
     )
 

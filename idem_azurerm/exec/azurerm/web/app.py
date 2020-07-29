@@ -358,3 +358,38 @@ async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
         result = {"error": str(exc)}
 
     return result
+
+
+async def list_application_settings(hub, ctx, name, resource_group, **kwargs):
+    """
+    .. versionadded:: VERSION
+
+    Gets the application settings of an app.
+
+    :param name: The name of the app.
+
+    :param resource_group: The name of the resource group.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.web.app.list_application_settings test_name test_group
+
+    """
+    result = {}
+    webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
+
+    try:
+        settings = webconn.web_apps.list_application_settings(
+            name=name, resource_group_name=resource_group
+        )
+
+        result = settings
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
+        result = {"error": str(exc)}
+    except DefaultErrorResponseException as exc:
+        result = {"error": str(exc)}
+
+    return result
