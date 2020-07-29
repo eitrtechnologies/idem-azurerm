@@ -157,7 +157,9 @@ async def create_or_update(
     return result
 
 
-async def get(hub, ctx, name, registry_name, resource_group, **kwargs):
+async def get(
+    hub, ctx, name, registry_name, resource_group, callback_config=False, **kwargs
+):
     """
     .. versionadded:: 3.0.0
 
@@ -168,6 +170,8 @@ async def get(hub, ctx, name, registry_name, resource_group, **kwargs):
     :param registry_name: The name of the container registry.
 
     :param resource_group: The name of the resource group to which the container registry belongs.
+
+    :param callback_config: Gets the configuration of service URI and custom headers for the webhook.
 
     CLI Example:
 
@@ -187,45 +191,13 @@ async def get(hub, ctx, name, registry_name, resource_group, **kwargs):
             resource_group_name=resource_group,
         )
         result = ret.as_dict()
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error(
-            "containerregistry", str(exc), **kwargs
-        )
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def get_callback_config(hub, ctx, name, registry_name, resource_group, **kwargs):
-    """
-    .. versionadded:: 3.0.0
-
-    Gets the configuration of service URI and custom headers for the webhook.
-
-    :param name: The name of the webhook.
-
-    :param registry_name: The name of the container registry.
-
-    :param resource_group: The name of the resource group to which the container registry belongs.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.containerregistry.webhook.get_callback_config testhook testrepo testgroup
-
-    """
-    result = {}
-    regconn = await hub.exec.azurerm.utils.get_client(
-        ctx, "containerregistry", **kwargs
-    )
-    try:
-        ret = regconn.webhooks.get_callback_config(
-            webhook_name=name,
-            registry_name=registry_name,
-            resource_group_name=resource_group,
-        )
-        result = ret.as_dict()
+        if callback_config:
+            ret = regconn.webhooks.get_callback_config(
+                webhook_name=name,
+                registry_name=registry_name,
+                resource_group_name=resource_group,
+            )
+            result.update(ret.as_dict())
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error(
             "containerregistry", str(exc), **kwargs
