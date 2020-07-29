@@ -94,7 +94,7 @@ async def present(
         'Enabled', 'Disabled'.
 
     :param disabled_alerts: Specifies an array of alerts that are disabled. Possible values are: 'Sql_Injection',
-        'Sql_Injection_Vulnerability', and 'Access_Anomaly'. It is import to note that the default value of this
+        'Sql_Injection_Vulnerability', and 'Access_Anomaly'. It is important to note that the default value of this
         parameter is [''].
 
     :param email_addresses: Specifies an array of e-mail addresses to which the alert is sent. It is important to note
@@ -206,14 +206,18 @@ async def present(
             ret["result"] = True
             ret[
                 "comment"
-            ] = "Server Security Alert Policy {0} is already present.".format(name)
+            ] = "The server security alert policy {0} for the server {1} is already present.".format(
+                name, server_name
+            )
             return ret
 
         if ctx["test"]:
             ret["result"] = None
             ret[
                 "comment"
-            ] = "Server Security Alert Policy {0} would be updated.".format(name)
+            ] = "The server security alert policy {0} for the server {1} would be updated.".format(
+                name, server_name
+            )
             return ret
 
     else:
@@ -240,8 +244,10 @@ async def present(
             ret["changes"]["new"]["retention_days"] = retention_days
 
     if ctx["test"]:
-        ret["comment"] = "Server Security Alert Policy {0} would be created.".format(
-            name
+        ret[
+            "comment"
+        ] = "The server security alert policy {0} for the server {1} would be created.".format(
+            name, server_name
         )
         ret["result"] = None
         return ret
@@ -265,11 +271,15 @@ async def present(
 
     if "error" not in policy:
         ret["result"] = True
-        ret["comment"] = f"Server Security Alert Policy {name} has been {action}d."
+        ret[
+            "comment"
+        ] = f"The server security alert policy {name} for the server {server_name} has been {action}d."
         return ret
 
-    ret["comment"] = "Failed to {0} Server Security Alert Policy {1}! ({2})".format(
-        action, name, policy.get("error")
+    ret[
+        "comment"
+    ] = "Failed to {0} the server security alert policy {1} for the server {2}! ({3})".format(
+        action, name, server_name, policy.get("error")
     )
     if not ret["result"]:
         ret["changes"] = {}

@@ -74,7 +74,6 @@ async def present(
     resource_group,
     public_access=None,
     metadata=None,
-    tags=None,
     connection_auth=None,
     **kwargs,
 ):
@@ -97,8 +96,6 @@ async def present(
 
     :param metadata: A dictionary of name-value pairs to associate with the container as metadata. Defaults to None.
 
-    :param tags: A dictionary of strings can be passed as tag metadata to the container object.
-
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
@@ -112,8 +109,6 @@ async def present(
                 - account: my_account
                 - resource_group: my_rg
                 - public_access: 'Blob'
-                - tags:
-                    contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
     """
@@ -136,13 +131,8 @@ async def present(
     if "error" not in container:
         action = "update"
 
-        tag_changes = differ.deep_diff(container.get("tags", {}), tags or {})
-        if tag_changes:
-            ret["changes"]["tags"] = tag_changes
-
-        metadata_changes = differ.deep_diff(
-            container.get("metadata", {}), metadata or {}
-        )
+        metadata = metadata or {}
+        metadata_changes = differ.deep_diff(container.get("metadata", {}), metadata)
         if metadata_changes:
             ret["changes"]["metadata"] = metadata_changes
 
@@ -172,8 +162,6 @@ async def present(
             },
         }
 
-        if tags:
-            ret["changes"]["new"]["tags"] = tags
         if public_access:
             ret["changes"]["new"]["public_access"] = public_access
         if metadata:
@@ -193,7 +181,6 @@ async def present(
             name=name,
             account=account,
             resource_group=resource_group,
-            tags=tags,
             public_access=public_access,
             metadata=metadata,
             **container_kwargs,
@@ -205,7 +192,6 @@ async def present(
             name=name,
             account=account,
             resource_group=resource_group,
-            tags=tags,
             public_access=public_access,
             metadata=metadata,
             **container_kwargs,
@@ -232,7 +218,6 @@ async def immutability_policy_present(
     resource_group,
     immutability_period,
     if_match=None,
-    tags=None,
     connection_auth=None,
     **kwargs,
 ):
@@ -258,8 +243,6 @@ async def immutability_policy_present(
         the ETag must be passed as a string that includes double quotes. For example, '"8d7b4bb4d393b8c"' is a valid
         string to pass as the if_match parameter, but "8d7b4bb4d393b8c" is not. Defaults to None.
 
-    :param tags: A dictionary of strings can be passed as tag metadata to the container object.
-
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
@@ -273,8 +256,6 @@ async def immutability_policy_present(
                 - account: my_account
                 - resource_group: my_rg
                 - immutability_period: 10
-                - tags:
-                    contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
 
     """
@@ -296,9 +277,6 @@ async def immutability_policy_present(
 
     if "error" not in policy:
         action = "update"
-        tag_changes = differ.deep_diff(policy.get("tags", {}), tags or {})
-        if tag_changes:
-            ret["changes"]["tags"] = tag_changes
 
         if immutability_period != policy.get(
             "immutability_period_since_creation_in_days"
@@ -337,8 +315,6 @@ async def immutability_policy_present(
             },
         }
 
-        if tags:
-            ret["changes"]["new"]["tags"] = tags
         if if_match:
             ret["changes"]["new"]["if_match"] = if_match
 
@@ -359,7 +335,6 @@ async def immutability_policy_present(
         name=name,
         account=account,
         resource_group=resource_group,
-        tags=tags,
         if_match=if_match,
         immutability_period=immutability_period,
         **policy_kwargs,

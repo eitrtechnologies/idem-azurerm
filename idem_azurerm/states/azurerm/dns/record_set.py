@@ -390,7 +390,14 @@ async def present(
 
 
 async def absent(
-    hub, ctx, name, zone_name, resource_group, connection_auth=None, **kwargs
+    hub,
+    ctx,
+    name,
+    zone_name,
+    resource_group,
+    record_type,
+    connection_auth=None,
+    **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
@@ -405,6 +412,11 @@ async def absent(
 
     :param resource_group:
         The resource group assigned to the DNS zone.
+
+    :param record_type:
+        The type of DNS record in this record set. Record sets of type SOA can be updated but not created
+        (they are created when the DNS zone is created). Possible values include: 'A', 'AAAA', 'CAA', 'CNAME',
+        'MX', 'NS', 'PTR', 'SOA', 'SRV', 'TXT'
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
@@ -427,6 +439,7 @@ async def absent(
         name,
         zone_name,
         resource_group,
+        record_type,
         azurerm_log_level="info",
         **connection_auth,
     )
@@ -448,7 +461,7 @@ async def absent(
         return ret
 
     deleted = await hub.exec.azurerm.dns.record_set.delete(
-        ctx, name, zone_name, resource_group, **connection_auth
+        ctx, name, zone_name, resource_group, record_type, **connection_auth
     )
 
     if deleted:
