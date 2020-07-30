@@ -145,6 +145,7 @@ async def get_client(hub, ctx, client_type, **kwargs):
     client_map = {
         "compute": "ComputeManagement",
         "containerregistry": "ContainerRegistryManagement",
+        "containerinstance": "ContainerInstanceManagement",
         "authorization": "AuthorizationManagement",
         "dns": "DnsManagement",
         "storage": "StorageManagement",
