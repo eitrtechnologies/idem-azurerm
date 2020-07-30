@@ -107,20 +107,6 @@ def subnet():
 
 
 @pytest.fixture(scope="session")
-def test_vnet():
-    yield "vnet-idem-test-" + "".join(
-        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
-    )
-
-
-@pytest.fixture(scope="session")
-def test_subnet():
-    yield "snet-idem-test-" + "".join(
-        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
-    )
-
-
-@pytest.fixture(scope="session")
 def public_ip_addr():
     yield "pip-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)

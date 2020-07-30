@@ -138,7 +138,6 @@ async def test_connection_present(
     vnet_gateway,
     resource_group,
     local_network_gateway,
-    enable_bgp,
     ipsec_policies,
 ):
     subscription_id = (
@@ -149,6 +148,7 @@ async def test_connection_present(
     connection_type = "IPSec"
     use_selectors = True
     shared_key = "sharedKey"
+    enable_bgp = False
 
     expected = {
         "changes": {
@@ -196,7 +196,6 @@ async def test_connection_changes(
     vnet_gateway,
     resource_group,
     local_network_gateway,
-    enable_bgp,
     ipsec_policies,
 ):
     subscription_id = (
@@ -207,6 +206,7 @@ async def test_connection_changes(
     connection_type = "IPSec"
     updated_key = "updatedKey"
     use_selectors = True
+    enable_bgp = False
     expected = {
         "changes": {"shared_key": {"new": "REDACTED"}},
         "comment": f"Virtual network gateway connection {vnet_gateway_connection} has been updated.",
