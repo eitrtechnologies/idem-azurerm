@@ -158,6 +158,7 @@ async def get_client(hub, ctx, client_type, **kwargs):
         "redis": "RedisManagement",
         "postgresql": "PostgreSQLManagement",
         "loganalytics": "LogAnalyticsManagement",
+        "applicationinsights": "ApplicationInsightsManagement",
     }
 
     if client_type not in client_map:
