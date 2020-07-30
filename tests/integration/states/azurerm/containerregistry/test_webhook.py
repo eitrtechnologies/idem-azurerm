@@ -4,7 +4,6 @@ import pytest
 @pytest.mark.run(order=3)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, resource_group, acr):
-    resource_group = "rg-idem"
     hook = "idemhook"
     expected = {
         "changes": {
@@ -31,7 +30,6 @@ async def test_present(hub, ctx, resource_group, acr):
 @pytest.mark.run(after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, resource_group, acr, tags):
-    resource_group = "rg-idem"
     hook = "idemhook"
     expected = {
         "changes": {"tags": {"new": tags,},},
@@ -54,7 +52,6 @@ async def test_changes(hub, ctx, resource_group, acr, tags):
 @pytest.mark.run(order=-3)
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, location, acr, tags):
-    resource_group = "rg-idem"
     hook = "idemhook"
     expected = {
         "changes": {

@@ -4,7 +4,6 @@ import pytest
 @pytest.mark.second
 @pytest.mark.asyncio
 async def test_present(hub, ctx, resource_group, location, acr):
-    resource_group = "rg-idem"
     expected = {
         "changes": {
             "new": {
@@ -29,7 +28,6 @@ async def test_present(hub, ctx, resource_group, location, acr):
 @pytest.mark.run(after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, resource_group, location, acr, tags):
-    resource_group = "rg-idem"
     expected = {
         "changes": {"tags": {"new": tags,},},
         "comment": f"Container registry {acr} has been updated.",
@@ -45,7 +43,6 @@ async def test_changes(hub, ctx, resource_group, location, acr, tags):
 @pytest.mark.second_to_last
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, location, acr, tags):
-    resource_group = "rg-idem"
     expected = {
         "changes": {
             "new": {},
