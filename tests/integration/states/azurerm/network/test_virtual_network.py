@@ -1,24 +1,10 @@
 import pytest
 
 
-@pytest.fixture(scope="module")
-def vnet_addr_prefixes():
-    yield ["10.0.0.0/8"]
-
-
-@pytest.fixture(scope="module")
-def subnet_addr_prefix():
-    yield "10.0.0.0/16"
-
-
-@pytest.fixture(scope="module")
-def changed_subnet_addr_prefix():
-    yield "10.0.0.0/24"
-
-
 @pytest.mark.run(order=3)
 @pytest.mark.asyncio
-async def test_present(hub, ctx, test_vnet, resource_group, vnet_addr_prefixes):
+async def test_present(hub, ctx, test_vnet, resource_group):
+    vnet_addr_prefixes = ["10.0.0.0/8"]
     expected = {
         "changes": {
             "new": {
@@ -48,15 +34,11 @@ async def test_present(hub, ctx, test_vnet, resource_group, vnet_addr_prefixes):
 @pytest.mark.run(order=3, after="test_present", before="test_subnet_present")
 @pytest.mark.asyncio
 async def test_changes(
-    hub,
-    ctx,
-    test_vnet,
-    resource_group,
-    vnet_addr_prefixes,
-    test_subnet,
-    changed_subnet_addr_prefix,
+    hub, ctx, test_vnet, resource_group, test_subnet,
 ):
+    vnet_addr_prefixes = ["10.0.0.0/8"]
     changed_vnet_addr_prefixes = ["10.0.0.0/8", "192.168.0.0/16"]
+    changed_subnet_addr_prefix = "10.0.0.0/24"
     expected = {
         "changes": {
             "address_space": {
@@ -81,9 +63,8 @@ async def test_changes(
 
 @pytest.mark.run(order=3, after="test_changes", before="test_subnet_changes")
 @pytest.mark.asyncio
-async def test_subnet_present(
-    hub, ctx, test_subnet, test_vnet, resource_group, subnet_addr_prefix
-):
+async def test_subnet_present(hub, ctx, test_subnet, test_vnet, resource_group):
+    subnet_addr_prefix = "10.0.0.0/16"
     expected = {
         "changes": {
             "new": {
@@ -111,14 +92,10 @@ async def test_subnet_present(
 @pytest.mark.run(order=3, after="test_subnet_present", before="test_subnet_absent")
 @pytest.mark.asyncio
 async def test_subnet_changes(
-    hub,
-    ctx,
-    test_subnet,
-    test_vnet,
-    resource_group,
-    subnet_addr_prefix,
-    changed_subnet_addr_prefix,
+    hub, ctx, test_subnet, test_vnet, resource_group,
 ):
+    subnet_addr_prefix = "10.0.0.0/16"
+    changed_subnet_addr_prefix = "10.0.0.0/24"
     expected = {
         "changes": {
             "address_prefix": {

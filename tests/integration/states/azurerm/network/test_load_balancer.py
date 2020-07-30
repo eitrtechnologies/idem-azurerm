@@ -1,14 +1,10 @@
 import pytest
 
 
-@pytest.fixture(scope="module")
-def sku():
-    yield "Basic"
-
-
 @pytest.mark.run(order=3)
 @pytest.mark.asyncio
-async def test_present(hub, ctx, load_balancer, resource_group, sku):
+async def test_present(hub, ctx, load_balancer, resource_group):
+    sku = "Basic"
     expected = {
         "changes": {
             "new": {
@@ -38,6 +34,7 @@ async def test_present(hub, ctx, load_balancer, resource_group, sku):
 @pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, load_balancer, resource_group, tags):
+    sku = "Basic"
     expected = {
         "changes": {"tags": {"new": tags}},
         "comment": f"Load balancer {load_balancer} has been updated.",
@@ -45,7 +42,7 @@ async def test_changes(hub, ctx, load_balancer, resource_group, tags):
         "result": True,
     }
     ret = await hub.states.azurerm.network.load_balancer.present(
-        ctx, name=load_balancer, resource_group=resource_group, tags=tags
+        ctx, name=load_balancer, resource_group=resource_group, sku=sku, tags=tags
     )
     assert ret == expected
 

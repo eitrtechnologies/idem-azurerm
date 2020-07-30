@@ -5,28 +5,17 @@ import string
 
 @pytest.fixture(scope="session")
 def vnet_rule():
-    yield "idem-vnet-rule-" + "".join(
+    yield "psql-vnet-rule-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
-
-
-@pytest.fixture(scope="module")
-def ignore_missing_endpoint():
-    yield False
 
 
 @pytest.mark.run(order=4)
 @pytest.mark.asyncio
 async def test_present(
-    hub,
-    ctx,
-    vnet_rule,
-    postgresql_server,
-    resource_group,
-    subnet,
-    vnet,
-    ignore_missing_endpoint,
+    hub, ctx, vnet_rule, postgresql_server, resource_group, subnet, vnet,
 ):
+    ignore_missing_endpoint = False
     subscription_id = (
         hub.acct.PROFILES["azurerm"].get("default", {}).get("subscription_id")
     )
@@ -60,15 +49,9 @@ async def test_present(
 @pytest.mark.run(order=4, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(
-    hub,
-    ctx,
-    vnet_rule,
-    postgresql_server,
-    resource_group,
-    subnet,
-    vnet,
-    ignore_missing_endpoint,
+    hub, ctx, vnet_rule, postgresql_server, resource_group, subnet, vnet,
 ):
+    ignore_missing_endpoint = False
     subscription_id = (
         hub.acct.PROFILES["azurerm"].get("default", {}).get("subscription_id")
     )

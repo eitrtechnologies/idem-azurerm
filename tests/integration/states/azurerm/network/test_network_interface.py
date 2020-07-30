@@ -1,19 +1,10 @@
 import pytest
-import random
-import string
-
-
-@pytest.fixture(scope="session")
-def test_ip_config():
-    yield "idem-ip-config-" + "".join(
-        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
-    )
 
 
 @pytest.mark.run(order=4)
 @pytest.mark.asyncio
 async def test_present(
-    hub, ctx, test_network_interface, subnet, vnet, resource_group, test_ip_config
+    hub, ctx, network_interface, subnet, vnet, resource_group, ip_config
 ):
     subscription_id = (
         hub.acct.PROFILES["azurerm"].get("default", {}).get("subscription_id")
@@ -23,10 +14,10 @@ async def test_present(
     expected = {
         "changes": {
             "new": {
-                "name": test_network_interface,
+                "name": network_interface,
                 "tags": None,
                 "ip_configurations": [
-                    {"name": test_ip_config, "subnet": {"id": subnet_id},}
+                    {"name": ip_config, "subnet": {"id": subnet_id},}
                 ],
                 "dns_settings": None,
                 "network_security_group": None,
@@ -38,17 +29,17 @@ async def test_present(
             },
             "old": {},
         },
-        "comment": f"Network interface {test_network_interface} has been created.",
-        "name": test_network_interface,
+        "comment": f"Network interface {network_interface} has been created.",
+        "name": network_interface,
         "result": True,
     }
     ret = await hub.states.azurerm.network.network_interface.present(
         ctx,
-        name=test_network_interface,
+        name=network_interface,
         subnet=subnet,
         virtual_network=vnet,
         resource_group=resource_group,
-        ip_configurations=[{"name": test_ip_config}],
+        ip_configurations=[{"name": ip_config}],
     )
     assert ret == expected
 
@@ -56,21 +47,21 @@ async def test_present(
 @pytest.mark.run(order=4, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(
-    hub, ctx, test_network_interface, subnet, vnet, resource_group, test_ip_config, tags
+    hub, ctx, network_interface, subnet, vnet, resource_group, ip_config, tags
 ):
     expected = {
         "changes": {"tags": {"new": tags}},
-        "comment": f"Network interface {test_network_interface} has been updated.",
-        "name": test_network_interface,
+        "comment": f"Network interface {network_interface} has been updated.",
+        "name": network_interface,
         "result": True,
     }
     ret = await hub.states.azurerm.network.network_interface.present(
         ctx,
-        name=test_network_interface,
+        name=network_interface,
         subnet=subnet,
         virtual_network=vnet,
         resource_group=resource_group,
-        ip_configurations=[{"name": test_ip_config}],
+        ip_configurations=[{"name": ip_config}],
         tags=tags,
     )
     assert ret == expected
@@ -78,15 +69,15 @@ async def test_changes(
 
 @pytest.mark.run(order=-4)
 @pytest.mark.asyncio
-async def test_absent(hub, ctx, test_network_interface, resource_group):
+async def test_absent(hub, ctx, network_interface, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": test_network_interface,},},
-        "comment": f"Network interface {test_network_interface} has been deleted.",
-        "name": test_network_interface,
+        "changes": {"new": {}, "old": {"name": network_interface,},},
+        "comment": f"Network interface {network_interface} has been deleted.",
+        "name": network_interface,
         "result": True,
     }
     ret = await hub.states.azurerm.network.network_interface.absent(
-        ctx, name=test_network_interface, resource_group=resource_group
+        ctx, name=network_interface, resource_group=resource_group
     )
     assert ret["changes"]["new"] == expected["changes"]["new"]
     assert ret["changes"]["old"]["name"] == expected["changes"]["old"]["name"]

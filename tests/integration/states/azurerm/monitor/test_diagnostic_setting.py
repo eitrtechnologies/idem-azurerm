@@ -5,7 +5,7 @@ import string
 
 @pytest.fixture(scope="session")
 def diag_setting():
-    yield "idem-diag-setting-" + "".join(
+    yield "diag-setting-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 

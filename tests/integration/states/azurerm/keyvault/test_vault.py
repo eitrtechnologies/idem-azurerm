@@ -4,7 +4,7 @@ import time
 
 @pytest.mark.run(order=3)
 @pytest.mark.asyncio
-async def test_present(hub, ctx, resource_group, location, test_keyvault):
+async def test_present(hub, ctx, resource_group, location, keyvault):
     tenant_id = hub.acct.PROFILES["azurerm"].get("default", {}).get("tenant")
     app_id = hub.acct.PROFILES["azurerm"].get("default", {}).get("client_id")
     object_id = next(
@@ -56,20 +56,20 @@ async def test_present(hub, ctx, resource_group, location, test_keyvault):
                 "access_policies": access_policies,
                 "enable_soft_delete": False,
                 "location": location,
-                "name": test_keyvault,
+                "name": keyvault,
                 "tenant_id": tenant_id,
                 "resource_group": resource_group,
                 "sku": "standard",
             },
             "old": {},
         },
-        "comment": f"Key Vault {test_keyvault} has been created.",
-        "name": test_keyvault,
+        "comment": f"Key Vault {keyvault} has been created.",
+        "name": keyvault,
         "result": True,
     }
     ret = await hub.states.azurerm.keyvault.vault.present(
         ctx,
-        test_keyvault,
+        keyvault,
         resource_group,
         location,
         tenant_id,
@@ -84,7 +84,7 @@ async def test_present(hub, ctx, resource_group, location, test_keyvault):
 
 @pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
-async def test_changes(hub, ctx, resource_group, location, tags, test_keyvault):
+async def test_changes(hub, ctx, resource_group, location, tags, keyvault):
     tenant_id = hub.acct.PROFILES["azurerm"].get("default", {}).get("tenant")
     app_id = hub.acct.PROFILES["azurerm"].get("default", {}).get("client_id")
     object_id = next(
@@ -131,13 +131,13 @@ async def test_changes(hub, ctx, resource_group, location, tags, test_keyvault):
     ]
     expected = {
         "changes": {"tags": {"new": tags,},},
-        "comment": f"Key Vault {test_keyvault} has been updated.",
-        "name": test_keyvault,
+        "comment": f"Key Vault {keyvault} has been updated.",
+        "name": keyvault,
         "result": True,
     }
     ret = await hub.states.azurerm.keyvault.vault.present(
         ctx,
-        test_keyvault,
+        keyvault,
         resource_group,
         location,
         tenant_id,
@@ -150,7 +150,7 @@ async def test_changes(hub, ctx, resource_group, location, tags, test_keyvault):
 
 @pytest.mark.run(order=-3)
 @pytest.mark.asyncio
-async def test_absent(hub, ctx, resource_group, location, tags, test_keyvault):
+async def test_absent(hub, ctx, resource_group, location, tags, keyvault):
     subscription_id = (
         hub.acct.PROFILES["azurerm"].get("default", {}).get("subscription_id")
     )
@@ -201,26 +201,24 @@ async def test_absent(hub, ctx, resource_group, location, tags, test_keyvault):
         "changes": {
             "new": {},
             "old": {
-                "id": f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.KeyVault/vaults/{test_keyvault}",
+                "id": f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.KeyVault/vaults/{keyvault}",
                 "location": location,
-                "name": test_keyvault,
+                "name": keyvault,
                 "properties": {
                     "access_policies": access_policies,
                     "enable_soft_delete": False,
                     "enabled_for_deployment": False,
                     "sku": {"family": "A", "name": "standard"},
                     "tenant_id": f"{tenant_id}",
-                    "vault_uri": f"https://{test_keyvault}.vault.azure.net/",
+                    "vault_uri": f"https://{keyvault}.vault.azure.net/",
                 },
                 "tags": tags,
                 "type": "Microsoft.KeyVault/vaults",
             },
         },
-        "comment": f"Key Vault {test_keyvault} has been deleted.",
-        "name": test_keyvault,
+        "comment": f"Key Vault {keyvault} has been deleted.",
+        "name": keyvault,
         "result": True,
     }
-    ret = await hub.states.azurerm.keyvault.vault.absent(
-        ctx, test_keyvault, resource_group
-    )
+    ret = await hub.states.azurerm.keyvault.vault.absent(ctx, keyvault, resource_group)
     assert ret == expected

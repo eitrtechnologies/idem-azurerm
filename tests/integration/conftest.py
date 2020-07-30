@@ -38,188 +38,146 @@ def tags():
 
 @pytest.fixture(scope="session")
 def resource_group():
-    yield "idem-rg-inttest-" + "".join(
+    yield "rg-idem-inttest-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(20)
     )
 
 
 @pytest.fixture(scope="session")
 def vm():
-    yield "idem-vm-" + "".join(
+    yield "vm-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(5)
     )
 
 
 @pytest.fixture(scope="session")
 def keyvault():
-    yield "idem-kv-" + "".join(
-        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
-    )
-
-
-@pytest.fixture(scope="session")
-def test_keyvault():
-    yield "idem-test-kv-" + "".join(
-        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
-    )
-
-
-@pytest.fixture(scope="session")
-def test_key():
-    yield "idem-test-key-" + "".join(
-        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
-    )
-
-
-@pytest.fixture(scope="session")
-def key():
-    yield "idem-key-" + "".join(
+    yield "kv-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def storage_account():
-    yield "idemacc" + "".join(
+    yield "stidem" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(16)
     )
 
 
 @pytest.fixture(scope="session")
 def storage_container():
-    yield "idem-container" + "".join(
+    yield "container-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(32)
     )
 
 
 @pytest.fixture(scope="session")
 def log_analytics_workspace():
-    yield "idem-law-" + "".join(
+    yield "log-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(32)
     )
 
 
 @pytest.fixture(scope="session")
 def postgresql_server():
-    yield "idem-psql-server-" + "".join(
+    yield "psql-server-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def vnet():
-    yield "idem-vnet-" + "".join(
+    yield "vnet-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def vnet2():
-    yield "idem-vnet2-" + "".join(
+    yield "vnet-idem2-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def subnet():
-    yield "idem-subnet-" + "".join(
+    yield "snet-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def test_vnet():
-    yield "idem-test-vnet-" + "".join(
+    yield "vnet-idem-test-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def test_subnet():
-    yield "idem-test-subnet-" + "".join(
+    yield "snet-idem-test-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def public_ip_addr():
-    yield "idem-public-ip-" + "".join(
-        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
-    )
-
-
-@pytest.fixture(scope="session")
-def test_public_ip_addr():
-    yield "idem-test-public-ip-" + "".join(
+    yield "pip-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def route_table():
-    yield "idem-rt-table-" + "".join(
+    yield "rt-table-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def route():
-    yield "idem-rt-" + "".join(
+    yield "rt-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def load_balancer():
-    yield "idem-load-bal-" + "".join(
-        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
-    )
-
-
-@pytest.fixture(scope="session")
-def nsg():
-    yield "idem-nsg-" + "".join(
+    yield "lb-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def zone():
-    yield "idem.zone." + "".join(
+    yield "zone.idem." + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def availability_set():
-    yield "idem-avail-set-" + "".join(
+    yield "avail-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def network_interface():
-    yield "idem-net-iface-" + "".join(
-        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
-    )
-
-
-@pytest.fixture(scope="session")
-def test_network_interface():
-    yield "idem-test-net-iface-" + "".join(
+    yield "nic-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def local_network_gateway():
-    yield "idem-local-net-gateway-" + "".join(
+    yield "lgw-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def ip_config():
-    yield "idem-ip-config-" + "".join(
+    yield "ip-config-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )

@@ -3,28 +3,18 @@ import random
 import string
 
 
-@pytest.fixture(scope="module")
-def login():
-    yield "dbadmin"
-
-
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def password():
     yield "#" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(16)
     ) + "!"
 
 
-@pytest.fixture(scope="module")
-def sku():
-    yield "GP_Gen5_4"
-
-
 @pytest.mark.run(order=3)
 @pytest.mark.asyncio
-async def test_present(
-    hub, ctx, postgresql_server, resource_group, location, login, password, sku
-):
+async def test_present(hub, ctx, postgresql_server, resource_group, location, password):
+    login = "dbadmin"
+    sku = "GP_Gen5_4"
     expected = {
         "changes": {
             "new": {
@@ -56,9 +46,8 @@ async def test_present(
 
 @pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
-async def test_changes(
-    hub, ctx, postgresql_server, resource_group, location, login, password
-):
+async def test_changes(hub, ctx, postgresql_server, resource_group, location, password):
+    login = "dbadmin"
     ssl_enforcement = "Disabled"
     expected = {
         "changes": {

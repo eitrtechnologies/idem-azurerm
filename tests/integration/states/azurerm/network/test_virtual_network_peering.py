@@ -1,11 +1,11 @@
 import pytest
-import string
 import random
+import string
 
 
 @pytest.fixture(scope="session")
 def vnet_peering():
-    yield "idem-vnet-peering-" + "".join(
+    yield "vnet-peering-idem" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 

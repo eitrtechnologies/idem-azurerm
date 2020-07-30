@@ -1,26 +1,20 @@
 import pytest
+import random
+import string
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def fw_rule():
-    yield "idem-fw-rule1"
-
-
-@pytest.fixture(scope="module")
-def start_addr():
-    yield "10.0.0.0"
-
-
-@pytest.fixture(scope="module")
-def end_addr():
-    yield "10.0.0.255"
+    yield "psql-fw-rule-idem-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
 
 
 @pytest.mark.run(order=4)
 @pytest.mark.asyncio
-async def test_present(
-    hub, ctx, fw_rule, postgresql_server, resource_group, start_addr, end_addr
-):
+async def test_present(hub, ctx, fw_rule, postgresql_server, resource_group):
+    start_addr = "10.0.0.0"
+    end_addr = "10.0.0.255"
     expected = {
         "changes": {
             "new": {
@@ -49,9 +43,9 @@ async def test_present(
 
 @pytest.mark.run(order=4, after="test_present", before="test_absent")
 @pytest.mark.asyncio
-async def test_changes(
-    hub, ctx, fw_rule, postgresql_server, resource_group, start_addr, end_addr
-):
+async def test_changes(hub, ctx, fw_rule, postgresql_server, resource_group):
+    start_addr = "10.0.0.0"
+    end_addr = "10.0.0.255"
     changed_end_addr = "10.0.0.254"
     expected = {
         "changes": {"end_ip_address": {"new": changed_end_addr, "old": end_addr},},

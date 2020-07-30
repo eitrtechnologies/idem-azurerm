@@ -1,60 +1,25 @@
 import pytest
-import string
 import random
+import string
 
 
 @pytest.fixture(scope="session")
 def vnet_gateway():
-    yield "idem-vnet-gateway-" + "".join(
+    yield "vgw-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="session")
 def vnet_gateway_connection():
-    yield "idem-vnet-gateway-connection-" + "".join(
+    yield "vgw-connection-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.fixture(scope="module")
-def gateway_type():
-    yield "Vpn"
-
-
-@pytest.fixture(scope="module")
-def active_active():
-    yield False
-
-
-@pytest.fixture(scope="module")
-def enable_bgp():
-    yield False
-
-
-@pytest.fixture(scope="module")
-def vpn_type():
-    yield "RouteBased"
-
-
-@pytest.fixture(scope="module")
 def sku():
     yield {"name": "VpnGw1", "tier": "VpnGw1", "capacity": 2}
-
-
-@pytest.fixture(scope="module")
-def connection_type():
-    yield "IPSec"
-
-
-@pytest.fixture(scope="module")
-def shared_key():
-    yield "sharedKey"
-
-
-@pytest.fixture(scope="module")
-def use_selectors():
-    yield True
 
 
 @pytest.fixture(scope="module")
@@ -74,21 +39,13 @@ def ipsec_policies():
 
 
 @pytest.mark.run(order=4)
+@pytest.mark.slow
 @pytest.mark.asyncio
 async def test_present(
-    hub,
-    ctx,
-    vnet_gateway,
-    resource_group,
-    ip_config,
-    public_ip_addr,
-    vnet,
-    gateway_type,
-    active_active,
-    enable_bgp,
-    vpn_type,
-    sku,
+    hub, ctx, vnet_gateway, resource_group, ip_config, public_ip_addr, vnet, sku,
 ):
+    gateway_type = "Vpn"
+    vpn_type = "RouteBased"
     configs = [
         {
             "name": ip_config,
@@ -96,6 +53,8 @@ async def test_present(
             "private_ip_allocation_method": "Dynamic",
         }
     ]
+    active_active = False
+    enable_bgp = False
     expected = {
         "changes": {
             "new": {
@@ -131,22 +90,13 @@ async def test_present(
 
 
 @pytest.mark.run(order=4, after="test_present", before="test_absent")
+@pytest.mark.slow
 @pytest.mark.asyncio
 async def test_changes(
-    hub,
-    ctx,
-    vnet_gateway,
-    resource_group,
-    ip_config,
-    public_ip_addr,
-    vnet,
-    gateway_type,
-    active_active,
-    enable_bgp,
-    vpn_type,
-    tags,
-    sku,
+    hub, ctx, vnet_gateway, resource_group, ip_config, public_ip_addr, vnet, tags, sku,
 ):
+    gateway_type = "Vpn"
+    vpn_type = "RouteBased"
     configs = [
         {
             "name": ip_config,
@@ -154,6 +104,8 @@ async def test_changes(
             "private_ip_allocation_method": "Dynamic",
         }
     ]
+    active_active = False
+    enable_bgp = False
     expected = {
         "changes": {"tags": {"new": tags,}},
         "comment": f"Virtual network gateway {vnet_gateway} has been updated.",
@@ -177,6 +129,7 @@ async def test_changes(
 
 
 @pytest.mark.run(order=4, after="test_changes", before="test_connection_changes")
+@pytest.mark.slow
 @pytest.mark.asyncio
 async def test_connection_present(
     hub,
@@ -185,10 +138,7 @@ async def test_connection_present(
     vnet_gateway,
     resource_group,
     local_network_gateway,
-    connection_type,
     enable_bgp,
-    shared_key,
-    use_selectors,
     ipsec_policies,
 ):
     subscription_id = (
@@ -196,6 +146,9 @@ async def test_connection_present(
     )
     lnet_gateway_id = f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Network/localNetworkGateways/{local_network_gateway}"
     vnet_gateway_id = f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Network/virtualNetworkGateways/{vnet_gateway}"
+    connection_type = "IPSec"
+    use_selectors = True
+    shared_key = "sharedKey"
 
     expected = {
         "changes": {
@@ -234,6 +187,7 @@ async def test_connection_present(
 @pytest.mark.run(
     order=4, after="test_connection_present", before="test_connection_absent"
 )
+@pytest.mark.slow
 @pytest.mark.asyncio
 async def test_connection_changes(
     hub,
@@ -242,10 +196,7 @@ async def test_connection_changes(
     vnet_gateway,
     resource_group,
     local_network_gateway,
-    connection_type,
     enable_bgp,
-    shared_key,
-    use_selectors,
     ipsec_policies,
 ):
     subscription_id = (
@@ -253,7 +204,9 @@ async def test_connection_changes(
     )
     lnet_gateway_id = f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Network/localNetworkGateways/{local_network_gateway}"
     vnet_gateway_id = f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Network/virtualNetworkGateways/{vnet_gateway}"
+    connection_type = "IPSec"
     updated_key = "updatedKey"
+    use_selectors = True
     expected = {
         "changes": {"shared_key": {"new": "REDACTED"}},
         "comment": f"Virtual network gateway connection {vnet_gateway_connection} has been updated.",
@@ -276,6 +229,7 @@ async def test_connection_changes(
 
 
 @pytest.mark.run(order=-4, before="test_absent")
+@pytest.mark.slow
 @pytest.mark.asyncio
 async def test_connection_absent(hub, ctx, vnet_gateway_connection, resource_group):
     expected = {
@@ -293,6 +247,7 @@ async def test_connection_absent(hub, ctx, vnet_gateway_connection, resource_gro
 
 
 @pytest.mark.run(order=-4)
+@pytest.mark.slow
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, vnet_gateway, resource_group):
     expected = {

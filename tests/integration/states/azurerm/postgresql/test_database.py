@@ -5,7 +5,7 @@ import random
 
 @pytest.fixture(scope="session")
 def postgresql_db():
-    yield "idem-db-" + "".join(
+    yield "psql-db-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 

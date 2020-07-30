@@ -3,9 +3,9 @@ import random
 import string
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def management_group():
-    yield "idem-mgroup-" + "".join(
+    yield "mg-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 

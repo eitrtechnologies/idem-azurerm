@@ -3,21 +3,17 @@ import string
 import random
 
 
-@pytest.fixture(scope="module")
-def record_type():
-    yield "A"
-
-
 @pytest.fixture(scope="session")
 def record_set():
-    yield "idem-record-set-" + "".join(
+    yield "record-set-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
 
 @pytest.mark.run(order=4)
 @pytest.mark.asyncio
-async def test_present(hub, ctx, record_set, zone, resource_group, record_type):
+async def test_present(hub, ctx, record_set, zone, resource_group):
+    record_type = "A"
     expected = {
         "changes": {
             "new": {
@@ -47,7 +43,8 @@ async def test_present(hub, ctx, record_set, zone, resource_group, record_type):
 
 @pytest.mark.run(order=4, after="test_present", before="test_absent")
 @pytest.mark.asyncio
-async def test_changes(hub, ctx, record_set, zone, resource_group, record_type):
+async def test_changes(hub, ctx, record_set, zone, resource_group):
+    record_type = "A"
     metadata = {"zone": zone}
     expected = {
         "changes": {"metadata": {"new": metadata},},
@@ -68,7 +65,8 @@ async def test_changes(hub, ctx, record_set, zone, resource_group, record_type):
 
 @pytest.mark.run(order=-4)
 @pytest.mark.asyncio
-async def test_absent(hub, ctx, record_set, zone, resource_group, record_type):
+async def test_absent(hub, ctx, record_set, zone, resource_group):
+    record_type = "A"
     expected = {
         "changes": {"new": {}, "old": {"name": record_set,},},
         "comment": f"Record set {record_set} has been deleted.",

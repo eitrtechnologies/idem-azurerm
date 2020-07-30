@@ -1,21 +1,6 @@
 import pytest
 
 
-@pytest.fixture(scope="module")
-def addr_prefix():
-    yield "192.168.0.0/16"
-
-
-@pytest.fixture(scope="module")
-def changed_addr_prefix():
-    yield "192.168.0.0/24"
-
-
-@pytest.fixture(scope="module")
-def next_hop_type():
-    yield "vnetlocal"
-
-
 @pytest.mark.run(order=3)
 @pytest.mark.asyncio
 async def test_table_present(hub, ctx, route_table, resource_group):
@@ -41,9 +26,7 @@ async def test_table_present(hub, ctx, route_table, resource_group):
 
 @pytest.mark.run(order=3, after="test_table_present", before="test_present")
 @pytest.mark.asyncio
-async def test_table_changes(
-    hub, ctx, route_table, resource_group, route, addr_prefix, next_hop_type
-):
+async def test_table_changes(hub, ctx, route_table, resource_group, route):
     new_routes = [
         {
             "name": "test_route1",
@@ -66,9 +49,9 @@ async def test_table_changes(
 
 @pytest.mark.run(order=3, after="test_table_changes", before="test_changes")
 @pytest.mark.asyncio
-async def test_present(
-    hub, ctx, route, route_table, resource_group, addr_prefix, next_hop_type
-):
+async def test_present(hub, ctx, route, route_table, resource_group):
+    next_hop_type = "vnetlocal"
+    addr_prefix = "192.168.0.0/16"
     expected = {
         "changes": {
             "new": {
@@ -97,15 +80,11 @@ async def test_present(
 @pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(
-    hub,
-    ctx,
-    route,
-    route_table,
-    resource_group,
-    changed_addr_prefix,
-    addr_prefix,
-    next_hop_type,
+    hub, ctx, route, route_table, resource_group,
 ):
+    next_hop_type = "vnetlocal"
+    addr_prefix = "192.168.0.0/16"
+    changed_addr_prefix = "192.168.0.0/24"
     expected = {
         "changes": {"address_prefix": {"new": changed_addr_prefix, "old": addr_prefix}},
         "comment": f"Route {route} has been updated.",

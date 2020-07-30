@@ -5,7 +5,7 @@ import string
 
 @pytest.fixture(scope="session")
 def def_name():
-    yield "idem-policy-definition-" + "".join(
+    yield "policy-def-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
@@ -28,7 +28,7 @@ def def_policy_rule():
 
 @pytest.fixture(scope="session")
 def assignment_name():
-    yield "idem-policy-assignment-" + "".join(
+    yield "policy-assgnmt-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 

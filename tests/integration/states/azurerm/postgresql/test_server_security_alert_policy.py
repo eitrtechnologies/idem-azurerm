@@ -1,15 +1,11 @@
 import pytest
 
 
-@pytest.fixture(scope="module")
-def policy_state():
-    yield "Disabled"
-
-
 @pytest.mark.run(order=4)
 @pytest.mark.asyncio
-async def test_present(hub, ctx, postgresql_server, resource_group, policy_state):
+async def test_present(hub, ctx, postgresql_server, resource_group):
     name = "Default"
+    policy_state = "Disabled"
     expected = {
         "changes": {},
         "comment": f"The server security alert policy {name} for the server {postgresql_server} is already present.",
@@ -27,8 +23,9 @@ async def test_present(hub, ctx, postgresql_server, resource_group, policy_state
 
 @pytest.mark.run(order=4, after="test_present")
 @pytest.mark.asyncio
-async def test_changes(hub, ctx, postgresql_server, resource_group, policy_state):
+async def test_changes(hub, ctx, postgresql_server, resource_group):
     name = "Default"
+    policy_state = "Disabled"
     new_state = "Enabled"
     expected = {
         "changes": {"state": {"new": new_state, "old": policy_state,},},

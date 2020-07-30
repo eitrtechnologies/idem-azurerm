@@ -3,33 +3,19 @@ import random
 import string
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def password():
     yield "#PASS" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(16)
     ) + "!"
 
 
-@pytest.fixture(scope="module")
-def vm_size():
-    yield "Standard_B4ms"
-
-
-@pytest.fixture(scope="module")
-def linux_image():
-    yield "OpenLogic|CentOS|7.7|latest"
-
-
-@pytest.fixture(scope="module")
-def windows_image():
-    yield "MicrosoftWindowsServer|WindowsServer|2019-Datacenter|latest"
-
-
 @pytest.mark.run(order=5)
 @pytest.mark.asyncio
-async def test_present(
-    hub, ctx, vm, resource_group, vm_size, windows_image, vnet, subnet, password
-):
+async def test_present(hub, ctx, vm, resource_group, vnet, subnet, password):
+    vm_size = "Standard_B4ms"
+    windows_image = "MicrosoftWindowsServer|WindowsServer|2019-Datacenter|latest"
+
     image_info = windows_image.split("|")
     expected = {
         "changes": {
@@ -81,9 +67,10 @@ async def test_present(
 
 @pytest.mark.run(order=5, after="test_present", before="test_absent")
 @pytest.mark.asyncio
-async def test_changes(
-    hub, ctx, vm, resource_group, vm_size, windows_image, vnet, subnet, password, tags
-):
+async def test_changes(hub, ctx, vm, resource_group, vnet, subnet, password, tags):
+    vm_size = "Standard_B4ms"
+    windows_image = "MicrosoftWindowsServer|WindowsServer|2019-Datacenter|latest"
+
     expected = {
         "changes": {"admin_password": {"new": "REDACTED"}, "tags": {"new": tags}},
         "comment": f"Virtual machine {vm} has been updated.",

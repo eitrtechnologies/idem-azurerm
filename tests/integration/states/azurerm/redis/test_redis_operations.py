@@ -3,7 +3,7 @@ import random
 import string
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def redis_cache():
     yield "idem-redis-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(16)
@@ -19,6 +19,7 @@ def sku():
     reason="The exec and state modules need to be tweaked in order for tests to work properly"
 )
 @pytest.mark.run(order=3)
+@pytest.mark.slow
 @pytest.mark.asyncio
 async def test_present(hub, ctx, resource_group, location, sku, redis_cache):
     expected = {
@@ -49,6 +50,7 @@ async def test_present(hub, ctx, resource_group, location, sku, redis_cache):
     reason="The exec and state modules need to be tweaked in order for tests to work properly"
 )
 @pytest.mark.run(order=3, after="test_present", before="test_absent")
+@pytest.mark.slow
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, resource_group, location, sku, redis_cache):
     enable_non_ssl_port = True
@@ -73,6 +75,7 @@ async def test_changes(hub, ctx, resource_group, location, sku, redis_cache):
     reason="The exec and state modules need to be tweaked in order for tests to work properly"
 )
 @pytest.mark.run(order=-3)
+@pytest.mark.slow
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, redis_cache):
     expected = {

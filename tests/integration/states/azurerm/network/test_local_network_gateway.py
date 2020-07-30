@@ -1,16 +1,10 @@
 import pytest
 
 
-@pytest.fixture(scope="module")
-def gateway_ip_addr():
-    yield "192.168.0.1"
-
-
 @pytest.mark.run(order=3)
 @pytest.mark.asyncio
-async def test_present(
-    hub, ctx, local_network_gateway, resource_group, gateway_ip_addr
-):
+async def test_present(hub, ctx, local_network_gateway, resource_group):
+    gateway_ip_addr = "192.168.0.1"
     expected = {
         "changes": {
             "new": {
@@ -36,9 +30,8 @@ async def test_present(
 
 @pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
-async def test_changes(
-    hub, ctx, local_network_gateway, resource_group, gateway_ip_addr
-):
+async def test_changes(hub, ctx, local_network_gateway, resource_group):
+    gateway_ip_addr = "192.168.0.1"
     addr_prefixes = ["10.0.0.0/8"]
     expected = {
         "changes": {

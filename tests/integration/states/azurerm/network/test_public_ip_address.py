@@ -1,18 +1,14 @@
 import pytest
 
 
-@pytest.fixture(scope="module")
-def idle_timeout():
-    yield 10
-
-
 @pytest.mark.run(order=3)
 @pytest.mark.asyncio
-async def test_present(hub, ctx, test_public_ip_addr, resource_group, idle_timeout):
+async def test_present(hub, ctx, public_ip_addr, resource_group):
+    idle_timeout = 10
     expected = {
         "changes": {
             "new": {
-                "name": test_public_ip_addr,
+                "name": public_ip_addr,
                 "tags": None,
                 "dns_settings": None,
                 "sku": None,
@@ -22,13 +18,13 @@ async def test_present(hub, ctx, test_public_ip_addr, resource_group, idle_timeo
             },
             "old": {},
         },
-        "comment": f"Public IP address {test_public_ip_addr} has been created.",
-        "name": test_public_ip_addr,
+        "comment": f"Public IP address {public_ip_addr} has been created.",
+        "name": public_ip_addr,
         "result": True,
     }
     ret = await hub.states.azurerm.network.public_ip_address.present(
         ctx,
-        name=test_public_ip_addr,
+        name=public_ip_addr,
         resource_group=resource_group,
         idle_timeout_in_minutes=idle_timeout,
     )
@@ -37,19 +33,20 @@ async def test_present(hub, ctx, test_public_ip_addr, resource_group, idle_timeo
 
 @pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
-async def test_changes(hub, ctx, test_public_ip_addr, resource_group, idle_timeout):
+async def test_changes(hub, ctx, public_ip_addr, resource_group):
+    idle_timeout = 10
     new_timeout = 4
     expected = {
         "changes": {
             "idle_timeout_in_minutes": {"new": new_timeout, "old": idle_timeout}
         },
-        "comment": f"Public IP address {test_public_ip_addr} has been updated.",
-        "name": test_public_ip_addr,
+        "comment": f"Public IP address {public_ip_addr} has been updated.",
+        "name": public_ip_addr,
         "result": True,
     }
     ret = await hub.states.azurerm.network.public_ip_address.present(
         ctx,
-        name=test_public_ip_addr,
+        name=public_ip_addr,
         resource_group=resource_group,
         idle_timeout_in_minutes=new_timeout,
     )
@@ -58,15 +55,15 @@ async def test_changes(hub, ctx, test_public_ip_addr, resource_group, idle_timeo
 
 @pytest.mark.run(order=-3)
 @pytest.mark.asyncio
-async def test_absent(hub, ctx, test_public_ip_addr, resource_group):
+async def test_absent(hub, ctx, public_ip_addr, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": test_public_ip_addr,},},
-        "comment": f"Public IP address {test_public_ip_addr} has been deleted.",
-        "name": test_public_ip_addr,
+        "changes": {"new": {}, "old": {"name": public_ip_addr,},},
+        "comment": f"Public IP address {public_ip_addr} has been deleted.",
+        "name": public_ip_addr,
         "result": True,
     }
     ret = await hub.states.azurerm.network.public_ip_address.absent(
-        ctx, test_public_ip_addr, resource_group
+        ctx, public_ip_addr, resource_group
     )
     assert ret["changes"]["new"] == expected["changes"]["new"]
     assert ret["changes"]["old"]["name"] == expected["changes"]["old"]["name"]
