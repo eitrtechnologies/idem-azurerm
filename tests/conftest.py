@@ -43,6 +43,9 @@ def pytest_configure(config):
         "markers", "second_to_last: mark test to run second to last"
     )
     config.addinivalue_line("markers", "last: mark test to run last")
+    config.addinivalue_line(
+        "markers", "slow: mark tests with an above average run time"
+    )
 
 
 @pytest.fixture

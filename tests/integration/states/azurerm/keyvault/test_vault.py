@@ -2,7 +2,7 @@ import pytest
 import time
 
 
-@pytest.mark.second
+@pytest.mark.run(order=3)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, resource_group, location, keyvault):
     tenant_id = hub.acct.PROFILES["azurerm"].get("default", {}).get("tenant")
@@ -14,6 +14,7 @@ async def test_present(hub, ctx, resource_group, location, keyvault):
             )
         )
     )
+
     sku = "standard"
     access_policies = [
         {
@@ -81,7 +82,7 @@ async def test_present(hub, ctx, resource_group, location, keyvault):
     assert ret == expected
 
 
-@pytest.mark.run(after="test_present", before="test_absent")
+@pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, resource_group, location, tags, keyvault):
     tenant_id = hub.acct.PROFILES["azurerm"].get("default", {}).get("tenant")
@@ -147,7 +148,7 @@ async def test_changes(hub, ctx, resource_group, location, tags, keyvault):
     assert ret == expected
 
 
-@pytest.mark.second_to_last
+@pytest.mark.run(order=-3)
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, location, tags, keyvault):
     subscription_id = (
