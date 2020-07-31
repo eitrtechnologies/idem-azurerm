@@ -7,3 +7,7 @@ containerregistry execution modules
    :glob:
 
    registry
+   replication
+   run
+   task
+   webhook
