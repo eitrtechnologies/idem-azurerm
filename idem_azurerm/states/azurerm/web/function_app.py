@@ -53,8 +53,7 @@ Azure Resource Manager (ARM) Function App State Module
 from __future__ import absolute_import
 from dict_tools import differ
 import logging
-import random
-import string
+from datetime import date, datetime
 
 # Azure libs
 HAS_LIBS = False
@@ -198,7 +197,22 @@ async def present(
         if key["key_name"] == "key1":
             storage_acct_key = key["value"]
 
-    # Update app settings with storage account information
+    # Get a future date to use as the expiration day for the SAS
+    expiry_date = datetime(
+        date.today().year + 4, date.today().month, date.today().day, 1, 1, 1, 0
+    )
+    sas_list = await hub.exec.azurerm.storage.account.list_account_sas(
+        ctx,
+        name=storage_account,
+        resource_group=resource_group,
+        services="b",
+        resource_types="o",
+        permissions="r",
+        shared_access_expiry_time=expiry_date,
+    )
+    sas_token = sas_list.get("account_sas_token")
+
+    # Update app settings information from the storage account
     app_settings.append(
         {
             "name": "AzureWebJobsStorage",
@@ -211,6 +225,14 @@ async def present(
             "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
         }
     )
+    """
+    app_settings.append(
+        {
+            "name": "WEBSITE_RUN_FROM_PACKAGE",
+            "value": f"https://{storage_account}.blob.core.windows.net/{CONTAINER}/{FUNCTION_CODE_NAME}{sas_token}",
+        }
+    )
+    """
 
     # Add any app settings related to a specific OSs
     if os_type == "Windows":
