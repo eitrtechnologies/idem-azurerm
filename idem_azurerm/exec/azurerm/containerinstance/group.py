@@ -180,8 +180,10 @@ async def create_or_update(
         return result
 
     try:
-        grp = conconn.container_groups.create(
-            container_name=name, resource_group_name=resource_group, container=grpmodel
+        grp = conconn.container_groups.create_or_update(
+            container_group_name=name,
+            resource_group_name=resource_group,
+            container_group=grpmodel,
         )
         grp.wait()
         result = grp.result().as_dict()
