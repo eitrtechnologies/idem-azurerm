@@ -167,3 +167,10 @@ def ip_config():
     yield "ip-config-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
+
+
+@pytest.fixture(scope="session")
+def acr():
+    yield "acrideminttest" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
