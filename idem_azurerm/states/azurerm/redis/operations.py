@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Redis Operations State Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 3.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -53,6 +55,7 @@ Azure Resource Manager (ARM) Redis Operations State Module
 from __future__ import absolute_import
 from dict_tools import differ
 import logging
+import time
 
 log = logging.getLogger(__name__)
 
@@ -74,12 +77,16 @@ async def present(
     subnet_id=None,
     static_ip=None,
     zones=None,
+    wait_for_ready=True,
+    check_interval=120,
     tags=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 3.0.0
 
     Ensure a redis cache exists in the resource group.
 
@@ -116,6 +123,15 @@ async def present(
     :param static_ip: Static IP address. Required when deploying a Redis cache inside an existing Azure Virtual Network.
 
     :param zones: A list of availability zones denoting where the resource needs to come from.
+
+    :param wait_for_ready: A boolean value used to specify when the module will return. If set to True, the module
+        will not return until the status of the Redis Cache is "Ready" and the cache has completed its creation process.
+        If set to False, the module will return when the Redis Cache has a status of "Creating," meaning that Azure has
+        successful begun the deployment of the cache. Defaults to True.
+
+    :param check_interval: (wait_for_ready) An optional parameter used to specify the interval of time (in seconds)
+        that the module will wait before checking the status of the Redis Cache deployment. This value can be any number
+        number from 30 to 600. Defaults to 120.
 
     :param tags: A dictionary of strings can be passed as tag metadata to the storage account object.
 
@@ -284,6 +300,29 @@ async def present(
         )
 
     if "error" not in cache:
+        if wait_for_ready and action == "create":
+            if check_interval < 30 or check_interval > 600:
+                log.error(
+                    "The time interval specified within the check_interval parameter is not within the range of allowed values, so it has been reset to 120 seconds."
+                )
+                check_interval = 120
+            time_passed = 0
+            max_wait_timeout = 3000
+            while True:
+                if time_passed >= max_wait_timeout:
+                    log.error(
+                        "The Redis Cache has not finished creation, but the function has reached its maxiumum wait timeout of 50 minutes."
+                    )
+                    break
+                cache = await hub.exec.azurerm.redis.operations.get(
+                    ctx, name=name, resource_group=resource_group
+                )
+                if cache.get("status") == "Ready":
+                    break
+                time_passed += check_interval
+                log.debug('Waiting for the Redis Cache to achieve "Ready" status...')
+                time.sleep(check_interval)
+
         ret["result"] = True
         ret["comment"] = f"Redis cache {name} has been {action}d."
         return ret
