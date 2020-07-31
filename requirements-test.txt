@@ -4,4 +4,5 @@ pytest>=5.4.1
 pytest-asyncio>=0.10.0
 pytest-pop>=4.4
 pytest-subtests>=0.3.0
+pytest-ordering>=0.6
 sphinx
