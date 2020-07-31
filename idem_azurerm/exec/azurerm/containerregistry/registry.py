@@ -62,10 +62,10 @@ async def check_name_availability(hub, ctx, name, **kwargs):
     """
     .. versionadded:: 3.0.0
 
-    Lists all the container registries under the specified subscription or resource group.
+    Checks whether the container registry name is available for use. The name must contain only alphanumeric characters,
+    be globally unique, and between 5 and 50 characters in length.
 
-    :param name: Checks whether the container registry name is available for use. The name must contain only
-        alphanumeric characters, be globally unique, and between 5 and 50 characters in length.
+    :param name: The name of the container registry.
 
     CLI Example:
 
@@ -119,7 +119,7 @@ async def create_or_update(
     :param sku: The SKU name of the container registry. Required for registry creation. Possible
         values include: 'Basic', 'Standard', 'Premium'
 
-    :param admin_user_enabled: This value that indicates whether the admin user is enabled.
+    :param admin_user_enabled: This value indicates whether the admin user is enabled.
 
     :param default_action: The default action of allow or deny when no other rules match.
         Possible values include: 'Allow', 'Deny'. Only available for the 'Premium' tier.
