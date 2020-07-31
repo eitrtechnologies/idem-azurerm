@@ -13,7 +13,7 @@ azure-keyvault-secrets==4.1.0
 azure-mgmt-authorization==0.50.0
 azure-mgmt-compute==4.6.2
 azure-mgmt-containerregistry==3.0.0rc14
-azure-mgmt-containerinstance==1.5.0
+azure-mgmt-containerinstance==2.0.0
 azure-mgmt-dns==2.1.0
 azure-mgmt-keyvault==1.1.0
 azure-mgmt-loganalytics==0.2.0
