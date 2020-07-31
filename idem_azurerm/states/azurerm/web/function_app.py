@@ -76,10 +76,12 @@ async def present(
     resource_group,
     os_type,
     runtime_stack,
-    storage_account=None,
+    storage_account,
     storage_acct_rg=None,
     server_farm_id=None,
     plan_name=None,
+    enable_app_insights=None,
+    app_insights=None,
     tags=None,
     connection_auth=None,
     **kwargs,
@@ -101,21 +103,24 @@ async def present(
         "dotnet", "node", "java", "python", or "powershell".
 
     :param storage_account: The name of the storage account that will hold the Azure Functions used by the Function App.
-        This storage account must be of the kind "Storage" or "StorageV2" and inside of the specified resource group. If
-        a storage account is not provided, one will be created with the default name "stfunc##########" (where each #
-        symbol is a randomly generated number). The new storage group will be created within the same resource group
-        as the Function App.
+        This storage account must be of the kind "Storage" or "StorageV2".
 
-    :param storage_acct_rg: The resource group of the storage account passed. This will be neccessary is an existing
-        storage account is passed as the storage_account parameter. If a storage account needs to be created, this
-        variable will be ignored during creation.
+    :param storage_acct_rg: The resource group of the storage account passed. This parameter is only necessary if the
+        storage account has a different resource group than the one used by the Function App.
 
     :param server_farm_id: The resource ID of the App Service (Consumption) Plan used by the Function App. If this
-        parameter is not provided then an App Service (Consumption) Plan will be built automatically for the Function
-        App. This plan should use the same OS as specified by the os_type parameter.
+        parameter is not provided or if the resource at the provided resource ID does not exist, then an App Service
+        (Consumption) Plan will be built automatically for the Function App. This plan should use the same OS as
+        specified by the os_type parameter.
   
     :param plan_name: The name of the App Service Plan to create when the server_farm_id parameter is not specified.
         Defaults to "ASP-{name}"
+
+    :param enable_app_insights: Boolean flag for enabling Application Insights.
+
+    :param app_insights: (enable_app_insights) The name of the Application Insights Component to use for the Function
+        App. If it specified Application Insights Component does not exist, then it will be created. If this parameter
+        is not specified, then an Application Insights Component named "app-insights-{name}" will be created.
 
     :param tags: A dictionary of strings representing tag metadata for the Function App.
 
@@ -141,6 +146,10 @@ async def present(
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
     action = "create"
+    app_settings = [
+        {"name": "FUNCTIONS_WORKER_RUNTIME", "value": runtime_stack},
+        {"name": "FUNCTIONS_EXTENSION_VERSION", "value": "~2"},
+    ]
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -165,34 +174,21 @@ async def present(
         kwargs["location"] = rg_props["location"]
 
     # Handle storage account validation
-    if storage_account:
-        if not storage_acct_rg:
-            storage_acct_rg = resource_group
+    if not storage_acct_rg:
+        storage_acct_rg = resource_group
 
-        storage_acct = await hub.exec.azurerm.storage.account.get_properties(
-            ctx, name=storage_account, resource_group=storage_acct_rg
-        )
-    else:
-        storage_acct = {
-            "error": "Storage Account does not exist in the specified resource group"
-        }
+    storage_acct = await hub.exec.azurerm.storage.account.get_properties(
+        ctx, name=storage_account, resource_group=storage_acct_rg
+    )
 
-    # Handles storage account creation
     if "error" in storage_acct:
-        if not storage_account:
-            storage_account = "stfunc" + "".join(
-                random.choice(string.digits) for _ in range(10)
-            )
-
-        storage_acct = await hub.exec.azurerm.storage.account.create(
-            ctx,
-            name=storage_account,
-            resource_group=resource_group,
-            kind="StorageV2",
-            location=kwargs["location"],
-            sku="Standard_GRS",
+        log.error(
+            "The storage account does not exist within the specified resource group."
         )
-        storage_account = storage_acct["name"]
+        ret[
+            "comment"
+        ] = "The storage account does not exist within the specified resource group."
+        return ret
 
     # Retrieves the connection keys for the storage account
     storage_acct_keys = await hub.exec.azurerm.storage.account.list_keys(
@@ -202,12 +198,37 @@ async def present(
         if key["key_name"] == "key1":
             storage_acct_key = key["value"]
 
+    # Update app settings with storage account information
+    app_settings.append(
+        {
+            "name": "AzureWebJobsStorage",
+            "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
+        }
+    )
+    app_settings.append(
+        {
+            "name": "AzureWebJobsDashboard",
+            "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
+        }
+    )
+
+    # Add any app settings related to a specific OSs
+    if os_type == "Windows":
+        app_settings.append(
+            {
+                "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
+            }
+        )
+        app_settings.append({"name": "WEBSITE_CONTENTSHARE", "value": name.lower()})
+
     # Handle App Service Plan validation
     if server_farm_id and not is_valid_resource_id(server_farm_id):
         log.error("The specified server_farm_id is invalid.")
         ret["comment"] = "The specified server_farm_id is invalid."
         return ret
 
+    # Set reserved for the ASP and Function App based upon OS type
     if os_type == "Windows":
         reserved = False
     elif os_type == "Linux":
@@ -253,33 +274,45 @@ async def present(
 
         server_farm_id = plan["id"]
 
-    # Builds the app_settings for the Function App
-    app_settings = [
-        {
-            "name": "AzureWebJobsStorage",
-            "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
-        },
-        {
-            "name": "AzureWebJobsDashboard",
-            "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
-        },
-        {"name": "FUNCTIONS_WORKER_RUNTIME", "value": runtime_stack},
-    ]
+    # Handle App Insights Validation and Creation
+    if enable_app_insights:
+        if not app_insights:
+            app_insights = f"app-insights-{name}"
 
-    if os_type == "Windows":
-        app_settings.append(
-            {
-                "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-                "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
-            }
+        component = await hub.exec.azurerm.application_insights.component.get(
+            ctx, name=app_insights, resource_group=resource_group
         )
-        app_settings.append({"name": "WEBSITE_CONTENTSHARE", "value": name.lower()})
+
+        if "error" in component:
+            component = await hub.exec.azurerm.application_insights.component.create_or_update(
+                ctx,
+                name=app_insights,
+                resource_group=resource_group,
+                kind="web",
+                application_type="web",
+            )
+
+            if "error" in component:
+                log.error(
+                    f"Unable to create the Application Insights Component {app_insights} within the resource group {resource_group}."
+                )
+                ret[
+                    "comment"
+                ] = f"Unable to create the Application Insights Component {app_insights} within the resource group {resource_group}."
+                return ret
+            instrumentation_key = component["instrumentation_key"]
+
+        else:
+            instrumentation_key = component["instrumentation_key"]
+
+        # Configures the application insights for the app settings
+        app_settings.append(
+            {"name": "APPINSIGHTS_INSTRUMENTATIONKEY", "value": instrumentation_key}
+        )
 
     function_app = await hub.exec.azurerm.web.app.get(
         ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
-
-    log.error(function_app)
 
     if "error" not in function_app:
         action = "update"
@@ -292,6 +325,19 @@ async def present(
                 "new": server_farm_id,
                 "old": function_app.get("server_farm_id"),
             }
+
+        # Find changes within the Function App's app settings
+        existing_settings = await hub.exec.azurerm.web.app.list_application_settings(
+            ctx, name="eitrfunc", resource_group="rg-func"
+        )
+        old_settings = existing_settings["properties"]
+        new_settings = {}
+        for setting in app_settings:
+            new_settings.update({setting.get("name"): setting.get("value")})
+
+        app_settings_changes = differ.deep_diff(old_settings, new_settings)
+        if app_settings_changes:
+            ret["changes"]["site_config"] = {"app_settings": app_settings_changes}
 
         if not ret["changes"]:
             ret["result"] = True
@@ -311,6 +357,7 @@ async def present(
                 "resource_group": resource_group,
                 "server_farm_id": server_farm_id,
                 "storage_account": storage_account,
+                "site_config": {"app_settings": app_settings},
                 "tags": tags,
             },
         }
@@ -336,6 +383,10 @@ async def present(
         kind=kind,
         site_config={"app_settings": app_settings},
         **app_kwargs,
+    )
+
+    test = await hub.exec.azurerm.web.app.list_application_settings(
+        ctx, name="eitrfunc", resource_group="rg-func"
     )
 
     if "error" not in function_app:

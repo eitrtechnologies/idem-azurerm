@@ -256,6 +256,79 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
+async def get_app_settings_key_vault_references(
+    hub, ctx, name, resource_group, **kwargs
+):
+    """
+    .. versionadded:: VERSION
+
+    Gets the config reference app settings and status of an app.
+
+    :param name: The name of the App.
+
+    :param resource_group: The name of the resource group.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.web.app.get_app_settings_key_vault_references test_name test_group
+
+    """
+    result = {}
+    webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
+
+    try:
+        app = webconn.web_apps.get_app_settings_key_vault_references(
+            name=name, resource_group_name=resource_group
+        )
+
+        result = app.as_dict()
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
+        result = {"error": str(exc)}
+    except DefaultErrorResponseException as exc:
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def get_configuration(hub, ctx, name, resource_group, **kwargs):
+    """
+    .. versionadded:: VERSION
+
+    Gets the configuration of an app, such as platform version and bitness, default documents, virtual applications,
+        Always On, etc.
+
+    :param name: The name of the App.
+
+    :param resource_group: The name of the resource group.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.web.app.get_configuration test_name test_group
+
+    """
+    result = {}
+    webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
+
+    try:
+        app = webconn.web_apps.get_configuration(
+            name=name, resource_group_name=resource_group
+        )
+
+        result = app.as_dict()
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
+        result = {"error": str(exc)}
+    except DefaultErrorResponseException as exc:
+        result = {"error": str(exc)}
+
+    return result
+
+
 async def get_function(hub, ctx, name, site, resource_group, **kwargs):
     """
     .. versionadded:: VERSION
@@ -385,7 +458,7 @@ async def list_application_settings(hub, ctx, name, resource_group, **kwargs):
             name=name, resource_group_name=resource_group
         )
 
-        result = settings
+        result = settings.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
         result = {"error": str(exc)}
