@@ -7,6 +7,7 @@ state modules
    :glob:
 
    compute/index
+   containerregistry/index
    dns/index
    keyvault/index
    log_analytics/index
