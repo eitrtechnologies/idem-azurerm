@@ -81,8 +81,6 @@ async def create_or_update(
     :param application_type: Type of application being monitored. Possible values include: 'web', 'other'.
         Default to "web".
 
-    :param workspace_id:
-
     :param retention: Retention period in days. Defaults to 90.
 
     :param immediate_purge_data: A boolean value representing whether or not data should be purged immediately after

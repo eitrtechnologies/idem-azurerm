@@ -53,7 +53,8 @@ Azure Resource Manager (ARM) Function App State Module
 from __future__ import absolute_import
 from dict_tools import differ
 import logging
-
+import random
+import string
 
 # Azure libs
 HAS_LIBS = False
@@ -74,8 +75,9 @@ async def present(
     name,
     resource_group,
     os_type,
-    storage_account,
     runtime_stack,
+    storage_account=None,
+    storage_acct_rg=None,
     server_farm_id=None,
     plan_name=None,
     tags=None,
@@ -86,7 +88,8 @@ async def present(
     .. versionadded:: VERSION
 
     Ensure that a Function App exists. An App Service (Consumption) Plan will be built for the Function App unless the
-        server_farm_id parameter is specified. 
+        server_farm_id parameter is specified. A storage account will be built for the Function App as well unless the
+        storage_account parameter is specified.
 
     :param name: The name of the Function App.
 
@@ -94,14 +97,18 @@ async def present(
 
     :param os_type: The operation system utilized by the Function App. Possible values are "Linux" or "Windows".
 
-    :param storage_account: The name of the storage account that will hold the Azure Functions used by the Function App.
-        This storage account must be of the kind "Storage" or "StorageV2" and inside of the specified resource group.
-
     :param runtime_stack: The language stack to be used for functions in this Function App. Possible values are
         "dotnet", "node", "java", "python", or "powershell".
 
-    :param stack_version: The version of the runtime stack used. If nothing is specified then the Function App will
-        just use its default version for that runtime stack. LOOK INTO HOW TO DO THIS AND ADD PARAM.
+    :param storage_account: The name of the storage account that will hold the Azure Functions used by the Function App.
+        This storage account must be of the kind "Storage" or "StorageV2" and inside of the specified resource group. If
+        a storage account is not provided, one will be created with the default name "stfunc##########" (where each #
+        symbol is a randomly generated number). The new storage group will be created within the same resource group
+        as the Function App.
+
+    :param storage_acct_rg: The resource group of the storage account passed. This will be neccessary is an existing
+        storage account is passed as the storage_account parameter. If a storage account needs to be created, this
+        variable will be ignored during creation.
 
     :param server_farm_id: The resource ID of the App Service (Consumption) Plan used by the Function App. If this
         parameter is not provided then an App Service (Consumption) Plan will be built automatically for the Function
@@ -144,19 +151,50 @@ async def present(
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
-    storage_acct = await hub.exec.azurerm.storage.account.get_properties(
-        ctx, name=storage_account, resource_group=resource_group
-    )
-
-    if "error" in storage_acct:
-        log.error(
-            "The specified storage account does not exist within the given resource group."
+    # Ensures location is specified
+    if "location" not in kwargs:
+        rg_props = await hub.exec.azurerm.resource.group.get(
+            ctx, resource_group, **kwargs
         )
-        ret[
-            "comment"
-        ] = "The specified storage account does not exist within the given resource group."
-        return ret
 
+        if "error" in rg_props:
+            log.error("Unable to determine location from resource group specified.")
+            return {
+                "error": "Unable to determine location from resource group specified."
+            }
+        kwargs["location"] = rg_props["location"]
+
+    # Handle storage account validation
+    if storage_account:
+        if not storage_acct_rg:
+            storage_acct_rg = resource_group
+
+        storage_acct = await hub.exec.azurerm.storage.account.get_properties(
+            ctx, name=storage_account, resource_group=storage_acct_rg
+        )
+    else:
+        storage_acct = {
+            "error": "Storage Account does not exist in the specified resource group"
+        }
+
+    # Handles storage account creation
+    if "error" in storage_acct:
+        if not storage_account:
+            storage_account = "stfunc" + "".join(
+                random.choice(string.digits) for _ in range(10)
+            )
+
+        storage_acct = await hub.exec.azurerm.storage.account.create(
+            ctx,
+            name=storage_account,
+            resource_group=resource_group,
+            kind="StorageV2",
+            location=kwargs["location"],
+            sku="Standard_GRS",
+        )
+        storage_account = storage_acct["name"]
+
+    # Retrieves the connection keys for the storage account
     storage_acct_keys = await hub.exec.azurerm.storage.account.list_keys(
         ctx, name=storage_account, resource_group=resource_group
     )
@@ -164,6 +202,7 @@ async def present(
         if key["key_name"] == "key1":
             storage_acct_key = key["value"]
 
+    # Handle App Service Plan validation
     if server_farm_id and not is_valid_resource_id(server_farm_id):
         log.error("The specified server_farm_id is invalid.")
         ret["comment"] = "The specified server_farm_id is invalid."
@@ -174,6 +213,7 @@ async def present(
     elif os_type == "Linux":
         reserved = True
 
+    # Handle App Service Plan creation
     if not server_farm_id:
         if not plan_name:
             plan_name = f"ASP-{name}"
@@ -213,6 +253,7 @@ async def present(
 
         server_farm_id = plan["id"]
 
+    # Builds the app_settings for the Function App
     app_settings = [
         {
             "name": "AzureWebJobsStorage",
@@ -237,6 +278,8 @@ async def present(
     function_app = await hub.exec.azurerm.web.app.get(
         ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
+
+    log.error(function_app)
 
     if "error" not in function_app:
         action = "update"
@@ -267,6 +310,7 @@ async def present(
                 "name": name,
                 "resource_group": resource_group,
                 "server_farm_id": server_farm_id,
+                "storage_account": storage_account,
                 "tags": tags,
             },
         }
