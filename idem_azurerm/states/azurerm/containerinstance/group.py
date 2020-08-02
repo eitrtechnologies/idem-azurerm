@@ -91,6 +91,16 @@ async def present(
     containers,
     os_type,
     restart_policy="OnFailure",
+    identity=None,
+    image_registry_credentials=None,
+    ip_address=None,
+    volumes=None,
+    diagnostics=None,
+    network_profile=None,
+    dns_config=None,
+    sku=None,
+    encryption_properties=None,
+    init_containers=None,
     tags=None,
     connection_auth=None,
     **kwargs,
@@ -182,6 +192,40 @@ async def present(
     - ``OnFailure``: Restart on failure
     - ``Never``: Never restart.
 
+    :param identity: A dictionary defining a ContainerGroupIdentity object which represents the identity for the
+        container group.
+
+    :param image_registry_credentials: A list of dictionaries defining ImageRegistryCredential objects for the image
+        registry credentials.
+
+    :param ip_address: A dictionary defining an IpAddress object which represents the IP address for the container
+        group. Possible keys are:
+    - ``ports``: Required if ip_address is used. The list of ports exposed on the container group.
+    - ``type``: Required if ip_address is used. Specifies if the IP is exposed to the public internet or private VNET.
+    Possible values include: 'Public', 'Private'
+    - ``ip``: The IP exposed to the public internet.
+    - ``dns_name_label``: The Dns name label for the IP.
+
+    :param volumes: The list of dictionaries representing Volume objects that can be mounted by containers in this
+        container group.
+
+    :param diagnostics: A dictionary defining a ContainerGroupDiagnostics object which represents the diagnostic
+        information for the container group.
+
+    :param network_profile: A dictionary defining a ContainerGroupNetworkProfile object which represents the network
+        profile information for the container group.
+
+    :param dns_config: A dictionary defining a DnsConfiguration object which represents the DNS config information for
+        the container group.
+
+    :param sku: The SKU for a container group. Possible values include: 'Standard', 'Dedicated'
+
+    :param encryption_properties: A dictionary defining an EncryptionProperties object which represents the encryption
+        properties for the container group.
+
+    :param init_containers: A list of dictionaries defining InitContainerDefinition objects which represent the init
+        containers for the container group.
+
     :param tags: A dictionary of strings can be passed as tag metadata to the object.
 
 
@@ -196,12 +240,30 @@ async def present(
                 - containers:
                     - name: mycoolwebcontainer
                       image: "nginx:latest"
+                      ports:
+                        - protocol: TCP
+                          port: 80
                       resources:
                           requests:
                               memory_in_gb: 1
                               cpu: 1
+                      volume_mounts:
+                        - name: testwebsite
+                          mount_path: /usr/share/nginx
+                          read_only: True
                 - os_type: Linux
                 - restart_policy: OnFailure
+                - ip_address:
+                    ports:
+                      - protocol: TCP
+                        port: 80
+                    type: Public
+                    dns_name_label: supercoolcontainergroup
+                - volumes:
+                    - name: testwebsite
+                      git_repo:
+                        directory: html
+                        repository: "https://github.com/WooxSolo/test-website"
                 - tags:
                     how_awesome: very
                     contact_name: Elmer Fudd Gantry
@@ -227,6 +289,16 @@ async def present(
         "containers",
         "os_type",
         "restart_policy",
+        "identity",
+        "image_registry_credentials",
+        "ip_address",
+        "volumes",
+        "diagnostics",
+        "network_profile",
+        "dns_config",
+        "sku",
+        "encryption_properties",
+        "init_containers",
         "tags",
     ]:
         value = locals()[param]
@@ -242,9 +314,8 @@ async def present(
         action = "update"
 
         # containers changes
-        old_containers = acig["containers"]
         comp = await hub.exec.azurerm.utils.compare_list_of_dicts(
-            old_containers, containers
+            acig["containers"], containers
         )
         if comp.get("changes"):
             ret["changes"]["containers"] = comp["changes"]
@@ -259,6 +330,84 @@ async def present(
                 "old": acig["restart_policy"],
                 "new": restart_policy,
             }
+
+        # identity changes
+        if identity:
+            id_diff = differ.deep_diff(acig.get("identity", {}), identity)
+            if id_diff:
+                ret["changes"]["identity"] = id_diff
+
+        # image_registry_credentials changes
+        if image_registry_credentials:
+            comp = await hub.exec.azurerm.utils.compare_list_of_dicts(
+                acig.get("image_registry_credentials", []),
+                image_registry_credentials,
+                key_name="server",
+            )
+            if comp.get("changes"):
+                ret["changes"]["image_registry_credentials"] = comp["changes"]
+
+        # ip_address changes
+        if ip_address:
+            old_ip = acig.get("ip_address", {}).copy()
+            # remove keys from the diff that can't be set
+            for key in ["fqdn", "ip"]:
+                if key in old_ip:
+                    old_ip.pop(key)
+            ip_diff = differ.deep_diff(old_ip, ip_address)
+            if ip_diff:
+                ret["changes"]["ip_address"] = ip_diff
+
+        # volumes changes
+        if volumes:
+            comp = await hub.exec.azurerm.utils.compare_list_of_dicts(
+                acig.get("volumes", []), volumes
+            )
+            if comp.get("changes"):
+                ret["changes"]["volumes"] = comp["changes"]
+
+        # diagnostics changes
+        if diagnostics:
+            diag_diff = differ.deep_diff(acig.get("diagnostics", {}), diagnostics)
+            if diag_diff:
+                ret["changes"]["diagnostics"] = diag_diff
+
+        # network_profile changes
+        if network_profile:
+            net_diff = differ.deep_diff(
+                acig.get("network_profile", {}), network_profile
+            )
+            if net_diff:
+                ret["changes"]["network_profile"] = net_diff
+
+        # dns_config changes
+        if dns_config:
+            dns_diff = differ.deep_diff(acig.get("dns_config", {}), dns_config)
+            if dns_diff:
+                ret["changes"]["dns_config"] = dns_diff
+
+        # sku changes
+        if sku and sku.upper() != acig["sku"].upper():
+            ret["changes"]["sku"] = {
+                "old": acig["sku"],
+                "new": sku,
+            }
+
+        # encryption_properties changes
+        if encryption_properties:
+            enc_diff = differ.deep_diff(
+                acig.get("encryption_properties", {}), encryption_properties
+            )
+            if enc_diff:
+                ret["changes"]["encryption_properties"] = enc_diff
+
+        # init_containers changes
+        if init_containers:
+            comp = await hub.exec.azurerm.utils.compare_list_of_dicts(
+                acig["init_containers"], init_containers
+            )
+            if comp.get("changes"):
+                ret["changes"]["init_containers"] = comp["changes"]
 
         # tag changes
         tag_diff = differ.deep_diff(acig.get("tags", {}), tags or {})
@@ -298,6 +447,16 @@ async def present(
         containers=containers,
         os_type=os_type,
         restart_policy=restart_policy,
+        identity=identity,
+        image_registry_credentials=image_registry_credentials,
+        ip_address=ip_address,
+        volumes=volumes,
+        diagnostics=diagnostics,
+        network_profile=network_profile,
+        dns_config=dns_config,
+        sku=sku,
+        encryption_properties=encryption_properties,
+        init_containers=init_containers,
         tags=tags,
         **acig_kwargs,
     )

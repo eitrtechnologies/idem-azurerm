@@ -66,6 +66,16 @@ async def create_or_update(
     containers,
     os_type,
     restart_policy="OnFailure",
+    identity=None,
+    image_registry_credentials=None,
+    ip_address=None,
+    volumes=None,
+    diagnostics=None,
+    network_profile=None,
+    dns_config=None,
+    sku=None,
+    encryption_properties=None,
+    init_containers=None,
     tags=None,
     **kwargs,
 ):
@@ -74,6 +84,10 @@ async def create_or_update(
 
     Create or update container groups with specified configurations. This is an EXTREMELY complex module. I wouldn't
     recommend attempting to use this on the command line...
+
+    Consult the `SDK documentation <
+    https://docs.microsoft.com/en-us/python/api/azure-mgmt-containerinstance/azure.mgmt.containerinstance.models.containergroup?view=azure-python
+    >`_ for more information about the objects passed to the parameters in this module.
 
     :param name: The name of the container group.
 
@@ -157,6 +171,40 @@ async def create_or_update(
     - ``OnFailure``: Restart on failure
     - ``Never``: Never restart.
 
+    :param identity: A dictionary defining a ContainerGroupIdentity object which represents the identity for the
+        container group.
+
+    :param image_registry_credentials: A list of dictionaries defining ImageRegistryCredential objects for the image
+        registry credentials.
+
+    :param ip_address: A dictionary defining an IpAddress object which represents the IP address for the container
+        group. Possible keys are:
+    - ``ports``: Required if ip_address is used. The list of ports exposed on the container group.
+    - ``type``: Required if ip_address is used. Specifies if the IP is exposed to the public internet or private VNET.
+    Possible values include: 'Public', 'Private'
+    - ``ip``: The IP exposed to the public internet.
+    - ``dns_name_label``: The Dns name label for the IP.
+
+    :param volumes: The list of dictionaries representing Volume objects that can be mounted by containers in this
+        container group.
+
+    :param diagnostics: A dictionary defining a ContainerGroupDiagnostics object which represents the diagnostic
+        information for the container group.
+
+    :param network_profile: A dictionary defining a ContainerGroupNetworkProfile object which represents the network
+        profile information for the container group.
+
+    :param dns_config: A dictionary defining a DnsConfiguration object which represents the DNS config information for
+        the container group.
+
+    :param sku: The SKU for a container group. Possible values include: 'Standard', 'Dedicated'
+
+    :param encryption_properties: A dictionary defining an EncryptionProperties object which represents the encryption
+        properties for the container group.
+
+    :param init_containers: A list of dictionaries defining InitContainerDefinition objects which represent the init
+        containers for the container group.
+
     :param tags: The tags of the resource.
 
     """
@@ -185,6 +233,16 @@ async def create_or_update(
             containers=containers,
             os_type=os_type,
             restart_policy=restart_policy,
+            identity=identity,
+            image_registry_credentials=image_registry_credentials,
+            ip_address=ip_address,
+            volumes=volumes,
+            diagnostics=diagnostics,
+            network_profile=network_profile,
+            dns_config=dns_config,
+            sku=sku,
+            encryption_properties=encryption_properties,
+            init_containers=init_containers,
             tags=tags,
             **kwargs,
         )
