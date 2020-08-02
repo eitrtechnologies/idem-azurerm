@@ -27,3 +27,4 @@ azure-mgmt-storage==2.0.0
 azure-mgmt-web==0.35.0
 msrest==0.6.17
 msrestazure==0.6.4
+websocket-client==0.56.0
