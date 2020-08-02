@@ -6,4 +6,5 @@ containerinstance execution modules
    :maxdepth: 1
    :glob:
 
+   container
    group
