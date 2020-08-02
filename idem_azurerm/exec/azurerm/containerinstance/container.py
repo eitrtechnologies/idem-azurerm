@@ -176,13 +176,18 @@ async def execute_command(
 
     Creates an interactive shell for a specific container instance in a specified resource group and container group.
 
+    Azure Container Instances currently only support launching a single process and you cannot pass command arguments.
+    For example, you cannot chain commands like in ``sh -c "echo FOO && echo BAR"`` or execute ``echo FOO``.
+
     :param name: The name of the container instance.
 
     :param container_group: The name of the container group.
 
     :param resource_group: The name of the resource group to which the container group belongs.
 
-    :param command: The command to be executed. Defaults to "/bin/bash" but will generally only be "/bin/sh" otherwise.
+    :param command: The command to be executed. Defaults to "/bin/bash" but will generally only be shells like "/bin/sh"
+        or "cmd.exe" otherwise. Once ACI supports arguments, we can change this module to support non-interactive
+        commands.
 
     :param terminal_size_cols: The column size of the terminal. If not provided, your current terminal size will be
         used.
