@@ -269,6 +269,47 @@ async def create_or_update(
     return result
 
 
+async def update(
+    hub, ctx, name, resource_group, tags=None, **kwargs,
+):
+    """
+    .. versionadded:: 3.0.0
+
+    Updates container group tags with specified values.
+
+    :param name: The name of the container group.
+
+    :param resource_group: The name of the resource group to which the container group belongs.
+
+    :param tags: The tags of the resource.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.containerinstance.group.update containergroup resourcegroup tags='{"owner": "me"}'
+
+    """
+    result = {}
+
+    conconn = await hub.exec.azurerm.utils.get_client(
+        ctx, "containerinstance", **kwargs
+    )
+
+    try:
+        grp = conconn.container_groups.update(
+            container_group_name=name, resource_group_name=resource_group, tags=tags,
+        )
+        result = grp.as_dict()
+    except (CloudError, SerializationError) as exc:
+        await hub.exec.azurerm.utils.log_cloud_error(
+            "containerinstance", str(exc), **kwargs
+        )
+        result = {"error": str(exc)}
+
+    return result
+
+
 async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 3.0.0

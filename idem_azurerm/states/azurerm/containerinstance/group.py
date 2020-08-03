@@ -440,26 +440,33 @@ async def present(
     acig_kwargs = kwargs.copy()
     acig_kwargs.update(connection_auth)
 
-    acig = await hub.exec.azurerm.containerinstance.group.create_or_update(
-        ctx,
-        name,
-        resource_group,
-        containers=containers,
-        os_type=os_type,
-        restart_policy=restart_policy,
-        identity=identity,
-        image_registry_credentials=image_registry_credentials,
-        ip_address=ip_address,
-        volumes=volumes,
-        diagnostics=diagnostics,
-        network_profile=network_profile,
-        dns_config=dns_config,
-        sku=sku,
-        encryption_properties=encryption_properties,
-        init_containers=init_containers,
-        tags=tags,
-        **acig_kwargs,
-    )
+    if action == "create" or len(ret["changes"]) > 1 or not tag_diff:
+        acig = await hub.exec.azurerm.containerinstance.group.create_or_update(
+            ctx,
+            name,
+            resource_group,
+            containers=containers,
+            os_type=os_type,
+            restart_policy=restart_policy,
+            identity=identity,
+            image_registry_credentials=image_registry_credentials,
+            ip_address=ip_address,
+            volumes=volumes,
+            diagnostics=diagnostics,
+            network_profile=network_profile,
+            dns_config=dns_config,
+            sku=sku,
+            encryption_properties=encryption_properties,
+            init_containers=init_containers,
+            tags=tags,
+            **acig_kwargs,
+        )
+
+    # no idea why create_or_update doesn't work for tags
+    if action == "update" and tag_diff:
+        acig = await hub.exec.azurerm.containerinstance.group.update(
+            ctx, name, resource_group, tags=tags, **acig_kwargs,
+        )
 
     if "error" not in acig:
         ret["result"] = True
