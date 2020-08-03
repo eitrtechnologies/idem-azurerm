@@ -222,6 +222,7 @@ async def create_or_update(
             vault_name=name, resource_group_name=resource_group, parameters=paramsmodel
         )
 
+        vault.wait()
         result = vault.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("keyvault", str(exc), **kwargs)

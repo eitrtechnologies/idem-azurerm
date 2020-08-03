@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Redis Operations Execution Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 3.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -98,10 +100,13 @@ async def create(
     subnet_id=None,
     static_ip=None,
     zones=None,
+    polling=True,
     **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 3.0.0
 
     Create or replace (overwrite/recreate, with potential downtime) an existing Redis cache.
 
@@ -139,6 +144,11 @@ async def create(
 
     :param zones: A list of availability zones denoting where the resource needs to come from.
 
+    :param polling: A boolean flag representing whether a Poller will be used during the creation of the Redis Cache.
+        If set to True, a Poller will be used by this operation and the module will not return until the Redis Cache
+        has completed its creation process and has been successfully provisioned. If set to False, the module will
+        return once the Redis Cache has successfully begun its creation process. Defaults to True.
+
     CLI Example:
 
     .. code-block:: bash
@@ -172,9 +182,13 @@ async def create(
 
     try:
         cache = redconn.redis.create(
-            name=name, resource_group_name=resource_group, parameters=paramsmodel
+            name=name,
+            resource_group_name=resource_group,
+            parameters=paramsmodel,
+            polling=polling,
         )
 
+        cache.wait()
         result = cache.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
@@ -265,6 +279,7 @@ async def export_data(
             name=name, resource_group_name=resource_group, parameters=paramsmodel
         )
 
+        cache.wait()
         result = cache.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
@@ -382,6 +397,7 @@ async def import_data(
             format=file_format,
         )
 
+        cache.wait()
         result = cache.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
