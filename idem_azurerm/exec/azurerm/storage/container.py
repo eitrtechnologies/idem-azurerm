@@ -161,8 +161,7 @@ async def get_client(
             return blob_client
     except Exception as exc:
         result = {"error": str(exc)}
-
-    return result
+        return result
 
 
 async def clear_legal_hold(hub, ctx, name, account, resource_group, tags, **kwargs):

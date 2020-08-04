@@ -53,13 +53,18 @@ Azure Resource Manager (ARM) Function App State Module
 from __future__ import absolute_import
 from dict_tools import differ
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import os
 
 # Azure libs
 HAS_LIBS = False
 try:
     from msrestazure.tools import is_valid_resource_id
+    from azure.storage.blob import (
+        ResourceTypes,
+        AccountSasPermissions,
+        generate_account_sas,
+    )
 
     HAS_LIBS = True
 except ImportError:
@@ -157,6 +162,7 @@ async def present(
     app_settings = [
         {"name": "FUNCTIONS_WORKER_RUNTIME", "value": runtime_stack},
         {"name": "FUNCTIONS_EXTENSION_VERSION", "value": "~2"},
+        {"name": "FUNCTION_APP_EDIT_MODE", "value": "readonly"},
     ]
 
     if not isinstance(connection_auth, dict):
@@ -180,17 +186,6 @@ async def present(
                 "error": "Unable to determine location from resource group specified."
             }
         kwargs["location"] = rg_props["location"]
-
-    # Ensure that the file path contains a zip file
-    filename = os.path.basename(functions_file_path)
-    if not ".zip" in filename:
-        log.error(
-            "The specified file in functions_file_path is not a compressed (zip) file."
-        )
-        ret[
-            "comment"
-        ] = "The specified file in functions_file_path is not a compressed (zip) file."
-        return ret
 
     # Handle storage account validation
     if not storage_rg:
@@ -234,31 +229,38 @@ async def present(
         if key["key_name"] == "key1":
             storage_acct_key = key["value"]
 
-    # Get a future date to use as the expiration day for the SAS
-    expiry_date = datetime(
-        date.today().year + 4, date.today().month, date.today().day, 1, 1, 1, 0
+    sas_token = generate_account_sas(
+        account_name=storage_account,
+        account_key=storage_acct_key,
+        resource_types=ResourceTypes(object=True),
+        permission=AccountSasPermissions(read=True),
+        expiry=datetime.utcnow() + timedelta(hours=1),
     )
-    sas_list = await hub.exec.azurerm.storage.account.list_account_sas(
+
+    # Ensure that the file path contains a zip file
+    filename = os.path.basename(functions_file_path)
+    if not ".zip" in filename:
+        log.error(
+            "The specified file in functions_file_path is not a compressed (zip) file."
+        )
+        ret[
+            "comment"
+        ] = "The specified file in functions_file_path is not a compressed (zip) file."
+        return ret
+
+    upload_zip = await hub.exec.azurerm.storage.container.upload_blob(
         ctx,
-        name=storage_account,
-        resource_group=resource_group,
-        services="b",
-        resource_types="o",
-        permissions="r",
-        shared_access_expiry_time=expiry_date,
+        name=filename,
+        container=container,
+        account=storage_account,
+        resource_group=storage_rg,
+        file_path=functions_file_path,
     )
-    sas_token = sas_list.get("account_sas_token")
 
     # Update app settings information from the storage account
     app_settings.append(
         {
             "name": "AzureWebJobsStorage",
-            "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
-        }
-    )
-    app_settings.append(
-        {
-            "name": "AzureWebJobsDashboard",
             "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
         }
     )
