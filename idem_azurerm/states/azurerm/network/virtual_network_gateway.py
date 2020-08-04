@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Virtual Network Gateway State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 3.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -575,12 +577,15 @@ async def present(
     active_active=None,
     bgp_settings=None,
     address_prefixes=None,
+    polling=True,
     tags=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 3.0.0
 
     Ensure a virtual network gateway exists.
 
@@ -637,6 +642,12 @@ async def present(
     :param address_prefixes:
         A list of CIDR blocks which can be used by subnets within the virtual network. Represents the custom routes
         address space specified by the the customer for virtual network gateway and VpnClient.
+
+    :param polling: A boolean flag representing whether a Poller will be used during the creation of the Virtual
+        Network Gateway. If set to True, a Poller will be used by this operation and the module will not return until
+        the Virtual Network Gateway has completed its creation process and has been successfully provisioned. If set to
+        False, the module will return once the Virtual Network Gateway has successfully begun its creation process.
+        Defaults to True.
 
     :param tags:
         A dictionary of strings can be passed as tag metadata to the virtual network gateway object.
@@ -835,6 +846,7 @@ async def present(
         bgp_settings=bgp_settings,
         active_active=active_active,
         custom_routes={"address_prefixes": address_prefixes},
+        polling=polling,
         **gateway_kwargs,
     )
 

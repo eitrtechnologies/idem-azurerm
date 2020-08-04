@@ -118,6 +118,7 @@ async def create_or_update(
             parameters=spacemodel,
         )
 
+        workspace.wait()
         result = workspace.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("loganalytics", str(exc), **kwargs)

@@ -131,6 +131,7 @@ async def create_or_update(hub, ctx, name, display_name=None, parent=None, **kwa
             group_id=name, create_management_group_request=group_request,
         )
 
+        mgroup.wait()
         result = mgroup.result()
     except ErrorResponseException as exc:
         result = {"error": str(exc)}
