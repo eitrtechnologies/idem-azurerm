@@ -251,7 +251,7 @@ async def present(
     upload_zip = await hub.exec.azurerm.storage.container.upload_blob(
         ctx,
         name=filename,
-        container=container,
+        container="function-releases",
         account=storage_account,
         resource_group=storage_rg,
         file_path=functions_file_path,
@@ -424,7 +424,7 @@ async def present(
             },
         }
 
-        if enable_app_insights is not None:
+        if enable_app_insights:
             ret["changes"]["new"]["application_insights"] = app_insights
 
     if ctx["test"]:
