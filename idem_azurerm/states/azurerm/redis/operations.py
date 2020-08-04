@@ -74,6 +74,7 @@ async def present(
     subnet_id=None,
     static_ip=None,
     zones=None,
+    polling=True,
     tags=None,
     connection_auth=None,
     **kwargs,
@@ -118,6 +119,11 @@ async def present(
     :param zones: A list of availability zones denoting where the resource needs to come from.
 
     :param tags: A dictionary of strings can be passed as tag metadata to the storage account object.
+
+    :param polling: A boolean flag representing whether a Poller will be used during the creation of the Redis Cache.
+        If set to True, a Poller will be used by this operation and the module will not return until the Redis Cache
+        has completed its creation process and has been successfully provisioned. If set to False, the module will
+        return once the Redis Cache has successfully begun its creation process. Defaults to True.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -266,6 +272,7 @@ async def present(
             static_ip=static_ip,
             zones=zones,
             tags=tags,
+            polling=polling,
             **cache_kwargs,
         )
     else:
