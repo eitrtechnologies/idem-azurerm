@@ -137,7 +137,7 @@ def _capture_stdin(ws):
     Convenience function for Windows exec pipe handling.
     """
     while True:
-        if msvcrt.kbhit:
+        if msvcrt.kbhit:  # pylint: disable=using-constant-test
             x = msvcrt.getch()
             ws.send(x)
 
@@ -226,7 +226,7 @@ async def execute_command(
         )
         result = {"error": str(exc)}
 
-    if platform.system() is "Windows":
+    if platform.system() == "Windows":
         _start_exec_pipe_win(result["web_socket_uri"], result["password"])
     else:
         _start_exec_pipe(result["web_socket_uri"], result["password"])
