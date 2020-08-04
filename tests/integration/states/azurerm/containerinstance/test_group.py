@@ -15,7 +15,6 @@ def containers():
 @pytest.mark.second
 @pytest.mark.asyncio
 async def test_present(hub, ctx, resource_group, location, containers):
-    resource_group = "rg-idem"
     aci = "aci-idemtest"
     expected = {
         "changes": {
@@ -47,7 +46,6 @@ async def test_present(hub, ctx, resource_group, location, containers):
 @pytest.mark.run(after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, resource_group, location, containers, tags):
-    resource_group = "rg-idem"
     aci = "aci-idemtest"
     expected = {
         "changes": {"tags": {"new": tags, "old": {"hihi": "cats"}},},
@@ -64,7 +62,6 @@ async def test_changes(hub, ctx, resource_group, location, containers, tags):
 @pytest.mark.second_to_last
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, location, containers, tags):
-    resource_group = "rg-idem"
     aci = "aci-idemtest"
     expected = {
         "changes": {
