@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Virtual Network Gateway Execution Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged: 3.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -188,9 +190,9 @@ async def connection_create_or_update(
             virtual_network_gateway_connection_name=name,
             parameters=connectionmodel,
         )
+
         connection.wait()
-        connection_result = connection.result()
-        result = connection_result.as_dict()
+        result = connection.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -445,10 +447,19 @@ async def list_(hub, ctx, resource_group, **kwargs):
 
 
 async def create_or_update(
-    hub, ctx, name, resource_group, virtual_network, ip_configurations, **kwargs
+    hub,
+    ctx,
+    name,
+    resource_group,
+    virtual_network,
+    ip_configurations,
+    polling=True,
+    **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 3.0.0
 
     Creates or updates a virtual network gateway in the specified resource group.
 
@@ -467,6 +478,12 @@ async def create_or_update(
           - ``subnet``: Name of an existing subnet inside of which the IP config will reside.
         If the active_active keyword argument is disabled, only one IP configuration dictionary is permitted.
         If the active_active keyword argument is enabled, two IP configuration dictionaries are required.
+
+    :param polling: A boolean flag representing whether a Poller will be used during the creation of the Virtual
+        Network Gateway. If set to True, a Poller will be used by this operation and the module will not return until
+        the Virtual Network Gateway has completed its creation process and has been successfully provisioned. If set to
+        False, the module will return once the Virtual Network Gateway has successfully begun its creation process.
+        Defaults to True.
 
     CLI Example:
 
@@ -532,10 +549,11 @@ async def create_or_update(
             resource_group_name=resource_group,
             virtual_network_gateway_name=name,
             parameters=gatewaymodel,
+            polling=polling,
         )
+
         gateway.wait()
-        gateway_result = gateway.result()
-        result = gateway_result.as_dict()
+        result = gateway.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -704,8 +722,8 @@ async def reset_vpn_client_shared_key(hub, ctx, name, resource_group, **kwargs):
             resource_group_name=resource_group, virtual_network_gateway_name=name
         )
 
-        reset_result = reset.result()
-        result = reset_result.as_dict()
+        reset.wait()
+        result = reset.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -889,6 +907,7 @@ async def get_vpn_profile_package_url(hub, ctx, name, resource_group, **kwargs):
             resource_group_name=resource_group, virtual_network_gateway_name=name
         )
 
+        url.wait()
         result = url.result()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
@@ -925,6 +944,7 @@ async def get_bgp_peer_status(hub, ctx, name, resource_group, peer=None, **kwarg
             peer=peer,
         )
 
+        peers.wait()
         peers_result = peers.result().as_dict()
         for bgp_peer in peers_result["value"]:
             result["BGP peer"] = bgp_peer
@@ -1027,6 +1047,7 @@ async def get_advertised_routes(hub, ctx, name, resource_group, peer, **kwargs):
             peer=peer,
         )
 
+        routes.wait()
         routes_result = routes.result().as_dict()
         for route in routes_result["value"]:
             result["route_list"] = route
@@ -1125,8 +1146,8 @@ async def set_vpnclient_ipsec_parameters(
             **kwargs,
         )
 
-        params_result = params.result()
-        result = params_result.as_dict()
+        params.wait()
+        result = params.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -1157,8 +1178,8 @@ async def get_vpnclient_ipsec_parameters(hub, ctx, name, resource_group, **kwarg
             resource_group_name=resource_group, virtual_network_gateway_name=name
         )
 
-        policy_result = policy.result()
-        result = policy_result.as_dict()
+        policy.wait()
+        result = policy.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}

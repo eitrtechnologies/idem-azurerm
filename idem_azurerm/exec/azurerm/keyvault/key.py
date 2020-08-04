@@ -168,6 +168,7 @@ async def begin_delete_key(hub, ctx, name, vault_url, **kwargs):
     try:
         key = kconn.begin_delete_key(name=name,)
 
+        key.wait()
         result = _key_as_dict(key.result())
     except (KeyVaultErrorException, ResourceNotFoundError) as exc:
         result = {"error": str(exc)}
@@ -201,6 +202,7 @@ async def begin_recover_deleted_key(hub, ctx, name, vault_url, **kwargs):
     try:
         key = kconn.begin_recover_deleted_key(name=name,)
 
+        key.wait()
         result = _key_as_dict(key.result())
     except (KeyVaultErrorException, HttpResponseError) as exc:
         result = {"error": str(exc)}
