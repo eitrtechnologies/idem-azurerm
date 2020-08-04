@@ -54,6 +54,7 @@ from __future__ import absolute_import
 from dict_tools import differ
 import logging
 from datetime import date, datetime
+import os
 
 # Azure libs
 HAS_LIBS = False
@@ -73,10 +74,12 @@ async def present(
     ctx,
     name,
     resource_group,
+    functions_file_path,
     os_type,
     runtime_stack,
     storage_account,
-    storage_acct_rg=None,
+    container,
+    storage_rg=None,
     server_farm_id=None,
     plan_name=None,
     enable_app_insights=None,
@@ -96,6 +99,9 @@ async def present(
 
     :param resource_group: The name of the resource group of the Function App.
 
+    :param functions_file_path: The file path of the compressed (zip) file containing any Azure Functions that should
+        be deployed to the Function App.
+
     :param os_type: The operation system utilized by the Function App. Possible values are "Linux" or "Windows".
 
     :param runtime_stack: The language stack to be used for functions in this Function App. Possible values are
@@ -104,8 +110,10 @@ async def present(
     :param storage_account: The name of the storage account that will hold the Azure Functions used by the Function App.
         This storage account must be of the kind "Storage" or "StorageV2".
 
-    :param storage_acct_rg: The resource group of the storage account passed. This parameter is only necessary if the
-        storage account has a different resource group than the one used by the Function App.
+    :param container: The container within the storage account that does or will contain the Azure Function code.
+
+    :param storage_rg: The resource group of the storage account (and container) passed. This parameter is only necessary
+        if the storage account has a different resource group than the one used by the Function App.
 
     :param server_farm_id: The resource ID of the App Service (Consumption) Plan used by the Function App. If this
         parameter is not provided or if the resource at the provided resource ID does not exist, then an App Service
@@ -134,6 +142,7 @@ async def present(
             azurerm.web.function_app.present:
                 - name: my_app
                 - resource_group: my_group
+                - functions_file_path: "/path/to/functions.zip"
                 - os_type: "Linux"
                 - runtime_stack: "python"
                 - storage_account: my_account
@@ -172,12 +181,23 @@ async def present(
             }
         kwargs["location"] = rg_props["location"]
 
+    # Ensure that the file path contains a zip file
+    filename = os.path.basename(functions_file_path)
+    if not ".zip" in filename:
+        log.error(
+            "The specified file in functions_file_path is not a compressed (zip) file."
+        )
+        ret[
+            "comment"
+        ] = "The specified file in functions_file_path is not a compressed (zip) file."
+        return ret
+
     # Handle storage account validation
-    if not storage_acct_rg:
-        storage_acct_rg = resource_group
+    if not storage_rg:
+        storage_rg = resource_group
 
     storage_acct = await hub.exec.azurerm.storage.account.get_properties(
-        ctx, name=storage_account, resource_group=storage_acct_rg
+        ctx, name=storage_account, resource_group=storage_rg
     )
 
     if "error" in storage_acct:
@@ -188,6 +208,23 @@ async def present(
             "comment"
         ] = "The storage account does not exist within the specified resource group."
         return ret
+
+    # Builds a storage container named "function-releases" within the specified storage account if not already present
+    container = await hub.exec.azurerm.storage.container.get(
+        ctx,
+        name="function-releases",
+        account=storage_account,
+        resource_group=storage_rg,
+    )
+
+    if "error" in container:
+        container = await hub.exec.azurerm.storage.container.create(
+            ctx,
+            name="function-releases",
+            account=storage_account,
+            resource_group=storage_rg,
+            public_access="None",
+        )
 
     # Retrieves the connection keys for the storage account
     storage_acct_keys = await hub.exec.azurerm.storage.account.list_keys(
@@ -225,14 +262,12 @@ async def present(
             "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
         }
     )
-    """
     app_settings.append(
         {
             "name": "WEBSITE_RUN_FROM_PACKAGE",
-            "value": f"https://{storage_account}.blob.core.windows.net/{CONTAINER}/{FUNCTION_CODE_NAME}{sas_token}",
+            "value": f"https://{storage_account}.blob.core.windows.net/function-releases/{filename}?{sas_token}",
         }
     )
-    """
 
     # Add any app settings related to a specific OSs
     if os_type == "Windows":
@@ -338,19 +373,22 @@ async def present(
 
     if "error" not in function_app:
         action = "update"
+
+        # tag changes
         tag_changes = differ.deep_diff(function_app.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
 
+        # app service plan changes
         if function_app.get("server_farm_id") != server_farm_id:
             ret["changes"]["server_farm_id"] = {
                 "new": server_farm_id,
                 "old": function_app.get("server_farm_id"),
             }
 
-        # Find changes within the Function App's app settings
+        # app setting changes
         existing_settings = await hub.exec.azurerm.web.app.list_application_settings(
-            ctx, name="eitrfunc", resource_group="rg-func"
+            ctx, name=name, resource_group=resource_group
         )
         old_settings = existing_settings["properties"]
         new_settings = {}
@@ -384,6 +422,9 @@ async def present(
             },
         }
 
+        if enable_app_insights is not None:
+            ret["changes"]["new"]["application_insights"] = app_insights
+
     if ctx["test"]:
         ret["comment"] = "Function App {0} would be created.".format(name)
         ret["result"] = None
@@ -405,10 +446,6 @@ async def present(
         kind=kind,
         site_config={"app_settings": app_settings},
         **app_kwargs,
-    )
-
-    test = await hub.exec.azurerm.web.app.list_application_settings(
-        ctx, name="eitrfunc", resource_group="rg-func"
     )
 
     if "error" not in function_app:

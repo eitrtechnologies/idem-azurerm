@@ -2,7 +2,7 @@
 """
 Azure Resource Manager (ARM) Web App Operations Execution Module
 
-.. versionadded:: VERSION
+.. versionadded:: 3.0.0
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
@@ -59,7 +59,7 @@ async def create_or_update(
     hub, ctx, name, resource_group, kind=None, server_farm_id=None, **kwargs
 ):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Create function for web site, or a deployment slot.
 
@@ -124,7 +124,7 @@ async def create_function(
     hub, ctx, name, site, resource_group, **kwargs,
 ):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Create function for web site, or a deployment slot.
 
@@ -183,7 +183,7 @@ async def delete(
     **kwargs,
 ):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Deletes a web, mobile, or API app, or one of the deployment slots.
 
@@ -224,7 +224,7 @@ async def delete(
 
 async def get(hub, ctx, name, resource_group, **kwargs):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Gets the details of a web, mobile, or API app.
 
@@ -260,7 +260,7 @@ async def get_app_settings_key_vault_references(
     hub, ctx, name, resource_group, **kwargs
 ):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Gets the config reference app settings and status of an app.
 
@@ -295,7 +295,7 @@ async def get_app_settings_key_vault_references(
 
 async def get_configuration(hub, ctx, name, resource_group, **kwargs):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Gets the configuration of an app, such as platform version and bitness, default documents, virtual applications,
         Always On, etc.
@@ -331,11 +331,11 @@ async def get_configuration(hub, ctx, name, resource_group, **kwargs):
 
 async def get_function(hub, ctx, name, site, resource_group, **kwargs):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Get function information by its ID for web site, or a deployment slot.
 
-    :param name: The name of the function
+    :param name: The name of the function.
 
     :param site: The name of the site.
 
@@ -369,7 +369,7 @@ async def get_function(hub, ctx, name, site, resource_group, **kwargs):
 
 async def list_(hub, ctx, **kwargs):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Get all apps for a subscription.
 
@@ -401,7 +401,7 @@ async def list_(hub, ctx, **kwargs):
 
 async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Gets all web, mobile, and API apps in the specified resource group.
 
@@ -433,9 +433,45 @@ async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
     return result
 
 
+async def list_publishing_credentials(hub, ctx, name, resource_group, **kwargs):
+    """
+    .. versionadded:: 3.0.0
+
+    Gets the Git/FTP publishing credentials of an app.
+
+    :param name: The name of the function.
+
+    :param resource_group: The name of the resource group.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.web.app.list_publishing_credentials test_name test_group
+
+    """
+    result = {}
+    webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
+
+    try:
+        creds = webconn.web_apps.list_publishing_credentials(
+            name=name, resource_group_name=resource_group
+        )
+
+        creds.wait()
+        result = creds.result().as_dict()
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
+        result = {"error": str(exc)}
+    except DefaultErrorResponseException as exc:
+        result = {"error": str(exc)}
+
+    return result
+
+
 async def list_application_settings(hub, ctx, name, resource_group, **kwargs):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Gets the application settings of an app.
 
