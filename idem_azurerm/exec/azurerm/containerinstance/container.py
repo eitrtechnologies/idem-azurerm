@@ -224,14 +224,14 @@ async def execute_command(
         await hub.exec.azurerm.utils.log_cloud_error(
             "containerinstance", str(exc), **kwargs
         )
-        result = {"error": str(exc)}
+        return {"error": str(exc)}
 
     if platform.system() == "Windows":
         _start_exec_pipe_win(result["web_socket_uri"], result["password"])
     else:
         _start_exec_pipe(result["web_socket_uri"], result["password"])
 
-    return ""
+    return {}
 
 
 async def list_logs(

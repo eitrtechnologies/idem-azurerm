@@ -169,7 +169,7 @@ async def create_or_update(
     :param restart_policy: Restart policy for all containers within the container group. Possible values are:
     - ``Always``: Always restart
     - ``OnFailure``: Restart on failure
-    - ``Never``: Never restart.
+    - ``Never``: Never restart
 
     :param identity: A dictionary defining a ContainerGroupIdentity object which represents the identity for the
         container group.
@@ -181,7 +181,7 @@ async def create_or_update(
         group. Possible keys are:
     - ``ports``: Required if ip_address is used. The list of ports exposed on the container group.
     - ``type``: Required if ip_address is used. Specifies if the IP is exposed to the public internet or private VNET.
-    Possible values include: 'Public', 'Private'
+      Possible values include: 'Public', 'Private'
     - ``ip``: The IP exposed to the public internet.
     - ``dns_name_label``: The Dns name label for the IP.
 
