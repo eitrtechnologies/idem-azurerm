@@ -163,6 +163,7 @@ async def present(
         {"name": "FUNCTIONS_WORKER_RUNTIME", "value": runtime_stack},
         {"name": "FUNCTIONS_EXTENSION_VERSION", "value": "~2"},
         {"name": "FUNCTION_APP_EDIT_MODE", "value": "readonly"},
+        {"name": "SCM_DO_BUILD_DURING_DEPLOYMENT", "value": "false"},
     ]
 
     if not isinstance(connection_auth, dict):
@@ -232,9 +233,9 @@ async def present(
     sas_token = generate_account_sas(
         account_name=storage_account,
         account_key=storage_acct_key,
-        resource_types=ResourceTypes(object=True),
-        permission=AccountSasPermissions(read=True),
-        expiry=datetime.utcnow() + timedelta(hours=1),
+        resource_types=ResourceTypes(object=True, container=True, service=True),
+        permission=AccountSasPermissions(read=True, write=True, list=True, delete=True),
+        expiry=datetime.utcnow() + timedelta(days=2),
     )
 
     # Ensure that the file path contains a zip file
@@ -369,6 +370,7 @@ async def present(
             {"name": "APPINSIGHTS_INSTRUMENTATIONKEY", "value": instrumentation_key}
         )
 
+    # Check for the existence of the Function App
     function_app = await hub.exec.azurerm.web.app.get(
         ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
@@ -396,6 +398,10 @@ async def present(
         new_settings = {}
         for setting in app_settings:
             new_settings.update({setting.get("name"): setting.get("value")})
+
+        # Removes the WEBSITE_RUN_FROM_PACKAGE app setting because it changes every run
+        old_package_setting = old_settings.pop("WEBSITE_RUN_FROM_PACKAGE")
+        new_package_setting = new_settings.pop("WEBSITE_RUN_FROM_PACKAGE")
 
         app_settings_changes = differ.deep_diff(old_settings, new_settings)
         if app_settings_changes:
