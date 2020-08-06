@@ -21,22 +21,24 @@ def app_service_plan():
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def zip_file():
     """
-    Create a zip file
+    Create a temp zip file and returns the path of it.
     """
+    filename = (
+        "idem"
+        + "".join(random.choice(string.ascii_lowercase) for _ in range(8))
+        + ".zip"
+    )
+
     with tempfile.TemporaryDirectory() as tempdir:
         path = pathlib.Path(tempdir)
-        z_path = path.joinpath("code.zip")
+        file_path = path.joinpath(filename)
 
-        with zipfile.ZipFile(z_path, "w") as myzip:
+        with zipfile.ZipFile(file_path, "w") as myzip:
             myzip.writestr("code.py", "def main():\n\treturn 0")
-        """
-        with open(z_path, "rb") as fh:
-            yield fh.read()
-        """
-        yield z_path
+        yield file_path
 
 
 @pytest.mark.run(order=4)
@@ -64,9 +66,7 @@ async def test_present(
         "name": function_app,
         "result": True,
     }
-    print("******************************")
-    print(zip_file)
-    print("******************************")
+
     ret = await hub.states.azurerm.web.function_app.present(
         ctx,
         name=function_app,
