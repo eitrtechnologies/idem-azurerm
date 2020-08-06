@@ -19,3 +19,4 @@ state modules
    redis/index
    resource/index
    storage/index
+   web/index
