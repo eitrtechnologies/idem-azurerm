@@ -44,11 +44,7 @@ try:
     import azure.mgmt.storage  # pylint: disable=unused-import
     from azure.storage.blob import BlobClient, BlobServiceClient, ContainerClient
     from msrestazure.azure_exceptions import CloudError
-    from azure.core.exceptions import (
-        HttpResponseError,
-        ResourceExistsError,
-        FileNotFoundError,
-    )
+    from azure.core.exceptions import HttpResponseError, ResourceExistsError
 
     HAS_LIBS = True
 except ImportError:
@@ -153,11 +149,9 @@ async def get_client(
 
         if client_type == "BlobService":
             return blob_service_client
-
         elif client_type == "Container":
             container_client = blob_service_client.get_container_client(container)
             return container_client
-
         else:  # Client type = Blob
             blob_client = blob_service_client.get_blob_client(
                 container=container, blob=blob
