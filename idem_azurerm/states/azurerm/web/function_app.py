@@ -111,10 +111,10 @@ async def present(
              | - host.json
              | - MyFirstFunction/
              | | - function.json
-             | | - ...  
+             | | - ..
              | - MySecondFunction/
              | | - function.json
-             | | - ...  
+             | | - ..
              | - SharedCode/
              | - bin/
 
@@ -137,7 +137,7 @@ async def present(
         parameter is not provided or the provided name is invalid/does not exist, then an App Service (Consumption)
         Plan will be built for the Function App with the name "ASP-{name}". This plan should have the same OS as
         specified by the os_type parameter.
-  
+
     :param functions_version: The version of Azure Functions to use. Additional information about Azure Functions
         versions can be found here: https://docs.microsoft.com/en-us/azure/azure-functions/functions-versions.
         Possible values include: 1, 2, and 3. Defaults to 2.

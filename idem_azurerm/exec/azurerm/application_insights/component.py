@@ -69,14 +69,14 @@ async def create_or_update(
     """
     .. versionadded:: 3.0.0
 
-    Creates (or updates) an Application Insights component. 
+    Creates (or updates) an Application Insights component.
 
     :param name: The name of the Application Insights component resource.
 
     :param resource_group: The name of the resource group.
 
     :param kind: The kind of application that this component refers to, used to customize UI. This value is a freeform
-        string, values should typically be one of the following: "web", "ios", "other", "store", "java", "phone". 
+        string, values should typically be one of the following: "web", "ios", "other", "store", "java", "phone".
 
     :param application_type: Type of application being monitored. Possible values include: 'web', 'other'.
         Default to "web".

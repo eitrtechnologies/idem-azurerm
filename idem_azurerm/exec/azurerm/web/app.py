@@ -120,59 +120,6 @@ async def create_or_update(
     return result
 
 
-async def create_function(
-    hub, ctx, name, site, resource_group, **kwargs,
-):
-    """
-    .. versionadded:: 3.0.0
-
-    Create function for web site, or a deployment slot.
-
-    :param name: The name of the function.
-
-    :param site: The name of the site.
-    
-    :param resource_group: The name of the resource group.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.web.app.create_function test_name test_site test_group
-
-    """
-    result = {}
-    webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
-
-    try:
-        envelope = await hub.exec.azurerm.utils.create_object_model(
-            "web", "FunctionEnvelope", **kwargs,
-        )
-    except TypeError as exc:
-        result = {
-            "error": "The object model could not be built. ({0})".format(str(exc))
-        }
-        return result
-
-    try:
-        function = webconn.web_apps.create_function(
-            name=site,
-            function_name=name,
-            resource_group_name=resource_group,
-            function_envelope=envelope,
-        )
-
-        function.wait()
-        result = function.result().as_dict()
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
-        result = {"error": str(exc)}
-    except (ValidationError, DefaultErrorResponseException) as exc:
-        result = {"error": str(exc)}
-
-    return result
-
-
 async def delete(
     hub,
     ctx,

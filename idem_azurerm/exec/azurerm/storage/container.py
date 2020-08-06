@@ -104,7 +104,7 @@ async def get_client(
 
     :param account: The name of the storage account.
 
-    :param resource_group: The name of the resource group containing the specified storage account.    
+    :param resource_group: The name of the resource group containing the specified storage account.
 
     :param container: The name of the container.
 

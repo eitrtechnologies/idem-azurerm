@@ -213,8 +213,8 @@ async def get_server_farm_skus(hub, ctx, name, resource_group, **kwargs):
     :param name: The name of the App Service Plan.
 
     :param resource_group: The name of the resource group.
-    
-    CLI Example:                                                                                                                                                                                          
+
+    CLI Example:
     .. code-block:: bash
 
         azurerm.web.app_service_plan.get_server_farm_skus test_name test_group
@@ -317,7 +317,7 @@ async def list_web_apps(hub, ctx, name, resource_group, skip_token=None, **kwarg
 
     :param resource_group: The name of the resource group.
 
-    :param skip_token: Skip to a web app in the list of webapps associated with app service plan. If specified, the 
+    :param skip_token: Skip to a web app in the list of webapps associated with app service plan. If specified, the
         resulting list will contain web apps starting from (including) the skipToken. Otherwise, the resulting list
         contains web apps from the start of the list.
 
