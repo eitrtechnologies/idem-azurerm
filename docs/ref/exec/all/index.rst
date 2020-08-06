@@ -8,6 +8,7 @@ execution modules
 
    authorization/index
    compute/index
+   containerinstance/index
    containerregistry/index
    dns/index
    keyvault/index
