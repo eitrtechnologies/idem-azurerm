@@ -9,6 +9,7 @@ network state modules
    load_balancer
    local_network_gateway
    network_interface
+   network_profile
    network_security_group
    public_ip_address
    route
