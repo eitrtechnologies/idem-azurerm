@@ -4,7 +4,6 @@ import pytest
 @pytest.mark.run(order=4)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, resource_group):
-    resource_group = "rg-idem"
     prf = "idemprofile"
     expected = {
         "changes": {
@@ -24,7 +23,6 @@ async def test_present(hub, ctx, resource_group):
 @pytest.mark.run(after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, resource_group, acr, tags):
-    resource_group = "rg-idem"
     prf = "idemprofile"
     expected = {
         "changes": {"tags": {"new": tags,},},
@@ -41,7 +39,6 @@ async def test_changes(hub, ctx, resource_group, acr, tags):
 @pytest.mark.run(order=-4)
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, location, tags):
-    resource_group = "rg-idem"
     prf = "idemprofile"
     expected = {
         "changes": {
