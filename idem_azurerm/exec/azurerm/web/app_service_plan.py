@@ -2,7 +2,7 @@
 """
 Azure Resource Manager (ARM) Web App Service Plan Operations Execution Module
 
-.. versionadded:: VERSION
+.. versionadded:: 3.0.0
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
@@ -59,7 +59,7 @@ async def create_or_update(
     hub, ctx, name, resource_group, kind, sku="F1", reserved=None, tags=None, **kwargs,
 ):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Creates or updates an App Service Plan.
 
@@ -137,7 +137,7 @@ async def create_or_update(
 
 async def delete(hub, ctx, name, resource_group, **kwargs):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Delete an App Service Plan.
 
@@ -170,7 +170,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
 async def get(hub, ctx, name, resource_group, **kwargs):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Get an App Service plan.
 
@@ -206,7 +206,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
 async def get_server_farm_skus(hub, ctx, name, resource_group, **kwargs):
     """
-     .. versionadded:: VERSION
+     .. versionadded:: 3.0.0
 
     Gets all selectable SKUs for a given App Service Plan.
 
@@ -238,7 +238,7 @@ async def get_server_farm_skus(hub, ctx, name, resource_group, **kwargs):
 
 async def list_(hub, ctx, detailed=None, **kwargs):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Get all App Service plans for a subscription.
 
@@ -273,7 +273,7 @@ async def list_(hub, ctx, detailed=None, **kwargs):
 
 async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Get all App Service plans in a resource group.
 
@@ -309,7 +309,7 @@ async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
 
 async def list_web_apps(hub, ctx, name, resource_group, skip_token=None, **kwargs):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Get all apps associated with an App Service plan.
 

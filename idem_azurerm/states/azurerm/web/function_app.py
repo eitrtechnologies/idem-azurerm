@@ -53,13 +53,12 @@ Azure Resource Manager (ARM) Function App State Module
 from __future__ import absolute_import
 from dict_tools import differ
 import logging
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 import os
 
 # Azure libs
 HAS_LIBS = False
 try:
-    from msrestazure.tools import is_valid_resource_id
     from azure.storage.blob import (
         ResourceTypes,
         AccountSasPermissions,
@@ -85,6 +84,7 @@ async def present(
     storage_account,
     storage_rg=None,
     app_service_plan=None,
+    functions_version=2,
     enable_app_insights=None,
     app_insights=None,
     tags=None,
@@ -102,22 +102,24 @@ async def present(
 
     :param functions_file_path: The file path of the compressed (zip) file containing any Azure Functions that should
         be deployed to the Function App. The Azure Functions inside of this zip file should be using the same runtime
-        stack or language that is specified within the runtime_stack parameter. IMPORTANT: The code for all the
-        functions in a specific function app should be located in a root project folder that contains a host
-        configuration file and one or more subfolders. Each subfolder contains the code for a separate function.
-        The folder structure is shown in the following representation:
+        stack or language that is specified within the runtime_stack parameter. This file will be uploaded every
+        successfully run of this state. If there is a prior version of the zip file it will be overwritten. IMPORTANT:
+        The code for all the functions in a specific function app should be located in a root project folder that
+        contains a host configuration file and one or more subfolders. Each subfolder contains the code for a separate
+        function. The folder structure is shown in the representation below:
             functionapp.zip
              | - host.json
-             | - MyFirstFunction
+             | - MyFirstFunction/
              | | - function.json
              | | - ...  
-             | - MySecondFunction
+             | - MySecondFunction/
              | | - function.json
              | | - ...  
-             | - SharedCode
-             | - bin
+             | - SharedCode/
+             | - bin/
 
-    :param os_type: The operation system utilized by the Function App. Possible values are "Linux" or "Windows".
+    :param os_type: The operation system utilized by the Function App. This cannot be changed after the Function App
+        has been created. Possible values are "linux" or "windows".
 
     :param runtime_stack: The language stack to be used for functions in this Function App. Possible values are
         "dotnet", "node", "java", "python", or "powershell".
@@ -136,6 +138,10 @@ async def present(
         Plan will be built for the Function App with the name "ASP-{name}". This plan should have the same OS as
         specified by the os_type parameter.
   
+    :param functions_version: The version of Azure Functions to use. Additional information about Azure Functions
+        versions can be found here: https://docs.microsoft.com/en-us/azure/azure-functions/functions-versions.
+        Possible values include: 1, 2, and 3. Defaults to 2.
+
     :param enable_app_insights: Boolean flag for enabling Application Insights.
 
     :param app_insights: (Optional, used with enable_app_insights) The name of the Application Insights Component to
@@ -170,8 +176,11 @@ async def present(
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
     action = "create"
     app_settings = [
-        {"name": "FUNCTIONS_WORKER_RUNTIME", "value": runtime_stack},
-        {"name": "FUNCTIONS_EXTENSION_VERSION", "value": "~2"},
+        {"name": "FUNCTIONS_WORKER_RUNTIME", "value": runtime_stack.lower()},
+        {
+            "name": "FUNCTIONS_EXTENSION_VERSION",
+            "value": ("~" + str(functions_version)),
+        },
         {"name": "FUNCTION_APP_EDIT_MODE", "value": "readonly"},
         {"name": "SCM_DO_BUILD_DURING_DEPLOYMENT", "value": "false"},
     ]
@@ -217,7 +226,7 @@ async def present(
 
     # Ensure that the file path contains a zip file
     filename = os.path.basename(functions_file_path)
-    if not ".zip" in filename:
+    if not ".zip" in filename.lower():
         log.error(
             "The specified file in functions_file_path is not a compressed (zip) file."
         )
@@ -227,9 +236,9 @@ async def present(
         return ret
 
     # Set reserved for the ASP and Function App based upon OS type
-    if os_type == "Windows":
+    if os_type.lower() == "windows":
         reserved = False
-    elif os_type == "Linux":
+    else:  # linux
         reserved = True
 
     # Handle App Service Plan creation
@@ -298,11 +307,8 @@ async def present(
                     "comment"
                 ] = f"Unable to create the Application Insights Component {app_insights} within the resource group {resource_group}."
                 return ret
-            instrumentation_key = component["instrumentation_key"]
 
-        else:
-            instrumentation_key = component["instrumentation_key"]
-
+        instrumentation_key = component["instrumentation_key"]
         # Configures the application insights for the app settings
         app_settings.append(
             {"name": "APPINSIGHTS_INSTRUMENTATIONKEY", "value": instrumentation_key}
@@ -333,6 +339,7 @@ async def present(
         account=storage_account,
         resource_group=storage_rg,
         file_path=functions_file_path,
+        overwrite=True,
     )
 
     if "error" in upload_zip:
@@ -348,10 +355,9 @@ async def present(
     storage_acct_keys = await hub.exec.azurerm.storage.account.list_keys(
         ctx, name=storage_account, resource_group=storage_rg
     )
-    for key in storage_acct_keys["keys"]:
-        if key["key_name"] == "key1":
-            storage_acct_key = key["value"]
+    storage_acct_key = storage_acct_keys["keys"][0]["value"]
 
+    # Generate the sas token used within app settings
     sas_token = generate_account_sas(
         account_name=storage_account,
         account_key=storage_acct_key,
@@ -375,7 +381,7 @@ async def present(
     )
 
     # Add any app settings related to a specific OSs
-    if os_type == "Windows":
+    if os_type.lower() == "Windows":
         app_settings.append(
             {
                 "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
@@ -458,7 +464,7 @@ async def present(
     app_kwargs.update(connection_auth)
 
     kind = "functionapp"
-    if os_type == "Linux":
+    if os_type.lower() == "linux":
         kind = kind + ",Linux"
 
     function_app = await hub.exec.azurerm.web.app.create_or_update(

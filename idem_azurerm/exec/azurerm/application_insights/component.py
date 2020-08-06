@@ -2,7 +2,7 @@
 """
 Azure Resource Manager (ARM) Application Insights Component Operations Execution Module
 
-.. versionadded:: VERSION
+.. versionadded:: 3.0.0
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
@@ -67,7 +67,7 @@ async def create_or_update(
     **kwargs,
 ):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Creates (or updates) an Application Insights component. 
 
@@ -155,7 +155,7 @@ async def delete(
     hub, ctx, name, resource_group, **kwargs,
 ):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Deletes an Application Insights component.
 
@@ -192,7 +192,7 @@ async def delete(
 
 async def get(hub, ctx, name, resource_group, **kwargs):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Returns an Application Insights component.
 
@@ -229,7 +229,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
 async def list_(hub, ctx, **kwargs):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Gets a list of all Application Insights components within a subscription.
 
@@ -263,7 +263,7 @@ async def list_(hub, ctx, **kwargs):
 
 async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Gets a list of Application Insights components within a resource group.
 

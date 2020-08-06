@@ -387,7 +387,9 @@ async def upload_blob(
 
     try:
         with open(file_path, "rb") as data:
-            container = blobconn.upload_blob(data=data, blob_type=blob_type, **kwargs)
+            container = blobconn.upload_blob(
+                data=data, blob_type=blob_type, overwrite=overwrite, **kwargs
+            )
         data.close()
 
         result = container
