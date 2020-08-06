@@ -2,7 +2,7 @@
 """
 Azure Resource Manager (ARM) Function App State Module
 
-.. versionadded:: VERSION
+.. versionadded:: 3.0.0
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
@@ -83,10 +83,8 @@ async def present(
     os_type,
     runtime_stack,
     storage_account,
-    container,
     storage_rg=None,
-    server_farm_id=None,
-    plan_name=None,
+    app_service_plan=None,
     enable_app_insights=None,
     app_insights=None,
     tags=None,
@@ -94,18 +92,30 @@ async def present(
     **kwargs,
 ):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
-    Ensure that a Function App exists. An App Service (Consumption) Plan will be built for the Function App unless the
-        server_farm_id parameter is specified. A storage account will be built for the Function App as well unless the
-        storage_account parameter is specified.
+    Ensure that a Function App exists.
 
     :param name: The name of the Function App.
 
     :param resource_group: The name of the resource group of the Function App.
 
     :param functions_file_path: The file path of the compressed (zip) file containing any Azure Functions that should
-        be deployed to the Function App.
+        be deployed to the Function App. The Azure Functions inside of this zip file should be using the same runtime
+        stack or language that is specified within the runtime_stack parameter. IMPORTANT: The code for all the
+        functions in a specific function app should be located in a root project folder that contains a host
+        configuration file and one or more subfolders. Each subfolder contains the code for a separate function.
+        The folder structure is shown in the following representation:
+            functionapp.zip
+             | - host.json
+             | - MyFirstFunction
+             | | - function.json
+             | | - ...  
+             | - MySecondFunction
+             | | - function.json
+             | | - ...  
+             | - SharedCode
+             | - bin
 
     :param os_type: The operation system utilized by the Function App. Possible values are "Linux" or "Windows".
 
@@ -113,26 +123,25 @@ async def present(
         "dotnet", "node", "java", "python", or "powershell".
 
     :param storage_account: The name of the storage account that will hold the Azure Functions used by the Function App.
-        This storage account must be of the kind "Storage" or "StorageV2".
+        This storage account must be of the kind "Storage" or "StorageV2". If not already present, a container named
+        "function-releases" will be created within this storage account to hold the zip file containing any Azure
+        Functions.
 
-    :param container: The container within the storage account that does or will contain the Azure Function code.
+    :param storage_rg: (Optional, used with storage_account) The resource group of the storage account passed. This
+        parameter is only necessary if the storage account has a different resource group than the one specified for
+        the Function App.
 
-    :param storage_rg: The resource group of the storage account (and container) passed. This parameter is only necessary
-        if the storage account has a different resource group than the one used by the Function App.
-
-    :param server_farm_id: The resource ID of the App Service (Consumption) Plan used by the Function App. If this
-        parameter is not provided or if the resource at the provided resource ID does not exist, then an App Service
-        (Consumption) Plan will be built automatically for the Function App. This plan should use the same OS as
+    :param app_service_plan: The name of the App Service (Consumption) Plan used by the Function App. If this
+        parameter is not provided or the provided name is invalid/does not exist, then an App Service (Consumption)
+        Plan will be built for the Function App with the name "ASP-{name}". This plan should have the same OS as
         specified by the os_type parameter.
   
-    :param plan_name: The name of the App Service Plan to create when the server_farm_id parameter is not specified.
-        Defaults to "ASP-{name}"
-
     :param enable_app_insights: Boolean flag for enabling Application Insights.
 
-    :param app_insights: (enable_app_insights) The name of the Application Insights Component to use for the Function
-        App. If it specified Application Insights Component does not exist, then it will be created. If this parameter
-        is not specified, then an Application Insights Component named "app-insights-{name}" will be created.
+    :param app_insights: (Optional, used with enable_app_insights) The name of the Application Insights Component to
+        use for the Function App. If the specified Application Insights Component does not exist, then it will be
+        created. If this parameter is not specified, then an Application Insights Component named "app-insights-{name}"
+        will be created and used.
 
     :param tags: A dictionary of strings representing tag metadata for the Function App.
 
@@ -151,7 +160,8 @@ async def present(
                 - os_type: "Linux"
                 - runtime_stack: "python"
                 - storage_account: my_account
-                - server_farm_id: my_id
+                - app_service_plan: my_plan
+                - enable_app_insights: True
                 - tags:
                     "Owner": "EITR Technologies"
                 - connection_auth: {{ profile }}
@@ -205,39 +215,6 @@ async def present(
         ] = "The storage account does not exist within the specified resource group."
         return ret
 
-    # Builds a storage container named "function-releases" within the specified storage account if not already present
-    container = await hub.exec.azurerm.storage.container.get(
-        ctx,
-        name="function-releases",
-        account=storage_account,
-        resource_group=storage_rg,
-    )
-
-    if "error" in container:
-        container = await hub.exec.azurerm.storage.container.create(
-            ctx,
-            name="function-releases",
-            account=storage_account,
-            resource_group=storage_rg,
-            public_access="None",
-        )
-
-    # Retrieves the connection keys for the storage account
-    storage_acct_keys = await hub.exec.azurerm.storage.account.list_keys(
-        ctx, name=storage_account, resource_group=resource_group
-    )
-    for key in storage_acct_keys["keys"]:
-        if key["key_name"] == "key1":
-            storage_acct_key = key["value"]
-
-    sas_token = generate_account_sas(
-        account_name=storage_account,
-        account_key=storage_acct_key,
-        resource_types=ResourceTypes(object=True, container=True, service=True),
-        permission=AccountSasPermissions(read=True, write=True, list=True, delete=True),
-        expiry=datetime.utcnow() + timedelta(days=2),
-    )
-
     # Ensure that the file path contains a zip file
     filename = os.path.basename(functions_file_path)
     if not ".zip" in filename:
@@ -249,45 +226,6 @@ async def present(
         ] = "The specified file in functions_file_path is not a compressed (zip) file."
         return ret
 
-    upload_zip = await hub.exec.azurerm.storage.container.upload_blob(
-        ctx,
-        name=filename,
-        container="function-releases",
-        account=storage_account,
-        resource_group=storage_rg,
-        file_path=functions_file_path,
-    )
-
-    # Update app settings information from the storage account
-    app_settings.append(
-        {
-            "name": "AzureWebJobsStorage",
-            "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
-        }
-    )
-    app_settings.append(
-        {
-            "name": "WEBSITE_RUN_FROM_PACKAGE",
-            "value": f"https://{storage_account}.blob.core.windows.net/function-releases/{filename}?{sas_token}",
-        }
-    )
-
-    # Add any app settings related to a specific OSs
-    if os_type == "Windows":
-        app_settings.append(
-            {
-                "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-                "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
-            }
-        )
-        app_settings.append({"name": "WEBSITE_CONTENTSHARE", "value": name.lower()})
-
-    # Handle App Service Plan validation
-    if server_farm_id and not is_valid_resource_id(server_farm_id):
-        log.error("The specified server_farm_id is invalid.")
-        ret["comment"] = "The specified server_farm_id is invalid."
-        return ret
-
     # Set reserved for the ASP and Function App based upon OS type
     if os_type == "Windows":
         reserved = False
@@ -295,44 +233,44 @@ async def present(
         reserved = True
 
     # Handle App Service Plan creation
-    if not server_farm_id:
-        if not plan_name:
-            plan_name = f"ASP-{name}"
+    if not app_service_plan:
+        app_service_plan = f"ASP-{name}"
 
-        plan = await hub.exec.azurerm.web.app_service_plan.get(
-            ctx, name=plan_name, resource_group=resource_group
+    plan = await hub.exec.azurerm.web.app_service_plan.get(
+        ctx, name=app_service_plan, resource_group=resource_group
+    )
+
+    if "error" in plan:
+        plan = await hub.exec.azurerm.web.app_service_plan.create_or_update(
+            ctx,
+            name=app_service_plan,
+            resource_group=resource_group,
+            kind="functionapp",
+            reserved=reserved,
+            sku="Y1",
+            **connection_auth,
         )
 
         if "error" in plan:
-            plan = await hub.exec.azurerm.web.app_service_plan.create_or_update(
-                ctx,
-                name=plan_name,
-                resource_group=resource_group,
-                kind="functionapp",
-                reserved=reserved,
-                sku="Y1",
-                **connection_auth,
+            log.error(
+                f"Unable to create the App Service Plan {app_service_plan} in the resource group {resource_group}."
             )
+            ret[
+                "comment"
+            ] = f"Unable to create the App Service Plan {app_service_plan} in the resource group {resource_group}."
+            return ret
+    else:
+        if plan["reserved"] != reserved:
+            log.error(
+                "The OS of the App Service Plan does not match the specified OS type for the Function App and thus cannot be used."
+            )
+            ret[
+                "comment"
+            ] = "The OS of the App Service Plan does not match the specified OS type for the Function App and thus cannot be used."
+            return ret
 
-            if "error" in plan:
-                log.error(
-                    f"Unable to create the App Service Plan {plan_name} in the resource group {resource_group}."
-                )
-                ret[
-                    "comment"
-                ] = f"Unable to create the App Service Plan {plan_name} in the resource group {resource_group}."
-                return ret
-        else:
-            if plan["reserved"] != reserved:
-                log.error(
-                    "The OS of the App Service Plan specified within the server_farm_id parameter does not match the specified OS type for the function app."
-                )
-                ret[
-                    "comment"
-                ] = "The OS of the App Service Plan specified within the server_farm_id parameter does not match the specified OS type for the function app."
-                return ret
-
-        server_farm_id = plan["id"]
+    # Gets the resource ID of the ASP
+    server_farm_id = plan["id"]
 
     # Handle App Insights Validation and Creation
     if enable_app_insights:
@@ -369,6 +307,82 @@ async def present(
         app_settings.append(
             {"name": "APPINSIGHTS_INSTRUMENTATIONKEY", "value": instrumentation_key}
         )
+
+    # Builds a storage container named "function-releases" within the specified storage account if not already present
+    container = await hub.exec.azurerm.storage.container.get(
+        ctx,
+        name="function-releases",
+        account=storage_account,
+        resource_group=storage_rg,
+    )
+
+    if "error" in container:
+        container = await hub.exec.azurerm.storage.container.create(
+            ctx,
+            name="function-releases",
+            account=storage_account,
+            resource_group=storage_rg,
+            public_access="None",
+        )
+
+    # Upload the zip file containing the Azure Functions
+    upload_zip = await hub.exec.azurerm.storage.container.upload_blob(
+        ctx,
+        name=filename,
+        container="function-releases",
+        account=storage_account,
+        resource_group=storage_rg,
+        file_path=functions_file_path,
+    )
+
+    if "error" in upload_zip:
+        log.error(
+            f"Unable to upload {filename} to the function-releases container within the storage account {storage_account}."
+        )
+        ret[
+            "comment"
+        ] = f"Unable to upload {filename} to the function-releases container within the storage account {storage_account}."
+        return ret
+
+    # Retrieves the connection keys for the storage account
+    storage_acct_keys = await hub.exec.azurerm.storage.account.list_keys(
+        ctx, name=storage_account, resource_group=storage_rg
+    )
+    for key in storage_acct_keys["keys"]:
+        if key["key_name"] == "key1":
+            storage_acct_key = key["value"]
+
+    sas_token = generate_account_sas(
+        account_name=storage_account,
+        account_key=storage_acct_key,
+        resource_types=ResourceTypes(object=True, container=True, service=True),
+        permission=AccountSasPermissions(read=True, write=True, list=True, delete=True),
+        expiry=datetime.utcnow() + timedelta(days=2),
+    )
+
+    # Update app settings information from the storage account
+    app_settings.append(
+        {
+            "name": "AzureWebJobsStorage",
+            "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
+        }
+    )
+    app_settings.append(
+        {
+            "name": "WEBSITE_RUN_FROM_PACKAGE",
+            "value": f"https://{storage_account}.blob.core.windows.net/function-releases/{filename}?{sas_token}",
+        }
+    )
+
+    # Add any app settings related to a specific OSs
+    if os_type == "Windows":
+        app_settings.append(
+            {
+                "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                "value": f"DefaultEndpointsProtocol=https;AccountName={storage_account};AccountKey={storage_acct_key}",
+            }
+        )
+        app_settings.append({"name": "WEBSITE_CONTENTSHARE", "value": name.lower()})
 
     # Check for the existence of the Function App
     function_app = await hub.exec.azurerm.web.app.get(
@@ -423,8 +437,10 @@ async def present(
             "new": {
                 "name": name,
                 "resource_group": resource_group,
-                "server_farm_id": server_farm_id,
+                "app_service_plan": app_service_plan,
                 "storage_account": storage_account,
+                "os_type": os_type,
+                "runtime_stack": runtime_stack,
                 "site_config": {"app_settings": app_settings},
                 "tags": tags,
             },
@@ -440,8 +456,8 @@ async def present(
 
     app_kwargs = kwargs.copy()
     app_kwargs.update(connection_auth)
-    kind = "functionapp"
 
+    kind = "functionapp"
     if os_type == "Linux":
         kind = kind + ",Linux"
 
@@ -471,7 +487,7 @@ async def present(
 
 async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
     """
-    .. versionadded:: VERSION
+    .. versionadded:: 3.0.0
 
     Ensure a Function App does not exist within the specified resource group.
 

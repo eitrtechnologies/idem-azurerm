@@ -44,7 +44,11 @@ try:
     import azure.mgmt.storage  # pylint: disable=unused-import
     from azure.storage.blob import BlobClient, BlobServiceClient, ContainerClient
     from msrestazure.azure_exceptions import CloudError
-    from azure.core.exceptions import HttpResponseError, ResourceExistsError
+    from azure.core.exceptions import (
+        HttpResponseError,
+        ResourceExistsError,
+        FileNotFoundError,
+    )
 
     HAS_LIBS = True
 except ImportError:
@@ -390,7 +394,7 @@ async def upload_blob(
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
-    except HttpResponseError as exc:
+    except (HttpResponseError, ResourceExistsError, FileNotFoundError) as exc:
         result = {"error": str(exc)}
 
     return result
@@ -697,7 +701,7 @@ async def list_blobs(hub, ctx, container, account, resource_group, **kwargs):
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
-    except (AttributeError, HttpResponseError) as exc:
+    except HttpResponseError as exc:
         result = {"error": str(exc)}
 
     return result
