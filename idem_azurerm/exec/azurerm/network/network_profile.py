@@ -77,9 +77,11 @@ async def create_or_update(
 
     :param resource_group: The name of the resource group to which the network profile belongs.
 
-    :param container_network_interfaces: List of child container network interfaces.
+    :param container_network_interfaces: List of child `container network interfaces
+        <https://docs.microsoft.com/en-us/python/api/azure-mgmt-network/azure.mgmt.network.v2018_12_01.models.containernetworkinterface?view=azure-python>`_.
 
-    :param container_network_interface_configurations: List of chid container network interface configurations.
+    :param container_network_interface_configurations: List of child `container network interface configurations
+        <https://docs.microsoft.com/en-us/python/api/azure-mgmt-network/azure.mgmt.network.v2018_12_01.models.containernetworkinterfaceconfiguration?view=azure-python>`_.
 
     :param tags: The tags of the resource.
 
@@ -87,7 +89,7 @@ async def create_or_update(
 
     .. code-block:: bash
 
-        azurerm.network.network_profile.update myprofile mygroup
+        azurerm.network.network_profile.create_or_update myprofile mygroup
 
     """
     result = {}
