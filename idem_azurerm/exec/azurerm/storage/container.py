@@ -147,12 +147,12 @@ async def get_client(
     try:
         blob_service_client = BlobServiceClient.from_connection_string(connect_str)
 
-        if client_type == "BlobService":
+        if client_type.lower() == "blobservice":
             return blob_service_client
-        elif client_type == "Container":
+        if client_type.lower() == "container":
             container_client = blob_service_client.get_container_client(container)
             return container_client
-        else:  # Client type = Blob
+        if client_type.lower() == "blob":
             blob_client = blob_service_client.get_blob_client(
                 container=container, blob=blob
             )
