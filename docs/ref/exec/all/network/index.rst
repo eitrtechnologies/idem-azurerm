@@ -9,6 +9,7 @@ network execution modules
    load_balancer
    local_network_gateway
    network_interface
+   network_profile
    network_security_group
    operations
    public_ip_address
