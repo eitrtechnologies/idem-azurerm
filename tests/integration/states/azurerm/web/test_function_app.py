@@ -53,7 +53,6 @@ async def test_present(
             "new": {
                 "name": function_app,
                 "resource_group": resource_group,
-                "storage_account": storage_account,
                 "app_service_plan": app_service_plan,
                 "os_type": os_type,
                 "runtime_stack": runtime_stack,

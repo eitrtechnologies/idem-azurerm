@@ -419,9 +419,23 @@ async def present(
         for setting in app_settings:
             new_settings.update({setting.get("name"): setting.get("value")})
 
-        # Removes the WEBSITE_RUN_FROM_PACKAGE app setting because it changes every run
-        old_package_setting = old_settings.pop("WEBSITE_RUN_FROM_PACKAGE")
-        new_package_setting = new_settings.pop("WEBSITE_RUN_FROM_PACKAGE")
+        # Checks specifically for changes within the WEBSITE_RUN_FROM_PACKAGE app setting because the value of that
+        # setting is changed every run.
+        new_run_package_setting = new_settings.pop("WEBSITE_RUN_FROM_PACKAGE", "")
+        old_run_package_setting = old_settings.pop("WEBSITE_RUN_FROM_PACKAGE", "")
+
+        new_beginning = (new_run_package_setting.split("?"))[0]
+        old_beginning = (old_run_package_setting.split("?"))[0]
+
+        run_package_changes = False
+        if old_beginning != new_beginning:
+            run_package_changes = True
+
+        # If there are changes within WEBSITE_RUN_FROM_PACKAGE, then that app setting should be readded to both settings
+        # dictionaries to be recorded as app setting changes changes
+        if run_package_changes:
+            new_settings.update({"WEBSITE_RUN_FROM_PACKAGE": new_run_package_setting})
+            old_settings.update({"WEBSITE_RUN_FROM_PACKAGE": old_run_package_setting})
 
         app_settings_changes = differ.deep_diff(old_settings, new_settings)
         if app_settings_changes:
@@ -444,7 +458,6 @@ async def present(
                 "name": name,
                 "resource_group": resource_group,
                 "app_service_plan": app_service_plan,
-                "storage_account": storage_account,
                 "os_type": os_type,
                 "runtime_stack": runtime_stack,
                 "site_config": {"app_settings": app_settings},
