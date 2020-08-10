@@ -107,17 +107,17 @@ async def present(
         The code for all the functions in a specific function app should be located in a root project folder that
         contains a host configuration file and one or more subfolders. Each subfolder contains the code for a separate
         function. The folder structure is shown in the representation below::
-    
+
         | functionapp.zip
         |   - host.json
         |   - MyFirstFunction/
         |     - function.json
         |     - ..
         |   - MySecondFunction/
-        |     - function.json  
+        |     - function.json
         |     - ..
         |   - SharedCode/
-        |   - bin/ 
+        |   - bin/
 
     :param os_type: The operation system utilized by the Function App. This cannot be changed after the Function App
         has been created. Possible values are "linux" or "windows".
