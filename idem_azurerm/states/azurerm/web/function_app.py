@@ -106,17 +106,18 @@ async def present(
         successfully run of this state. If there is a prior version of the zip file it will be overwritten. IMPORTANT:
         The code for all the functions in a specific function app should be located in a root project folder that
         contains a host configuration file and one or more subfolders. Each subfolder contains the code for a separate
-        function. The folder structure is shown in the representation below:
-            functionapp.zip
-             | - host.json
-             | - MyFirstFunction/
-             | | - function.json
-             | | - ..
-             | - MySecondFunction/
-             | | - function.json
-             | | - ..
-             | - SharedCode/
-             | - bin/
+        function. The folder structure is shown in the representation below::
+    
+        | functionapp.zip
+        |   - host.json
+        |   - MyFirstFunction/
+        |     - function.json
+        |     - ..
+        |   - MySecondFunction/
+        |     - function.json  
+        |     - ..
+        |   - SharedCode/
+        |   - bin/ 
 
     :param os_type: The operation system utilized by the Function App. This cannot be changed after the Function App
         has been created. Possible values are "linux" or "windows".
@@ -135,7 +136,7 @@ async def present(
 
     :param app_service_plan: The name of the App Service (Consumption) Plan used by the Function App. If this
         parameter is not provided or the provided name is invalid/does not exist, then an App Service (Consumption)
-        Plan will be built for the Function App with the name "ASP-{name}". This plan should have the same OS as
+        Plan will be built for the Function App with the name "plan-{name}". This plan should have the same OS as
         specified by the os_type parameter.
 
     :param functions_version: The version of Azure Functions to use. Additional information about Azure Functions
@@ -163,7 +164,7 @@ async def present(
                 - name: my_app
                 - resource_group: my_group
                 - functions_file_path: "/path/to/functions.zip"
-                - os_type: "Linux"
+                - os_type: "linux"
                 - runtime_stack: "python"
                 - storage_account: my_account
                 - app_service_plan: my_plan
@@ -177,10 +178,7 @@ async def present(
     action = "create"
     app_settings = [
         {"name": "FUNCTIONS_WORKER_RUNTIME", "value": runtime_stack.lower()},
-        {
-            "name": "FUNCTIONS_EXTENSION_VERSION",
-            "value": ("~" + str(functions_version)),
-        },
+        {"name": "FUNCTIONS_EXTENSION_VERSION", "value": f"~{functions_version}",},
         {"name": "FUNCTION_APP_EDIT_MODE", "value": "readonly"},
         {"name": "SCM_DO_BUILD_DURING_DEPLOYMENT", "value": "false"},
     ]
@@ -217,16 +215,16 @@ async def present(
 
     if "error" in storage_acct:
         log.error(
-            "The storage account does not exist within the specified resource group."
+            f"The storage account {storage_account} does not exist within the given resource group {resource_group}."
         )
         ret[
             "comment"
-        ] = "The storage account does not exist within the specified resource group."
+        ] = f"The storage account {storage_account} does not exist within the given resource group {resource_group}."
         return ret
 
     # Ensure that the file path contains a zip file
     filename = os.path.basename(functions_file_path)
-    if not ".zip" in filename.lower():
+    if not filename.lower().endswith(".zip"):
         log.error(
             "The specified file in functions_file_path is not a compressed (zip) file."
         )
@@ -243,7 +241,7 @@ async def present(
 
     # Handle App Service Plan creation
     if not app_service_plan:
-        app_service_plan = f"ASP-{name}"
+        app_service_plan = f"plan-{name}"
 
     plan = await hub.exec.azurerm.web.app_service_plan.get(
         ctx, name=app_service_plan, resource_group=resource_group
@@ -268,15 +266,14 @@ async def present(
                 "comment"
             ] = f"Unable to create the App Service Plan {app_service_plan} in the resource group {resource_group}."
             return ret
-    else:
-        if plan["reserved"] != reserved:
-            log.error(
-                "The OS of the App Service Plan does not match the specified OS type for the Function App and thus cannot be used."
-            )
-            ret[
-                "comment"
-            ] = "The OS of the App Service Plan does not match the specified OS type for the Function App and thus cannot be used."
-            return ret
+    elif plan["reserved"] != reserved:
+        log.error(
+            f"The OS of the App Service Plan {app_service_plan} does not match the specified OS type for the Function App and thus cannot be used."
+        )
+        ret[
+            "comment"
+        ] = f"The OS of the App Service Plan {app_service_plan} does not match the specified OS type for the Function App and thus cannot be used."
+        return ret
 
     # Gets the resource ID of the ASP
     server_farm_id = plan["id"]
@@ -351,11 +348,20 @@ async def present(
         ] = f"Unable to upload {filename} to the function-releases container within the storage account {storage_account}."
         return ret
 
-    # Retrieves the connection keys for the storage account
+    # Retrieves the access keys for the storage account
     storage_acct_keys = await hub.exec.azurerm.storage.account.list_keys(
         ctx, name=storage_account, resource_group=storage_rg
     )
-    storage_acct_key = storage_acct_keys["keys"][0]["value"]
+    if "error" not in storage_acct_keys:
+        storage_acct_key = storage_acct_keys["keys"][0]["value"]
+    else:
+        log.error(
+            f"Unable to get the account access key for the specified storage account {storage_account} within the given resource group {storage_rg}."
+        )
+        ret[
+            "comment"
+        ] = f"Unable to get the account access key for the specified storage account {storage_account} within the given resource group {storage_rg}."
+        return ret
 
     # Generate the sas token used within app settings
     sas_token = generate_account_sas(
@@ -381,7 +387,7 @@ async def present(
     )
 
     # Add any app settings related to a specific OSs
-    if os_type.lower() == "Windows":
+    if os_type.lower() == "windows":
         app_settings.append(
             {
                 "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",

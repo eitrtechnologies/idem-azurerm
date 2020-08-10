@@ -132,9 +132,8 @@ async def get_client(
         connect_str = f"DefaultEndpointsProtocol=https;AccountName={account};AccountKey={storage_acct_key};EndpointSuffix=core.windows.net"
     else:
         raise sys.exit(
-            f"Unable to get the account access key from the specified storage account {account} within the given resource group {resource_group}."
+            f"Unable to get the account access key for the specified storage account {account} within the given resource group {resource_group}."
         )
-        return result
 
     try:
         blob_service_client = BlobServiceClient.from_connection_string(connect_str)
@@ -151,7 +150,6 @@ async def get_client(
             return blob_client
     except Exception as exc:
         raise sys.exit("error: " + str(exc))
-        return result
 
 
 async def clear_legal_hold(hub, ctx, name, account, resource_group, tags, **kwargs):
