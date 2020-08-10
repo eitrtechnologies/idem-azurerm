@@ -94,7 +94,7 @@ async def create_or_update(
 
     .. code-block:: bash
 
-        azurerm.application_insights.component.create_or_update test_name test_group test_kind test_type
+        azurerm.application_insights.component.create_or_update test_name test_group "web" "web"
 
     """
     if "location" not in kwargs:
@@ -227,11 +227,13 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, ctx, **kwargs):
+async def list_(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 3.0.0
 
     Gets a list of all Application Insights components within a subscription.
+
+    :param resource_group: The name of the resource group to limit the results.
 
     CLI Example:
 
@@ -246,50 +248,19 @@ async def list_(hub, ctx, **kwargs):
     )
 
     try:
-        components = await hub.exec.azurerm.utils.paged_object_to_list(
-            insightconn.components.list()
-        )
+        if resource_group:
+            components = await hub.exec.azurerm.utils.paged_object_to_list(
+                insightconn.components.list_by_resource_group(
+                    resource_group_name=resource_group
+                )
+            )
+        else:
+            components = await hub.exec.azurerm.utils.paged_object_to_list(
+                insightconn.components.list()
+            )
 
         for component in components:
             result[component["name"]] = component
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error(
-            "applicationinsights", str(exc), **kwargs
-        )
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
-    """
-    .. versionadded:: 3.0.0
-
-    Gets a list of Application Insights components within a resource group.
-
-    :param resource_group: The name of the resource group.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.application_insights.component.list_by_resource_group test_group
-
-    """
-    result = {}
-    insightconn = await hub.exec.azurerm.utils.get_client(
-        ctx, "applicationinsights", **kwargs
-    )
-
-    try:
-        components = await hub.exec.azurerm.utils.paged_object_to_list(
-            insightconn.components.list_by_resource_group(
-                resource_group_name=resource_group
-            )
-        )
-
-        for component in components:
-            result[component["name"]] = components
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error(
             "applicationinsights", str(exc), **kwargs

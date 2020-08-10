@@ -192,13 +192,11 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     try:
         app = webconn.web_apps.get(name=name, resource_group_name=resource_group)
 
-        if app:
-            result = app.as_dict()
-        else:
-            result = {"error": "The specified web, mobile, or API app does not exist."}
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
-        result = {"error": str(exc)}
+        result = app.as_dict()
+    except AttributeError as exc:
+        result = {
+            "error": "The specified web, mobile, or API app does not exist within the given resource group."
+        }
 
     return result
 
@@ -314,11 +312,13 @@ async def get_function(hub, ctx, name, site, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, ctx, **kwargs):
+async def list_(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 3.0.0
 
     Get all apps for a subscription.
+
+    :param resource_group: The name of the resource group to limit the results.
 
     CLI Example:
 
@@ -331,46 +331,19 @@ async def list_(hub, ctx, **kwargs):
     webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
 
     try:
-        apps = await hub.exec.azurerm.utils.paged_object_to_list(
-            webconn.web_apps.list()
-        )
+        if resource_group:
+            apps = await hub.exec.azurerm.utils.paged_object_to_list(
+                webconn.web_apps.list_by_resource_group(
+                    resource_group_name=resource_group
+                )
+            )
+        else:
+            apps = await hub.exec.azurerm.utils.paged_object_to_list(
+                webconn.web_apps.list()
+            )
 
         for app in apps:
             result[app["name"]] = app
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
-        result = {"error": str(exc)}
-    except DefaultErrorResponseException as exc:
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
-    """
-    .. versionadded:: 3.0.0
-
-    Gets all web, mobile, and API apps in the specified resource group.
-
-    :param resource_group: The name of the resource group.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.web.app.list_by_resource_group test_group
-
-    """
-    result = {}
-    webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
-
-    try:
-        apps = await hub.exec.azurerm.utils.paged_object_to_list(
-            webconn.web_apps.list_by_resource_group(resource_group_name=resource_group)
-        )
-
-        for app in apps:
-            result[app["name"]] = apps
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
         result = {"error": str(exc)}

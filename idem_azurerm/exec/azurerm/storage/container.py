@@ -37,6 +37,7 @@ Azure Resource Manager (ARM) Blob Container Operations Execution Module
 from __future__ import absolute_import
 import logging
 import datetime
+import sys
 
 # Azure libs
 HAS_LIBS = False
@@ -117,31 +118,22 @@ async def get_client(
     )
 
     if "error" in storage_acct:
-        log.error(
-            "The storage account does not exist within the specified resource group."
+        raise sys.exit(
+            f"The storage account {account} does not exist within the specified resource group {resource_group}."
         )
-        result = {
-            "error": "The storage account does not exist within the specified resource group."
-        }
-        return result
 
     # Retrieves the connection keys for the storage account
     storage_acct_keys = await hub.exec.azurerm.storage.account.list_keys(
         ctx, name=account, resource_group=resource_group
     )
-    storage_acct_key = None
-    for key in storage_acct_keys["keys"]:
-        if key["key_name"] == "key1":
-            storage_acct_key = key["value"]
-
-    # Builds the connection string for the blob service client using the connection key
-    if storage_acct_key:
+    if "error" not in storage_acct_keys:
+        storage_acct_key = storage_acct_keys["keys"][0]["value"]
+        # Builds the connection string for the blob service client using the account access key
         connect_str = f"DefaultEndpointsProtocol=https;AccountName={account};AccountKey={storage_acct_key};EndpointSuffix=core.windows.net"
     else:
-        log.error("Unable to get the value of key1 from the specified storage account.")
-        result = {
-            "error": "Unable to get the value of key1 from the specified storage account."
-        }
+        raise sys.exit(
+            f"Unable to get the account access key from the specified storage account {account} within the given resource group {resource_group}."
+        )
         return result
 
     try:
@@ -158,7 +150,7 @@ async def get_client(
             )
             return blob_client
     except Exception as exc:
-        result = {"error": str(exc)}
+        raise sys.exit("error: " + str(exc))
         return result
 
 
@@ -384,7 +376,6 @@ async def upload_blob(
             container = blobconn.upload_blob(
                 data=data, blob_type=blob_type, overwrite=overwrite, **kwargs
             )
-        data.close()
 
         result = container
     except CloudError as exc:
@@ -659,14 +650,13 @@ async def list_(hub, ctx, account, resource_group, **kwargs):
     return result
 
 
-async def list_blobs(hub, ctx, container, account, resource_group, **kwargs):
+async def list_blobs(hub, ctx, name, account, resource_group, **kwargs):
     """
     .. versionadded:: 3.0.0
 
-    Returns a generator to list the blobs under the specified container. The generator will lazily follow the
-        continuation tokens returned by the service.
+    Get all blobs under the specified container.
 
-    :param container: The name of the blob container.
+    :param name: The name of the blob container.
 
     :param account: The name of the storage account.
 
@@ -676,16 +666,16 @@ async def list_blobs(hub, ctx, container, account, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.storage.container.list_blobs test_container test_account test_group
+        azurerm.storage.container.list_blobs test_name test_account test_group
 
     """
-    result = []
+    result = {}
     containerconn = await hub.exec.azurerm.storage.container.get_client(
         ctx,
         client_type="Container",
         account=account,
         resource_group=resource_group,
-        container=container,
+        container=name,
         **kwargs,
     )
 
@@ -693,8 +683,9 @@ async def list_blobs(hub, ctx, container, account, resource_group, **kwargs):
         blobs = containerconn.list_blobs()
 
         for blob in blobs:
-            result.append(_blob_properties_as_dict(blob))
-    except CloudError as exc:
+            blob_props = _blob_properties_as_dict(blob)
+            result[blob_props["name"]] = blob_props
+    except (CloudError, AttributeError) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
     except HttpResponseError as exc:

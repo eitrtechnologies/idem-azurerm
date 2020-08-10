@@ -193,13 +193,11 @@ async def get(hub, ctx, name, resource_group, **kwargs):
             name=name, resource_group_name=resource_group,
         )
 
-        if plan:
-            result = plan.as_dict()
-        else:
-            result = {"error": "The specified App Service Plan does not exist."}
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
-        result = {"error": str(exc)}
+        result = plan.as_dict()
+    except AttributeError as exc:
+        result = {
+            "error": "The specified App Service Plan does not exist within the given resource group."
+        }
 
     return result
 
@@ -236,14 +234,17 @@ async def get_server_farm_skus(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, ctx, detailed=None, **kwargs):
+async def list_(hub, ctx, resource_group=None, detailed=None, **kwargs):
     """
     .. versionadded:: 3.0.0
 
     Get all App Service plans for a subscription.
 
-    :param detailed: Specify true to return all App Service plan properties. The default is false, which returns a
-        subset of the properties. Retrieval of all properties may increase the API latency.
+    :param resource_group: The name of the resource group to limit the results.
+
+    :param detailed: Specify True to return all App Service Plan properties. The default is False, which returns a
+        subset of the properties. Retrieval of all properties may increase the API latency. If a resource group is
+        specified, then all App Service Plan properties are returned regardless of what this parameter is set to.
 
     CLI Example:
 
@@ -256,45 +257,16 @@ async def list_(hub, ctx, detailed=None, **kwargs):
     webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
 
     try:
-        plans = await hub.exec.azurerm.utils.paged_object_to_list(
-            webconn.app_service_plans.list(detailed=detailed)
-        )
-
-        for plan in plans:
-            result[plan["name"]] = plan
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("web", str(exc), **kwargs)
-        result = {"error": str(exc)}
-    except (DefaultErrorResponseException) as exc:
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
-    """
-    .. versionadded:: 3.0.0
-
-    Get all App Service plans in a resource group.
-
-    :param resource_group: The name of the resource group.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.web.app_service_plan.list_by_resource_group test_group
-
-    """
-    result = {}
-    webconn = await hub.exec.azurerm.utils.get_client(ctx, "web", **kwargs)
-
-    try:
-        plans = await hub.exec.azurerm.utils.paged_object_to_list(
-            webconn.app_service_plans.list_by_resource_group(
-                resource_group_name=resource_group
+        if resource_group:
+            plans = await hub.exec.azurerm.utils.paged_object_to_list(
+                webconn.app_service_plans.list_by_resource_group(
+                    resource_group_name=resource_group
+                )
             )
-        )
+        else:
+            plans = await hub.exec.azurerm.utils.paged_object_to_list(
+                webconn.app_service_plans.list(detailed=detailed)
+            )
 
         for plan in plans:
             result[plan["name"]] = plan
