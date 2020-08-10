@@ -46,15 +46,7 @@ will resemble the following folder structure::
     |   - SharedCode/
     |   - bin/
 
-The example used in this quickstart utilizes the following folder structure::
-
-    | functionapp.zip
-    |   - host.json
-    |   - HttpTrigger/
-    |     - function.json
-    |     - __init__.py
-
-Here is the relevant code for this example that will be inside of the functionapp.zip file:
+Below are all relevant files for this example that will be inside of the functionapp.zip file:
 
 **host.json**
     .. code-block:: JSON
@@ -108,7 +100,7 @@ Here is the relevant code for this example that will be inside of the functionap
             "scriptFile": "__init__.py",
             "bindings": [
                 {
-                    "authLevel": "function",
+                    "authLevel": "anonymous",
                     "type": "httpTrigger",
                     "direction": "in",
                     "name": "req",
@@ -125,4 +117,24 @@ Here is the relevant code for this example that will be inside of the functionap
             ]
         }
 
+The example used for this quickstart utilizes the following folder structure::
+
+    | functionapp.zip
+    |   - host.json
+    |   - HttpTrigger/
+    |     - function.json
+    |     - __init__.py
+
+After you create a compressed (.zip) file using the folder structure outlined abobe, you are ready to use the
+Function App state module. There are a few important things to note about the module:
+
+* The Function App state module requires a Consumption Plan. If you do not already have a Consumption Plan, the module
+  will create one for you (using a name you specify or a default name).
+* The Function App allows you to enable Application Insights. Application Insights serve as a monitoring and analytics
+  tool, enabling users to do things like diagnose issues or analyze application usage. If you want to enable Application
+  Insights, you can pass the name of an existing Application Insights Component or one will be created for you (using a
+  name you specify or a default name).
+* The functions_file_path parameter should be the *absolute* path of the .zip file (i.e., "/root/dev/functions.zip").
+  This .zip file will be uploaded to the specified storage account every time the state is run and will overwrite any
+  existing file with the same name.
 
