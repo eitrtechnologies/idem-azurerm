@@ -3,7 +3,7 @@ import random
 import string
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def hub(hub):
     hub.pop.sub.add(dyne_name="acct")
     hub.pop.sub.add(dyne_name="exec")
@@ -13,22 +13,22 @@ def hub(hub):
     yield hub
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def acct_subs():
     yield ["azurerm"]
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def acct_profile():
     yield "default"
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def location():
     yield "eastus"
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def tags():
     yield {
         "Organization": "Everest",

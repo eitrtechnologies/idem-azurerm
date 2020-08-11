@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Blob Container Operations Execution Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 3.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -34,12 +36,16 @@ Azure Resource Manager (ARM) Blob Container Operations Execution Module
 # Python libs
 from __future__ import absolute_import
 import logging
+import datetime
+import sys
 
 # Azure libs
 HAS_LIBS = False
 try:
     import azure.mgmt.storage  # pylint: disable=unused-import
+    from azure.storage.blob import BlobClient, BlobServiceClient, ContainerClient
     from msrestazure.azure_exceptions import CloudError
+    from azure.core.exceptions import HttpResponseError, ResourceExistsError
 
     HAS_LIBS = True
 except ImportError:
@@ -48,6 +54,102 @@ except ImportError:
 __func_alias__ = {"list_": "list"}
 
 log = logging.getLogger(__name__)
+
+
+def _blob_properties_as_dict(blob_properties):
+    result = {}
+    props = [
+        "name",
+        "container",
+        "snapshot",
+        "blob_type",
+        "metadata",
+        "last_modified",
+        "etag",
+        "size",
+        "append_blob_committed_block_count",
+        "page_blob_sequence_number",
+        "server_encrypted",
+        "copy",
+        "content_settings",
+        "lease",
+        "blob_tier",
+        "blob_tier_change_time",
+        "blob_tier_inferred",
+        "deleted",
+        "deleted_time",
+        "remaining_retention_days",
+        "creation_time",
+        "archive_status",
+        "encryption_key_sha256",
+        "request_server_encrypted",
+    ]
+    for prop in props:
+        val = getattr(blob_properties, prop)
+        if isinstance(val, datetime.datetime):
+            val = val.isoformat()
+        result[prop] = val
+    return result
+
+
+async def get_client(
+    hub, ctx, client_type, account, resource_group, container=None, blob=None, **kwargs
+):
+    """
+    .. versionadded:: 3.0.0
+
+    Load the specified blob service, container, or blob client and return a BlobServiceClient, ContainerClient, or
+        BlobClient object, respectively.
+
+    :param client_type: The type of client to create. Possible values are "BlobService", "Blob", and "Container".
+
+    :param account: The name of the storage account.
+
+    :param resource_group: The name of the resource group containing the specified storage account.
+
+    :param container: The name of the container.
+
+    :param blob: The name of the blob.
+
+    """
+    result = {}
+    storage_acct = await hub.exec.azurerm.storage.account.get_properties(
+        ctx, name=account, resource_group=resource_group
+    )
+
+    if "error" in storage_acct:
+        raise sys.exit(
+            f"The storage account {account} does not exist within the specified resource group {resource_group}."
+        )
+
+    # Retrieves the connection keys for the storage account
+    storage_acct_keys = await hub.exec.azurerm.storage.account.list_keys(
+        ctx, name=account, resource_group=resource_group
+    )
+    if "error" not in storage_acct_keys:
+        storage_acct_key = storage_acct_keys["keys"][0]["value"]
+        # Builds the connection string for the blob service client using the account access key
+        connect_str = f"DefaultEndpointsProtocol=https;AccountName={account};AccountKey={storage_acct_key};EndpointSuffix=core.windows.net"
+    else:
+        raise sys.exit(
+            f"Unable to get the account access key for the specified storage account {account} within the given resource group {resource_group}."
+        )
+
+    try:
+        blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+
+        if client_type.lower() == "blobservice":
+            return blob_service_client
+        if client_type.lower() == "container":
+            container_client = blob_service_client.get_container_client(container)
+            return container_client
+        if client_type.lower() == "blob":
+            blob_client = blob_service_client.get_blob_client(
+                container=container, blob=blob
+            )
+            return blob_client
+    except Exception as exc:
+        raise sys.exit("error: " + str(exc))
 
 
 async def clear_legal_hold(hub, ctx, name, account, resource_group, tags, **kwargs):
@@ -112,7 +214,7 @@ async def create(
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
     :param public_access: Specifies whether data in the container may be accessed publicly and the level of access.
-        Possible values include: 'Container', 'Blob', 'None'. Defaults to None.
+        Possible values include: "Container", "Blob", "None". Defaults to None.
 
     :param metadata: A dictionary of name-value pairs to associate with the container as metadata. Defaults to None.
 
@@ -208,6 +310,77 @@ async def create_or_update_immutability_policy(
         result = {
             "error": "The object model could not be parsed. ({0})".format(str(exc))
         }
+
+    return result
+
+
+async def upload_blob(
+    hub,
+    ctx,
+    name,
+    container,
+    account,
+    resource_group,
+    file_path,
+    blob_type="BlockBlob",
+    overwrite=False,
+    **kwargs,
+):
+    """
+    .. versionadded:: 3.0.0
+
+    Creates a new blob from a data source with automatic chunking.
+
+    :param name: The blob with which to interact.
+
+    :param container: The name of the blob container.
+
+    :param account: The name of the storage account.
+
+    :param resource_group: The name of the resource group.
+
+    :param file_path: The path of the file to upload to the specified BlobContainer.
+
+    :param blob_type: The type of the blob. Possible values include: "BlockBlob", "PageBlob" or "AppendBlob".
+        The default value is "BlockBlob".
+
+    :param overwrite: Whether the blob to be uploaded should overwrite the current data. If True, upload_blob will
+        overwrite the existing data. If set to False, the operation will fail with ResourceExistsError. The exception
+        to the above is with Append blob types. If set to False and the data already exists, an error will not be raised
+        and the data will be appended to the existing blob. If set True, then the existing append blob will be deleted,
+        and a new one created. Defaults to False.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.storage.container.upload_blob test_name test_container test_account test_group test_path
+
+    """
+    result = {}
+
+    blobconn = await hub.exec.azurerm.storage.container.get_client(
+        ctx,
+        client_type="Blob",
+        account=account,
+        resource_group=resource_group,
+        container=container,
+        blob=name,
+        **kwargs,
+    )
+
+    try:
+        with open(file_path, "rb") as data:
+            container = blobconn.upload_blob(
+                data=data, blob_type=blob_type, overwrite=overwrite, **kwargs
+            )
+
+        result = container
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
+        result = {"error": str(exc)}
+    except (HttpResponseError, ResourceExistsError, FileNotFoundError) as exc:
+        result = {"error": str(exc)}
 
     return result
 
@@ -470,6 +643,50 @@ async def list_(hub, ctx, account, resource_group, **kwargs):
             result[container["name"]] = container
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def list_blobs(hub, ctx, name, account, resource_group, **kwargs):
+    """
+    .. versionadded:: 3.0.0
+
+    Get all blobs under the specified container.
+
+    :param name: The name of the blob container.
+
+    :param account: The name of the storage account.
+
+    :param resource_group: The name of the resource_group.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.storage.container.list_blobs test_name test_account test_group
+
+    """
+    result = {}
+    containerconn = await hub.exec.azurerm.storage.container.get_client(
+        ctx,
+        client_type="Container",
+        account=account,
+        resource_group=resource_group,
+        container=name,
+        **kwargs,
+    )
+
+    try:
+        blobs = containerconn.list_blobs()
+
+        for blob in blobs:
+            blob_props = _blob_properties_as_dict(blob)
+            result[blob_props["name"]] = blob_props
+    except (CloudError, AttributeError) as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
+        result = {"error": str(exc)}
+    except HttpResponseError as exc:
         result = {"error": str(exc)}
 
     return result

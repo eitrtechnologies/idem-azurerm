@@ -6,6 +6,7 @@ execution modules
    :maxdepth: 1
    :glob:
 
+   application_insights/index
    authorization/index
    compute/index
    containerinstance/index
@@ -20,3 +21,4 @@ execution modules
    redis/index
    resource/index
    storage/index
+   web/index
