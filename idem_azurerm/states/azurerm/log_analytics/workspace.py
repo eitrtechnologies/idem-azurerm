@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Log Analytics Workspace State Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -57,7 +59,7 @@ from operator import itemgetter
 
 log = logging.getLogger(__name__)
 
-TREQ = {"present": {"require": ["states.azurerm.resource.group.present",]}}
+TREQ = {"present": {"require": ["states.azurerm.resource.group.present"]}}
 
 
 async def present(
@@ -68,7 +70,9 @@ async def present(
     location,
     sku=None,
     retention=None,
-    customer_id=None,
+    workspace_capping=None,
+    ingestion_public_network_access=None,
+    query_public_network_access=None,
     tags=None,
     connection_auth=None,
     **kwargs,
@@ -76,22 +80,34 @@ async def present(
     """
     .. versionadded:: 2.0.0
 
-    Ensure a specified log analytics workspace exists.
+    .. versionchanged:: 4.0.0
 
-    :param name: The name of the workspace.
+    Ensure the specified log analytics workspace exists.
+
+    :param name: The name of the workspace. The name is case insensitive.
 
     :param resource_group: The resource group name of the workspace.
 
     :param location: The resource location.
 
-    :param sku: The name of the SKU. Possible values include: 'Free', 'Standard', 'Premium', 'Unlimited', 'PerNode',
-        'PerGB2018', 'Standalone'.
+    :param sku: (Optional) A dictionary representing a WorkspaceSku objects that sets the SKU (pricing tier) of the
+        workspace. Valid parameters include:
+        - ``name``: (Required) The name of the SKU. Possible values include: "Free", "Standard", "Premium", "PerNode",
+            "PerGB2018", "Standalone", and "CapacityReservation".
+        - ``capacity_reservation_level``: (Only necessary when CapacityReservation is specified) An integer representing
+            the capacity reservation level for this workspace.
 
-    :param retention: The workspace data retention in days. -1 means Unlimited retention for the Unlimited Sku.
-        730 days is the maximum allowed for all other Skus.
+    :param retention: (Optional) The workspace data retention period in days. -1 means Unlimited retention for
+        the Unlimited Sku. 730 days is the maximum allowed for all other Skus.
 
-    :param customer_id: The ID associated with the workspace. Setting this value at creation time allows the workspace
-        being created to be linked to an existing workspace.
+    :param workspace_capping: (Optional) A float representing the daily volume cap in GB for ingestion.
+        -1 means unlimited.
+
+    :param ingestion_public_network_access: (Optional) The network access type for accessing Log Analytics ingestion.
+        Possible values include: "Enabled" and "Disabled". Defaults to "Enabled".
+
+    :param query_public_network_access: (Optional) The network access type for accessing Log Analytics query. Possible
+        values include: "Enabled" and "Disabled". Defaults to "Enabled".
 
     :param tags: A dictionary of strings can be passed as tag metadata to the key vault.
 
@@ -136,9 +152,13 @@ async def present(
                 ret["changes"]["tags"] = tag_changes
 
         if sku:
-            if sku.lower() != workspace.get("sku").get("name").lower():
+            if sku.get("name").lower() != workspace.get("sku").get("name").lower() or (
+                sku.get("capacity_reservation_level", None)
+                and sku.get("capacity_reservation_level", None)
+                != workspace.get("sku").get("capacity_reservation_level", None)
+            ):
                 ret["changes"]["sku"] = {
-                    "old": workspace.get("sku").get("name"),
+                    "old": workspace.get("sku"),
                     "new": sku,
                 }
 
@@ -149,18 +169,31 @@ async def present(
                     "new": retention,
                 }
 
-        if customer_id:
-            if customer_id != workspace.get("customer_id"):
-                ret["changes"]["customer_id"] = {
-                    "old": workspace.get("customer_id"),
-                    "new": customer_id,
+        if workspace_capping is not None:
+            if workspace_capping != workspace.get("workspace_capping").get(
+                "daily_quota_gb"
+            ):
+                ret["changes"]["workspace_capping"] = {
+                    "old": workspace.get("workspace_capping"),
+                    "new": {"daily_quota_gb": workspace_capping},
                 }
 
-        if kwargs.get("etag"):
-            if kwargs.get("etag") != workspace.get("e_tag"):
-                ret["changes"]["e_tag"] = {
-                    "old": workspace.get("e_tag"),
-                    "new": kwargs.get("etag"),
+        if ingestion_public_network_access:
+            if ingestion_public_network_access != workspace.get(
+                "public_network_access_for_ingestion"
+            ):
+                ret["changes"]["public_network_access_for_ingestion"] = {
+                    "old": workspace.get("public_network_access_for_ingestion"),
+                    "new": ingestion_public_network_access,
+                }
+
+        if query_public_network_access:
+            if query_public_network_access != workspace.get(
+                "public_network_access_for_query"
+            ):
+                ret["changes"]["public_network_access_for_query"] = {
+                    "old": workspace.get("public_network_access_for_query"),
+                    "new": query_public_network_access,
                 }
 
         if not ret["changes"]:
@@ -190,13 +223,21 @@ async def present(
         if tags:
             ret["changes"]["new"]["tags"] = tags
         if sku:
-            ret["changes"]["new"]["sku"] = {"name": sku}
-        if customer_id:
-            ret["changes"]["new"]["customer_id"] = customer_id
+            ret["changes"]["new"]["sku"] = sku
+        if workspace_capping is not None:
+            ret["changes"]["new"]["workspace_capping"] = {
+                "daily_quota_gb": workspace_capping
+            }
         if retention is not None:
             ret["changes"]["new"]["retention_in_days"] = retention
-        if kwargs.get("etag"):
-            ret["changes"]["new"]["e_tag"] = kwargs.get("etag")
+        if ingestion_public_network_access:
+            ret["changes"]["new"][
+                "public_network_access_for_ingestion"
+            ] = ingestion_public_network_access
+        if query_public_network_access:
+            ret["changes"]["new"][
+                "public_network_access_for_query"
+            ] = query_public_network_access
 
     if ctx["test"]:
         ret["comment"] = "Log Analytics Workspace {0} would be created.".format(name)
@@ -213,7 +254,9 @@ async def present(
         location=location,
         sku=sku,
         retention=retention,
-        customer_id=customer_id,
+        workspace_capping=workspace_capping,
+        ingestion_public_network_access=ingestion_public_network_access,
+        query_public_network_access=query_public_network_access,
         tags=tags,
         **workspace_kwargs,
     )
@@ -231,15 +274,25 @@ async def present(
     return ret
 
 
-async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs):
+async def absent(
+    hub, ctx, name, resource_group, force=None, connection_auth=None, **kwargs
+):
     """
     .. versionadded:: 2.0.0
 
-    Ensure a specified Log Analytics Workspace does not exist.
+    .. versionchanged:: 4.0.0
+
+    Ensure the specified Log Analytics Workspace does not exist. A deleted workspace can be recovered if you
+        recreate it in the same subscription, resource group and location. Upon deletion, the name of the Log Analytics
+        Workspace is kept for 14 days and cannot be used for another workspace. To remove the workspace completely and
+        release the name, use the force flag.
 
     :param name: The name of the workspace.
 
     :param resource_group: The resource group name of the workspace.
+
+    :param force: (Optional) Deletes the workspace without the recovery option. A workspace that was deleted with this
+        flag cannot be recovered.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -285,7 +338,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.log_analytics.workspace.delete(
-        ctx, name, resource_group, **connection_auth
+        ctx, name=name, resource_group=resource_group, force=force, **connection_auth
     )
 
     if deleted:
