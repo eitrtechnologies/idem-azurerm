@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Diagnostic Setting State Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -66,6 +68,7 @@ async def present(
     metrics,
     logs,
     workspace_id=None,
+    log_analytics_destination_type=None,
     storage_account_id=None,
     service_bus_rule_id=None,
     event_hub_authorization_rule_id=None,
@@ -76,12 +79,14 @@ async def present(
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Ensure a diagnostic setting exists. At least one destination for the diagnostic setting logs is required. Any
         combination of the following destinations is acceptable:
-        1. Archive the diagnostic settings to a stroage account. This would require the storage_account_id param.
+        1. Archive the diagnostic settings to a storage account. This would require the storage_account_id parameter.
         2. Stream the diagnostic settings to an event hub. This would require the event_hub_name and
-              event_hub_authorization_rule_id params.
-        3. Send the diagnostic settings to Log Analytics. This would require the workspace_id param.
+              event_hub_authorization_rule_id parameters.
+        3. Send the diagnostic settings to Log Analytics. This would require the workspace_id parameter.
 
     :param name: The name of the diagnostic setting.
 
@@ -114,6 +119,11 @@ async def present(
 
     :param workspace_id: The workspace (resource) ID for the Log Analytics workspace to which you would like to
         send Diagnostic Logs.
+
+    :param log_analytics_destination_type: (Optional, used with workspace_id) A string indicating whether the export to
+        the Log Analytics Workspace should store the logs within the legacy default destination type, the
+        AzureDiagnostics table, or a dedicated, resource specific table. Possible values include: "Dedicated" and
+        "AzureDiagnostics".
 
     :param storage_account_id: The resource ID of the storage account to which you would like to send Diagnostic Logs.
 
@@ -264,6 +274,10 @@ async def present(
             ret["changes"]["new"]["storage_account_id"] = storage_account_id
         if workspace_id:
             ret["changes"]["new"]["workspace_id"] = workspace_id
+        if log_analytics_destination_type:
+            ret["changes"]["new"][
+                "log_analytics_destination_type"
+            ] = log_analytics_destination_type
         if service_bus_rule_id:
             ret["changes"]["new"]["service_bus_rule_id"] = service_bus_rule_id
         if event_hub_authorization_rule_id:
@@ -289,6 +303,7 @@ async def present(
         metrics=metrics,
         storage_account_id=storage_account_id,
         workspace_id=workspace_id,
+        log_analytics_destination_type=log_analytics_destination_type,
         event_hub_name=event_hub_name,
         event_hub_authorization_rule_id=event_hub_authorization_rule_id,
         service_bus_rule_id=service_bus_rule_id,

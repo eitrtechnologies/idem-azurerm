@@ -42,7 +42,9 @@ try:
     import azure.mgmt.monitor.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
-    from azure.mgmt.monitor.models import ErrorResponseException
+    from azure.mgmt.monitor.v2017_05_01_preview.models._models_py3 import (
+        ErrorResponseException,
+    )
 
     HAS_LIBS = True
 except ImportError:
@@ -61,6 +63,7 @@ async def create_or_update(
     metrics,
     logs,
     workspace_id=None,
+    log_analytics_destination_type=None,
     storage_account_id=None,
     service_bus_rule_id=None,
     event_hub_authorization_rule_id=None,
@@ -70,12 +73,15 @@ async def create_or_update(
     """
     .. versionadded:: 1.0.0
 
+    .. versionchanged:: 4.0.0
+
     Create or update diagnostic settings for the specified resource. At least one destination for the diagnostic
         setting logs is required. Any combination of the following destinations is acceptable:
-            1. Archive the diagnostic settings to a stroage account. This would require the storage_account_id param.
+            1. Archive the diagnostic settings to a storage account. This would require the storage_account_id
+               paramater.
             2. Stream the diagnostic settings to an event hub. This would require the event_hub_name and
-               event_hub_authorization_rule_id params.
-            3. Send the diagnostic settings to Log Analytics. This would require the workspace_id param.
+               event_hub_authorization_rule_id parameters.
+            3. Send the diagnostic settings to a Log Analytics Workspace. This would require the workspace_id parameter.
 
     :param name: The name of the diagnostic setting.
 
@@ -109,6 +115,11 @@ async def create_or_update(
     :param workspace_id: The workspace (resource) ID for the Log Analytics workspace to which you would like to
         send Diagnostic Logs.
 
+    :param log_analytics_destination_type: (Optional, used with workspace_id) A string indicating whether the export to
+        the Log Analytics Workspace should store the logs within the legacy default destination type, the
+        AzureDiagnostics table, or a dedicated, resource specific table. Possible values include: "Dedicated" and
+        "AzureDiagnostics".
+
     :param storage_account_id: The resource ID of the storage account to which you would like to send Diagnostic Logs.
 
     :param service_bus_rule_id: The service bus rule ID of the diagnostic setting. This is here to
@@ -122,8 +133,7 @@ async def create_or_update(
 
     .. code-block:: bash
 
-        azurerm.monitor.diagnostic_setting.create_or_update test_name test_uri test_metrics test_logs \
-                  test_destination
+        azurerm.monitor.diagnostic_setting.create_or_update test_name test_uri test_metrics test_logs test_destination
 
     """
     result = {}
@@ -136,6 +146,7 @@ async def create_or_update(
             metrics=metrics,
             logs=logs,
             workspace_id=workspace_id,
+            log_analytics_destination_type=log_analytics_destination_type,
             storage_account_id=storage_account_id,
             service_bus_rule_id=service_bus_rule_id,
             event_hub_authorization_rule_id=event_hub_authorization_rule_id,
@@ -154,7 +165,7 @@ async def create_or_update(
         )
 
         result = diag.as_dict()
-    except (CloudError, ErrorResponseException) as exc:
+    except (CloudError, ErrorResponseException, SerializationError) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("monitor", str(exc), **kwargs)
         result = {"error": str(exc)}
 
