@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2020-08-11
+
+### Added
+
+- [#145](https://github.com/eitrtechnologies/idem-azurerm/pull/145) - Added Function App modules.
+- [#144](https://github.com/eitrtechnologies/idem-azurerm/pull/144) - Added Network Profile modules.
+- [#143](https://github.com/eitrtechnologies/idem-azurerm/pull/143) - Added Container Instance modules.
+- [#139](https://github.com/eitrtechnologies/idem-azurerm/pull/139) - Added Container Registry modules.
+- [#138](https://github.com/eitrtechnologies/idem-azurerm/pull/138) - Added basic integration test coverage for all
+  states.
+
+### Changed
+
+- [#170](https://github.com/eitrtechnologies/idem-azurerm/pull/170) - Upgraded to Idem 7.4 and bumped other pop project
+  versions.
+
+### Fixed
+
+- [#142](https://github.com/eitrtechnologies/idem-azurerm/pull/142) - Fixed various states that weren't waiting for
+  resource creation.
+- [#137](https://github.com/eitrtechnologies/idem-azurerm/pull/137) - Fixed display of sensitive info for VNET Gateway.
+- [#136](https://github.com/eitrtechnologies/idem-azurerm/pull/136) - Fixed Policy Defintion changes.
+- [#135](https://github.com/eitrtechnologies/idem-azurerm/pull/135) - Fixed broken Policy Definition absent state.
+- [#134](https://github.com/eitrtechnologies/idem-azurerm/pull/134) - Fixed PostgreSQL Security Alert Policy comments.
+- [#133](https://github.com/eitrtechnologies/idem-azurerm/pull/133) - Fixed broken DNS Record Set absent state.
+- [#132](https://github.com/eitrtechnologies/idem-azurerm/pull/132) - Fixed checking for PostgreSQL server SKU.
+- [#131](https://github.com/eitrtechnologies/idem-azurerm/pull/131) - Fixed PostgreSQL server SKU handling.
+- [#130](https://github.com/eitrtechnologies/idem-azurerm/pull/130) - Fixed Load Balancer SKU handling.
+- [#129](https://github.com/eitrtechnologies/idem-azurerm/pull/129) - Fixed Route changed boolean parameter.
+- [#128](https://github.com/eitrtechnologies/idem-azurerm/pull/128) - Fixed PostgreSQL configuration state typo.
+- [#127](https://github.com/eitrtechnologies/idem-azurerm/pull/127) - Fixed `enable_non_ssl_port` parameter handling.
+- [#126](https://github.com/eitrtechnologies/idem-azurerm/pull/126) - Fixed vnet peering module naming.
+- [#125](https://github.com/eitrtechnologies/idem-azurerm/pull/125) - Fixed Storage Container metadata.
+- [#123](https://github.com/eitrtechnologies/idem-azurerm/pull/123) - Fixed small issues with Storage Containers.
+
+### Deprecated
+
+### Removed
+
 ## [2.4.0] - 2020-07-09
 
 ### Added
@@ -189,6 +228,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release of execution and state modules from Salt along with some additional functionality ported from
   salt-cloud for virtual machines.
 
+[3.0.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.4.0...v3.0.0
 [2.4.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.3.2...v2.4.0
 [2.3.2]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.3.1...v2.3.2
 [2.3.1]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.3.0...v2.3.1

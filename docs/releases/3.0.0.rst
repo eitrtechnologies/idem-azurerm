@@ -1,0 +1,26 @@
+Version 3.0.0
+=============
+
+Added Azure Functions Support
+*****************************
+Go serverless! We now have the ability to upload your Function ZIP files to Azure and run your serverless workloads.
+Check out the "Topics" section of the docs for more information on how to use this new feature.
+
+
+Added Azure Container Registry and Azure Container Instance Support
+*******************************************************************
+The containers are coming! ACR and ACI provide some foundational container support in ``idem-azurerm``, with Kubernetes
+support on the roadmap for the near future. Check out the "Topics" section of the docs for more information on how to
+use this new feature.
+
+
+Integration Tests and Various Fixes
+***********************************
+A ton of new integration tests were added, which surfaced some lingering issues in the code. We'll be requiring tests
+for new features going forward, so be sure to keep that in mind when you're contributing.
+
+
+Newer Idem Version
+******************
+We bumped up to Idem 7.4 and gained access to some fixes and small new features. Check the Idem, POP, Acct, and other
+docs for more information on specifics.
