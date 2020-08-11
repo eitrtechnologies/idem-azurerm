@@ -88,11 +88,11 @@ async def create_or_update(
     :param retention: (Optional) The workspace data retention period in days. -1 means Unlimited retention for
         the Unlimited Sku. 730 days is the maximum allowed for all other Skus.
 
-    :param workspace_capping: (Optional) A float representing the daily volume cap in GB for ingestion. 
+    :param workspace_capping: (Optional) A float representing the daily volume cap in GB for ingestion.
         -1 means unlimited.
 
     :param ingestion_public_network_access: (Optional) The network access type for accessing Log Analytics ingestion.
-        Possible values include: "Enabled" and "Disabled". Defaults to "Enabled". 
+        Possible values include: "Enabled" and "Disabled". Defaults to "Enabled".
 
     :param query_public_network_access: (Optional) The network access type for accessing Log Analytics query. Possible
         values include: "Enabled" and "Disabled". Defaults to "Enabled".
