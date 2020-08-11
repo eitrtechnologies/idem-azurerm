@@ -4,7 +4,7 @@ Azure Resource Manager (ARM) Redis Operations Execution Module
 
 .. versionadded:: 2.0.0
 
-.. versionchanged:: 3.0.0
+.. versionchanged:: 3.0.0, 4.0.0
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
@@ -59,7 +59,7 @@ async def check_name_availability(hub, ctx, name, **kwargs):
 
     Checks that the redis cache name is valid and is not already in use.
 
-    :param name: The name of the Redis cache to check the availability of
+    :param name: The name of the Redis cache to check if it exists already.
 
     CLI Example:
 
@@ -406,11 +406,15 @@ async def import_data(
     return result
 
 
-async def list_(hub, ctx, **kwargs):
+async def list_(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Gets all Redis caches in the specified subscription.
+
+    :param resource_group: The name of the resource group to limit the results.
 
     CLI Example:
 
@@ -423,39 +427,14 @@ async def list_(hub, ctx, **kwargs):
     redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:
-        caches = await hub.exec.azurerm.utils.paged_object_to_list(redconn.redis.list())
-
-        for cache in caches:
-            result[cache["name"]] = cache
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
-    """
-    .. versionadded:: 2.0.0
-
-    Lists all Redis caches in a resource group.
-
-    :param resource_group: The name of the resource group.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.redis.operations.list_by_resource_group test_rg
-
-    """
-    result = {}
-    redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
-
-    try:
-        caches = await hub.exec.azurerm.utils.paged_object_to_list(
-            redconn.redis.list_by_resource_group(resource_group_name=resource_group,)
-        )
+        if resource_group:
+            caches = await hub.exec.azurerm.utils.paged_object_to_list(
+                redconn.redis.list_by_resource_group(resource_group_name=resource_group)
+            )
+        else:
+            caches = await hub.exec.azurerm.utils.paged_object_to_list(
+                redconn.redis.list()
+            )
 
         for cache in caches:
             result[cache["name"]] = cache
@@ -507,7 +486,7 @@ async def list_upgrade_notifications(hub, ctx, name, resource_group, history, **
 
     :param resource_group: The name of the resource group.
 
-    :param history: A float representing how many minutes in past to look for upgrade notifications.
+    :param history: A float value representing how many minutes in past to look for upgrade notifications.
 
     CLI Example:
 
