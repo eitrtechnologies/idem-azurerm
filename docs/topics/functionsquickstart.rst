@@ -4,19 +4,19 @@ Quickstart - Function Apps
 Azure Functions let you execute your code in a serverless environment, without having to create a VM or publish a web
 application. Azure Function Apps are applications used to group Azure Functions together, allowing for easier
 management, deployment, and resource sharing. The ``idem-azurerm`` Function App state module provides users with a way
-to build Function Apps and upload their Azure Functions to be serverlessly executed. This quickstart guide demonstrates
+to build Function Apps and upload their Azure Functions to be executed serverlessly. This quickstart guide demonstrates
 the deployment of a HTTP trigger function within a Function App created using the state module. The HTTP trigger
-function will run whenever it receives an HTTP request, responding based on information passed within the request. In
+function will run whenever it receives an HTTP request, responding based on information passed in the request. In
 this case, the HTTP trigger function will respond to the HTTP request with "Hello, {name}" where {name} is passed as a
 query parameter.
 
 Azure Function Creation
 =======================
-Refer to the "Installation" and "Credentials" sections of the `Getting Started Guide <gettingstarted.html>`_ to get any
-prerequisites set up if this is your first time with ``idem-azurerm``.
+If it is your first time using ``idem-azurerm``, please refer to the "Installation" and "Credentials" sections of the
+`Getting Started Guide <gettingstarted.html>`_ to get any prerequisites set up.
 
-The first step is to create any Azure Functions you want stored within your function App. You can find information about
-developing Azure Functions locally `here <https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-local>`_.
+The first step is to create the Azure Functions you will store within your function App. Information about developing
+Azure Functions locally can be found `here <https://docs.microsoft.com/en-us/azure/azure-functions/functions-develop-local>`_.
 The Function App state module will upload any Azure Functions you create into a storage account. The Azure Functions
 must be stored within a compressed (.zip) file in order to be uploaded to the storage account via the state module. The
 contents of the compressed (.zip) file will resemble the following file structure::
@@ -40,7 +40,8 @@ The zip file used for this demonstration will utilize the following file structu
     |     - function.json
     |     - __init__.py
 
-Below is the content of each files necessary for the demonstration:
+Below is the content of each file necessary for the demonstration:
+
 **host.json**
     .. code-block:: JSON
 
@@ -110,13 +111,14 @@ Below is the content of each files necessary for the demonstration:
             ]
         }
 
-You can create the zip file yourself using the provided files and the specified folder structure above.
+You can create the zip file yourself using the provided folder structure and file content specified above.
 
 Infrastructure Setup
 ====================
 In order to use the ``idem-azurerm`` Function App state module, you must have a resource group for the Function App to
-preside within and a storage account of the kind "Storage" or "StorageV2" that will be used to store the Azure Functions
-for the Function App. Below is a state file that sets up the resource group and storage account for this demonstration:
+preside within and a storage account of the kind "Storage" or "StorageV2." The Azure Functions will be stored with that
+storage account and then the Function App will run the file containing all of the functions. Below is a state file that
+sets up the resource group and storage account for this demonstration:
 
 **setup.sls**
     .. code-block:: yaml
@@ -140,14 +142,14 @@ for the Function App. Below is a state file that sets up the resource group and 
 State Module Usage
 ==================
 Now that you have deployed the appropriate infrastructure and created the zip file for the Azure Functions, you are
-ready to run the Function App state module. There are a few important things to note about the module:
+ready to run the Function App state module. Here are a few important things to note about the module:
 
 * The Function App state module requires a Consumption Plan. If you do not already have a Consumption Plan, the module
   will create one for you (using a name you specify or a default name). If you do use an existing Consumption Plan, the
   OS of that plan must match the OS specified within the os_type parameter.
 * The module also allows you to enable Application Insights. Application Insights serve as a monitoring and analytics
   tool, enabling users to do things like diagnose issues or analyze application usage. If you want to enable Application
-  Insights, you can pass the name of an existing Application Insights Component or one will be created for you (using a
+  Insights, you can specify the name of an existing Application Insights Component or one will be created for you (using a
   name you specify or a default name).
 * The functions_file_path parameter should be the *absolute* path of the .zip file (i.e., "/root/dev/functions.zip").
   This file will be uploaded to the specified storage account every time the state is run and will overwrite any
@@ -157,7 +159,7 @@ ready to run the Function App state module. There are a few important things to 
   hold the zip file.
 * The OS type of the Function App cannot be changed once initially set.
 
-In order to run the HTTP trigger function created above, we want to create a Function App running a Linux OS with a
+In order to run the HTTP trigger function created above, you will want to create a Function App running a Linux OS with a
 Python runtime stack. The state below does just that, creating a Consumption Plan named "plan-function-app", an
 Application Insights Component named "appi-function-app", and a Function App named "func-idem". More information
 regarding the parameters used within the state module can be found in the module reference documentation.
@@ -179,7 +181,8 @@ regarding the parameters used within the state module can be found in the module
 
 After the execution of the state successfully completes, the function(s) you uploaded to the Function App are ready for
 use. Every Azure Function within a Function App has its own unique function URL in the following format: ``https://{function_app_name}.azurewebsites.net/api/{function_name}?``.
-If you open a browser and enter the function URL of our HTTP trigger, passing a query string that specifies a value for
-the ``name`` parameter (i.e., ``https://func-idem.azurewebsites.net/api/HttpTrigger?name=Alex``), then you will get a
-response displaying "Hello, {name}" on the screen. Once you see that message you know that you have now succesfully
-deployed your first Azure Function to a Function App using ``idem-azurerm``!
+In order to test that the HTTP trigger function is working properly, you can open a browser session and go to the
+function URL of the function. You will want to add the ``name`` parameter to the query string for the request. (i.e.,
+``https://func-idem.azurewebsites.net/api/HttpTrigger?name=Alex``), then you notice that the response "Hello, {name}" is
+displayed in your browser. Once you see that message you know that you have succesfully deployed your first Azure
+Function to a Function App using ``idem-azurerm``!
