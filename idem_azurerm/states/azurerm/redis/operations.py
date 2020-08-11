@@ -275,7 +275,6 @@ async def present(
             polling=polling,
             **cache_kwargs,
         )
-        cache.wait()
     else:
         cache = await hub.exec.azurerm.redis.operations.update(
             ctx=ctx,
