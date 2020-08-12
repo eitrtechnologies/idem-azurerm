@@ -677,7 +677,7 @@ async def lease(
     :param container: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
         character must be immediately preceded and followed by a letter or number.
-    
+
     :param account: The name of the storage account within the specified resource group. Storage account names must be
         between 3 and 24 characters in length and use numbers and lower-case letters only.
 
@@ -686,7 +686,7 @@ async def lease(
     :param lease_action: The lease action. Possible values include: 'Acquire', 'Renew', 'Change', 'Release', and 'Break'.
 
     :param lease_duration: (Required for the lease action "acquire") Specifies the duration of the lease, in seconds, or negative one (-1)
-        for a lease that never expires. 
+        for a lease that never expires.
 
     :param break_period: (Optional) For a break action, proposed duration the lease should continue before it is broken,
         in seconds, between 0 and 60.
@@ -745,7 +745,7 @@ async def list_(
     account,
     resource_group,
     maxpagesize=None,
-    filter=None,
+    list_filter=None,
     include_soft_deleted=True,
     **kwargs,
 ):
@@ -764,7 +764,7 @@ async def list_(
 
     :param maxpagesize: (Optional) Specified maximum number of containers that can be included in the list.
 
-    :param filter: (Optional) When specified, only container names starting with the filter will be listed.
+    :param list_filter: (Optional) When specified, only container names starting with the filter will be listed.
 
     :param include_soft_deleted: (Optional) A boolean value representing whether to include the properties for soft
         deleted blob containers. Defaults to True.
@@ -779,19 +779,14 @@ async def list_(
     result = {}
     storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
-    if include_soft_deleted:
-        include = True
-    else:
-        include = False
-
     try:
         containers = await hub.exec.azurerm.utils.paged_object_to_list(
             storconn.blob_containers.list(
                 account_name=account,
                 resource_group_name=resource_group,
                 maxpagesize=maxpagesize,
-                filter=filter,
-                include=include,
+                filter=list_filter,
+                include=include_soft_deleted,
                 **kwargs,
             )
         )
@@ -975,7 +970,7 @@ async def update(
     :param deny_encryption_scope_override: (Optional) A boolean flag representing whether or not to block the override
         of the encryption scope from the container default.
 
-    :param metadata: (Optional) A dictionary of name-value pairs to associate with the container as metadata.    
+    :param metadata: (Optional) A dictionary of name-value pairs to associate with the container as metadata.
 
     CLI Example:
 
