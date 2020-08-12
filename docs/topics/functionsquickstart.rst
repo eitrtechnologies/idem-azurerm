@@ -146,15 +146,15 @@ ready to run the Function App state module. Here are a few important things to n
 
 * The Function App state module requires a Consumption Plan. If you do not already have a Consumption Plan, the module
   will create one for you (using a name you specify or a default name). If you do use an existing Consumption Plan, the
-  OS of that plan must match the OS specified within the os_type parameter.
+  OS of that plan must match the OS specified within the ``os_type`` parameter.
 * The module also allows you to enable Application Insights. Application Insights serve as a monitoring and analytics
   tool, enabling users to do things like diagnose issues or analyze application usage. If you want to enable Application
   Insights, you can specify the name of an existing Application Insights Component or one will be created for you (using a
   name you specify or a default name).
-* The functions_file_path parameter should be the *absolute* path of the .zip file (i.e., "/root/dev/functions.zip").
+* The ``functions_file_path`` parameter should be the *absolute* path of the .zip file (i.e., "/root/dev/functions.zip").
   This file will be uploaded to the specified storage account every time the state is run and will overwrite any
   existing file with the same name.
-* The value of runtime_stack parameter must match the runtime language used by the Azure Functions.
+* The value of ``runtime_stack`` parameter must match the runtime language used by the Azure Functions.
 * If it is not already present, a container named "function-releases" will be created within the storage account to
   hold the zip file.
 * The OS type of the Function App cannot be changed once initially set.
