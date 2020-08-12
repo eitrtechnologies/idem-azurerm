@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Storage Account State Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -56,7 +58,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-TREQ = {"present": {"require": ["states.azurerm.resource.group.present",]}}
+TREQ = {"present": {"require": ["states.azurerm.resource.group.present"]}}
 
 
 async def present(
@@ -68,17 +70,23 @@ async def present(
     kind,
     location,
     custom_domain=None,
-    encryption=None,
     network_rule_set=None,
     access_tier=None,
+    azure_files_identity_based_auth=None,
     https_traffic_only=None,
-    is_hns_enabled=None,
+    hns_enabled=None,
+    large_file_shares=None,
+    routing_preference=None,
+    blob_public_access=None,
+    minimum_tls_version=None,
     tags=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a storage account exists in the resource group.
 
@@ -90,32 +98,46 @@ async def present(
     :param sku: The name of the storage account SKU. Possible values include: 'Standard_LRS', 'Standard_GRS',
         'Standard_RAGRS', 'Standard_ZRS', 'Premium_LRS', 'Premium_ZRS', 'Standard_GZRS', and 'Standard_RAGZRS'.
 
-    :param kind: Indicates the type of storage account. Possible values include: 'Storage', 'StorageV2', 'BlobStorage'.
+    :param kind: Indicates the type of storage account. Possible values include: 'Storage', 'StorageV2', 'BlobStorage',
+        'FileStorage', and 'BlockBlobStorage'.
 
     :param location: Gets or sets the location of the resource. This will be one of the supported and registered Azure
         Geo Regions (e.g. West US, East US, Southeast Asia, etc.). The geo region of a resource cannot be changed once
         it is created, but if an identical geo region is specified on update, the request will succeed.
 
-    :param custom_domain: User domain assigned to the storage account. Valid parameters are:
+    :param custom_domain: (Optional) User domain assigned to the storage account. Valid parameters are:
         - ``name``: Required. Gets or sets the custom domain name assigned to the storage account. Name is the CNAME
-                    source. To clear the existing custom domain, use an empty string for this property.
-        - ``use_sub_domain_name``: Indicates whether indirect CName validation is enabled. Default value is false.
-                                   This should only be set on updates.
+            source. To clear the existing custom domain, use an empty string for this property.
+        - ``use_sub_domain_name``: Indicates whether indirect CName validation is enabled. Default value is False.
+            This should only be set on updates.
 
-    :param encryption: Provides the encryption settings on the account. If left unspecified the account encryption
-        settings will remain the same. The default setting is unencrypted.
+    :param network_rule_set: (Optional) A dictionary representing a NetworkRuleSet object.
 
-    :param network_rule_set: A dictionary representing a NetworkRuleSet object.
-
-    :param access_tier: The access tier is used for billing. Required for when the kind is set to 'BlobStorage'.
+    :param access_tier: (Required for kind of "BlobStorage", Optional otherwise) The access tier is used for billing.
         Possible values include: 'Hot' and 'Cool'.
 
-    :param https_traffic_only: Allows https traffic only to storage service if set to True. The default value
-        is False.
+    :param azure_files_identity_based_auth: (Optional) A dictionary representing a
+        AzureFilesIdentityBasedAuthentication object. Provides the identity based authentication settings for
+        Azure Files.
 
-    :param is_hns_enabled: Account HierarchicalNamespace enabled if set to True. The default value is False.
+    :param https_traffic_only: (Optional) Allows https traffic only to storage service if set to True. The default value
+        is True.
 
-    :param tags: A dictionary of strings can be passed as tag metadata to the storage account object.
+    :param hns_enabled: (Optional) A boolean flag specifying whether theaccount hierarchical namespace is enabled.
+
+    :param large_file_shares: (Optional) Allow large file shares if sets to 'Enabled'. It cannot be disabled once
+        it is enabled. Possible values include: 'Disabled', 'Enabled'.
+
+    :param routing_preference: (Optional) A dictionary representing a RoutingPreference object. Maintains information
+        about the network routing choice opted by the user for data transfer.
+
+    :param blob_public_access: (Optional) A boolean flag specifying whether public access is allowed to all blobs
+        or containers in the storage account. The default value is True.
+
+    :param minimum_tls_version: (Optional) Set the minimum TLS version to be permitted on requests to storage. The
+        default interpretation is TLS 1.0 for this property. Possible values include: 'TLS1_0', 'TLS1_1', 'TLS1_2'.
+
+    :param tags: A dictionary of strings can be passed as metadata to the storage account.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -171,12 +193,43 @@ async def present(
                     "new": https_traffic_only,
                 }
 
-        if is_hns_enabled is not None:
-            if is_hns_enabled != account.get("is_hns_enabled"):
+        if hns_enabled is not None:
+            if hns_enabled != account.get("is_hns_enabled"):
                 ret["changes"]["is_hns_enabled"] = {
                     "old": account.get("is_hns_enabled"),
-                    "new": is_hns_enabled,
+                    "new": hns_enabled,
                 }
+
+        if large_file_shares:
+            if large_file_shares != account.get("large_file_shares_state"):
+                ret["changes"]["large_file_shares_state"] = {
+                    "old": account.get("large_file_shares_state"),
+                    "new": large_file_shares,
+                }
+
+        if minimum_tls_version:
+            if minimum_tls_version != account.get("minimum_tls_version"):
+                ret["changes"]["minimum_tls_version"] = {
+                    "old": account.get("minimum_tls_version"),
+                    "new": minimum_tls_version,
+                }
+
+        if blob_public_access is not None:
+            if blob_public_access != account.get("allow_blob_public_access"):
+                ret["changes"]["allow_blob_public_access"] = {
+                    "old": account.get("allow_blob_public_access"),
+                    "new": blob_public_access,
+                }
+
+        if azure_files_identity_based_auth:
+            auth_changes = differ.deep_diff(
+                account.get("azure_files_identity_based_authentication", {}),
+                azure_files_identity_based_auth or {},
+            )
+            if auth_changes:
+                ret["changes"][
+                    "azure_files_identity_based_authentication"
+                ] = auth_changes
 
         if network_rule_set:
             rule_set_changes = differ.deep_diff(
@@ -185,14 +238,13 @@ async def present(
             if rule_set_changes:
                 ret["changes"]["network_rule_set"] = rule_set_changes
 
-        if encryption:
-            encryption_changes = differ.deep_diff(
-                account.get("encryption", {}), encryption or {}
+        if routing_preference:
+            routing_changes = differ.deep_diff(
+                account.get("routing_preference", {}), routing_preference or {}
             )
-            if encryption_changes:
-                ret["changes"]["encryption"] = encryption_changes
+            if routing_changes:
+                ret["changes"]["routing_preference"] = routing_preference
 
-        # The Custom Domain can only be added on once, so if it already exists then this cannot be changed
         if custom_domain:
             domain_changes = differ.deep_diff(
                 account.get("custom_domain", {}), custom_domain or {}
@@ -235,14 +287,24 @@ async def present(
             ret["changes"]["new"]["access_tier"] = access_tier
         if custom_domain:
             ret["changes"]["new"]["custom_domain"] = custom_domain
-        if encryption:
-            ret["changes"]["new"]["encryption"] = encryption
         if network_rule_set:
             ret["changes"]["new"]["network_rule_set"] = network_rule_set
         if https_traffic_only is not None:
             ret["changes"]["new"]["enable_https_traffic_only"] = https_traffic_only
-        if is_hns_enabled is not None:
-            ret["changes"]["new"]["is_hns_enabled"] = is_hns_enabled
+        if hns_enabled is not None:
+            ret["changes"]["new"]["is_hns_enabled"] = hns_enabled
+        if azure_files_identity_based_auth:
+            ret["changes"]["new"][
+                "azure_files_identity_based_authentication"
+            ] = azure_files_identity_based_auth
+        if large_file_shares:
+            ret["changes"]["new"]["large_file_shares_state"] = large_file_shares_state
+        if routing_preference:
+            ret["changes"]["new"]["routing_preference"] = routing_preference
+        if blob_public_access is not None:
+            ret["changes"]["new"]["allow_blob_public_access"] = blob_public_access
+        if minimum_tls_version:
+            ret["changes"]["new"]["minimum_tls_version"] = minimum_tls_version
 
     if ctx["test"]:
         ret["comment"] = "Storage account {0} would be created.".format(name)
@@ -256,16 +318,20 @@ async def present(
         ctx=ctx,
         name=name,
         resource_group=resource_group,
-        tags=tags,
         sku=sku,
         kind=kind,
         location=location,
         custom_domain=custom_domain,
-        encryption=encryption,
         network_rule_set=network_rule_set,
         access_tier=access_tier,
+        azure_files_identity_based_auth=azure_files_identity_based_auth,
         https_traffic_only=https_traffic_only,
-        is_hns_enabled=is_hns_enabled,
+        hns_enabled=hns_enabled,
+        large_file_shares=large_file_shares,
+        routing_preference=routing_preference,
+        blob_public_access=blob_public_access,
+        minimum_tls_version=minimum_tls_version,
+        tags=tags,
         **account_kwargs,
     )
 
