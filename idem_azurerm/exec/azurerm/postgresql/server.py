@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) PostgreSQL Server Operations Execution Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -61,15 +63,19 @@ async def create(
     sku=None,
     version=None,
     ssl_enforcement=None,
+    minimal_tls_version=None,
+    infrastructure_encryption=None,
+    public_network_access=None,
     storage_profile=None,
     login=None,
     login_password=None,
-    create_mode="Default",
     tags=None,
     **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Creates a new server, or will overwrite an existing server.
 
@@ -82,12 +88,21 @@ async def create(
     :param sku: The name of the SKU (pricing tier) of the server. Typically, the name of the sku is in the form
         tier_family_cores, e.g. B_Gen4_1, GP_Gen5_8.
 
-    :param version: Server version. Possible values include: '9.5', '9.6', '10', '10.0', '10.2', '11'.
+    :param version: (Optional) Server version. Possible values include: "9.5", "9.6", "10", "10.0", "10.2", "11".
 
-    :param ssl_enforcement: Enable ssl enforcement or not when connect to server.
-        Possible values include: 'Enabled', 'Disabled'.
+    :param ssl_enforcement: (Optional) Enable ssl enforcement or not when connect to server. Possible values
+        include: "Enabled", "Disabled".
 
-    :param storage_profile: A dictionary representing the storage profile of a server. Parameters include:
+    :param minimal_tls_version: (Optional) Enforce a minimal tls version for the server. Possible values include:
+        "TLS1_0", "TLS1_1", "TLS1_2", "TLSEnforcementDisabled".
+
+    :param infrastructure_encryption: (Optional) Status showing whether the server enabled infrastructure encryption.
+        Possible values include: "Enabled", "Disabled".
+
+    :param public_network_access: (Optional) Whether or not public network access is allowed for this server.
+        Possible values include: "Enabled", "Disabled".
+
+    :param storage_profile: (Optional) A dictionary representing the storage profile of a server. Parameters include:
         - ``backup_retention_days``: Backup retention days for the server.
         - ``geo_redundant_backup``: Enable Geo-redundant or not for server backup. Possible values include:
             'Enabled', 'Disabled'.
@@ -121,7 +136,9 @@ async def create(
             version=version,
             ssl_enforcement=ssl_enforcement,
             storage_profile=storage_profile,
-            create_mode=create_mode,
+            minimal_tls_version=minimal_tls_version,
+            infrastructure_encryption=infrastructure_encryption,
+            public_network_access=public_network_access,
             administrator_login=login,
             administrator_login_password=login_password,
             **kwargs,
@@ -230,11 +247,15 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, ctx, **kwargs):
+async def list_(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     List all the servers in a given subscription.
+
+    :param resource_group: The name of the resource group to limit the results.
 
     CLI Example:
 
@@ -247,41 +268,16 @@ async def list_(hub, ctx, **kwargs):
     postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
-        servers = await hub.exec.azurerm.utils.paged_object_to_list(
-            postconn.servers.list()
-        )
-
-        for server in servers:
-            result[server["name"]] = server
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
-    """
-    .. versionadded:: 2.0.0
-
-    List all the servers in a given resource group.
-
-    :param resource_group: The name of the resource group. The name is case insensitive.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.postgresql.server.list_by_resource_group test_group
-
-    """
-    result = {}
-    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
-
-    try:
-        servers = await hub.exec.azurerm.utils.paged_object_to_list(
-            postconn.servers.list_by_resource_group(resource_group_name=resource_group)
-        )
+        if resource_group:
+            servers = await hub.exec.azurerm.utils.paged_object_to_list(
+                postconn.servers.list_by_resource_group(
+                    resource_group_name=resource_group
+                )
+            )
+        else:
+            servers = await hub.exec.azurerm.utils.paged_object_to_list(
+                postconn.servers.list()
+            )
 
         for server in servers:
             result[server["name"]] = server
@@ -334,6 +330,9 @@ async def update(
     sku=None,
     version=None,
     ssl_enforcement=None,
+    minimal_tls_version=None,
+    infrastructure_encryption=None,
+    public_network_access=None,
     storage_profile=None,
     login_password=None,
     tags=None,
@@ -342,21 +341,32 @@ async def update(
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Creates a new server, or will overwrite an existing server.
 
     :param name: The name of the server.
 
     :param resource_group: The name of the resource group. The name is case insensitive.
 
-    :param sku: The name of the SKU (pricing tier) of the server. Typically, the name of the sku is in the form
+    :param sku: (Optional) The name of the SKU (pricing tier) of the server. The name of the sku is in the form
         tier_family_cores, e.g. B_Gen4_1, GP_Gen5_8.
 
-    :param version: Server version. Possible values include: '9.5', '9.6', '10', '10.0', '10.2', '11'.
+    :param version: (Optional) Server version. Possible values include: "9.5", "9.6", "10", "10.0", "10.2", "11".
 
-    :param ssl_enforcement: Enable ssl enforcement or not when connect to server.
-        Possible values include: 'Enabled', 'Disabled'.
+    :param ssl_enforcement: (Optional) Enable ssl enforcement or not when connect to server. Possible values
+        include: "Enabled", "Disabled".
 
-    :param storage_profile: A dictionary representing the storage profile of a server. Parameters include:
+    :param minimal_tls_version: (Optional) Enforce a minimal tls version for the server. Possible values include:
+        "TLS1_0", "TLS1_1", "TLS1_2", "TLSEnforcementDisabled".
+
+    :param infrastructure_encryption: (Optional) Status showing whether the server enabled infrastructure encryption.
+        Possible values include: "Enabled", "Disabled".
+
+    :param public_network_access: (Optional) Whether or not public network access is allowed for this server.
+        Possible values include: "Enabled", "Disabled".
+
+    :param storage_profile: (Optional) A dictionary representing the storage profile of a server. Parameters include:
         - ``backup_retention_days``: Backup retention days for the server.
         - ``geo_redundant_backup``: Enable Geo-redundant or not for server backup. Possible values include:
             'Enabled', 'Disabled'.
@@ -387,6 +397,9 @@ async def update(
             sku=sku,
             version=version,
             ssl_enforcement=ssl_enforcement,
+            minimal_tls_version=minimal_tls_version,
+            infrastructure_encryption=infrastructure_encryption,
+            public_network_access=public_network_access,
             storage_profile=storage_profile,
             administrator_login_password=login_password,
             tags=tags,

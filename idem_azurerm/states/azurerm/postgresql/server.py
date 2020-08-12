@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) PostgreSQL Server Operations State Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -68,10 +70,12 @@ async def present(
     sku=None,
     version=None,
     ssl_enforcement=None,
+    minimal_tls_version=None,
+    infrastructure_encryption=None,
+    public_network_access=None,
     storage_profile=None,
     login=None,
     login_password=None,
-    create_mode="Default",
     force_password=False,
     tags=None,
     connection_auth=None,
@@ -79,6 +83,8 @@ async def present(
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a specified PostgreSQL Server exists.
 
@@ -88,13 +94,22 @@ async def present(
 
     :param location: The location the resource resides in.
 
-    :param sku: The name of the SKU (pricing tier) of the server. Typically, the name of the sku is in the form
+    :param sku: (Optional) The name of the SKU (pricing tier) of the server. The name of the sku is in the form
         tier_family_cores, e.g. B_Gen4_1, GP_Gen5_8.
 
-    :param version: Server version. Possible values include: '9.5', '9.6', '10', '10.0', '10.2', '11'.
+    :param version: (Optional) Server version. Possible values include: "9.5", "9.6", "10", "10.0", "10.2", "11".
 
-    :param ssl_enforcement: Enable ssl enforcement or not when connect to server.
-        Possible values include: 'Enabled', 'Disabled'.
+    :param ssl_enforcement: (Optional) Enable ssl enforcement or not when connect to server. Possible values
+        include: "Enabled", "Disabled".
+
+    :param minimal_tls_version: (Optional) Enforce a minimal tls version for the server. Possible values include:
+        "TLS1_0", "TLS1_1", "TLS1_2", "TLSEnforcementDisabled".
+
+    :param infrastructure_encryption: (Optional) Status showing whether the server enabled infrastructure encryption.
+        Possible values include: "Enabled", "Disabled".
+
+    :param public_network_access: (Optional) Whether or not public network access is allowed for this server.
+        Possible values include: "Enabled", "Disabled".
 
     :param storage_profile: A dictionary representing the storage profile of a server. Parameters include:
         - ``backup_retention_days``: Backup retention days for the server.
@@ -145,7 +160,7 @@ async def present(
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
-    if sku and not isinstance(sku, dict):
+    if sku:
         sku = {"name": sku}
 
     server = await hub.exec.azurerm.postgresql.server.get(
@@ -192,6 +207,27 @@ async def present(
                     "new": ssl_enforcement,
                 }
 
+        if minimal_tls_version:
+            if minimal_tls_version != server.get("minimal_tls_version"):
+                ret["changes"]["minimal_tls_version"] = {
+                    "old": server.get("minimal_tls_version"),
+                    "new": minimal_tls_version,
+                }
+
+        if public_network_access:
+            if public_network_access != server.get("public_network_access"):
+                ret["changes"]["public_network_access"] = {
+                    "old": server.get("public_network_access"),
+                    "new": public_network_access,
+                }
+
+        if infrastructure_encryption:
+            if infrastructure_encryption != server.get("infrastructure_encryption"):
+                ret["changes"]["infrastructure_encryption"] = {
+                    "old": server.get("infrastructure_encryption"),
+                    "new": infrastructure_encryption,
+                }
+
         if force_password:
             ret["changes"]["administrator_login_password"] = {"new": "REDACTED"}
         elif ret["changes"]:
@@ -214,7 +250,6 @@ async def present(
                 "name": name,
                 "resource_group": resource_group,
                 "location": location,
-                "create_mode": create_mode,
             },
         }
 
@@ -224,10 +259,16 @@ async def present(
             ret["changes"]["new"]["sku"] = sku
         if version:
             ret["changes"]["new"]["version"] = version
-        if create_mode:
-            ret["changes"]["new"]["create_mode"] = create_mode
         if ssl_enforcement:
             ret["changes"]["new"]["ssl_enforcement"] = ssl_enforcement
+        if minimal_tls_version:
+            ret["changes"]["new"]["minimal_tls_version"] = minimal_tls_version
+        if public_network_access:
+            ret["changes"]["new"]["public_network_access"] = public_network_access
+        if infrastructure_encryption:
+            ret["changes"]["new"][
+                "infrastructure_encryption"
+            ] = infrastructure_encryption
         if storage_profile:
             ret["changes"]["new"]["storage_profile"] = storage_profile
         if login:
@@ -252,10 +293,12 @@ async def present(
             sku=sku,
             version=version,
             ssl_enforcement=ssl_enforcement,
+            minimal_tls_version=minimal_tls_version,
+            infrastructure_encryption=infrastructure_encryption,
+            public_network_access=public_network_access,
             storage_profile=storage_profile,
             login=login,
             login_password=login_password,
-            create_mode=create_mode,
             tags=tags,
             **server_kwargs,
         )
@@ -267,6 +310,9 @@ async def present(
             sku=sku,
             version=version,
             ssl_enforcement=ssl_enforcement,
+            minimal_tls_version=minimal_tls_version,
+            infrastructure_encryption=infrastructure_encryption,
+            public_network_access=public_network_access,
             storage_profile=storage_profile,
             login_password=login_password,
             tags=tags,
