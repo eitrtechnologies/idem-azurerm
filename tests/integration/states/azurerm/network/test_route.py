@@ -8,9 +8,9 @@ async def test_table_present(hub, ctx, route_table, resource_group):
         "changes": {
             "new": {
                 "name": route_table,
+                "resource_group": resource_group,
                 "tags": None,
                 "routes": None,
-                "disable_bgp_route_propagation": None,
             },
             "old": {},
         },
@@ -58,7 +58,6 @@ async def test_present(hub, ctx, route, route_table, resource_group):
                 "name": route,
                 "address_prefix": addr_prefix,
                 "next_hop_type": next_hop_type,
-                "next_hop_ip_address": None,
             },
             "old": {},
         },

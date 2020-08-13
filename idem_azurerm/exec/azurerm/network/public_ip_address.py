@@ -255,7 +255,7 @@ async def update_tags(hub, ctx, name, resource_group, tags=None, **kwargs):
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
-        pub_ip = netconn.public_ip_addresses.get(
+        pub_ip = netconn.public_ip_addresses.update_tags(
             public_ip_address_name=name, resource_group_name=resource_group, tags=tags
         )
 
