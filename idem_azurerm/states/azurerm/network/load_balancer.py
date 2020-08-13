@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Network Load Balancer State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -48,30 +50,6 @@ Azure Resource Manager (ARM) Network Load Balancer State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: jinja
-
-        Ensure virtual network exists:
-            azurerm.network.virtual_network.present:
-                - name: my_vnet
-                - resource_group: my_rg
-                - address_prefixes:
-                    - '10.0.0.0/8'
-                    - '192.168.0.0/16'
-                - dns_servers:
-                    - '8.8.8.8'
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
-
-        Ensure virtual network is absent:
-            azurerm.network.virtual_network.absent:
-                - name: other_vnet
-                - resource_group: my_rg
-                - connection_auth: {{ profile }}
-
 """
 # Python libs
 from __future__ import absolute_import
@@ -105,13 +83,15 @@ async def present(
     probes=None,
     inbound_nat_rules=None,
     inbound_nat_pools=None,
-    outbound_nat_rules=None,
+    outbound_rules=None,
     tags=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a load balancer exists.
 
@@ -124,9 +104,6 @@ async def present(
     :param sku:
         The load balancer SKU, which can be 'Basic' or 'Standard'. This property cannot be changed once the load
         balancer is created.
-
-    :param tags:
-        A dictionary of strings can be passed as tag metadata to the load balancer object.
 
     :param frontend_ip_configurations:
         An optional list of dictionaries representing valid FrontendIPConfiguration objects. A frontend IP
@@ -224,7 +201,7 @@ async def present(
         - ``backend_port``: The port used for internal connections to the endpoint. Acceptable values are between 1 and
           65535.
 
-    :param outbound_nat_rules:
+    :param outbound_rules:
         An optional list of dictionaries representing valid OutboundNatRule objects. Valid parameters are:
 
         - ``name``: The name of the resource that is unique within a resource group.
@@ -233,6 +210,11 @@ async def present(
         - ``backend_address_pool``: Name of the backend address pool object used by the outbound NAT rule object.
           Outbound traffic is randomly load balanced across IPs in the backend IPs.
         - ``allocated_outbound_ports``: The number of outbound ports to be used for NAT.
+        - ``protocol``: The protocol for the outbound rule in load balancer. Possible values include: 'Tcp',
+          'Udp', 'All'
+
+    :param tags:
+        A dictionary of strings can be passed as tag metadata to the load balancer object.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
@@ -404,20 +386,20 @@ async def present(
             if comp_ret.get("changes"):
                 ret["changes"]["inbound_nat_pools"] = comp_ret["changes"]
 
-        # outbound_nat_rules changes
-        if outbound_nat_rules:
+        # outbound_rules changes
+        if outbound_rules:
             comp_ret = await hub.exec.azurerm.utils.compare_list_of_dicts(
-                load_bal.get("outbound_nat_rules", []),
-                outbound_nat_rules,
+                load_bal.get("outbound_rules", []),
+                outbound_rules,
                 ["frontend_ip_configuration"],
             )
 
             if comp_ret.get("comment"):
-                ret["comment"] = '"outbound_nat_rules" {0}'.format(comp_ret["comment"])
+                ret["comment"] = '"outbound_rules" {0}'.format(comp_ret["comment"])
                 return ret
 
             if comp_ret.get("changes"):
-                ret["changes"]["outbound_nat_rules"] = comp_ret["changes"]
+                ret["changes"]["outbound_rules"] = comp_ret["changes"]
 
         if not ret["changes"]:
             ret["result"] = True
@@ -438,11 +420,11 @@ async def present(
                 "tags": tags,
                 "frontend_ip_configurations": frontend_ip_configurations,
                 "backend_address_pools": backend_address_pools,
-                "load_balancing_rules": load_balancing_rules,
-                "probes": probes,
-                "inbound_nat_rules": inbound_nat_rules,
+                "outbound_rules": outbound_rules,
                 "inbound_nat_pools": inbound_nat_pools,
-                "outbound_nat_rules": outbound_nat_rules,
+                "inbound_nat_rules": inbound_nat_rules,
+                "probes": probes,
+                "load_balancing_rules": load_balancing_rules,
             },
         }
 
@@ -454,21 +436,28 @@ async def present(
     lb_kwargs = kwargs.copy()
     lb_kwargs.update(connection_auth)
 
-    load_bal = await hub.exec.azurerm.network.load_balancer.create_or_update(
-        ctx=ctx,
-        name=name,
-        resource_group=resource_group,
-        sku=sku,
-        tags=tags,
-        frontend_ip_configurations=frontend_ip_configurations,
-        backend_address_pools=backend_address_pools,
-        load_balancing_rules=load_balancing_rules,
-        probes=probes,
-        inbound_nat_rules=inbound_nat_rules,
-        inbound_nat_pools=inbound_nat_pools,
-        outbound_nat_rules=outbound_nat_rules,
-        **lb_kwargs,
-    )
+    if action == "create" or len(ret["changes"]) > 1 or not tag_changes:
+        load_bal = await hub.exec.azurerm.network.load_balancer.create_or_update(
+            ctx=ctx,
+            name=name,
+            resource_group=resource_group,
+            sku=sku,
+            tags=tags,
+            frontend_ip_configurations=frontend_ip_configurations,
+            backend_address_pools=backend_address_pools,
+            load_balancing_rules=load_balancing_rules,
+            probes=probes,
+            inbound_nat_rules=inbound_nat_rules,
+            inbound_nat_pools=inbound_nat_pools,
+            outbound_rules=outbound_rules,
+            **lb_kwargs,
+        )
+
+    # no idea why create_or_update doesn't work for tags
+    if action == "update" and tag_changes:
+        load_bal = await hub.exec.azurerm.network.load_balancer.update_tags(
+            ctx, name=name, resource_group=resource_group, tags=tags, **lb_kwargs,
+        )
 
     if "error" not in load_bal:
         ret["result"] = True
