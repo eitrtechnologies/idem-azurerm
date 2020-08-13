@@ -9,9 +9,8 @@ async def test_present(hub, ctx, public_ip_addr, resource_group):
         "changes": {
             "new": {
                 "name": public_ip_addr,
-                "tags": None,
-                "dns_settings": None,
                 "sku": None,
+                "tags": None,
                 "public_ip_allocation_method": None,
                 "public_ip_address_version": None,
                 "idle_timeout_in_minutes": idle_timeout,

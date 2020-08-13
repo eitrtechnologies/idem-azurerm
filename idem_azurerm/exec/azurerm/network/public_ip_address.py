@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Network Public IP Address Execution Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -90,16 +92,19 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def get(hub, ctx, name, resource_group, **kwargs):
+async def get(hub, ctx, name, resource_group, expand=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Get details about a specific public IP address.
+    .. versionchanged:: 4.0.0
+
+    Gets the specified public IP address in a specified resource group.
 
     :param name: The name of the public IP address to query.
 
-    :param resource_group: The resource group name assigned to the
-        public IP address.
+    :param resource_group: The resource group of the public IP address.
+
+    :param expand: Expands referenced resources.
 
     CLI Example:
 
@@ -108,8 +113,6 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.public_ip_address.get test-pub-ip testgroup
 
     """
-    expand = kwargs.get("expand")
-
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
@@ -118,6 +121,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
             resource_group_name=resource_group,
             expand=expand,
         )
+
         result = pub_ip.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
@@ -130,12 +134,13 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Create or update a public IP address within a specified resource group.
+    Creates or updates a static or dynamic public IP address.
 
     :param name: The name of the public IP address to create.
 
-    :param resource_group: The resource group name assigned to the
-        public IP address.
+    :param resource_group: The resource group of the public IP address.
+
+    :param
 
     CLI Example:
 
@@ -174,6 +179,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
             public_ip_address_name=name,
             parameters=pub_ip_model,
         )
+
         ip.wait()
         ip_result = ip.result()
         result = ip_result.as_dict()
@@ -188,11 +194,15 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def list_all(hub, ctx, **kwargs):
+async def list_(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    List all public IP addresses within a subscription.
+    .. versionchanged:: 4.0.0
+
+    Gets all the public IP addresses in a subscription.
+
+    :param resource_group: The name of the resource group to limit the results.
 
     CLI Example:
 
@@ -203,10 +213,16 @@ async def list_all(hub, ctx, **kwargs):
     """
     result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     try:
-        pub_ips = await hub.exec.azurerm.utils.paged_object_to_list(
-            netconn.public_ip_addresses.list_all()
-        )
+        if resource_group:
+            pub_ips = await hub.exec.azurerm.utils.paged_object_to_list(
+                netconn.public_ip_addresses.list(resource_group_name=resource_group)
+            )
+        else:
+            pub_ips = await hub.exec.azurerm.utils.paged_object_to_list(
+                netconn.public_ip_addresses.list_all()
+            )
 
         for ip in pub_ips:
             result[ip["name"]] = ip
@@ -217,31 +233,33 @@ async def list_all(hub, ctx, **kwargs):
     return result
 
 
-async def list_(hub, ctx, resource_group, **kwargs):
+async def update_tags(hub, ctx, name, resource_group, tags=None, **kwargs):
     """
-    .. versionadded:: 1.0.0
+    .. versionadded:: 4.0.0
 
-    List all public IP addresses within a resource group.
+    Updates public IP address tags.
 
-    :param resource_group: The resource group name to list public IP
-        addresses within.
+    :param name: The name of the public IP address.
+
+    :param resource_group: The resource group of the public IP address.
+
+    :param tags: The resource tags to update.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.public_ip_address.list testgroup
+        azurerm.network.public_ip_address.update_tags test_name test_group test_tags
 
     """
-    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     try:
-        pub_ips = await hub.exec.azurerm.utils.paged_object_to_list(
-            netconn.public_ip_addresses.list(resource_group_name=resource_group)
+        pub_ip = netconn.public_ip_addresses.get(
+            public_ip_address_name=name, resource_group_name=resource_group, tags=tags
         )
 
-        for ip in pub_ips:
-            result[ip["name"]] = ip
+        result = pub_ip.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
