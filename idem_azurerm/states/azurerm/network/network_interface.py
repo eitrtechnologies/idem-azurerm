@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Network Interface State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -48,30 +50,6 @@ Azure Resource Manager (ARM) Network Interface State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: jinja
-
-        Ensure virtual network exists:
-            azurerm.network.virtual_network.present:
-                - name: my_vnet
-                - resource_group: my_rg
-                - address_prefixes:
-                    - '10.0.0.0/8'
-                    - '192.168.0.0/16'
-                - dns_servers:
-                    - '8.8.8.8'
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
-
-        Ensure virtual network is absent:
-            azurerm.network.virtual_network.absent:
-                - name: other_vnet
-                - resource_group: my_rg
-                - connection_auth: {{ profile }}
-
 """
 # Python libs
 from __future__ import absolute_import
@@ -115,6 +93,8 @@ async def present(
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a network interface exists.
 
@@ -214,6 +194,7 @@ async def present(
 
     if "error" not in iface:
         action = "update"
+
         # tag changes
         tag_changes = differ.deep_diff(iface.get("tags", {}), tags or {})
         if tag_changes:
@@ -337,23 +318,30 @@ async def present(
     iface_kwargs = kwargs.copy()
     iface_kwargs.update(connection_auth)
 
-    iface = await hub.exec.azurerm.network.network_interface.create_or_update(
-        ctx=ctx,
-        name=name,
-        subnet=subnet,
-        virtual_network=virtual_network,
-        resource_group=resource_group,
-        ip_configurations=ip_configurations,
-        dns_settings=dns_settings,
-        enable_accelerated_networking=enable_accelerated_networking,
-        enable_ip_forwarding=enable_ip_forwarding,
-        mac_address=mac_address,
-        primary=primary,
-        network_security_group=network_security_group,
-        virtual_machine=virtual_machine,
-        tags=tags,
-        **iface_kwargs,
-    )
+    if action == "create" or len(ret["changes"]) > 1 or not tag_changes:
+        iface = await hub.exec.azurerm.network.network_interface.create_or_update(
+            ctx=ctx,
+            name=name,
+            subnet=subnet,
+            virtual_network=virtual_network,
+            resource_group=resource_group,
+            ip_configurations=ip_configurations,
+            dns_settings=dns_settings,
+            enable_accelerated_networking=enable_accelerated_networking,
+            enable_ip_forwarding=enable_ip_forwarding,
+            mac_address=mac_address,
+            primary=primary,
+            network_security_group=network_security_group,
+            virtual_machine=virtual_machine,
+            tags=tags,
+            **iface_kwargs,
+        )
+
+    # no idea why create_or_update doesn't work for tags
+    if action == "update" and tag_changes:
+        iface = await hub.exec.azurerm.network.network_interface.update_tags(
+            ctx, name=name, resource_group=resource_group, tags=tags, **iface_kwargs,
+        )
 
     if "error" not in iface:
         ret["result"] = True

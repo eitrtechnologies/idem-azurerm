@@ -33,7 +33,6 @@ Azure Resource Manager (ARM) Network Public IP Address Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
