@@ -11,7 +11,7 @@ async def test_present(hub, ctx, vnet, vnet2, resource_group):
                 "name": vnet,
                 "resource_group": resource_group,
                 "address_space": {"address_prefixes": vnet_addr_prefixes},
-                "dhcp_options": {"dns_servers": None},
+                "dhcp_options": {"dns_servers": []},
                 "enable_ddos_protection": False,
                 "enable_vm_protection": False,
                 "tags": None,
@@ -82,6 +82,7 @@ async def test_subnet_present(hub, ctx, subnet, vnet, resource_group):
                 "address_prefix": subnet_addr_prefix,
                 "network_security_group": None,
                 "route_table": None,
+                "service_endpoints": [{"service": "Microsoft.Sql"}],
             },
             "old": {},
         },
@@ -113,7 +114,7 @@ async def test_subnet_present(hub, ctx, subnet, vnet, resource_group):
         resource_group=resource_group,
         address_prefix=subnet_addr_prefix,
         # Service endpoints used for testing PostgreSQL virtual network rules
-        service_endpoints=[{"service": "Microsoft.sql"}],
+        service_endpoints=["Microsoft.Sql"],
     )
     assert ret == normal_expected
 
@@ -154,7 +155,7 @@ async def test_subnet_changes(
         resource_group=resource_group,
         address_prefix=changed_subnet_addr_prefix,
         # Service endpoints used for testing PostgreSQL virtual network rules
-        service_endpoints=[{"service": "Microsoft.sql"}],
+        service_endpoints=["Microsoft.Sql"],
     )
     assert ret == expected
 
