@@ -84,8 +84,6 @@ async def present(
     virtual_machine=None,
     network_security_group=None,
     dns_settings=None,
-    mac_address=None,
-    primary=None,
     enable_accelerated_networking=None,
     enable_ip_forwarding=None,
     connection_auth=None,
@@ -124,31 +122,19 @@ async def present(
         The name of the existing virtual machine to assign to the network interface.
 
     :param dns_settings:
-        An optional dictionary representing a valid NetworkInterfaceDnsSettings object. Valid parameters are:
+        (Optional) A dictionary representing a valid NetworkInterfaceDnsSettings object. Valid parameters are:
 
         - ``dns_servers``: List of DNS server IP addresses. Use 'AzureProvidedDNS' to switch to Azure provided DNS
           resolution. 'AzureProvidedDNS' value cannot be combined with other IPs, it must be the only value in
           dns_servers collection.
         - ``internal_dns_name_label``: Relative DNS name for this NIC used for internal communications between VMs in
           the same virtual network.
-        - ``internal_fqdn``: Fully qualified DNS name supporting internal communications between VMs in the same virtual
-          network.
-        - ``internal_domain_name_suffix``: Even if internal_dns_name_label is not specified, a DNS entry is created for
-          the primary NIC of the VM. This DNS name can be constructed by concatenating the VM name with the value of
-          internal_domain_name_suffix.
-
-    :param mac_address:
-        Optional string containing the MAC address of the network interface.
-
-    :param primary:
-        Optional boolean allowing the interface to be set as the primary network interface on a virtual machine
-        with multiple interfaces attached.
 
     :param enable_accelerated_networking:
-        Optional boolean indicating whether accelerated networking should be enabled for the interface.
+        (Optional) A boolean indicating whether accelerated networking should be enabled for the interface.
 
     :param enable_ip_forwarding:
-        Optional boolean indicating whether IP forwarding should be enabled for the interface.
+        (Optional) A boolean indicating whether IP forwarding should be enabled for the interface.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
@@ -169,7 +155,6 @@ async def present(
                     public_ip_address: pub_ip2
                 - dns_settings:
                     internal_dns_name_label: decisionlab-int-test-label
-                - primary: True
                 - enable_accelerated_networking: True
                 - enable_ip_forwarding: False
                 - network_security_group: nsg1
@@ -199,21 +184,6 @@ async def present(
         tag_changes = differ.deep_diff(iface.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
-
-        # mac_address changes
-        if mac_address and (mac_address != iface.get("mac_address")):
-            ret["changes"]["mac_address"] = {
-                "old": iface.get("mac_address"),
-                "new": mac_address,
-            }
-
-        # primary changes
-        if primary is not None:
-            if primary != iface.get("primary", True):
-                ret["changes"]["primary"] = {
-                    "old": iface.get("primary"),
-                    "new": primary,
-                }
 
         # enable_accelerated_networking changes
         if enable_accelerated_networking is not None:
@@ -255,6 +225,7 @@ async def present(
         # dns_settings changes
         if dns_settings:
             if not isinstance(dns_settings, dict):
+                ret["changes"] = {}
                 ret["comment"] = "DNS settings must be provided as a dictionary!"
                 return ret
 
@@ -304,8 +275,6 @@ async def present(
                 "virtual_machine": virtual_machine,
                 "enable_accelerated_networking": enable_accelerated_networking,
                 "enable_ip_forwarding": enable_ip_forwarding,
-                "mac_address": mac_address,
-                "primary": primary,
                 "tags": tags,
             },
         }
@@ -329,8 +298,6 @@ async def present(
             dns_settings=dns_settings,
             enable_accelerated_networking=enable_accelerated_networking,
             enable_ip_forwarding=enable_ip_forwarding,
-            mac_address=mac_address,
-            primary=primary,
             network_security_group=network_security_group,
             virtual_machine=virtual_machine,
             tags=tags,

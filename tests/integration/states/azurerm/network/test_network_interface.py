@@ -24,8 +24,6 @@ async def test_present(
                 "virtual_machine": None,
                 "enable_accelerated_networking": None,
                 "enable_ip_forwarding": None,
-                "mac_address": None,
-                "primary": None,
             },
             "old": {},
         },
