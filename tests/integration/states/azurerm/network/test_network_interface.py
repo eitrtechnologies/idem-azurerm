@@ -21,7 +21,6 @@ async def test_present(
                 ],
                 "dns_settings": None,
                 "network_security_group": None,
-                "virtual_machine": None,
                 "enable_accelerated_networking": None,
                 "enable_ip_forwarding": None,
             },

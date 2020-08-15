@@ -81,7 +81,6 @@ async def present(
     virtual_network,
     resource_group,
     tags=None,
-    virtual_machine=None,
     network_security_group=None,
     dns_settings=None,
     enable_accelerated_networking=None,
@@ -100,8 +99,8 @@ async def present(
         Name of the network interface.
 
     :param ip_configurations:
-        A list of dictionaries representing valid NetworkInterfaceIPConfiguration objects. The 'name' key is required at
-        minimum. At least one IP Configuration must be present.
+        A list of dictionaries representing valid NetworkInterfaceIPConfiguration objects. The ``name`` parameter is
+        required at minimum. At least one IP Configuration must be present.
 
     :param subnet:
         Name of the existing subnet assigned to the network interface.
@@ -116,10 +115,7 @@ async def present(
         A dictionary of strings can be passed as tag metadata to the network interface object.
 
     :param network_security_group:
-        The name of the existing network security group to assign to the network interface.
-
-    :param virtual_machine:
-        The name of the existing virtual machine to assign to the network interface.
+        (Optional) The name of the existing network security group to assign to the network interface.
 
     :param dns_settings:
         (Optional) A dictionary representing a valid NetworkInterfaceDnsSettings object. Valid parameters are:
@@ -214,14 +210,6 @@ async def present(
                 "new": network_security_group,
             }
 
-        # virtual_machine changes
-        vm_name = None
-        if iface.get("virtual_machine"):
-            vm_name = iface["virtual_machine"]["id"].split("/")[-1]
-
-        if virtual_machine and (virtual_machine != vm_name):
-            ret["changes"]["virtual_machine"] = {"old": vm_name, "new": virtual_machine}
-
         # dns_settings changes
         if dns_settings:
             if not isinstance(dns_settings, dict):
@@ -272,7 +260,6 @@ async def present(
                 "ip_configurations": ip_configurations,
                 "dns_settings": dns_settings,
                 "network_security_group": network_security_group,
-                "virtual_machine": virtual_machine,
                 "enable_accelerated_networking": enable_accelerated_networking,
                 "enable_ip_forwarding": enable_ip_forwarding,
                 "tags": tags,
@@ -299,7 +286,6 @@ async def present(
             enable_accelerated_networking=enable_accelerated_networking,
             enable_ip_forwarding=enable_ip_forwarding,
             network_security_group=network_security_group,
-            virtual_machine=virtual_machine,
             tags=tags,
             **iface_kwargs,
         )
@@ -380,7 +366,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.network.network_interface.delete(
-        ctx, name, resource_group, **connection_auth
+        ctx, name=name, resource_group=resource_group, **connection_auth
     )
 
     if deleted:

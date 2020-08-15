@@ -46,7 +46,6 @@ except ImportError:
 HAS_LIBS = False
 try:
     import azure.mgmt.network.models  # pylint: disable=unused-import
-    from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
 
@@ -77,7 +76,6 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     """
     result = False
-
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         nic = netconn.network_interfaces.delete(
@@ -109,11 +107,13 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.network_interface.get test-iface0 testgroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         nic = netconn.network_interfaces.get(
             network_interface_name=name, resource_group_name=resource_group
         )
+
         result = nic.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
@@ -176,17 +176,6 @@ async def create_or_update(
         if "error" not in nsg:
             kwargs["network_security_group"] = {"id": str(nsg["id"])}
 
-    # Use VM name to link to the ID of an existing VM.
-    if kwargs.get("virtual_machine"):
-        vm_instance = await hub.exec.azurerm.compute.virtual_machine.get(
-            ctx=ctx,
-            name=kwargs["virtual_machine"],
-            resource_group=resource_group,
-            **kwargs,
-        )
-        if "error" not in vm_instance:
-            kwargs["virtual_machine"] = {"id": str(vm_instance["id"])}
-
     # Loop through IP Configurations and build each dictionary to pass to model creation.
     if isinstance(ip_configurations, list):
         subnet = await hub.exec.azurerm.network.virtual_network.subnet_get(
@@ -219,6 +208,9 @@ async def create_or_update(
                     if isinstance(ipconfig.get("application_security_groups"), list):
                         # TODO: Add ID lookup for referenced object names
                         pass
+                    if isinstance(ipconfig.get("virtual_network_taps"), list):
+                        # TODO: Add ID lookup for referenced object names
+                        pass
                     if ipconfig.get("public_ip_address"):
                         pub_ip = await hub.exec.azurerm.network.public_ip_address.get(
                             ctx=ctx,
@@ -240,15 +232,14 @@ async def create_or_update(
         return result
 
     try:
-        interface = netconn.network_interfaces.create_or_update(
+        nic = netconn.network_interfaces.create_or_update(
             resource_group_name=resource_group,
             network_interface_name=name,
             parameters=nicmodel,
         )
 
-        interface.wait()
-        nic_result = interface.result()
-        result = nic_result.as_dict()
+        nic.wait()
+        result = nic.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -316,11 +307,13 @@ async def get_effective_route_table(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.network_interface.get_effective_route_table test-iface0 testgroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         nic = netconn.network_interfaces.get_effective_route_table(
             network_interface_name=name, resource_group_name=resource_group
         )
+
         nic.wait()
         tables = nic.result().as_dict()
         result = tables["value"]
@@ -350,14 +343,15 @@ async def list_effective_network_security_groups(
         azurerm.network.network_interface.list_effective_network_security_groups test-iface0 testgroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        nic = netconn.network_interfaces.list_effective_network_security_groups(
+        groups = netconn.network_interfaces.list_effective_network_security_groups(
             network_interface_name=name, resource_group_name=resource_group
         )
+
         nic.wait()
-        groups = nic.result()
-        groups = groups.as_dict()
+        groups = nic.result().as_dict()
         result = groups["value"]
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
@@ -407,7 +401,7 @@ async def list_virtual_machine_scale_set_vm_network_interfaces(
     return result
 
 
-async def list_virtual_machine_scale_set_network_interfaces(
+async def virtual_machine_scale_set_network_interfaces(
     hub, ctx, scale_set, resource_group, **kwargs
 ):
     """
@@ -446,10 +440,12 @@ async def list_virtual_machine_scale_set_network_interfaces(
 
 
 async def get_virtual_machine_scale_set_network_interface(
-    hub, ctx, name, scale_set, vm_index, resource_group, **kwargs
+    hub, ctx, name, scale_set, vm_index, resource_group, expand=None, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Get information about a specfic network interface within a scale set.
 
@@ -461,6 +457,8 @@ async def get_virtual_machine_scale_set_network_interface(
 
     :param resource_group: The resource group name assigned to the scale set.
 
+    :param expand: Expands referenced resources.
+
     CLI Example:
 
     .. code-block:: bash
@@ -469,8 +467,7 @@ async def get_virtual_machine_scale_set_network_interface(
         testgroup
 
     """
-    expand = kwargs.get("expand")
-
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         nic = netconn.network_interfaces.list_virtual_machine_scale_set_vm_network_interfaces(
