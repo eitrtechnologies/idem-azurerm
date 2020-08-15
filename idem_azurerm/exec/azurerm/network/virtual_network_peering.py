@@ -108,7 +108,7 @@ async def delete(hub, ctx, name, virtual_network, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network_peering.delete peer1 testnet testgroup
+        azurerm.network.virtual_network_peering.delete testname testnet testgroup
 
     """
     result = False
@@ -119,6 +119,7 @@ async def delete(hub, ctx, name, virtual_network, resource_group, **kwargs):
             virtual_network_name=virtual_network,
             virtual_network_peering_name=name,
         )
+
         peering.wait()
         result = True
     except CloudError as exc:
@@ -146,6 +147,7 @@ async def get(hub, ctx, name, virtual_network, resource_group, **kwargs):
         azurerm.network.virtual_network_peering.get peer1 testnet testgroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         peering = netconn.virtual_network_peerings.get(
@@ -181,8 +183,8 @@ async def create_or_update(
 
     :param remote_virtual_network: A valid name of a virtual network with which to peer.
 
-    :param remote_vnet_group: The resource group of the remote virtual network. Defaults to the same resource group
-        as the "local" virtual network.
+    :param remote_vnet_group: (Optional) The resource group of the remote virtual network. Defaults to the same resource
+        group as the "local" virtual network.
 
     :param virtual_network: The virtual network name containing the peering object.
 
@@ -196,6 +198,7 @@ async def create_or_update(
                   remotenet testnet testgroup remote_vnet_group=remotegroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     # Use Remote Virtual Network name to link to the ID of an existing object

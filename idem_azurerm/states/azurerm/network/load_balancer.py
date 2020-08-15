@@ -106,25 +106,27 @@ async def present(
         balancer is created.
 
     :param frontend_ip_configurations:
-        An optional list of dictionaries representing valid FrontendIPConfiguration objects. A frontend IP
+        (Optional) A list of dictionaries representing valid FrontendIPConfiguration objects. A frontend IP
         configuration can be either private (using private IP address and subnet parameters) or public (using a
         reference to a public IP address object). Valid parameters are:
 
         - ``name``: The name of the resource that is unique within a resource group.
-        - ``private_ip_address``: The private IP address of the IP configuration. Required if
-          'private_ip_allocation_method' is 'Static'.
-        - ``private_ip_allocation_method``: The Private IP allocation method. Possible values are: 'Static' and
-          'Dynamic'.
+        - ``private_ip_address``: The private IP address of the IP configuration. Required if ``private_ip_allocation_method``
+            is 'Static'.
+        - ``private_ip_allocation_method``: The Private IP allocation method. Possible values are: 'Static', 'Dynamic'.
         - ``subnet``: Name of an existing subnet inside of which the frontend IP will reside.
         - ``public_ip_address``: Name of an existing public IP address which will be assigned to the frontend IP object.
 
     :param backend_address_pools:
-        An optional list of dictionaries representing valid BackendAddressPool objects. Only the 'name' parameter is
-        valid for a BackendAddressPool dictionary. All other parameters are read-only references from other objects
-        linking to the backend address pool. Inbound traffic is randomly load balanced across IPs in the backend IPs.
+        (Optional) A list of dictionaries representing valid BackendAddressPool objects. Inbound traffic is randomly
+        load balanced across IPs in the backend IPs. Valid parameters include:
+
+        - ``name``: (Required) The name of the resource that is unique within the set of backend address pools used
+            by the load balancer.
+        - ``load_balancer_backend_addresses``: A list of LoadBalancerBackendAddress objects.
 
     :param probes:
-        An optional list of dictionaries representing valid Probe objects. Valid parameters are:
+        (Optional) A list of dictionaries representing valid Probe objects. Valid parameters are:
 
         - ``name``: The name of the resource that is unique within a resource group.
         - ``protocol``: The protocol of the endpoint. Possible values are 'Http' or 'Tcp'. If 'Tcp' is specified, a
@@ -141,30 +143,30 @@ async def present(
           set to 'Http'. Otherwise, it is not allowed. There is no default value.
 
     :param load_balancing_rules:
-        An optional list of dictionaries representing valid LoadBalancingRule objects. Valid parameters are:
+        (Optional) A list of dictionaries representing valid LoadBalancingRule objects. Valid parameters are:
 
         - ``name``: The name of the resource that is unique within a resource group.
         - ``load_distribution``: The load distribution policy for this rule. Possible values are 'Default', 'SourceIP',
-          and 'SourceIPProtocol'.
+            and 'SourceIPProtocol'.
         - ``frontend_port``: The port for the external endpoint. Port numbers for each rule must be unique within the
-          Load Balancer. Acceptable values are between 0 and 65534. Note that value 0 enables 'Any Port'.
+            Load Balancer. Acceptable values are between 0 and 65534. Note that value 0 enables 'Any Port'.
         - ``backend_port``: The port used for internal connections on the endpoint. Acceptable values are between 0 and
-          65535. Note that value 0 enables 'Any Port'.
+            65535. Note that value 0 enables 'Any Port'.
         - ``idle_timeout_in_minutes``: The timeout for the TCP idle connection. The value can be set between 4 and 30
-          minutes. The default value is 4 minutes. This element is only used when the protocol is set to TCP.
+            minutes. The default value is 4 minutes. This element is only used when the protocol is set to TCP.
         - ``enable_floating_ip``: Configures a virtual machine's endpoint for the floating IP capability required
-          to configure a SQL AlwaysOn Availability Group. This setting is required when using the SQL AlwaysOn
-          Availability Groups in SQL server. This setting can't be changed after you create the endpoint.
+            to configure a SQL AlwaysOn Availability Group. This setting is required when using the SQL AlwaysOn
+            Availability Groups in SQL server. This setting can't be changed after you create the endpoint.
         - ``disable_outbound_snat``: Configures SNAT for the VMs in the backend pool to use the public IP address
-          specified in the frontend of the load balancing rule.
+            specified in the frontend of the load balancing rule.
         - ``frontend_ip_configuration``: Name of the frontend IP configuration object used by the load balancing rule
-          object.
+            object.
         - ``backend_address_pool``: Name of the backend address pool object used by the load balancing rule object.
-          Inbound traffic is randomly load balanced across IPs in the backend IPs.
+            Inbound traffic is randomly load balanced across IPs in the backend IPs.
         - ``probe``: Name of the probe object used by the load balancing rule object.
 
     :param inbound_nat_rules:
-        An optional list of dictionaries representing valid InboundNatRule objects. Defining inbound NAT rules on your
+        (Optional) A list of dictionaries representing valid InboundNatRule objects. Defining inbound NAT rules on your
         load balancer is mutually exclusive with defining an inbound NAT pool. Inbound NAT pools are referenced from
         virtual machine scale sets. NICs that are associated with individual virtual machines cannot reference an
         Inbound NAT pool. They have to reference individual inbound NAT rules. Valid parameters are:
@@ -183,7 +185,7 @@ async def present(
           Availability Groups in SQL server. This setting can't be changed after you create the endpoint.
 
     :param inbound_nat_pools:
-        An optional list of dictionaries representing valid InboundNatPool objects. They define an external port range
+        (Optional) A list of dictionaries representing valid InboundNatPool objects. They define an external port range
         for inbound NAT to a single backend port on NICs associated with a load balancer. Inbound NAT rules are created
         automatically for each NIC associated with the Load Balancer using an external port from this range. Defining an
         Inbound NAT pool on your Load Balancer is mutually exclusive with defining inbound NAT rules. Inbound NAT pools
@@ -192,29 +194,40 @@ async def present(
 
         - ``name``: The name of the resource that is unique within a resource group.
         - ``frontend_ip_configuration``: Name of the frontend IP configuration object used by the inbound NAT pool
-          object.
+            object.
         - ``protocol``: Possible values include 'Udp', 'Tcp', or 'All'.
         - ``frontend_port_range_start``: The first port number in the range of external ports that will be used to
-          provide Inbound NAT to NICs associated with a load balancer. Acceptable values range between 1 and 65534.
+            provide Inbound NAT to NICs associated with a load balancer. Acceptable values range between 1 and 65534.
         - ``frontend_port_range_end``: The last port number in the range of external ports that will be used to
-          provide Inbound NAT to NICs associated with a load balancer. Acceptable values range between 1 and 65535.
+            provide Inbound NAT to NICs associated with a load balancer. Acceptable values range between 1 and 65535.
         - ``backend_port``: The port used for internal connections to the endpoint. Acceptable values are between 1 and
-          65535.
+            65535.
+        - ``idle_timeout_in_minutes``: The timeout for the TCP idle connection. The value can be set between 4 and 30
+            minutes. This element is only used when the protocol is set to TCP. The default value is 4 minutes.
+        - ``enable_floating_ip``: A boolean value whether to configure a virtual machine's endpoint for the floating
+            IP capability required to configure a SQL AlwaysOn Availability Group. This setting is required when using
+            the SQL AlwaysOn Availability Groups in SQL server. This setting can't be changed after you create the
+            endpoint.
+        - ``enable_tcp_reset``: A boolean value whether to receive bidirectional TCP Reset on TCP flow idle timeout or
+            unexpected connection termination. This element is only used when the protocol is set to TCP.
 
     :param outbound_rules:
-        An optional list of dictionaries representing valid OutboundNatRule objects. Valid parameters are:
+        (Optional) A list of dictionaries representing valid OutboundNatRule objects. Valid parameters are:
 
         - ``name``: The name of the resource that is unique within a resource group.
         - ``frontend_ip_configuration``: Name of the frontend IP configuration object used by the outbound NAT rule
-          object.
+            object.
         - ``backend_address_pool``: Name of the backend address pool object used by the outbound NAT rule object.
-          Outbound traffic is randomly load balanced across IPs in the backend IPs.
+            Outbound traffic is randomly load balanced across IPs in the backend IPs.
         - ``allocated_outbound_ports``: The number of outbound ports to be used for NAT.
         - ``protocol``: The protocol for the outbound rule in load balancer. Possible values include: 'Tcp',
-          'Udp', 'All'
+            'Udp', 'All'.
+        - ``enable_tcp_reset``: A boolean value whether to receive bidirectional TCP Reset on TCP flow idle timeout or
+            unexpected connection termination. This element is only used when the protocol is set to TCP.
+        - ``idle_timeout_in_minutes``: The timeout for the TCP idle connection.
 
     :param tags:
-        A dictionary of strings can be passed as tag metadata to the load balancer object.
+        (Optional) A dictionary of strings can be passed as tag metadata to the load balancer object.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
@@ -519,7 +532,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.network.load_balancer.delete(
-        ctx, name, resource_group, **connection_auth
+        ctx, name=name, resource_group=resource_group, **connection_auth
     )
 
     if deleted:

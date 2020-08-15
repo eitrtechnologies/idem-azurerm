@@ -46,7 +46,6 @@ except ImportError:
 HAS_LIBS = False
 try:
     import azure.mgmt.network.models  # pylint: disable=unused-import
-    from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
 
@@ -172,6 +171,7 @@ async def filter_rule_create_or_update(
             }
         kwargs["location"] = rg_props["location"]
 
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
@@ -195,9 +195,9 @@ async def filter_rule_create_or_update(
             rule_name=name,
             route_filter_rule_parameters=rule_model,
         )
+
         rule.wait()
-        rule_result = rule.result()
-        result = rule_result.as_dict()
+        result = rule.result().as_dict()
     except CloudError as exc:
         message = str(exc)
         if kwargs.get("subscription_id") == str(message).strip():
@@ -291,7 +291,7 @@ async def filter_get(hub, ctx, name, resource_group, expand=None, **kwargs):
 
     :param resource_group: The resource group name assigned to the route filter.
 
-    :param expand: Expands referenced express route bgp peering resources. 
+    :param expand: Expands referenced express route bgp peering resources.
 
     CLI Example:
 
@@ -366,8 +366,7 @@ async def filter_create_or_update(hub, ctx, name, resource_group, **kwargs):
         )
 
         rt_filter.wait()
-        rt_result = rt_filter.result()
-        result = rt_result.as_dict()
+        result = rt_filter.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -443,11 +442,11 @@ async def filter_update_tags(hub, ctx, name, resource_group, tags=None, **kwargs
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
-        filter = netconn.route_tables.update_tags(
+        route_filter = netconn.route_tables.update_tags(
             route_filter_name=name, resource_group_name=resource_group, tags=tags
         )
 
-        result = filter.as_dict()
+        result = route_filter.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -554,8 +553,8 @@ async def create_or_update(
     :param next_hop_type: The type of Azure hop the packet should be sent to. Possible values are: 'VnetLocal',
         'VirtualNetworkGateway', 'Internet', 'VirtualAppliance', and 'None'.
 
-    :param next_hop_ip_address: Optional IP address to which packets should be forwarded. Next hop
-        values are only allowed in routes where the next_hop_type is 'VirtualAppliance'.
+    :param next_hop_ip_address: (Optional) IP address to which packets should be forwarded. Next hop values are only
+        allowed in routes where the next_hop_type is 'VirtualAppliance'.
 
     CLI Example:
 
@@ -564,6 +563,7 @@ async def create_or_update(
         azurerm.network.route.create_or_update test_name '10.0.0.0/8' test_rt_table test_group
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
@@ -588,9 +588,9 @@ async def create_or_update(
             route_name=name,
             route_parameters=rt_model,
         )
+
         route.wait()
-        rt_result = route.result()
-        result = rt_result.as_dict()
+        result = route.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -754,8 +754,7 @@ async def table_create_or_update(hub, ctx, name, resource_group, **kwargs):
         )
 
         table.wait()
-        tbl_result = table.result()
-        result = tbl_result.as_dict()
+        result = table.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}

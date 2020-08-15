@@ -49,6 +49,7 @@ Azure Resource Manager (ARM) Network Route State Module
 
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
+
 """
 # Python libs
 from __future__ import absolute_import
@@ -84,7 +85,7 @@ async def table_present(
     .. versionadded:: 1.0.0
 
     .. versionchanged:: 4.0.0
-  
+
     Ensure a route table exists.
 
     :param name: Name of the route table.
@@ -323,8 +324,8 @@ async def present(
     :param next_hop_type: The type of Azure hop the packet should be sent to. Possible values are: 'VnetLocal',
         'VirtualNetworkGateway', 'Internet', 'VirtualAppliance', and 'None'.
 
-    :param next_hop_ip_address: The IP address packets should be forwarded to. Next hop values are only allowed in
-        routes where the next hop type is 'VirtualAppliance'.
+    :param next_hop_ip_address: (Optional) The IP address packets should be forwarded to. Next hop values are only
+        allowed in routes where the next hop type is 'VirtualAppliance'.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -495,7 +496,11 @@ async def absent(
         return ret
 
     deleted = await hub.exec.azurerm.network.route.delete(
-        ctx, name, route_table, resource_group, **connection_auth
+        ctx,
+        name=name,
+        route_table=route_table,
+        resource_group=resource_group,
+        **connection_auth,
     )
 
     if deleted:

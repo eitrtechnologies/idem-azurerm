@@ -31,7 +31,6 @@ Azure Resource Manager (ARM) Network Load Balancer Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -56,35 +55,6 @@ except ImportError:
 __func_alias__ = {"list_": "list"}
 
 log = logging.getLogger(__name__)
-
-
-async def list_all(hub, ctx, **kwargs):
-    """
-    .. versionadded:: 1.0.0
-
-    List all load balancers within a subscription.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.network.load_balancer.list_all
-
-    """
-    result = {}
-    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
-    try:
-        load_balancers = await hub.exec.azurerm.utils.paged_object_to_list(
-            netconn.load_balancers.list_all()
-        )
-
-        for load_balancer in load_balancers:
-            result[load_balancer["name"]] = load_balancer
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result
 
 
 async def list_(hub, ctx, resource_group=None, **kwargs):
@@ -341,8 +311,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
         )
 
         load_balancer.wait()
-        lb_result = load_balancer.result()
-        result = lb_result.as_dict()
+        result = load_balancer.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}

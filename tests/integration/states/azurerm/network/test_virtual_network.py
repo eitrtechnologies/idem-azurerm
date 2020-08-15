@@ -79,6 +79,8 @@ async def test_subnet_present(hub, ctx, subnet, vnet, resource_group):
         "changes": {
             "new": {
                 "name": subnet,
+                "virtual_network": vnet,
+                "resource_group": resource_group,
                 "address_prefix": subnet_addr_prefix,
                 "network_security_group": None,
                 "route_table": None,
@@ -95,6 +97,8 @@ async def test_subnet_present(hub, ctx, subnet, vnet, resource_group):
         "changes": {
             "new": {
                 "name": "GatewaySubnet",
+                "virtual_network": vnet,
+                "resource_group": resource_group,
                 "address_prefix": gateway_snet_addr_prefix,
                 "network_security_group": None,
                 "route_table": None,

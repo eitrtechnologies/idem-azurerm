@@ -453,7 +453,7 @@ async def subnet_present(
             return ret
 
     # Convert the list of service endpoints into a list of ServiceEndpointPropertiesFormat objects
-    if service_endpoints:
+    if isinstance(service_endpoints, list):
         endpoints = []
         for endpoint in service_endpoints:
             endpoints.append({"service": endpoint})
@@ -529,6 +529,8 @@ async def subnet_present(
             "old": {},
             "new": {
                 "name": name,
+                "virtual_network": virtual_network,
+                "resource_group": resource_group,
                 "address_prefix": address_prefix,
                 "network_security_group": security_group,
                 "route_table": route_table,
@@ -628,7 +630,11 @@ async def subnet_absent(
         return ret
 
     deleted = await hub.exec.azurerm.network.virtual_network.subnet_delete(
-        ctx, name, virtual_network, resource_group, **connection_auth
+        ctx,
+        name=name,
+        virtual_network=virtual_network,
+        resource_group=resource_group,
+        **connection_auth,
     )
 
     if deleted:

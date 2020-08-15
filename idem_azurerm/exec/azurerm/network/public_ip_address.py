@@ -79,10 +79,12 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     result = False
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     try:
         pub_ip = netconn.public_ip_addresses.delete(
             public_ip_address_name=name, resource_group_name=resource_group
         )
+
         pub_ip.wait()
         result = True
     except CloudError as exc:
@@ -112,6 +114,7 @@ async def get(hub, ctx, name, resource_group, expand=None, **kwargs):
         azurerm.network.public_ip_address.get test-pub-ip testgroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
@@ -139,8 +142,6 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
 
     :param resource_group: The resource group of the public IP address.
 
-    :param
-
     CLI Example:
 
     .. code-block:: bash
@@ -160,6 +161,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
             }
         kwargs["location"] = rg_props["location"]
 
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
@@ -180,8 +182,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
         )
 
         ip.wait()
-        ip_result = ip.result()
-        result = ip_result.as_dict()
+        result = ip.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -207,7 +208,7 @@ async def list_(hub, ctx, resource_group=None, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.network.public_ip_address.list_all
+        azurerm.network.public_ip_address.list
 
     """
     result = {}

@@ -93,7 +93,7 @@ async def present(
         The name of the remote virtual network.
 
     :param remote_vnet_group:
-        The resource group of the remote virtual network. Defaults to the same resource group as the local
+        (Optional) The resource group of the remote virtual network. Defaults to the same resource group as the "local"
         virtual network.
 
     :param virtual_network:

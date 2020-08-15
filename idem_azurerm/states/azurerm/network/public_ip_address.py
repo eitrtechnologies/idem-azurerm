@@ -104,11 +104,11 @@ async def present(
 
     :param dns_settings: (Optional) A dictionary representing a valid PublicIPAddressDnsSettings object. Parameters
         include the following:
-        -  ``domain_name_label``: The domain name label. The concatenation of the domain name label and the regionalized
-             DNS zone make up the fully qualified domain name associated with the public IP address. If a domain name
-             label is specified, an A DNS record is created for the public IP in the Microsoft Azure DNS system.
-        - ``fqdn``: The Fully Qualified Domain Name of the A DNS record associated with the public IP. This is the
-            concatenation of the domainNameLabel and the regionalized DNS zone.
+        - ``domain_name_label``: (Required) The domain name label. The concatenation of the domain name label and the
+            regionalize DNS zone make up the fully qualified domain name associated with the public IP address. If a
+            domain name DNS zone make up the fully qualified domain name associated with the public IP address. If a
+            domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure
+            DNS system.
         - ``reverse_fqdn``: A user-visible, fully qualified domain name that resolves to this public IP address. If the
             reverse FQDN is specified, then a PTR DNS record is created pointing from the IP address in the in-addr.arpa
             domain to the reverse FQDN.
@@ -116,13 +116,10 @@ async def present(
     :param ddos_settings: (Optional) A dictionary representing an DdosSettings object. That DdosSettings object serves
         as the DDoS protection custom policy associated with the public IP address.
 
-    :param ip_address: (Optional) The IP address associated with the public IP address resource.
-
     :param public_ip_prefix: (Optional) The Resource ID of the Public IP Prefix that this Public IP Address should be
         allocated from.
 
     :param zones: (Optional) A list of availability zones denoting the IP allocated for the resource needs to come from.
-
 
     :param tags: (Optional) A dictionary of strings can be passed as tag metadata to the public IP address object.
 
@@ -164,7 +161,14 @@ async def present(
         sku = {"name": sku.capitalize()}
 
     if public_ip_prefix:
-        public_ip_prefix = {"id": public_ip_prefix}
+        if is_valid_resource_id(public_ip_prefix):
+            public_ip_prefix = {"id": public_ip_prefix}
+        else:
+            log.error("The specified resource ID of the Public IP Prefix is invalid.")
+            ret[
+                "comment"
+            ] = "The specified resource ID of the Public IP Prefix is invalid."
+            return ret
 
     pub_ip = await hub.exec.azurerm.network.public_ip_address.get(
         ctx, name, resource_group, azurerm_log_level="info", **connection_auth
@@ -200,10 +204,11 @@ async def present(
             ret["changes"]["ddos_settings"] = ddos_changes
 
         # sku changes
-        if sku:
-            sku_changes = differ.deep_diff(pub_ip.get("sku", {}), sku)
-            if sku_changes:
-                ret["changes"]["sku"] = sku_changes
+        if sku and sku != pub_ip.get("sku", {}):
+            ret["changes"]["sku"] = {
+                "old": pub_ip.get("sku"),
+                "new": sku,
+            }
 
         # public_ip_allocation_method changes
         if public_ip_allocation_method:
@@ -234,14 +239,6 @@ async def present(
                 "old": pub_ip.get("idle_timeout_in_minutes"),
                 "new": idle_timeout_in_minutes,
             }
-
-        # ip_address changes
-        if ip_address:
-            if ip_address != pub_ip.get("ip_address"):
-                ret["changes"]["ip_addresss"] = {
-                    "old": pub_ip.get("ip_address"),
-                    "new": ip_address,
-                }
 
         # public_ip_prefix changes
         if public_ip_prefix:
@@ -287,8 +284,6 @@ async def present(
             ret["changes"]["new"]["zones"] = zones
         if public_ip_prefix:
             ret["changes"]["new"]["public_ip_prefix"] = public_ip_prefix
-        if ip_address:
-            ret["changes"]["new"]["ip_address"] = ip_address
 
     if ctx["test"]:
         ret["comment"] = "Public IP address {0} would be created.".format(name)
@@ -310,7 +305,6 @@ async def present(
             public_ip_allocation_method=public_ip_allocation_method,
             public_ip_address_version=public_ip_address_version,
             idle_timeout_in_minutes=idle_timeout_in_minutes,
-            ip_address=ip_address,
             public_ip_prefix=public_ip_prefix,
             zones=zones,
             **pub_ip_kwargs,

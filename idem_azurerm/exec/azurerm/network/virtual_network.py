@@ -5,8 +5,8 @@ Azure Resource Manager (ARM) Virtual Network Execution Module
 .. versionadded:: 1.0.0
 
 :maintainer: <devops@eitr.tech>
-:configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
-    to every function or via acct in order to work properly.
+:configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
+    authentication parameters are case sensitive.
 
     Required provider parameters:
 
@@ -23,15 +23,32 @@ Azure Resource Manager (ARM) Virtual Network Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
-    Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-"""
+    Example acct setup for Azure Resource Manager authentication:
 
+    .. code-block:: yaml
+
+        azurerm:
+            default:
+                subscription_id: 3287abc8-f98a-c678-3bde-326766fd3617
+                tenant: ABCDEFAB-1234-ABCD-1234-ABCDEFABCDEF
+                client_id: ABCDEFAB-1234-ABCD-1234-ABCDEFABCDEF
+                secret: XXXXXXXXXXXXXXXXXXXXXXXX
+                cloud_environment: AZURE_PUBLIC_CLOUD
+            user_pass_auth:
+                subscription_id: 3287abc8-f98a-c678-3bde-326766fd3617
+                username: fletch
+                password: 123pass
+
+    The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
+    parameter of each state, but this is not preferred and could be deprecated in the future.
+
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -112,6 +129,7 @@ async def subnet_get(hub, ctx, name, virtual_network, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.subnet_get testsubnet testnet testgroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         subnet = netconn.subnets.get(
@@ -151,6 +169,7 @@ async def subnet_create_or_update(
         azurerm.network.virtual_network_gateway.subnet_create_or_update testsubnet '10.0.0.0/24' testnet testgroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     # Use NSG name to link to the ID of an existing NSG.
