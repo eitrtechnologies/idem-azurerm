@@ -96,6 +96,7 @@ async def test_assignment_present(hub, ctx, assignment_name, def_name):
                 "parameters": None,
                 "display_name": None,
                 "description": None,
+                "enforcement_mode": None,
             },
             "old": {},
         },

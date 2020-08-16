@@ -31,7 +31,6 @@ Azure Resource Manager (ARM) Resource Deployment Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 from json import loads, dumps
@@ -72,6 +71,7 @@ async def operation_get(hub, ctx, operation, deployment, resource_group, **kwarg
         azurerm.resource.deployment.operation_get testoperation testdeploy testgroup
 
     """
+    result = {}
     resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     try:
         operation = resconn.deployment_operations.get(
@@ -299,8 +299,7 @@ async def create_or_update(
                 properties=deploy_model,
             )
             deploy.wait()
-            deploy_result = deploy.result()
-            result = deploy_result.as_dict()
+            result = deploy.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -329,6 +328,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.resource.deployment.get testdeploy testgroup
 
     """
+    result = {}
     resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     try:
         deploy = resconn.deployments.get(
@@ -428,6 +428,7 @@ async def validate(
         azurerm.resource.deployment.validate testdeploy testgroup
 
     """
+    result = {}
     resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
 
     prop_kwargs = {"mode": deploy_mode}
@@ -501,6 +502,7 @@ async def export_template(hub, ctx, name, resource_group, **kwargs):
         azurerm.resource.deployment.export_template testdeploy testgroup
 
     """
+    result = {}
     resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     try:
         deploy = resconn.deployments.export_template(

@@ -48,24 +48,6 @@ Azure Resource Manager (ARM) Resource Group State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: jinja
-
-        Ensure resource group exists:
-            azurerm.resource.group.present:
-                - name: my_rg
-                - location: westus
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
-
-        Ensure resource group is absent:
-            azurerm.resource.group.absent:
-                - name: other_rg
-                - connection_auth: {{ profile }}
-
 """
 # Import Python libs
 from __future__ import absolute_import
@@ -96,7 +78,7 @@ async def present(
         the resource group is created.
 
     :param tags:
-        A dictionary of strings can be passed as tag metadata to the resource group object.
+        (Optional) A dictionary of strings can be passed as tag metadata to the resource group object.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
@@ -127,15 +109,17 @@ async def present(
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
-    group = {}
-
     group = await hub.exec.azurerm.resource.group.get(
         ctx, name, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in group:
         action = "update"
-        ret["changes"] = differ.deep_diff(group.get("tags", {}), tags or {})
+
+        # tag changes
+        tag_changes = differ.deep_diff(group.get("tags", {}), tags or {})
+        if tag_changes:
+            ret["changes"]["tags"] = tag_changes
 
         if not ret["changes"]:
             ret["result"] = True
@@ -207,8 +191,6 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
                 "comment"
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
-
-    group = {}
 
     group = await hub.exec.azurerm.resource.group.get(
         ctx, name, azurerm_log_level="info", **connection_auth

@@ -31,7 +31,6 @@ Azure Resource Manager (ARM) Resource Group Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 from json import loads, dumps
@@ -100,7 +99,7 @@ async def check_existence(hub, ctx, name, **kwargs):
     result = False
     resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     try:
-        result = resconn.resource_groups.check_existence(name)
+        result = resconn.resource_groups.check_existence(resource_group_name=name)
 
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
@@ -126,9 +125,9 @@ async def get(hub, ctx, name, **kwargs):
     result = {}
     resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     try:
-        group = resconn.resource_groups.get(name)
-        result = group.as_dict()
+        group = resconn.resource_groups.get(resource_group_name=name)
 
+        result = group.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -144,8 +143,8 @@ async def create_or_update(hub, ctx, name, location, **kwargs):
 
     :param name: The name of the resource group to create or update.
 
-    :param location: The location of the resource group. This value
-        is not able to be updated once the resource group is created.
+    :param location: The location of the resource group. This value is not able to be updated once the resource
+        group is created.
 
     CLI Example:
 
@@ -163,6 +162,7 @@ async def create_or_update(hub, ctx, name, location, **kwargs):
     }
     try:
         group = resconn.resource_groups.create_or_update(name, resource_group_params)
+
         result = group.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
@@ -189,7 +189,8 @@ async def delete(hub, ctx, name, **kwargs):
     result = False
     resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     try:
-        group = resconn.resource_groups.delete(name)
+        group = resconn.resource_groups.delete(resource_group_name=name)
+
         group.wait()
         result = True
     except CloudError as exc:

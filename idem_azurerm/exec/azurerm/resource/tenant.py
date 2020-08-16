@@ -31,7 +31,6 @@ Azure Resource Manager (ARM) Resource Tenant Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 from json import loads, dumps
