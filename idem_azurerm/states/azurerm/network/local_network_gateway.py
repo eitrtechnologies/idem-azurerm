@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Local Network Gateway State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -48,30 +50,6 @@ Azure Resource Manager (ARM) Local Network Gateway State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: jinja
-
-        Ensure virtual network exists:
-            azurerm.network.virtual_network.present:
-                - name: my_vnet
-                - resource_group: my_rg
-                - address_prefixes:
-                    - '10.0.0.0/8'
-                    - '192.168.0.0/16'
-                - dns_servers:
-                    - '8.8.8.8'
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
-
-        Ensure virtual network is absent:
-            azurerm.network.virtual_network.absent:
-                - name: other_vnet
-                - resource_group: my_rg
-                - connection_auth: {{ profile }}
-
 """
 # Python libs
 from __future__ import absolute_import
@@ -94,12 +72,15 @@ async def present(
     gateway_ip_address,
     bgp_settings=None,
     address_prefixes=None,
+    fqdn=None,
     tags=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a location network gateway exists.
 
@@ -113,7 +94,7 @@ async def present(
         IP address of local network gateway.
 
     :param bgp_settings:
-        A dictionary representing a valid BgpSettings object, which stores the local network gateway's BGP speaker
+        (Optional) A dictionary representing a valid BgpSettings object, which stores the local network gateway's BGP speaker
         settings. Valid parameters include:
           - ``asn``: The BGP speaker's Autonomous System Number. This is an integer value.
           - ``bgp_peering_address``: The BGP peering address and BGP identifier of this BGP speaker.
@@ -121,11 +102,14 @@ async def present(
           - ``peer_weight``: The weight added to routes learned from this BGP speaker. This is an integer value.
 
     :param address_prefixes:
-        A list of CIDR blocks which can be used by subnets within the virtual network.
-        Represents the local network site address space.
+        (Optional) A list of address blocks reserved for this virtual network in CIDR notation. Serves as the local
+        network gateway's site address space.
+
+    :param fqdn:
+        (Optional) The FQDN of local network gateway.
 
     :param tags:
-        A dictionary of strings can be passed as tag metadata to the local network gateway object.
+        (Optional) A dictionary of strings can be passed as tag metadata to the local network gateway object.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
@@ -150,6 +134,7 @@ async def present(
                 - tags:
                     contact_name: Elmer Fudd Gantry
                 - connection_auth: {{ profile }}
+
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
     action = "create"
@@ -169,6 +154,7 @@ async def present(
 
     if "error" not in gateway:
         action = "update"
+
         tag_changes = differ.deep_diff(gateway.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
@@ -178,6 +164,13 @@ async def present(
                 "old": gateway.get("gateway_ip_address"),
                 "new": gateway_ip_address,
             }
+
+        if fqdn:
+            if fqdn != gateway.get("fqdn"):
+                ret["changes"]["fqdn"] = {
+                    "old": gateway.get("fqdn"),
+                    "new": fqdn,
+                }
 
         if bgp_settings:
             if not isinstance(bgp_settings, dict):
@@ -232,6 +225,8 @@ async def present(
             },
         }
 
+        if fqdn:
+            ret["changes"]["new"]["fqdn"] = fqdn
         if bgp_settings:
             ret["changes"]["new"]["bgp_settings"] = bgp_settings
         if address_prefixes:
@@ -247,16 +242,24 @@ async def present(
     gateway_kwargs = kwargs.copy()
     gateway_kwargs.update(connection_auth)
 
-    gateway = await hub.exec.azurerm.network.local_network_gateway.create_or_update(
-        ctx=ctx,
-        name=name,
-        resource_group=resource_group,
-        gateway_ip_address=gateway_ip_address,
-        local_network_address_space={"address_prefixes": address_prefixes},
-        bgp_settings=bgp_settings,
-        tags=tags,
-        **gateway_kwargs,
-    )
+    if action == "create" or len(ret["changes"]) > 1 or not tag_changes:
+        gateway = await hub.exec.azurerm.network.local_network_gateway.create_or_update(
+            ctx=ctx,
+            name=name,
+            resource_group=resource_group,
+            gateway_ip_address=gateway_ip_address,
+            address_prefixes=address_prefixes,
+            bgp_settings=bgp_settings,
+            fqdn=fqdn,
+            tags=tags,
+            **gateway_kwargs,
+        )
+
+    # no idea why create_or_update doesn't work for tags
+    if action == "update" and tag_changes:
+        gateway = await hub.exec.azurerm.network.local_network_gateway.update_tags(
+            ctx, name=name, resource_group=resource_group, tags=tags, **gateway_kwargs,
+        )
 
     if "error" not in gateway:
         ret["result"] = True
@@ -296,6 +299,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
                 - name: gateway1
                 - resource_group: group1
                 - connection_auth: {{ profile }}
+
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
@@ -329,7 +333,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.network.local_network_gateway.delete(
-        ctx, name, resource_group, **connection_auth
+        ctx, name=name, resource_group=resource_group, **connection_auth
     )
 
     if deleted:

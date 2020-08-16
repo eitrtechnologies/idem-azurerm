@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Local Network Gateway Execution Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -31,7 +33,6 @@ Azure Resource Manager (ARM) Local Network Gateway Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -45,7 +46,6 @@ except ImportError:
 HAS_LIBS = False
 try:
     import azure.mgmt.network.models  # pylint: disable=unused-import
-    from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
 
@@ -59,10 +59,20 @@ log = logging.getLogger(__name__)
 
 
 async def create_or_update(
-    hub, ctx, name, resource_group, gateway_ip_address, **kwargs
+    hub,
+    ctx,
+    name,
+    resource_group,
+    gateway_ip_address,
+    bgp_settings=None,
+    address_prefixes=None,
+    fqdn=None,
+    **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Creates or updates a local network gateway object in the specified resource group.
 
@@ -71,6 +81,19 @@ async def create_or_update(
     :param resource_group: The name of the resource group associated with the local network gateway.
 
     :param gateway_ip_address: IP address of the local network gateway.
+
+    :param bgp_settings: (Optional) A dictionary representing a valid BgpSettings object, which stores the local network
+        gateway's BGP speaker settings. Valid parameters include:
+
+        - ``asn``: The BGP speaker's Autonomous System Number. This is an integer value.
+        - ``bgp_peering_address``: The BGP peering address and BGP identifier of this BGP speaker.
+            This is a string value.
+        - ``peer_weight``: The weight added to routes learned from this BGP speaker. This is an integer value.
+
+    :param address_prefixes: (Optional) A list of address blocks reserved for this virtual network in CIDR notation.
+        Serves as the local network gateway's site address space.
+
+    :param fqdn: (Optional) The FQDN of local network gateway.
 
     CLI Example:
 
@@ -91,13 +114,20 @@ async def create_or_update(
             }
         kwargs["location"] = rg_props["location"]
 
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
+    if isinstance(address_prefixes, list):
+        address_prefixes = {"address_prefixes": address_prefixes}
 
     try:
         gatewaymodel = await hub.exec.azurerm.utils.create_object_model(
             "network",
             "LocalNetworkGateway",
             gateway_ip_address=gateway_ip_address,
+            local_network_address_space=address_prefixes,
+            fqdn=fqdn,
+            bgp_settings=bgp_settings,
             **kwargs,
         )
     except TypeError as exc:
@@ -112,9 +142,9 @@ async def create_or_update(
             resource_group_name=resource_group,
             parameters=gatewaymodel,
         )
+
         gateway.wait()
-        gateway_result = gateway.result()
-        result = gateway_result.as_dict()
+        result = gateway.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -213,6 +243,46 @@ async def list_(hub, ctx, resource_group, **kwargs):
         for gateway in gateways:
             result[gateway["name"]] = gateway
     except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def update_tags(
+    hub, ctx, name, resource_group, tags=None, **kwargs,
+):
+    """
+    .. versionadded:: 4.0.0
+
+    Updates local network gateway tags with specified values.
+
+    :param name: The name of the local network gateway.
+
+    :param resource_group: The name of the resource group to which the local network gateway belongs.
+
+    :param tags: The tags of the resource.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.network.local_network_gateway.update_tags test_name test_group tags='{"owner": "me"}'
+
+    """
+    result = {}
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
+    try:
+        gateway = netconn.local_network_gateways.update_tags(
+            local_network_gateway_name=name,
+            resource_group_name=resource_group,
+            tags=tags,
+        )
+
+        gateway.wait()
+        result = gateway.result().as_dict()
+    except (CloudError, SerializationError) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
 
