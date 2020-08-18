@@ -419,41 +419,6 @@ async def filters_list(hub, ctx, resource_group=None, **kwargs):
     return result
 
 
-async def filter_update_tags(hub, ctx, name, resource_group, tags=None, **kwargs):
-    """
-    .. versionadded:: 4.0.0
-
-    Updates tags of a route filter.
-
-    :param name: The name of the route filter.
-
-    :param resource_group: The resource group of the route table.
-
-    :param tags: The resource tags to update.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.network.route.filter_update_tags test_name test_group test_tags
-
-    """
-    result = {}
-    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
-
-    try:
-        route_filter = netconn.route_tables.update_tags(
-            route_filter_name=name, resource_group_name=resource_group, tags=tags
-        )
-
-        result = route_filter.as_dict()
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result
-
-
 async def delete(hub, ctx, name, route_table, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
@@ -832,7 +797,8 @@ async def table_update_tags(hub, ctx, name, resource_group, tags=None, **kwargs)
             route_table_name=name, resource_group_name=resource_group, tags=tags
         )
 
-        result = table.as_dict()
+        table.wait()
+        result = table.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}

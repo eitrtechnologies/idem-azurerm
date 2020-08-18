@@ -4,8 +4,6 @@ Azure Resource Manager (ARM) Network Profile Execution Module
 
 .. versionadded:: 3.0.0
 
-.. versionchanged:: 4.0.0
-
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -95,6 +93,7 @@ async def create_or_update(
 
     """
     result = {}
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     if "location" not in kwargs:
         rg_props = await hub.exec.azurerm.resource.group.get(
@@ -107,8 +106,6 @@ async def create_or_update(
                 "error": "Unable to determine location from resource group specified."
             }
         kwargs["location"] = rg_props["location"]
-
-    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
         prfmodel = await hub.exec.azurerm.utils.create_object_model(
@@ -147,8 +144,6 @@ async def update_tags(
     """
     .. versionadded:: 3.0.0
 
-    .. versionchanged:: 4.0.0
-
     Updates network profile tags with specified values.
 
     :param name: The name of the network profile.
@@ -172,7 +167,8 @@ async def update_tags(
             network_profile_name=name, resource_group_name=resource_group, tags=tags,
         )
 
-        result = prf.as_dict()
+        prf.wait()
+        result = prf.result().as_dict()
     except (CloudError, SerializationError) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}

@@ -54,8 +54,8 @@ Azure Resource Manager (ARM) Network Public IP Address State Module
 # Python libs
 from __future__ import absolute_import
 from dict_tools import differ
+from msrestazure.tools import is_valid_resource_id
 import logging
-import re
 
 log = logging.getLogger(__name__)
 
@@ -104,6 +104,7 @@ async def present(
 
     :param dns_settings: (Optional) A dictionary representing a valid PublicIPAddressDnsSettings object. Parameters
         include the following:
+
         - ``domain_name_label``: (Required) The domain name label. The concatenation of the domain name label and the
             regionalize DNS zone make up the fully qualified domain name associated with the public IP address. If a
             domain name DNS zone make up the fully qualified domain name associated with the public IP address. If a

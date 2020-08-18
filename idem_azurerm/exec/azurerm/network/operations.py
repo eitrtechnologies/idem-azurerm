@@ -31,7 +31,6 @@ Azure Resource Manager (ARM) Network Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -72,6 +71,7 @@ async def check_dns_name_availability(hub, ctx, name, region, **kwargs):
          azurerm.network.check_dns_name_availability testdnsname westus
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         check_dns_name = netconn.check_dns_name_availability(
@@ -109,6 +109,7 @@ async def check_ip_address_availability(
          azurerm.network.check_ip_address_availability 10.0.0.4 testnet testgroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         check_ip = netconn.virtual_networks.check_ip_address_availability(
@@ -139,6 +140,7 @@ async def usages_list(hub, ctx, location, **kwargs):
          azurerm.network.usages_list westus
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         result = await hub.exec.azurerm.utils.paged_object_to_list(

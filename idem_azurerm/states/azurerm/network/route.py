@@ -55,7 +55,6 @@ Azure Resource Manager (ARM) Network Route State Module
 from __future__ import absolute_import
 from dict_tools import differ
 import logging
-import re
 
 log = logging.getLogger(__name__)
 

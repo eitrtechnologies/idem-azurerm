@@ -163,6 +163,7 @@ async def create_or_update(
             }
         kwargs["location"] = rg_props["location"]
 
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     # Use NSG name to link to the ID of an existing NSG.
@@ -496,7 +497,7 @@ async def update_tags(
 
     :param name: The name of the network interface.
 
-    :param resource_group: The name of the resource group..
+    :param resource_group: The name of the resource group.
 
     :param tags: The tags of the resource.
 
@@ -511,11 +512,12 @@ async def update_tags(
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
-        iface = netconn.network_interfaces.update_tags(
+        nic = netconn.network_interfaces.update_tags(
             network_interface_name=name, resource_group_name=resource_group, tags=tags,
         )
 
-        result = iface.as_dict()
+        nic.wait()
+        result = nic.result().as_dict()
     except (CloudError, SerializationError) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}

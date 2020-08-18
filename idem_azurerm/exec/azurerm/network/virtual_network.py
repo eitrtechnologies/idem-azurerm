@@ -62,7 +62,6 @@ except ImportError:
 HAS_LIBS = False
 try:
     import azure.mgmt.network.models  # pylint: disable=unused-import
-    from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
 
@@ -319,6 +318,9 @@ async def create_or_update(hub, ctx, name, address_prefixes, resource_group, **k
         azurerm.network.virtual_network.create_or_update testnet ['10.0.0.0/16'] testgroup
 
     """
+    result = {}
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     if "location" not in kwargs:
         rg_props = await hub.exec.azurerm.resource.group.get(
             ctx, resource_group, **kwargs
@@ -334,8 +336,6 @@ async def create_or_update(hub, ctx, name, address_prefixes, resource_group, **k
     if not isinstance(address_prefixes, list):
         log.error("Address prefixes must be specified as a list!")
         return {"error": "Address prefixes must be specified as a list!"}
-
-    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     address_space = {"address_prefixes": address_prefixes}
     dhcp_options = {"dns_servers": kwargs.get("dns_servers")}
@@ -397,6 +397,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
         vnet = netconn.virtual_networks.delete(
             virtual_network_name=name, resource_group_name=resource_group
         )
+
         vnet.wait()
         result = True
     except CloudError as exc:
@@ -413,8 +414,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the virtual network to query.
 
-    :param resource_group: The resource group name assigned to the
-        virtual network.
+    :param resource_group: The resource group name assigned to the virtual network.
 
     CLI Example:
 
@@ -423,7 +423,9 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.virtual_network.get testnet testgroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     try:
         vnet = netconn.virtual_networks.get(
             virtual_network_name=name, resource_group_name=resource_group

@@ -55,7 +55,6 @@ Azure Resource Manager (ARM) Local Network Gateway State Module
 from __future__ import absolute_import
 from dict_tools import differ
 import logging
-import re
 
 log = logging.getLogger(__name__)
 
@@ -94,12 +93,13 @@ async def present(
         IP address of local network gateway.
 
     :param bgp_settings:
-        (Optional) A dictionary representing a valid BgpSettings object, which stores the local network gateway's BGP speaker
-        settings. Valid parameters include:
-          - ``asn``: The BGP speaker's Autonomous System Number. This is an integer value.
-          - ``bgp_peering_address``: The BGP peering address and BGP identifier of this BGP speaker.
-                                     This is a string value.
-          - ``peer_weight``: The weight added to routes learned from this BGP speaker. This is an integer value.
+        (Optional) A dictionary representing a valid BgpSettings object, which stores the local network gateway's BGP
+        speaker settings. Valid parameters include:
+          - ``asn``: (Required) The BGP speaker's Autonomous System Number. This is an integer value.
+          - ``bgp_peering_address``: (Required) The BGP peering address and BGP identifier of this BGP speaker.
+              This is a string value.
+          - ``peer_weight``: (Optional) The weight added to routes learned from this BGP speaker. This is an
+              Integer value.
 
     :param address_prefixes:
         (Optional) A list of address blocks reserved for this virtual network in CIDR notation. Serves as the local

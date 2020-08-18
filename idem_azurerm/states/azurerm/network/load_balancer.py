@@ -55,7 +55,6 @@ Azure Resource Manager (ARM) Network Load Balancer State Module
 from __future__ import absolute_import
 from dict_tools import differ
 import logging
-import re
 
 log = logging.getLogger(__name__)
 
@@ -102,8 +101,8 @@ async def present(
         The resource group assigned to the load balancer.
 
     :param sku:
-        The load balancer SKU, which can be 'Basic' or 'Standard'. This property cannot be changed once the load
-        balancer is created.
+        (Optional) The load balancer SKU, which can be 'Basic' or 'Standard'. This property cannot be changed once the
+        load balancer is created.
 
     :param frontend_ip_configurations:
         (Optional) A list of dictionaries representing valid FrontendIPConfiguration objects. A frontend IP
@@ -288,6 +287,7 @@ async def present(
 
     if "error" not in load_bal:
         action = "update"
+
         # tag changes
         tag_changes = differ.deep_diff(load_bal.get("tags", {}), tags or {})
         if tag_changes:

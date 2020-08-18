@@ -52,7 +52,6 @@ Azure Resource Manager (ARM) Virtual Network Peering State Module
 # Python libs
 from __future__ import absolute_import
 import logging
-import re
 
 log = logging.getLogger(__name__)
 

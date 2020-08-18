@@ -281,6 +281,7 @@ async def security_rule_create_or_update(
             # pylint: disable=exec-used
             exec("{0} = None".format(params[1]))
 
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
@@ -330,14 +331,16 @@ async def security_rule_create_or_update(
 
 
 async def security_rule_delete(
-    hub, ctx, security_rule, security_group, resource_group, **kwargs
+    hub, ctx, name, security_group, resource_group, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
 
+    .. versionchanged:: 4.0.0
+
     Delete a security rule within a specified security group.
 
-    :param security_rule: The name of the security rule to delete.
+    :param name: The name of the security rule to delete.
 
     :param security_group: The network security group containing the security rule.
 
@@ -356,7 +359,7 @@ async def security_rule_delete(
         secrule = netconn.security_rules.delete(
             network_security_group_name=security_group,
             resource_group_name=resource_group,
-            security_rule_name=security_rule,
+            security_rule_name=name,
         )
 
         secrule.wait()
@@ -367,11 +370,11 @@ async def security_rule_delete(
     return result
 
 
-async def security_rule_get(
-    hub, ctx, security_rule, security_group, resource_group, **kwargs
-):
+async def security_rule_get(hub, ctx, name, security_group, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Get a security rule within a specified network security group.
 
@@ -395,8 +398,9 @@ async def security_rule_get(
         secrule = netconn.security_rules.get(
             network_security_group_name=security_group,
             resource_group_name=resource_group,
-            security_rule_name=security_rule,
+            security_rule_name=name,
         )
+
         result = secrule.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)

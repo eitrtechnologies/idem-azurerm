@@ -32,12 +32,13 @@ async def test_present(hub, ctx, public_ip_addr, resource_group):
 
 @pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
-async def test_changes(hub, ctx, public_ip_addr, resource_group):
+async def test_changes(hub, ctx, public_ip_addr, resource_group, tags):
     idle_timeout = 10
     new_timeout = 4
     expected = {
         "changes": {
-            "idle_timeout_in_minutes": {"new": new_timeout, "old": idle_timeout}
+            "idle_timeout_in_minutes": {"new": new_timeout, "old": idle_timeout},
+            "tags": {"new": tags},
         },
         "comment": f"Public IP address {public_ip_addr} has been updated.",
         "name": public_ip_addr,
@@ -48,6 +49,7 @@ async def test_changes(hub, ctx, public_ip_addr, resource_group):
         name=public_ip_addr,
         resource_group=resource_group,
         idle_timeout_in_minutes=new_timeout,
+        tags=tags,
     )
     assert ret == expected
 

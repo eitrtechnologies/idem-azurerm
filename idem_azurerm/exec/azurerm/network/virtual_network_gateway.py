@@ -4,7 +4,7 @@ Azure Resource Manager (ARM) Virtual Network Gateway Execution Module
 
 .. versionadded:: 1.0.0
 
-.. versionchanged: 3.0.0
+.. versionchanged: 3.0.0, 4.0.0
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
@@ -33,7 +33,6 @@ Azure Resource Manager (ARM) Virtual Network Gateway Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -66,33 +65,40 @@ async def connection_create_or_update(
     """
     .. versionadded:: 1.0.0
 
-    Creates or updates a virtual network gateway connection in the specified resource group.
+    .. versionchanged:: 4.0.0
+
+    Creates or updates a virtual network gateway connection.
 
     :param name: The name of the virtual network gateway connection to create or update.
 
     :param resource_group: The name of the resource group.
 
-    :param virtual_network_gateway: The name of the virtual network gateway that will
-        be the first endpoint of the connection. This is immutable once set.
+    :param virtual_network_gateway: The name of the virtual network gateway that will be the first endpoint of the
+        connection. This is immutable once set.
 
-    :param connection_type: Gateway connection type. Possible values include:
-        'IPsec', 'Vnet2Vnet', and 'ExpressRoute'. This is immutable once set.
+    :param connection_type: Gateway connection type. Possible values include: 'IPsec', 'Vnet2Vnet', and 'ExpressRoute'.
+        This is immutable once set.
 
-    A second endpoint must be passed as a keyword argument:
-      - For a connection of type 'Vnet2Vnet' a valid Resource ID representing a VirtualNetworkGateway Object must be
-        passed as the virtual_network_gateway2 kwarg.
-      - For a connection of type 'IPSec' a valid Resource ID representing a LocalNetworkGateway Object must be passed
-        as the local_network_gateway2 kwarg.
-      - For a connection of type 'ExpressRoute' a valid Resource ID representing an ExpressRouteCircuit Object must be
-        passed as the peer kwarg.
+    A second endpoint must be passed as a keyword argument. The seocnd endpoint will be immutable once set. The
+        following are possible second endpoints for the connection:
+
+      - If the connection type is "Vnet2Vnet", then the name of a second virtual network gateway must be passed as the
+        ``virtual_network_gateway2`` kwarg. If that second gateway has a different resource group than the resource
+        group specified within the ``resource_group`` parameter, then it must be specified within ``vgw2_group`` kwarg.
+        Otherwise, the resource_group within the ``resource_group`` parameter will be used.
+      - If the connection type is "IPSec", then the name of a local network gateway must be passed within the
+        ``local_network_gateway2`` kwarg. If that gateway has a different resource group than the resource group
+        specified within the ``resource_group`` parameter, then it must be specified within ``lgw2_group`` kwarg.
+        Otherwise, the resource_group within the ``resource_group`` parameter will be used.
+      - If the connection type is "ExpressRoute", then a valid Resource ID representing an ExpressRouteCircuit Object
+        must be passed as the ``peer`` kwarg.
     The second endpoint is immutable once set.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network_gateway.connection_create_or_update test_name test_group
-                  test_vnet_gw test_connection_type
+        azurerm.network.virtual_network_gateway.connection_create_or_update test_name test_group test_vgw test_type
 
     """
     if "location" not in kwargs:
@@ -107,68 +113,63 @@ async def connection_create_or_update(
             }
         kwargs["location"] = rg_props["location"]
 
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
-    # Converts the Resource ID of virtual_network_gateway into a VirtualNetworkGateway Object.
-    # This endpoint will be where the connection originates.
-    if not is_valid_resource_id(virtual_network_gateway):
-        log.error("Invalid Resource ID was specified as virtual_network_gateway!")
-        return {
-            "error": "Invalid Resource ID was specified as virtual_network_gateway!"
-        }
-
-    vnetgw1_parsed_id = parse_resource_id(virtual_network_gateway)
-
-    try:
-        vnetgw1_rg = vnetgw1_parsed_id["resource_group"]
-        vnetgw1_name = vnetgw1_parsed_id["resource_name"]
-    except KeyError as esc:
-        log.error(
-            "Invalid Resource ID was specified as virtual_network_gateway! (%s)", esc
-        )
-        return {
-            "error": "Invalid Resource ID was specified as virtual_network_gateway! ({0})".format(
-                esc
-            )
-        }
-
-    vnetgw1 = await hub.exec.azurerm.network.virtual_network_gateway.get(
-        ctx=ctx, name=vnetgw1_name, resource_group=vnetgw1_rg, **kwargs
+    # Use virtual_network_gateway to link to the ID of the existing vgw
+    vgw1 = await hub.exec.azurerm.network.virtual_network_gateway.get(
+        ctx=ctx, name=virtual_network_gateway, resource_group=resource_group,
     )
-
-    if "error" in vnetgw1:
-        log.error("Unable to find the resource specified in virtual_network_gateway!")
-        return {
-            "error": "Unable to find the resource specified in virtual_network_gateway!"
+    if "error" not in vgw1:
+        virtual_network_gateway = {"id": str(vgw1["id"])}
+    else:
+        log.error(
+            "The virtual network gateway specified within the virtual_network_gateway parameter does not exist."
+        )
+        result = {
+            "error": "The virtual network gateway specified within the virtual_network_gateway parameter does not exist."
         }
+        return result
 
-    virtual_network_gateway = {"id": str(vnetgw1["id"])}
-
-    # Check the Resource ID path of virtual_network_gateway2
-    # We can't guarantee the validity of the object, so we hope you have the path correct...
-    if kwargs.get("virtual_network_gateway2") and not is_valid_resource_id(
-        kwargs["virtual_network_gateway2"]
-    ):
-        log.error("Invalid Resource ID was specified as virtual_network_gateway2!")
-        return {
-            "error": "Invalid Resource ID was specified as virtual_network_gateway2!"
-        }
-
-    # Check the Resource ID path of local_network_gateway2
-    # We can't guarantee the validity of the object, so we hope you have the path correct...
-    if kwargs.get("local_network_gateway2") and not is_valid_resource_id(
-        kwargs["local_network_gateway2"]
-    ):
-        log.error("Invalid Resource ID was specified as local_network_gateway2!")
-        return {"error": "Invalid Resource ID was specified as local_network_gateway2!"}
-
+    # Use kwargs(virtual_network_gateway2) to link to the ID of the existing vgw
     if kwargs.get("virtual_network_gateway2"):
-        kwargs["virtual_network_gateway2"] = {
-            "id": kwargs.get("virtual_network_gateway2")
-        }
+        vgw2_name = kwargs["virtual_network_gateway2"]
+        vgw2_group = kwargs.get("vgw2_group") or resource_group
+        vgw2 = await hub.exec.azurerm.network.virtual_network_gateway.get(
+            ctx=ctx, name=vgw2_name, resource_group=vgw2_group,
+        )
+        if "error" not in vgw2:
+            kwargs["virtual_network_gateway2"] = {"id": str(vgw2["id"])}
+            if kwargs.get("vgw2_group"):
+                kwargs.pop("vgw2_group")
+        else:
+            log.error(
+                f"The virtual network gateway {vgw2_name} does not exist within the resource group {vgw2_group}"
+            )
+            result = {
+                "error": f"The virtual network gateway {vgw2_name} does not exist within the resource group {vgw2_group}"
+            }
+            return result
 
+    # Use kwargs(local_network_gateway2) to link to the ID of the existing lgw
     if kwargs.get("local_network_gateway2"):
-        kwargs["local_network_gateway2"] = {"id": kwargs.get("local_network_gateway2")}
+        lgw2_name = kwargs["local_network_gateway2"]
+        lgw2_group = kwargs.get("lgw2_group") or resource_group
+        lgw2 = await hub.exec.azurerm.network.local_network_gateway.get(
+            ctx=ctx, name=lgw2_name, resource_group=lgw2_group,
+        )
+        if "error" not in lgw2:
+            kwargs["local_network_gateway2"] = {"id": str(lgw2["id"])}
+            if kwargs.get("lgw2_group"):
+                kwargs.pop("lgw2_group")
+        else:
+            log.error(
+                f"The local network gateway {lgw2_name} does not exist within the resource group {lgw2_group}"
+            )
+            result = {
+                "error": f"The local network gateway {lgw2_name} does not exist within the resource group {lgw2_group}"
+            }
+            return result
 
     try:
         connectionmodel = await hub.exec.azurerm.utils.create_object_model(
@@ -221,6 +222,7 @@ async def connection_get(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.connection_get test_name test_group
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         connection = netconn.virtual_network_gateway_connections.get(
@@ -264,6 +266,46 @@ async def connection_delete(hub, ctx, name, resource_group, **kwargs):
         result = True
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
+
+    return result
+
+
+async def connection_update_tags(
+    hub, ctx, name, resource_group, tags=None, **kwargs,
+):
+    """
+    .. versionadded:: 4.0.0
+
+    Updates virtual network gateway connection tags with specified values.
+
+    :param name: The name of the virtual network gateway connection.
+
+    :param resource_group: The name of the resource group to which the virtual network gateway belongs.
+
+    :param tags: The tags of the resource.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.network.virtual_network_gateway.connection_update_tags test_name test_group tags='{"owner": "me"}'
+
+    """
+    result = {}
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
+    try:
+        connection = netconn.virtual_network_gateway_connections.update_tags(
+            virtual_network_gateway_connection_name=name,
+            resource_group_name=resource_group,
+            tags=tags,
+        )
+
+        connection.wait()
+        result = connection.result().as_dict()
+    except (CloudError, SerializationError) as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
@@ -325,6 +367,7 @@ async def connection_get_shared_key(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.connection_get_shared_key test_name test_group
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         key = netconn.virtual_network_gateway_connections.get_shared_key(
@@ -453,33 +496,45 @@ async def create_or_update(
     resource_group,
     virtual_network,
     ip_configurations,
+    gateway_type,
+    sku,
     polling=True,
     **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
 
-    .. versionchanged:: 3.0.0
+    .. versionchanged:: 3.0.0, 4.0.0
 
     Creates or updates a virtual network gateway in the specified resource group.
 
-    :param name: The name of the virtual network gateway to be created or updated.
+    :param name: The name of the virtual network gateway.
 
     :param resource_group: The name of the resource group.
 
     :param virtual_network: The name of the virtual network associated with the virtual network gateway.
 
-    :param ip_configurations:
-        A list of dictionaries representing valid VirtualNetworkGatewayIPConfiguration objects. Valid parameters are:
-          - ``name``: The name of the resource that is unique within a resource group.
-          - ``public_ip_address``: Name of an existing public IP address that'll be assigned to the IP config object.
-          - ``private_ip_allocation_method``: The private IP allocation method. Possible values are:
-                                              'Static' and 'Dynamic'.
-          - ``subnet``: Name of an existing subnet inside of which the IP config will reside.
-        If the active_active keyword argument is disabled, only one IP configuration dictionary is permitted.
-        If the active_active keyword argument is enabled, two IP configuration dictionaries are required.
+    :param ip_configurations: A list of dictionaries representing valid VirtualNetworkGatewayIPConfiguration objects.
+        It is important to note that if the active_active key word argument is specified and active_active is disabled,
+        then only one IP configuration dictionary is permitted. If active_active is enabled, then two IP configuration
+        dictionaries are required. Valid parameters for a VirtualNetworkGatewayIPConfiguration object are:
 
-    :param polling: A boolean flag representing whether a Poller will be used during the creation of the Virtual
+        - ``name``: The name of the VirtualNetworkGatewayIPConfiguration object that is unique within
+            the resource group.
+        - ``public_ip_address``: The name of an existing public IP address that will be assigned to the object.
+        - ``private_ip_allocation_method``: The private IP allocation method. Possible values are:
+            "Static" and "Dynamic".
+        - ``subnet``: The name of an existing subnet inside of which the IP configuration will reside.
+
+    :param gateway_type: The type of this virtual network gateway. Possible values include: "Vpn" and "ExpressRoute".
+        The gateway type is immutable once set.
+
+    :param sku: The name of the Gateway SKU. Possible values include: 'Basic', 'HighPerformance', 'Standard',
+        'UltraPerformance', 'VpnGw1', 'VpnGw2', 'VpnGw3', 'VpnGw4', 'VpnGw5', 'VpnGw1AZ', 'VpnGw2AZ', 'VpnGw3AZ',
+        'VpnGw4AZ', 'VpnGw5AZ', 'ErGw1AZ', 'ErGw2AZ', and 'ErGw3AZ'.
+
+    :param polling:
+        (Optional) A boolean flag representing whether a Poller will be used during the creation of the Virtual
         Network Gateway. If set to True, a Poller will be used by this operation and the module will not return until
         the Virtual Network Gateway has completed its creation process and has been successfully provisioned. If set to
         False, the module will return once the Virtual Network Gateway has successfully begun its creation process.
@@ -489,8 +544,7 @@ async def create_or_update(
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network_gateway.create_or_update test_name test_group \
-                  test_vnet test_ip_configs
+        azurerm.network.virtual_network_gateway.create_or_update test_name test_group test_vnet test_ip_configs
 
     """
     if "location" not in kwargs:
@@ -505,7 +559,11 @@ async def create_or_update(
             }
         kwargs["location"] = rg_props["location"]
 
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
+    # Handle VirtualNetworkGatewaySku creation
+    sku = {"name": sku}
 
     # Loop through IP Configurations and build each dictionary to pass to model creation.
     if isinstance(ip_configurations, list):
@@ -536,6 +594,8 @@ async def create_or_update(
             "network",
             "VirtualNetworkGateway",
             ip_configurations=ip_configurations,
+            gateway_type=gateway_type,
+            sku=sku,
             **kwargs,
         )
     except TypeError as exc:
@@ -582,6 +642,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.get test_name test_group
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         gateway = netconn.virtual_network_gateways.get(
@@ -671,8 +732,8 @@ async def reset(hub, ctx, name, resource_group, gateway_vip=None, **kwargs):
 
     :param resource_group: The name of the resource group.
 
-    :param gateway_vip: Virtual network gateway vip address supplied to the begin
-        reset of the active-active feature enabled gateway.
+    :param gateway_vip: Virtual network gateway vip address supplied to the beginvreset of the active-active feature
+        enabled gateway.
 
     CLI Example:
 
@@ -745,8 +806,7 @@ async def generatevpnclientpackage(
     """
     .. versionadded:: 1.0.0
 
-    Generates VPN client package for P2S client of the virtual network
-        gateway in the specified resource group.
+    Generates VPN client package for P2S client of the virtual network gateway in the specified resource group.
 
     :param name: The name of the virtual network gateway.
 
@@ -770,6 +830,7 @@ async def generatevpnclientpackage(
         azurerm.network.virtual_network_gateway.generatevpnclientpackage test_name test_group test_params
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
@@ -821,23 +882,23 @@ async def generate_vpn_profile(
     """
     .. versionadded:: 1.0.0
 
-    Generates VPN profile for P2S client of the virtual network gateway in the
-        specified resource group. Used for IKEV2 and radius based authentication.
+    Generates VPN profile for P2S client of the virtual network gateway in the specified resource group. Used for IKEV2
+        and radius based authentication.
 
     :param name: The name of the virtual network gateway.
 
     :param resource_group: The name of the resource group.
 
-    :param processor_architecture: VPN client Processor Architecture. Possible values include: 'Amd64', 'X86'
+    :param processor_architecture: VPN client Processor Architecture. Possible values include: 'Amd64' and 'X86'.
 
-    :param authentication_method: VPN client authentication method. Possible values include: 'EAPTLS', 'EAPMSCHAPv2'
+    :param authentication_method: VPN client authentication method. Possible values include: 'EAPTLS' and 'EAPMSCHAPv2'.
 
     :param radius_server_auth_certificate: The public certificate data for the radius server authentication
         certificate as a Base-64 encoded string. Required only if external radius authentication has been configured
         with EAPTLS authentication.
 
     :param client_root_certificates: A list of client root certificates public certificate data encoded as Base-64
-                                     strings. Optional parameter for external radius based authentication with EAPTLS.
+        strings. This is an optional parameter for external radius based authentication with EAPTLS.
 
     CLI Example:
 
@@ -846,6 +907,7 @@ async def generate_vpn_profile(
         azurerm.network.virtual_network_gateway.generate_vpn_profile test_name test_group test_params
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
@@ -901,6 +963,7 @@ async def get_vpn_profile_package_url(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.get_vpn_profile_package_url test_name test_group
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         url = netconn.virtual_network_gateways.get_vpn_profile_package_url(
@@ -1033,6 +1096,7 @@ async def get_advertised_routes(hub, ctx, name, resource_group, peer, **kwargs):
     :param peer: The IP address of the peer.
 
     CLI Example:
+
     .. code-block:: bash
 
         azurerm.network.virtual_network_gateway.get_learned_routes test_name test_group test_peer
@@ -1076,8 +1140,8 @@ async def set_vpnclient_ipsec_parameters(
     """
     .. versionadded:: 1.0.0
 
-    Sets the vpnclient ipsec policy for P2S client of virtual network gateway in the
-        specified resource group through Network resource provider.
+    Sets the vpnclient ipsec policy for P2S client of virtual network gateway in the specified resource group through
+        the network resource provider.
 
     :param name: The name of the virtual network gateway.
 
@@ -1172,6 +1236,7 @@ async def get_vpnclient_ipsec_parameters(hub, ctx, name, resource_group, **kwarg
         azurerm.network.virtual_network_gateway.get_vpnclient_ipsec_parameters test_name test_group
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         policy = netconn.virtual_network_gateways.get_vpnclient_ipsec_parameters(
@@ -1213,6 +1278,7 @@ async def vpn_device_configuration_script(
                   test_vendor test_device_fam test_version
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
@@ -1245,5 +1311,45 @@ async def vpn_device_configuration_script(
         result = {
             "error": "The object model could not be parsed. ({0})".format(str(exc))
         }
+
+    return result
+
+
+async def update_tags(
+    hub, ctx, name, resource_group, tags=None, **kwargs,
+):
+    """
+    .. versionadded:: 4.0.0
+
+    Updates virtual network gateway tags with specified values.
+
+    :param name: The name of the virtual network gateway.
+
+    :param resource_group: The name of the resource group to which the virtual network gateway belongs.
+
+    :param tags: The tags of the resource.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.network.virtual_network_gateway.update_tags test_name test_group tags='{"owner": "me"}'
+
+    """
+    result = {}
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
+    try:
+        gateway = netconn.virtual_network_gateways.update_tags(
+            virtual_network_gateway_name=name,
+            resource_group_name=resource_group,
+            tags=tags,
+        )
+
+        gateway.wait()
+        result = gateway.result().as_dict()
+    except (CloudError, SerializationError) as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result

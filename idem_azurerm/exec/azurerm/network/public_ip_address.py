@@ -67,8 +67,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the public IP address to delete.
 
-    :param resource_group: The resource group name assigned to the
-        public IP address.
+    :param resource_group: The resource group name assigned to the public IP address.
 
     CLI Example:
 
@@ -259,7 +258,8 @@ async def update_tags(hub, ctx, name, resource_group, tags=None, **kwargs):
             public_ip_address_name=name, resource_group_name=resource_group, tags=tags
         )
 
-        result = pub_ip.as_dict()
+        pub_ip.wait()
+        result = pub_ip.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}

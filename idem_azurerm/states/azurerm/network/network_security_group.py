@@ -55,7 +55,6 @@ Azure Resource Manager (ARM) Network Security Group State Module
 from __future__ import absolute_import
 from dict_tools import differ
 import logging
-import re
 
 log = logging.getLogger(__name__)
 
@@ -727,11 +726,7 @@ async def security_rule_absent(
         return ret
 
     deleted = await hub.exec.azurerm.network.network_security_group.security_rule_delete(
-        ctx,
-        security_rule=name,
-        security_group=security_group,
-        resource_group=resource_group,
-        **connection_auth,
+        ctx, name, security_group, resource_group, **connection_auth,
     )
 
     if deleted:

@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Network Load Balancer Execution Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -44,7 +46,6 @@ except ImportError:
 HAS_LIBS = False
 try:
     import azure.mgmt.network.models  # pylint: disable=unused-import
-    from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
 
@@ -383,7 +384,8 @@ async def update_tags(hub, ctx, name, resource_group, tags=None, **kwargs):
             load_balancer_name=name, resource_group_name=resource_group, tags=tags
         )
 
-        result = load_balancer.as_dict()
+        load_balancer.wait()
+        result = load_balancer.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
