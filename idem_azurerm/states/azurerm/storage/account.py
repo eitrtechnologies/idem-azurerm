@@ -95,15 +95,15 @@ async def present(
 
     :param resource_group: The name of the resource group that the storage account belongs to.
 
-    :param sku: The name of the storage account SKU. Possible values include: 'Standard_LRS', 'Standard_GRS',
+    :param sku: (Required) The name of the storage account SKU. Possible values include: 'Standard_LRS', 'Standard_GRS',
         'Standard_RAGRS', 'Standard_ZRS', 'Premium_LRS', 'Premium_ZRS', 'Standard_GZRS', and 'Standard_RAGZRS'.
 
-    :param kind: Indicates the type of storage account. Possible values include: 'Storage', 'StorageV2', 'BlobStorage',
-        'FileStorage', and 'BlockBlobStorage'.
+    :param kind: (Required) Indicates the type of storage account. Possible values include: 'Storage', 'StorageV2',
+        'BlobStorage', 'FileStorage', and 'BlockBlobStorage'.
 
-    :param location: Gets or sets the location of the resource. This will be one of the supported and registered Azure
-        Geo Regions (e.g. West US, East US, Southeast Asia, etc.). The geo region of a resource cannot be changed once
-        it is created, but if an identical geo region is specified on update, the request will succeed.
+    :param location: (Required) Gets or sets the location of the resource. This will be one of the supported and
+        registered Azure Geo Regions (e.g. West US, East US, Southeast Asia, etc.). The geo region of a resource cannot
+        be changed once it is created, but if an identical geo region is specified on update, the request will succeed.
 
     :param custom_domain: (Optional) User domain assigned to the storage account. Valid parameters are:
         - ``name``: Required. Gets or sets the custom domain name assigned to the storage account. Name is the CNAME
@@ -137,7 +137,7 @@ async def present(
     :param minimum_tls_version: (Optional) Set the minimum TLS version to be permitted on requests to storage. The
         default interpretation is TLS 1.0 for this property. Possible values include: 'TLS1_0', 'TLS1_1', 'TLS1_2'.
 
-    :param tags: A dictionary of strings can be passed as metadata to the storage account.
+    :param tags: (Optional) A dictionary of strings can be passed as metadata to the storage account.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.

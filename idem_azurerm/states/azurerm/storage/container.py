@@ -104,8 +104,8 @@ async def present(
 
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
-    :param public_access: Specifies whether data in the container may be accessed publicly and the level of access.
-        Possible values include: "Container", "Blob", "None".
+    :param public_access: (Required) Specifies whether data in the container may be accessed publicly and the level
+        of access. Possible values include: "Container", "Blob", "None".
 
     :param default_encryption_scope: (Optional) Set the default encryption scope for the container to use for
         all writes.
