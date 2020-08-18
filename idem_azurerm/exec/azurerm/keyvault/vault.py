@@ -123,7 +123,7 @@ async def create_or_update(
     :param sku: The SKU name to specify whether the key vault is a standard vault or a premium vault. Possible
         values include: 'standard' and 'premium'.
 
-    :param access_policies: A list of 0 to 16 dictionaries that represent AccessPolicyEntry objects. The
+    :param access_policies: (Optional) A list of 0 to 16 dictionaries that represent AccessPolicyEntry objects. The
         AccessPolicyEntry objects represent identities that have access to the key vault. All identities in the
         list must use the same tenant ID as the key vault's tenant ID. When createMode is set to "recover", access
         policies are not required. Otherwise, access policies are required. Valid parameters are:
@@ -151,14 +151,14 @@ async def create_or_update(
     :param create_mode: (Optional) The vault's create mode to indicate whether the vault needs to be recovered or not.
         Possible values include: 'recover' and 'default'.
 
-    :param enabled_for_deployment: A boolean value specifying whether Azure Virtual Machines are permitted to
+    :param enabled_for_deployment: (Optional) A boolean value specifying whether Azure Virtual Machines are permitted to
         retrieve certificates stored as secrets from the key vault.
 
-    :param enabled_for_disk_encryption: A boolean value specifying whether Azure Disk Encrpytion is permitted to
-        retrieve secrets from the vault and unwrap keys.
+    :param enabled_for_disk_encryption: (Optional) A boolean value specifying whether Azure Disk Encrpytion is permitted
+        to retrieve secrets from the vault and unwrap keys.
 
-    :param enabled_for_template_deployment: A boolean value specifying whether Azure Resource Manager is permitted
-        to retrieve secrets from the key vault.
+    :param enabled_for_template_deployment: (Optional) A boolean value specifying whether Azure Resource Manager is
+        permitted to retrieve secrets from the key vault.
 
     :param create_mode: (Optional) The vault's create mode to indicate whether the vault needs to be recovered or not.
         Possible values include: 'recover' and 'default'.
@@ -186,7 +186,7 @@ async def create_or_update(
     :param network_acls: (Optional) A dictionary representing a NetworkRuleSet. Rules governing the accessibility of
         the key vault from specific network locations.
 
-    :param tags: The tags that will be assigned to the key vault.
+    :param tags: (Optional) The tags that will be assigned to the key vault.
 
     CLI Example:
 

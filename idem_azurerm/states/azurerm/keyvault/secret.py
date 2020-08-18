@@ -78,7 +78,7 @@ async def present(
     .. versionadded:: 2.4.0
 
     Ensure the specified secret exists within the given key vault. Requires secrets/set permission. Secret properties
-    can be specified as keyword arguments.
+        can be specified as keyword arguments.
 
     :param name: The name of the secret. Secret names can only contain alphanumeric characters and dashes.
 
@@ -86,22 +86,22 @@ async def present(
 
     :param vault_url: The URL of the vault that the client will access.
 
-    :param content_type: An arbitrary string indicating the type of the secret.
+    :param content_type: (Optional) An arbitrary string indicating the type of the secret.
 
-    :param enabled: Whether the secret is enabled for use.
+    :param enabled: (Optional) Whether the secret is enabled for use.
 
-    :param expires_on: When the secret will expire, in UTC. This parameter must be a string representation of a Datetime
-        object in ISO-8601 format.
+    :param expires_on: (Optional) When the secret will expire, in UTC. This parameter should be a string representation
+        of a Datetime object in ISO-8601 format.
 
-    :param not_before: The time before which the secret cannot be used, in UTC. This parameter must be a string
-        representation of a Datetime object in ISO-8601 format.
+    :param not_before: (Optional) The time before which the secret cannot be used, in UTC. This parameter should be a
+        string representation of a Datetime object in ISO-8601 format.
 
-    :param tags: A dictionary of strings can be passed as tag metadata to the secret.
+    :param tags: (Optional) A dictionary of strings can be passed as tag metadata to the secret.
 
-    :param version: By default, a new version of the secret will not be created if the name is already in use UNLESS
-        the value of the secret is changed. Secret properties will be updated on the latest version unless otherwise
-        specified with this parameter. Set ``version`` to ``new`` in order to forse the creation of a new secret
-        version.
+    :param version: (Optional) By default, a new version of the secret will not be created if the name is already in
+        use UNLESS the value of the secret is changed. Secret properties will be updated on the latest version unless
+        otherwise specified with this parameter. Set ``version`` to ``new`` in order to forse the creation of a new
+        secret version.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.

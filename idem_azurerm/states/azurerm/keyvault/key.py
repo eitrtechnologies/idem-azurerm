@@ -97,8 +97,8 @@ async def present(
 
     :param size: (Optional) RSA key size in bits, for example 2048, 3072, or 4096. Applies to RSA keys only.
 
-    :param curve: (Optional) Elliptic curve name. Defaults to the NIST P-256 elliptic curve. Possible values include: "P-256",
-        "P-256K", "P-384", "P-521".
+    :param curve: (Optional) Elliptic curve name. Defaults to the NIST P-256 elliptic curve. Possible values include:
+        "P-256", "P-256K", "P-384", "P-521".
 
     :param enabled: (Optional) Whether the key is enabled for use.
 
