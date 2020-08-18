@@ -68,9 +68,9 @@ async def create_or_update_at_resource_group_level(
         CanNotDelete means authorized users are able to read and modify the resources, but not delete. ReadOnly means
         authorized users can only read from a resource, but they can't modify or delete it.
 
-    :param notes: An optional string representing notes about the lock. Maximum of 512 characters.
+    :param notes: (Optional) A string representing notes about the lock. Maximum of 512 characters.
 
-    :param owners: An optional list of strings representing owners of the lock. Each string represents the application
+    :param owners: (Optional) A list of strings representing owners of the lock. Each string represents the application
         id of the lock owner.
 
     CLI Example:
@@ -211,9 +211,9 @@ async def create_or_update_by_scope(
         CanNotDelete means authorized users are able to read and modify the resources, but not delete. ReadOnly means
         authorized users can only read from a resource, but they can't modify or delete it.
 
-    :param notes: An optional string representing notes about the lock. Maximum of 512 characters.
+    :param notes: (Optional) A string representing notes about the lock. Maximum of 512 characters.
 
-    :param owners: An optional list of strings representing owners of the lock. Each string represents the application
+    :param owners: (Optional) A list of strings representing owners of the lock. Each string represents the application
         id of the lock owner.
 
     CLI Example:
@@ -375,11 +375,11 @@ async def create_or_update_at_resource_level(
 
     :param resource_provider_namespace: The resource provider namespace of the resource to lock.
 
-    :param parent_resource_path: The parent resource identity.
+    :param parent_resource_path: (Optional) The parent resource identity.
 
-    :param notes: An optional string representing notes about the lock. Maximum of 512 characters.
+    :param notes: (Optional) A string representing notes about the lock. Maximum of 512 characters.
 
-    :param owners: An optional list of strings representing owners of the lock. Each string represents the application
+    :param owners: (Optional) A list of strings representing owners of the lock. Each string represents the application
         id of the lock owner.
 
     CLI Example:
@@ -468,7 +468,7 @@ async def delete_at_resource_level(
 
     :param resource_provider_namespace: The resource provider namespace of the resource with the lock to delete.
 
-    :param parent_resource_path: The parent resource identity.
+    :param parent_resource_path: (Optional) The parent resource identity.
 
     CLI Example:
 
@@ -529,7 +529,7 @@ async def get_at_resource_level(
 
     :param resource_provider_namespace: The namespace of the resource provider.
 
-    :param parent_resource_path: The parent resource identity.
+    :param parent_resource_path: (Optional) The parent resource identity.
 
     CLI Example:
 
@@ -581,9 +581,9 @@ async def create_or_update_at_subscription_level(
         CanNotDelete means authorized users are able to read and modify the resources, but not delete. ReadOnly means
         authorized users can only read from a resource, but they can't modify or delete it.
 
-    :param notes: An optional string representing notes about the lock. Maximum of 512 characters.
+    :param notes: (Optional) A string representing notes about the lock. Maximum of 512 characters.
 
-    :param owners: An optional list of strings representing owners of the lock. Each string represents the application
+    :param owners: (Optional) A list of strings representing owners of the lock. Each string represents the application
         id of the lock owner.
 
     CLI Example:
@@ -752,7 +752,7 @@ async def list_at_resource_level(
 
     :param resource_provider_namespace: The namespace of the resource provider.
 
-    :param parent_resource_path: The parent resource identity.
+    :param parent_resource_path: (Optional) The parent resource identity.
 
     CLI Example:
 

@@ -33,7 +33,6 @@ Azure Resource Manager (ARM) Resource Tenant Execution Module
 """
 # Python libs
 from __future__ import absolute_import
-from json import loads, dumps
 import logging
 
 # Azure libs

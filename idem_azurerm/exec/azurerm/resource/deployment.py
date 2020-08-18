@@ -33,7 +33,6 @@ Azure Resource Manager (ARM) Resource Deployment Execution Module
 """
 # Python libs
 from __future__ import absolute_import
-from json import loads, dumps
 import logging
 
 # Azure libs
@@ -98,7 +97,7 @@ async def operations_list(hub, ctx, name, resource_group, result_limit=10, **kwa
 
     :param resource_group: The resource group name assigned to the deployment.
 
-    :param result_limit: (Default: 10) The limit on the list of deployment operations.
+    :param result_limit: (Optional) The limit on the list of deployment operations. Defaults to 10.
 
     CLI Example:
 
@@ -243,6 +242,7 @@ async def create_or_update(
         azurerm.resource.deployment.create_or_update testdeploy testgroup
 
     """
+    result = {}
     resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
 
     prop_kwargs = {"mode": deploy_mode}
@@ -359,6 +359,7 @@ async def cancel(hub, ctx, name, resource_group, **kwargs):
         azurerm.resource.deployment.cancel testdeploy testgroup
 
     """
+    result = {}
     resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     try:
         resconn.deployments.cancel(

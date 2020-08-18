@@ -52,7 +52,6 @@ Azure Resource Manager (ARM) Resource Group State Module
 # Import Python libs
 from __future__ import absolute_import
 from dict_tools import differ
-import json
 import logging
 
 log = logging.getLogger(__name__)
@@ -74,8 +73,8 @@ async def present(
         the resource group is created.
 
     :param managed_by:
-        The ID of the resource that manages this resource group. This value cannot be updated once
-        the resource group is created.
+        (Optional) The ID of the resource that manages this resource group. This value cannot be updated once the
+        resource group is created.
 
     :param tags:
         (Optional) A dictionary of strings can be passed as tag metadata to the resource group object.
@@ -115,6 +114,7 @@ async def present(
 
     if "error" not in group:
         action = "update"
+
 
         # tag changes
         tag_changes = differ.deep_diff(group.get("tags", {}), tags or {})
