@@ -55,7 +55,6 @@ Azure Resource Manager (ARM) Log Analytics Workspace State Module
 from __future__ import absolute_import
 from dict_tools import differ
 import logging
-from operator import itemgetter
 
 log = logging.getLogger(__name__)
 
@@ -109,7 +108,7 @@ async def present(
     :param query_public_network_access: (Optional) The network access type for accessing Log Analytics query. Possible
         values include: "Enabled" and "Disabled". Defaults to "Enabled".
 
-    :param tags: A dictionary of strings can be passed as tag metadata to the key vault.
+    :param tags: (Optional) A dictionary of strings can be passed as tag metadata to the workspace.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -120,7 +119,7 @@ async def present(
 
         Ensure log analytics workspace exists:
             azurerm.log_analytics.workspace.present:
-                - name: my_vault
+                - name: my_workspace
                 - resource_group: my_rg
                 - location: my_location
                 - tags:
@@ -303,7 +302,7 @@ async def absent(
 
         Ensure log analytics workspace is absent:
             azurerm.log_analytics.workspace.absent:
-                - name: my_vault
+                - name: my_workspace
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
 
