@@ -115,7 +115,6 @@ async def present(
     if "error" not in group:
         action = "update"
 
-
         # tag changes
         tag_changes = differ.deep_diff(group.get("tags", {}), tags or {})
         if tag_changes:
