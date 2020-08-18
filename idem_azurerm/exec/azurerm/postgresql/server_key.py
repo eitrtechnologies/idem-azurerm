@@ -166,7 +166,7 @@ async def get(hub, ctx, name, server_name, resource_group, **kwargs):
     return result
 
 
-async def list(hub, ctx, server_name, resource_group, **kwargs):
+async def list_(hub, ctx, server_name, resource_group, **kwargs):
     """
     .. versionadded:: 4.0.0
 
