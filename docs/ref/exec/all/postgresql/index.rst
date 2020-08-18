@@ -15,5 +15,6 @@ postgresql execution modules
    operations
    replicas
    server
+   server_key
    server_security_alert_policy
    virtual_network_rule
