@@ -9,6 +9,7 @@ async def test_present(hub, ctx, public_ip_addr, resource_group):
         "changes": {
             "new": {
                 "name": public_ip_addr,
+                "resource_group": resource_group,
                 "sku": None,
                 "tags": None,
                 "public_ip_allocation_method": None,

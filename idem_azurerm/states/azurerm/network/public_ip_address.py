@@ -271,6 +271,7 @@ async def present(
                 "name": name,
                 "tags": tags,
                 "sku": sku,
+                "resource_group": resource_group,
                 "public_ip_allocation_method": public_ip_allocation_method,
                 "public_ip_address_version": public_ip_address_version,
                 "idle_timeout_in_minutes": idle_timeout_in_minutes,
