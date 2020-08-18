@@ -110,7 +110,7 @@ async def present(
             azurerm.network.public_ip_prefix.present:
                 - name: test_prefix
                 - resource_group: test_group
-                - prefix_length: 28 
+                - prefix_length: 28
                 - sku: "standard"
                 - public_ip_version: "IPv4"
                 - tags:
