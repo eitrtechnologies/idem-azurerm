@@ -111,23 +111,23 @@ async def present(
     :param public_network_access: (Optional) Whether or not public network access is allowed for this server.
         Possible values include: "Enabled", "Disabled".
 
-    :param storage_profile: A dictionary representing the storage profile of a server. Parameters include:
+    :param storage_profile: (Optional) A dictionary representing the storage profile of a server. Parameters include:
+
         - ``backup_retention_days``: Backup retention days for the server.
         - ``geo_redundant_backup``: Enable Geo-redundant or not for server backup. Possible values include:
             'Enabled', 'Disabled'.
         - ``storage_mb``: Max storage allowed for a server.
-        - ``storage_autogrow``: Enable Storage Auto Grow. Possible values include: 'Enabled', 'Disabled'
+        - ``storage_autogrow``: Enable Storage Auto Grow. Possible values include: 'Enabled', 'Disabled'.
 
-    :param login: The administrator's login name of a server. Can only be specified when the server is being created
-        (and is required for creation).
+    :param login: (Required) The administrator's login name of a server. This value is immutable once set.
 
-    :param login_password: The password of the administrator login.
+    :param login_password: (Required) The password of the administrator login.
 
-    :param force_password: A Boolean flag that represents whether or not the password should be updated. If it is set
+    :param force_password: (Optional) A Boolean flag that represents whether or not the password should be updated. If it is set
         to True, then the password will be updated if the server already exists. If it is set to False, then the
         password will not be updated unless other parameters also need to be updated. Defaults to False.
 
-    :param tags: A dictionary of strings can be passed as tag metadata to the server.
+    :param tags: (Optional) A dictionary of strings can be passed as tag metadata to the server.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.

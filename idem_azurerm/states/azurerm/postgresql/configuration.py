@@ -89,7 +89,7 @@ async def present(
 
     :param resource_group: The name of the resource group. The name is case insensitive.
 
-    :param value: Value of the configuration. Defaults to None.
+    :param value: (Required) Value of the configuration. Defaults to None.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.

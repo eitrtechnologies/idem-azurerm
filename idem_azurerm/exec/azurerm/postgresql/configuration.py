@@ -64,7 +64,7 @@ async def create_or_update(
 
     :param resource_group: The name of the resource group. The name is case insensitive.
 
-    :param value: Value of the configuration setting.
+    :param value: (Required) Value of the configuration setting. Defaults to None.
 
     CLI Example:
 

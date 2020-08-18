@@ -107,14 +107,13 @@ async def create(
         - ``geo_redundant_backup``: Enable Geo-redundant or not for server backup. Possible values include:
             'Enabled', 'Disabled'.
         - ``storage_mb``: Max storage allowed for a server.
-        - ``storage_autogrow``: Enable Storage Auto Grow. Possible values include: 'Enabled', 'Disabled'
+        - ``storage_autogrow``: Enable Storage Auto Grow. Possible values include: 'Enabled', 'Disabled'.
 
-    :param login: The administrator's login name of a server. Can only be specified when the server is being created
-        (and is required for creation).
+    :param login: (Required) The administrator's login name of a server. This value is immutable once set.
 
-    :param login_password: The password of the administrator login.
+    :param login_password: (Required) The password of the administrator login.
 
-    :param tags: Application-specific metadata in the form of key-value pairs.
+    :param tags: (Optional) Application-specific metadata in the form of key-value pairs.
 
     CLI Example:
 
