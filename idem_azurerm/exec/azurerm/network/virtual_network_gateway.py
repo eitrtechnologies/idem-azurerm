@@ -563,7 +563,7 @@ async def create_or_update(
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     # Handle VirtualNetworkGatewaySku creation
-    sku = {"name": sku}
+    sku = {"name": sku, "tier": sku}
 
     # Loop through IP Configurations and build each dictionary to pass to model creation.
     if isinstance(ip_configurations, list):

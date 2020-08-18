@@ -877,6 +877,7 @@ async def present(
     gateway_kwargs = kwargs.copy()
     gateway_kwargs.update(connection_auth)
 
+    """
     if action == "create" or len(ret["changes"]) > 1 or not tag_changes:
         gateway = await hub.exec.azurerm.network.virtual_network_gateway.create_or_update(
             ctx=ctx,
@@ -904,6 +905,28 @@ async def present(
         gateway = await hub.exec.azurerm.network.virtual_network_gateway.update_tags(
             ctx, name=name, resource_group=resource_group, tags=tags, **gateway_kwargs,
         )
+    """
+
+    gateway = await hub.exec.azurerm.network.virtual_network_gateway.create_or_update(
+        ctx=ctx,
+        name=name,
+        resource_group=resource_group,
+        virtual_network=virtual_network,
+        ip_configurations=ip_configurations,
+        gateway_type=gateway_type,
+        vpn_type=vpn_type,
+        tags=tags,
+        sku=sku,
+        enable_bgp=enable_bgp,
+        bgp_settings=bgp_settings,
+        active_active=active_active,
+        custom_routes={"address_prefixes": address_prefixes},
+        vpn_gateway_generation=generation,
+        enable_dns_forwarding=enable_dns_forwarding,
+        enable_private_ip_address=enable_private_ip_address,
+        polling=polling,
+        **gateway_kwargs,
+    )
 
     if "error" not in gateway:
         ret["result"] = True
