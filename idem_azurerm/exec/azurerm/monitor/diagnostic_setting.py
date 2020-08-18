@@ -31,7 +31,6 @@ Azure Resource Manager (ARM) Diagnostic Setting Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -65,9 +64,8 @@ async def create_or_update(
     workspace_id=None,
     log_analytics_destination_type=None,
     storage_account_id=None,
-    service_bus_rule_id=None,
-    event_hub_authorization_rule_id=None,
     event_hub_name=None,
+    event_hub_authorization_rule_id=None,
     **kwargs,
 ):
     """
@@ -77,18 +75,20 @@ async def create_or_update(
 
     Create or update diagnostic settings for the specified resource. At least one destination for the diagnostic
         setting logs is required. Any combination of the following destinations is acceptable:
-            1. Archive the diagnostic settings to a storage account. This would require the storage_account_id
-               paramater.
-            2. Stream the diagnostic settings to an event hub. This would require the event_hub_name and
-               event_hub_authorization_rule_id parameters.
-            3. Send the diagnostic settings to a Log Analytics Workspace. This would require the workspace_id parameter.
+
+        1. Archive the diagnostic settings to a storage account. This would require the ``storage_account_id``
+          paramater.
+        2. Stream the diagnostic settings to an event hub. This would require the ``event_hub_name`` and
+          ``event_hub_authorization_rule_id`` parameters.
+        3. Send the diagnostic settings to a Log Analytics Workspace. This would require the ``workspace_id`` parameter.
 
     :param name: The name of the diagnostic setting.
 
     :param resource_uri: The identifier of the resource.
 
-    :param metrics: A list of dictionaries representing valid MetricSettings objects. If this list is empty, then the
-        list passed as the logs parameter must have at least one element. Valid parameters are:
+    :param metrics: (Required) A list of dictionaries representing valid MetricSettings objects. If this list is empty,
+        then the list passed as the logs parameter must have at least one element. Valid parameters are:
+
         - ``category``: Name of a diagnostic metric category for the resource type this setting is applied to. To obtain
           the list of diagnostic metric categories for a resource, first perform a GET diagnostic setting operation.
           This is a required parameter.
@@ -100,8 +100,9 @@ async def create_or_update(
             - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
             - ``enabled``: A value indicating whether the retention policy is enabled.
 
-    :param logs: A list of dictionaries representing valid LogSettings objects. If this list is empty, then the list
-        passed as the metrics parameter must have at least one element. Valid parameters are:
+    :param logs: (Required) A list of dictionaries representing valid LogSettings objects. If this list is empty, then
+        the list passed as the metrics parameter must have at least one element. Valid parameters are:
+
         - ``category``: Name of a diagnostic log category for the resource type this setting is applied to. To obtain
           the list of diagnostic log categories for a resource, first perform a GET diagnostic setting operation.
           This is a required parameter.
@@ -112,22 +113,22 @@ async def create_or_update(
             - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
             - ``enabled``: A value indicating whether the retention policy is enabled.
 
-    :param workspace_id: The workspace (resource) ID for the Log Analytics workspace to which you would like to
-        send Diagnostic Logs.
+    :param workspace_id: (Required if you want to send the diagnostic settings data to Log Analytics) The workspace
+        (resource) ID for the Log Analytics workspace to which you would like to send Diagnostic Logs.
 
     :param log_analytics_destination_type: (Optional, used with workspace_id) A string indicating whether the export to
         the Log Analytics Workspace should store the logs within the legacy default destination type, the
         AzureDiagnostics table, or a dedicated, resource specific table. Possible values include: "Dedicated" and
         "AzureDiagnostics".
 
-    :param storage_account_id: The resource ID of the storage account to which you would like to send Diagnostic Logs.
+    :param storage_account_id: (Required if you want to achieve the diagnostic settings data to a storage account)
+        The resource ID of the storage account to which you would like to send Diagnostic Logs.
 
-    :param service_bus_rule_id: The service bus rule ID of the diagnostic setting. This is here to
-        maintain backwards compatibility.
+    :param event_hub_name: (Required to stream the diagnostic settings data to an event hub) The name of the event hub.
+        If none is specified, the default event hub will be selected.
 
-    :param event_hub_authorization_rule_id: The resource ID for the event hub authorization rule.
-
-    :param event_hub_name: The name of the event hub. If none is specified, the default event hub will be selected.
+    :param event_hub_authorization_rule_id: (Required, used with event_hub_name) The resource ID for the event hub
+        authorization rule.
 
     CLI Example:
 
