@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Authorization Provider Execution Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -31,7 +33,6 @@ Azure Resource Manager (ARM) Authorization Provider Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -50,17 +51,15 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-async def operations_metadata_get(
-    hub, ctx, resource_provider_namespace, api_version="2015-07-01", **kwargs
-):
+async def operations_metadata_get(hub, ctx, resource_provider_namespace, **kwargs):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Gets provider operations metadata for the specified resource provider.
 
     :param resource_provider_namespace: The namespace of the resource provider.
-
-    :param api_version: The API version to use for the operation.
 
     CLI Example:
 
@@ -73,9 +72,7 @@ async def operations_metadata_get(
     authconn = await hub.exec.azurerm.utils.get_client(ctx, "authorization", **kwargs)
     try:
         data = authconn.provider_operations_metadata.get(
-            resource_provider_namespace=resource_provider_namespace,
-            api_version=api_version,
-            **kwargs,
+            resource_provider_namespace=resource_provider_namespace, **kwargs,
         )
 
         result = data.as_dict()
@@ -88,13 +85,13 @@ async def operations_metadata_get(
     return result
 
 
-async def operations_metadata_list(hub, ctx, api_version="2015-07-01", **kwargs):
+async def operations_metadata_list(hub, ctx, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Gets provider operations metadata for all resource providers.
+    .. versionchanged:: 4.0.0
 
-    :param api_version: The API version to use for the operation.
+    Gets provider operations metadata for all resource providers.
 
     CLI Example:
 
@@ -108,9 +105,7 @@ async def operations_metadata_list(hub, ctx, api_version="2015-07-01", **kwargs)
 
     try:
         providers = await hub.exec.azurerm.utils.paged_object_to_list(
-            authconn.provider_operations_metadata.list(
-                api_version=api_version, **kwargs
-            )
+            authconn.provider_operations_metadata.list(**kwargs)
         )
 
         for provider in providers:
