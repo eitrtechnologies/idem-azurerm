@@ -74,23 +74,20 @@ async def create_or_update(
     :param policy_state: Specifies the state of the policy, whether it is enabled or disabled. Possible values include:
         'Enabled', 'Disabled'.
 
-    :param disabled_alerts: (Optional) Specifies an array of alerts that are disabled. Possible values are:
-        'Sql_Injection', 'Sql_Injection_Vulnerability', and 'Access_Anomaly'. It is important to note that the default
-        value of this parameter is [''].
+    :param disabled_alerts: Specifies an array of alerts that are disabled. Possible values are: 'Sql_Injection',
+        'Sql_Injection_Vulnerability', and 'Access_Anomaly'.
 
-    :param email_addresses: (Optional) Specifies an array of e-mail addresses to which the alert is sent. It is
-        important to note that the default value of this parameter is [''].
+    :param email_addresses: Specifies an array of e-mail addresses to which the alert is sent.
 
-    :param email_account_admins: (Optional) A boolean value that specifies whether the alert is sent to the account
+    :param email_account_admins: A boolean value that specifies whether the alert is sent to the account
         administrators or not.
 
-    :param storage_endpoint: (Optional) Specifies the blob storage endpoint (e.g.
-        https://MyAccount.blob.core.windows.net). This blob storage will hold all Threat Detection audit logs.
+    :param storage_endpoint: Specifies the blob storage endpoint (e.g. https://MyAccount.blob.core.windows.net). This
+        blob storage will hold all Threat Detection audit logs.
 
-    :param storage_account_access_key: (Optional) Specifies the identifier key of the Threat Detection audit
-        storage account.
+    :param storage_account_access_key: Specifies the identifier key of the Threat Detection audit storage account.
 
-    :param retention_days: (Optional) Specifies the number of days to keep in the Threat Detection audit logs.
+    :param retention_days: Specifies the number of days to keep in the Threat Detection audit logs.
 
     CLI Example:
 

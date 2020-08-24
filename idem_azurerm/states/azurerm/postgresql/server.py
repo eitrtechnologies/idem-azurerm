@@ -94,24 +94,24 @@ async def present(
 
     :param location: The location the resource resides in.
 
-    :param sku: (Optional) The name of the SKU (pricing tier) of the server. The name of the sku is in the form
-        tier_family_cores, e.g. B_Gen4_1, GP_Gen5_8.
+    :param sku: The name of the SKU (pricing tier) of the server. The name of the sku is in the form tier_family_cores,
+        e.g. B_Gen4_1, GP_Gen5_8.
 
-    :param version: (Optional) Server version. Possible values include: "9.5", "9.6", "10", "10.0", "10.2", "11".
+    :param version: Server version. Possible values include: "9.5", "9.6", "10", "10.0", "10.2", "11".
 
-    :param ssl_enforcement: (Optional) Enable ssl enforcement or not when connect to server. Possible values
+    :param ssl_enforcement: Enable ssl enforcement or not when connect to server. Possible values include: "Enabled",
+        "Disabled".
+
+    :param minimal_tls_version: Enforce a minimal tls version for the server. Possible values include: "TLS1_0",
+        "TLS1_1", "TLS1_2", "TLSEnforcementDisabled".
+
+    :param infrastructure_encryption: Status showing whether the server enabled infrastructure encryption. Possible
+        values include: "Enabled", "Disabled".
+
+    :param public_network_access: Whether or not public network access is allowed for this server. Possible values
         include: "Enabled", "Disabled".
 
-    :param minimal_tls_version: (Optional) Enforce a minimal tls version for the server. Possible values include:
-        "TLS1_0", "TLS1_1", "TLS1_2", "TLSEnforcementDisabled".
-
-    :param infrastructure_encryption: (Optional) Status showing whether the server enabled infrastructure encryption.
-        Possible values include: "Enabled", "Disabled".
-
-    :param public_network_access: (Optional) Whether or not public network access is allowed for this server.
-        Possible values include: "Enabled", "Disabled".
-
-    :param storage_profile: (Optional) A dictionary representing the storage profile of a server. Parameters include:
+    :param storage_profile: A dictionary representing the storage profile of a server. Parameters include:
 
         - ``backup_retention_days``: Backup retention days for the server.
         - ``geo_redundant_backup``: Enable Geo-redundant or not for server backup. Possible values include:
@@ -119,15 +119,15 @@ async def present(
         - ``storage_mb``: Max storage allowed for a server.
         - ``storage_autogrow``: Enable Storage Auto Grow. Possible values include: 'Enabled', 'Disabled'.
 
-    :param login: (Required) The administrator's login name of a server. This value is immutable once set.
+    :param login: The administrator's login name of a server. This value is immutable once set.
 
-    :param login_password: (Required) The password of the administrator login.
+    :param login_password: The password of the administrator login.
 
-    :param force_password: (Optional) A Boolean flag that represents whether or not the password should be updated. If it is set
-        to True, then the password will be updated if the server already exists. If it is set to False, then the
-        password will not be updated unless other parameters also need to be updated. Defaults to False.
+    :param force_password: An optional boolean flag that represents whether or not the password should be updated. If
+        it is set to True, then the password will be updated if the server already exists. If it is set to False, then
+        the password will not be updated unless other parameters also need to be updated. Defaults to False.
 
-    :param tags: (Optional) A dictionary of strings can be passed as tag metadata to the server.
+    :param tags: A dictionary of strings can be passed as tag metadata to the server.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.

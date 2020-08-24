@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) PostgreSQL Server Configuration Operations Executio
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -49,10 +51,12 @@ log = logging.getLogger(__name__)
 
 
 async def create_or_update(
-    hub, ctx, name, server_name, resource_group, value=None, **kwargs
+    hub, ctx, name, server_name, resource_group, value, **kwargs
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Updates the specified configuration setting for the given server. A list of configuration settings that can be
         updated for the given server can be found by using the list_by_server operation below. Additionally, all
@@ -64,7 +68,7 @@ async def create_or_update(
 
     :param resource_group: The name of the resource group. The name is case insensitive.
 
-    :param value: (Required) Value of the configuration setting. Defaults to None.
+    :param value: The value of the configuration setting.
 
     CLI Example:
 

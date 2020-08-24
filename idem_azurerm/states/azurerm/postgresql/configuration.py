@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) PostgreSQL Server Configuration Operations State Mo
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -66,30 +68,25 @@ TREQ = {
 
 
 async def present(
-    hub,
-    ctx,
-    name,
-    server_name,
-    resource_group,
-    value=None,
-    connection_auth=None,
-    **kwargs,
+    hub, ctx, name, server_name, resource_group, value, connection_auth=None, **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensures that a specific configuration setting exists with the given value for a specific PostgreSQL server. A list
         of configuration settings that can be updated for the given server can be found by using the list_by_server
         operation below. Additionally, all possible values for each individual configuration setting can be found
         using that module.
 
-    :param name: The name of the server configuration.
+    :param name: The name of the server configuration setting.
 
     :param server_name: The name of the server.
 
     :param resource_group: The name of the resource group. The name is case insensitive.
 
-    :param value: (Required) Value of the configuration. Defaults to None.
+    :param value: The value of the configuration setting.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.

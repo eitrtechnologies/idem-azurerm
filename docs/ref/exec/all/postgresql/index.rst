@@ -12,6 +12,7 @@ postgresql execution modules
    firewall_rule
    location_based_performance_tier
    log_files
+   private_link_resource
    operations
    replicas
    server

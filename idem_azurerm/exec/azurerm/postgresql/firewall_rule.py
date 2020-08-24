@@ -70,9 +70,9 @@ async def create_or_update(
 
     :param resource_group: The name of the resource group. The name is case insensitive.
 
-    :param start_ip_address: (Required) The start IP address of the server firewall rule. Must be IPv4 format.
+    :param start_ip_address: The start IP address of the server firewall rule. Must be IPv4 format.
 
-    :param end_ip_address: (Required) The end IP address of the server firewall rule. Must be IPv4 format.
+    :param end_ip_address: The end IP address of the server firewall rule. Must be IPv4 format.
 
     CLI Example:
 

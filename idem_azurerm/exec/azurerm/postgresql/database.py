@@ -63,9 +63,9 @@ async def create_or_update(
 
     :param resource_group: The name of the resource group. The name is case insensitive.
 
-    :param charset: (Optional) The charset of the database. Defaults to None.
+    :param charset: The charset of the database. Defaults to None.
 
-    :param collation: (Optional) The collation of the database. Defaults to None.
+    :param collation: The collation of the database. Defaults to None.
 
     CLI Example:
 
