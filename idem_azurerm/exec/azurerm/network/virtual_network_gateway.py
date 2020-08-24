@@ -529,7 +529,7 @@ async def create_or_update(
         'VpnGw4AZ', 'VpnGw5AZ', 'ErGw1AZ', 'ErGw2AZ', and 'ErGw3AZ'.
 
     :param polling:
-        (Optional) A boolean flag representing whether a Poller will be used during the creation of the Virtual
+        An optional boolean flag representing whether a Poller will be used during the creation of the Virtual
         Network Gateway. If set to True, a Poller will be used by this operation and the module will not return until
         the Virtual Network Gateway has completed its creation process and has been successfully provisioned. If set to
         False, the module will return once the Virtual Network Gateway has successfully begun its creation process.

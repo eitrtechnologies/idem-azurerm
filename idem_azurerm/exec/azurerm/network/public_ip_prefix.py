@@ -71,18 +71,17 @@ async def create_or_update(
 
     :param resource_group: The resource group of the public IP prefix.
 
-    :param prefix_length: (Required) An integer representing the length of the Public IP Prefix. This value is immutable
+    :param prefix_length: An integer representing the length of the Public IP Prefix. This value is immutable
         once set. If the value of the ``public_ip_address_version`` parameter is "IPv4", then possible values include
         28, 29, 30, 31. If the value of the ``public_ip_address_version`` parameter is "IPv6", then possible values
         include 124, 125, 126, 127.
 
-    :param sku: (Optional) The name of a public IP prefix SKU. Possible values include: "standard". Defaults
-        to "standard".
+    :param sku: The name of a public IP prefix SKU. Possible values include: "standard". Defaults to "standard".
 
-    :param public_ip_address_version: (Optional) The public IP address version. Possible values include: "IPv4" and
-        "IPv6". Defaults to "IPv4".
+    :param public_ip_address_version: The public IP address version. Possible values include: "IPv4" and "IPv6".
+        Defaults to "IPv4".
 
-    :param zones: (Optional) A list of availability zones that denotes where the IP allocated for the resource needs
+    :param zones: A list of availability zones that denotes where the IP allocated for the resource needs
         to come from.
 
     CLI Example:

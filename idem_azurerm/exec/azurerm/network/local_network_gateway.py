@@ -77,7 +77,7 @@ async def create_or_update(
 
     :param gateway_ip_address: IP address of the local network gateway.
 
-    :param bgp_settings: (Optional) A dictionary representing a valid BgpSettings object, which stores the local network
+    :param bgp_settings: A dictionary representing a valid BgpSettings object, which stores the local network
         gateway's BGP speaker settings. Valid parameters include:
 
         - ``asn``: (Required) The BGP speaker's Autonomous System Number. This is an integer value.
@@ -89,7 +89,7 @@ async def create_or_update(
     :param address_prefixes: (Optional) A list of address blocks reserved for this virtual network in CIDR notation.
         Serves as the local network gateway's site address space.
 
-    :param fqdn: (Optional) The FQDN of local network gateway.
+    :param fqdn: The FQDN of local network gateway.
 
     CLI Example:
 

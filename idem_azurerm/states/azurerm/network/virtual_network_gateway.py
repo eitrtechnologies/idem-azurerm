@@ -122,32 +122,32 @@ async def connection_present(
         immutable once set.
 
     :param virtual_network_gateway2:
-        (Required for a connection type of "Vnet2Vnet") The name of the virtual network gateway that will be used as
-        the second endpoint for the connection. This value is immutable once set.
+        The name of the virtual network gateway that will be used as the second endpoint for the connection. Required
+        for a connection type of "Vnet2Vnet". This value is immutable once set.
 
-    :param vgw2_group: (Optional) The resource group for the virtual network gateway passed as the
-        ``virtual_network_gateway2`` parameter. If this parameter is not specified it will default to the same resource
-        group as the virtual network gateway specified in the ``virtual_network_gateway`` parameter.
+    :param vgw2_group: The resource group for the virtual network gateway passed as the ``virtual_network_gateway2``
+        parameter. If this parameter is not specified it will default to the same resource group as the virtual network
+        gateway specified in the ``virtual_network_gateway`` parameter.
 
     :param local_network_gateway2:
-        (Required for a connection type of "IPSec") The valid Resource ID representing a LocalNetworkGateway Object that
-        will be used as the second endpoint for the connection. This valie is immutable once set.
+        The valid Resource ID representing a LocalNetworkGateway Object that will be used as the second endpoint for
+        the connection. Required for a connection type of "IPSec". This valie is immutable once set.
 
-    :param lgw2_group: (Optional) The resource group for the local network gateway passed as the
-        ``local_network_gateway2`` parameter. If this parameter is not specified it will default to the same resource
-        group as the virtual network gateway specified in the ``virtual_network_gateway`` parameter.
+    :param lgw2_group: The resource group for the local network gateway passed as the ``local_network_gateway2``
+        parameter. If this parameter is not specified it will default to the same resource group as the virtual network
+        gateway specified in the ``virtual_network_gateway`` parameter.
 
     :param peer:
-        (Required for a connection type of "ExpressRoute") The valid Resource ID representing a ExpressRouteCircuit
-        Object that will be used as the second endpoint for the connection. This value is immutable once set.
+        The valid Resource ID representing a ExpressRouteCircuit Object that will be used as the second endpoint for
+        the connection. Required for a connection type of "ExpressRoute". This value is immutable once set.
 
     :param shared_key:
-        (Required for a connection type of "IPsec" or "Vnet2Vnet") The shared key for the connection. Defaults to a
+        The shared key for the connection. Required for a connection type of "IPsec" or "Vnet2Vnet". Defaults to a
         randomly generated key.
 
     :param ipsec_policy:
-        (Required for a connection type of "IPSec") A dictionary representing an IpsecPolicy object that is considered
-        by this connection as the IPSec Policy. Valid parameters include:
+        A dictionary representing an IpsecPolicy object that is considered by this connection as the IPSec Policy.
+        Required for a connection type of "IPSec". Valid parameters include:
 
           - ``sa_life_time_seconds``: (Optional) The IPSec Security Association (also called Quick Mode or Phase 2 SA)
               lifetime in seconds for a site to site VPN tunnel.
@@ -167,34 +167,33 @@ async def connection_present(
               'None', 'PFS1', 'PFS2', 'PFS2048', 'ECP256', 'ECP384', 'PFS24', 'PFS14', 'PFSMM'.
 
     :param connection_protocol:
-        (Optional) The connection protocol used for this connection. Possible values include: "IKEv2" and "IKEv1".
+        The connection protocol used for this connection. Possible values include: "IKEv2" and "IKEv1".
 
     :param enable_bgp:
-        (Optional) A boolean representing whether BGP is enabled for this virtual network gateway connection. Both
+        A boolean representing whether BGP is enabled for this virtual network gateway connection. Both
         endpoints of the connection must have BGP enabled and may not have the same ASN values. Cannot be enabled while
         use_policy_based_traffic_selectors is enabled. Defaults to False.
 
     :param use_policy_based_traffic_selectors:
-        (Optional, can only be used with a connection type of "IPSec") A boolean value representing whether to enable
-        policy-based traffic selectors for a connection. Cannot be enabled at the same time as BGP. Requires that IPSec
-        policies for the gateway connection are defined.
+        A boolean value representing whether to enable policy-based traffic selectors for a connection. Cannot be
+        enabled at the same time as BGP. Requires that IPSec policies for the gateway connection are defined. Can only
+        be used with a connction type of "IPSec".
 
     :param routing_weight:
-        (Optional) An integer representing the routing weight.
+        An integer representing the routing weight.
 
     :param express_route_gateway_bypass:
-        (Optional, can only be used with a connection type of "ExpressRoute") A boolean value representing whether or
-        not to bypass the ExpressRoute Gateway for data forwarding.
+        A boolean value representing whether or not to bypass the ExpressRoute Gateway for data forwarding. Can only
+        be used with a connection type of "ExpressRoute".
 
     :param authorization_key:
-        (Required for a connection type of "ExpressRoute") The ExpressRoute Circuit authorization key.
+        The ExpressRoute Circuit authorization key. Required for a connection type of "ExpressRoute".
 
     :param use_local_azure_ip_address:
-        (Optional) A boolean value specifying whether or not to use a private local Azure IP for the connection.
+        A boolean value specifying whether or not to use a private local Azure IP for the connection.
 
     :param tags:
-        (Optional) A dictionary of strings can be passed as tag metadata to the virtual network gateway connection
-        object.
+        A dictionary of strings can be passed as tag metadata to the virtual network gateway connection object.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
@@ -629,17 +628,17 @@ async def present(
         'VpnGw4AZ', 'VpnGw5AZ', 'ErGw1AZ', 'ErGw2AZ', and 'ErGw3AZ'.
 
     :param vpn_type:
-        (Optional) The type of this virtual network gateway. Possible values include: "PolicyBased" and "RouteBased".
+        The type of this virtual network gateway. Possible values include: "PolicyBased" and "RouteBased".
         The vpn type is immutable once set.
 
     :param enable_bgp:
-        (Optional) A boolean value specifying whether BGP is enabled for this virtual network gateway.
+        A boolean value specifying whether BGP is enabled for this virtual network gateway.
 
     :param active_active:
-        (Optional) A boolean value specifying whether active-active mode is enabled for this virtual network gateway.
+        A boolean value specifying whether active-active mode is enabled for this virtual network gateway.
 
     :param bgp_settings:
-        (Optional) A dictionary representing a valid BgpSettings object, which stores the virtual network gateway's
+        A dictionary representing a valid BgpSettings object, which stores the virtual network gateway's
         BGP speaker settings. Valid parameters include:
 
         - ``asn``: The BGP speaker's Autonomous System Number.
@@ -647,28 +646,28 @@ async def present(
         - ``peer_weight``: The weight added to routes learned from this BGP speaker.
 
     :param address_prefixes:
-        (Optional) A list of CIDR blocks which can be used by subnets within the virtual network. Represents the
+        A list of CIDR blocks which can be used by subnets within the virtual network. Represents the
         custom routes address space specified by the the customer for virtual network gateway and VpnClient.
 
     :param generation:
-        (Optional, only possible if the ``gateway_type`` parameter is set to "Vpn") The generation for this virtual
-        network gateway. Possible values include: "None", "Generation1", and "Generation2".
+        The generation for this virtual network gateway. This parameter may only be set if the ``gateway_type``
+        parameter is set to "Vpn". Possible values include: "None", "Generation1", and "Generation2".
 
     :param enable_dns_forwarding:
-        (Optional) A boolean value specifying whether DNS forwarding is enabled.
+        A boolean value specifying whether DNS forwarding is enabled.
 
     :param enable_private_ip_address:
-        (Optional) A boolean value specifying whether a private IP needs to be enabled on this gateway for connections.
+        A boolean value specifying whether a private IP needs to be enabled on this gateway for connections.
 
     :param polling:
-        (Optional) A boolean flag representing whether a Poller will be used during the creation of the Virtual
+        An optional boolean flag representing whether a Poller will be used during the creation of the Virtual
         Network Gateway. If set to True, a Poller will be used by this operation and the module will not return until
         the Virtual Network Gateway has completed its creation process and has been successfully provisioned. If set to
         False, the module will return once the Virtual Network Gateway has successfully begun its creation process.
         Defaults to True.
 
     :param tags:
-        (Optional) A dictionary of strings can be passed as tag metadata to the virtual network gateway object.
+        A dictionary of strings can be passed as tag metadata to the virtual network gateway object.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the

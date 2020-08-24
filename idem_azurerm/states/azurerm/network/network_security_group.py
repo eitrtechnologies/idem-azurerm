@@ -93,10 +93,10 @@ async def present(
         The resource group assigned to the network security group.
 
     :param tags:
-        (Optional) A dictionary of strings can be passed as tag metadata to the network security group object.
+        A dictionary of strings can be passed as tag metadata to the network security group object.
 
     :param security_rules:
-        (Optional) A list of dictionaries representing valid SecurityRule objects. See the documentation for the
+        A list of dictionaries representing valid SecurityRule objects. See the documentation for the
         security_rule_present state or security_rule_create_or_update execution module for more information on required
         and optional parameters for security rules. The rules are only managed if this parameter is present. When this
         parameter is absent, implemented rules will not be removed, and will merely become unmanaged.

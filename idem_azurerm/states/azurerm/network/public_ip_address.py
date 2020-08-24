@@ -93,16 +93,16 @@ async def present(
 
     :param resource_group: The resource group assigned of the public IP address.
 
-    :param sku: (Optional) The SKU of public IP address. Possible values include: 'Basic', 'Standard'.
+    :param sku: The SKU of public IP address. Possible values include: 'Basic', 'Standard'.
 
-    :param public_ip_allocation_method: (Optional) The public IP allocation method. Possible values are 'Static'
+    :param public_ip_allocation_method: The public IP allocation method. Possible values are 'Static'
         and 'Dynamic'.
 
-    :param public_ip_address_version: (Optional) The public IP address version. Possible values are 'IPv4' and 'IPv6'.
+    :param public_ip_address_version: The public IP address version. Possible values are 'IPv4' and 'IPv6'.
 
-    :param idle_timeout_in_minutes: (Optional) An integer representing the idle timeout of the public IP address.
+    :param idle_timeout_in_minutes: An integer representing the idle timeout of the public IP address.
 
-    :param dns_settings: (Optional) A dictionary representing a valid PublicIPAddressDnsSettings object. Parameters
+    :param dns_settings: A dictionary representing a valid PublicIPAddressDnsSettings object. Parameters
         include the following:
 
         - ``domain_name_label``: (Required) The domain name label. The concatenation of the domain name label and the
@@ -114,15 +114,15 @@ async def present(
             reverse FQDN is specified, then a PTR DNS record is created pointing from the IP address in the in-addr.arpa
             domain to the reverse FQDN.
 
-    :param ddos_settings: (Optional) A dictionary representing an DdosSettings object. That DdosSettings object serves
+    :param ddos_settings: A dictionary representing an DdosSettings object. That DdosSettings object serves
         as the DDoS protection custom policy associated with the public IP address.
 
-    :param public_ip_prefix: (Optional) The Resource ID of the Public IP Prefix that this Public IP Address should be
+    :param public_ip_prefix: The Resource ID of the Public IP Prefix that this Public IP Address should be
         allocated from.
 
-    :param zones: (Optional) A list of availability zones denoting the IP allocated for the resource needs to come from.
+    :param zones: A list of availability zones denoting the IP allocated for the resource needs to come from.
 
-    :param tags: (Optional) A dictionary of strings can be passed as tag metadata to the public IP address object.
+    :param tags: A dictionary of strings can be passed as tag metadata to the public IP address object.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.

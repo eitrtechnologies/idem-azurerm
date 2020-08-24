@@ -182,7 +182,7 @@ async def create_or_update(
 
     :param remote_virtual_network: A valid name of a virtual network with which to peer.
 
-    :param remote_vnet_group: (Optional) The resource group of the remote virtual network. Defaults to the same resource
+    :param remote_vnet_group: The resource group of the remote virtual network. Defaults to the same resource
         group as the "local" virtual network.
 
     :param virtual_network: The virtual network name containing the peering object.

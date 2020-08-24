@@ -93,8 +93,9 @@ async def present(
         IP address of local network gateway.
 
     :param bgp_settings:
-        (Optional) A dictionary representing a valid BgpSettings object, which stores the local network gateway's BGP
+        A dictionary representing a valid BgpSettings object, which stores the local network gateway's BGP
         speaker settings. Valid parameters include:
+
           - ``asn``: (Required) The BGP speaker's Autonomous System Number. This is an integer value.
           - ``bgp_peering_address``: (Required) The BGP peering address and BGP identifier of this BGP speaker.
               This is a string value.
@@ -102,14 +103,14 @@ async def present(
               Integer value.
 
     :param address_prefixes:
-        (Optional) A list of address blocks reserved for this virtual network in CIDR notation. Serves as the local
+        A list of address blocks reserved for this virtual network in CIDR notation. Serves as the local
         network gateway's site address space.
 
     :param fqdn:
-        (Optional) The FQDN of local network gateway.
+        The FQDN of local network gateway.
 
     :param tags:
-        (Optional) A dictionary of strings can be passed as tag metadata to the local network gateway object.
+        A dictionary of strings can be passed as tag metadata to the local network gateway object.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the

@@ -101,11 +101,11 @@ async def present(
         The resource group assigned to the load balancer.
 
     :param sku:
-        (Optional) The load balancer SKU, which can be 'Basic' or 'Standard'. This property cannot be changed once the
+        The load balancer SKU, which can be 'Basic' or 'Standard'. This property cannot be changed once the
         load balancer is created.
 
     :param frontend_ip_configurations:
-        (Optional) A list of dictionaries representing valid FrontendIPConfiguration objects. A frontend IP
+        A list of dictionaries representing valid FrontendIPConfiguration objects. A frontend IP
         configuration can be either private (using private IP address and subnet parameters) or public (using a
         reference to a public IP address object). Valid parameters are:
 
@@ -117,7 +117,7 @@ async def present(
         - ``public_ip_address``: Name of an existing public IP address which will be assigned to the frontend IP object.
 
     :param backend_address_pools:
-        (Optional) A list of dictionaries representing valid BackendAddressPool objects. Inbound traffic is randomly
+        A list of dictionaries representing valid BackendAddressPool objects. Inbound traffic is randomly
         load balanced across IPs in the backend IPs. Valid parameters include:
 
         - ``name``: (Required) The name of the resource that is unique within the set of backend address pools used
@@ -125,7 +125,7 @@ async def present(
         - ``load_balancer_backend_addresses``: A list of LoadBalancerBackendAddress objects.
 
     :param probes:
-        (Optional) A list of dictionaries representing valid Probe objects. Valid parameters are:
+        A list of dictionaries representing valid Probe objects. Valid parameters are:
 
         - ``name``: The name of the resource that is unique within a resource group.
         - ``protocol``: The protocol of the endpoint. Possible values are 'Http' or 'Tcp'. If 'Tcp' is specified, a
@@ -142,7 +142,7 @@ async def present(
           set to 'Http'. Otherwise, it is not allowed. There is no default value.
 
     :param load_balancing_rules:
-        (Optional) A list of dictionaries representing valid LoadBalancingRule objects. Valid parameters are:
+        A list of dictionaries representing valid LoadBalancingRule objects. Valid parameters are:
 
         - ``name``: The name of the resource that is unique within a resource group.
         - ``load_distribution``: The load distribution policy for this rule. Possible values are 'Default', 'SourceIP',
@@ -165,7 +165,7 @@ async def present(
         - ``probe``: Name of the probe object used by the load balancing rule object.
 
     :param inbound_nat_rules:
-        (Optional) A list of dictionaries representing valid InboundNatRule objects. Defining inbound NAT rules on your
+        A list of dictionaries representing valid InboundNatRule objects. Defining inbound NAT rules on your
         load balancer is mutually exclusive with defining an inbound NAT pool. Inbound NAT pools are referenced from
         virtual machine scale sets. NICs that are associated with individual virtual machines cannot reference an
         Inbound NAT pool. They have to reference individual inbound NAT rules. Valid parameters are:
@@ -184,7 +184,7 @@ async def present(
           Availability Groups in SQL server. This setting can't be changed after you create the endpoint.
 
     :param inbound_nat_pools:
-        (Optional) A list of dictionaries representing valid InboundNatPool objects. They define an external port range
+        A list of dictionaries representing valid InboundNatPool objects. They define an external port range
         for inbound NAT to a single backend port on NICs associated with a load balancer. Inbound NAT rules are created
         automatically for each NIC associated with the Load Balancer using an external port from this range. Defining an
         Inbound NAT pool on your Load Balancer is mutually exclusive with defining inbound NAT rules. Inbound NAT pools
@@ -211,7 +211,7 @@ async def present(
             unexpected connection termination. This element is only used when the protocol is set to TCP.
 
     :param outbound_rules:
-        (Optional) A list of dictionaries representing valid OutboundNatRule objects. Valid parameters are:
+        A list of dictionaries representing valid OutboundNatRule objects. Valid parameters are:
 
         - ``name``: The name of the resource that is unique within a resource group.
         - ``frontend_ip_configuration``: Name of the frontend IP configuration object used by the outbound NAT rule
@@ -226,7 +226,7 @@ async def present(
         - ``idle_timeout_in_minutes``: The timeout for the TCP idle connection.
 
     :param tags:
-        (Optional) A dictionary of strings can be passed as tag metadata to the load balancer object.
+        A dictionary of strings can be passed as tag metadata to the load balancer object.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the

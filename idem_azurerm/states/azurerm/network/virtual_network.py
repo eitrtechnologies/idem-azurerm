@@ -108,19 +108,19 @@ async def present(
         A list of CIDR blocks which can be used by subnets within the virtual network.
 
     :param dns_servers:
-        (Optional) A list of DNS server addresses.
+        A list of DNS server addresses.
 
     :param enable_vm_protection:
-        (Optional) A boolean value indicating if VM protection is enabled for all the subnets in the virtual network.
+        A boolean value indicating if VM protection is enabled for all the subnets in the virtual network.
         Defaults to False.
 
     :param enable_ddos_protection:
-        (Optional) A boolean value indicating whether a DDoS protection is enabled for all the protected resources in
+        A boolean value indicating whether a DDoS protection is enabled for all the protected resources in
         the virtual network. It requires a DDoS protection plan associated with the resource. Default to False.
 
     :param ddos_protection_plan:
-        (Optional, required when enable_ddos_protection is set to True) The resource ID of the DDoS protection plan
-        associated with the virtual network.
+        The resource ID of the DDoS protection plan associated with the virtual network. This parameter is required
+        when the ``enable_ddos_protection`` parameter is set to True.
 
     :param tags:
         A dictionary of strings can be passed as tag metadata to the virtual network object.
@@ -388,13 +388,13 @@ async def subnet_present(
         The resource group assigned to the virtual network.
 
     :param security_group:
-        (Optional) The name of the existing network security group to assign to the subnet.
+        The name of the existing network security group to assign to the subnet.
 
     :param route_table:
-        (Optional) The name of the existing route table to assign to the subnet.
+        The name of the existing route table to assign to the subnet.
 
     :param service_endpoints:
-        (Optional) A list of service endpoints. More information about service endpoints and valid values can be found
+        A list of service endpoints. More information about service endpoints and valid values can be found
         `here <https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoints-overview>`_.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the

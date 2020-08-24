@@ -79,11 +79,11 @@ async def present(
     subnet,
     virtual_network,
     resource_group,
-    tags=None,
     network_security_group=None,
     dns_settings=None,
     enable_accelerated_networking=None,
     enable_ip_forwarding=None,
+    tags=None,
     connection_auth=None,
     **kwargs,
 ):
@@ -110,14 +110,11 @@ async def present(
     :param resource_group:
         The resource group assigned to the virtual network.
 
-    :param tags:
-        A dictionary of strings can be passed as tag metadata to the network interface object.
-
     :param network_security_group:
-        (Optional) The name of the existing network security group to assign to the network interface.
+        The name of the existing network security group to assign to the network interface.
 
     :param dns_settings:
-        (Optional) A dictionary representing a valid NetworkInterfaceDnsSettings object. Valid parameters are:
+        A dictionary representing a valid NetworkInterfaceDnsSettings object. Valid parameters are:
 
         - ``dns_servers``: List of DNS server IP addresses. Use 'AzureProvidedDNS' to switch to Azure provided DNS
           resolution. 'AzureProvidedDNS' value cannot be combined with other IPs, it must be the only value in
@@ -126,10 +123,13 @@ async def present(
           the same virtual network.
 
     :param enable_accelerated_networking:
-        (Optional) A boolean indicating whether accelerated networking should be enabled for the interface.
+        A boolean indicating whether accelerated networking should be enabled for the interface.
 
     :param enable_ip_forwarding:
-        (Optional) A boolean indicating whether IP forwarding should be enabled for the interface.
+        A boolean indicating whether IP forwarding should be enabled for the interface.
+
+    :param tags:
+        A dictionary of strings can be passed as tag metadata to the network interface object.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the

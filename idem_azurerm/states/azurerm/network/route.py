@@ -91,16 +91,16 @@ async def table_present(
 
     :param resource_group: The resource group assigned to the route table.
 
-    :param routes: (Optional) A list of dictionaries representing valid Route objects contained within a route table.
+    :param routes: A list of dictionaries representing valid Route objects contained within a route table.
         See the documentation for the route_present state or route_create_or_update execution module for more
         information on required and optional parameters for routes. The routes are only managed if this parameter is
         present. When this parameter is absent, implemented routes will not be removed, and will merely become
         unmanaged.
 
-    :param disable_bgp_route_propagation: (Optional) A boolean parameter setting whether to disable the routes learned
+    :param disable_bgp_route_propagation: A boolean parameter setting whether to disable the routes learned
         by BGP on the route table.
 
-    :param tags: (Optional) A dictionary of strings can be passed as tag metadata to the route table object.
+    :param tags: A dictionary of strings can be passed as tag metadata to the route table object.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -323,7 +323,7 @@ async def present(
     :param next_hop_type: The type of Azure hop the packet should be sent to. Possible values are: 'VnetLocal',
         'VirtualNetworkGateway', 'Internet', 'VirtualAppliance', and 'None'.
 
-    :param next_hop_ip_address: (Optional) The IP address packets should be forwarded to. Next hop values are only
+    :param next_hop_ip_address: The IP address packets should be forwarded to. Next hop values are only
         allowed in routes where the next hop type is 'VirtualAppliance'.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the

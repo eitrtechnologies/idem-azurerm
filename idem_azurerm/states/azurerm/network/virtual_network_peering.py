@@ -92,7 +92,7 @@ async def present(
         The name of the remote virtual network.
 
     :param remote_vnet_group:
-        (Optional) The resource group of the remote virtual network. Defaults to the same resource group as the "local"
+        The resource group of the remote virtual network. Defaults to the same resource group as the "local"
         virtual network.
 
     :param virtual_network:
@@ -102,18 +102,18 @@ async def present(
         The resource group assigned to the local virtual network.
 
     :param allow_virtual_network_access:
-        (Optional) Whether the VMs in the local virtual network space would be able to access the VMs in remote virtual
+        Whether the VMs in the local virtual network space would be able to access the VMs in remote virtual
         network space.
 
     :param allow_forwarded_traffic:
-        (Optional) Whether the forwarded traffic from the VMs in the local virtual network will be allowed/disallowed
+        Whether the forwarded traffic from the VMs in the local virtual network will be allowed/disallowed
         in remote virtual network.
 
     :param allow_gateway_transit:
-        (Optional) If gateway links can be used in remote virtual networking to link to this virtual network.
+        If gateway links can be used in remote virtual networking to link to this virtual network.
 
     :param use_remote_gateways:
-        (Optional) If remote gateways can be used on this virtual network. If the flag is set to True, and
+        If remote gateways can be used on this virtual network. If the flag is set to True, and
         allow_gateway_transit on remote peering is also True, virtual network will use gateways of remote virtual
         network for transit. Only one peering can have this flag set to True. This flag cannot be set if virtual network
         already has a gateway.

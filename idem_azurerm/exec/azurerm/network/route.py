@@ -513,7 +513,7 @@ async def create_or_update(
     :param next_hop_type: The type of Azure hop the packet should be sent to. Possible values are: 'VnetLocal',
         'VirtualNetworkGateway', 'Internet', 'VirtualAppliance', and 'None'.
 
-    :param next_hop_ip_address: (Optional) IP address to which packets should be forwarded. Next hop values are only
+    :param next_hop_ip_address: IP address to which packets should be forwarded. Next hop values are only
         allowed in routes where the next_hop_type is 'VirtualAppliance'.
 
     CLI Example:
