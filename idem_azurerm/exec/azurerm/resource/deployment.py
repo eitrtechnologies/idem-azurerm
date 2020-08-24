@@ -97,7 +97,7 @@ async def operations_list(hub, ctx, name, resource_group, result_limit=10, **kwa
 
     :param resource_group: The resource group name assigned to the deployment.
 
-    :param result_limit: (Optional) The limit on the list of deployment operations. Defaults to 10.
+    :param result_limit: The limit on the list of deployment operations. Defaults to 10.
 
     CLI Example:
 

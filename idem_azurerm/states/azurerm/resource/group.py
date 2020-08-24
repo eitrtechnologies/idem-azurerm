@@ -73,11 +73,11 @@ async def present(
         the resource group is created.
 
     :param managed_by:
-        (Optional) The ID of the resource that manages this resource group. This value cannot be updated once the
+        The ID of the resource that manages this resource group. This value cannot be updated once the
         resource group is created.
 
     :param tags:
-        (Optional) A dictionary of strings can be passed as tag metadata to the resource group object.
+        A dictionary of strings can be passed as tag metadata to the resource group object.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
