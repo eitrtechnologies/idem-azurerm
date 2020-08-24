@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) DNS Zone Execution Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -119,7 +121,8 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Delete a DNS zone within a resource group.
+    Delete a DNS zone within a resource group. WARNING: All DNS records in the zone will also be deleted. This
+        operation cannot be undone.
 
     :param name: The name of the DNS zone to delete.
 
@@ -140,6 +143,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
             resource_group_name=resource_group,
             if_match=kwargs.get("if_match"),
         )
+
         zone.wait()
         result = True
     except CloudError as exc:
@@ -152,8 +156,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Get a dictionary representing a DNS zone's properties, but not the
-    record sets within the zone.
+    Get a dictionary representing a DNS zone's properties, but not the record sets within the zone.
 
     :param name: The DNS zone to get.
 
@@ -169,8 +172,8 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     dnsconn = await hub.exec.azurerm.utils.get_client(ctx, "dns", **kwargs)
     try:
         zone = dnsconn.zones.get(zone_name=name, resource_group_name=resource_group)
+
         result = zone.as_dict()
-
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("dns", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -178,50 +181,17 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def list_by_resource_group(hub, ctx, resource_group, top=None, **kwargs):
+async def list_(hub, ctx, resource_group=None, top=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Lists the DNS zones in a resource group.
+    .. versionchanged: 4.0.0
 
-    :param resource_group: The name of the resource group.
+    Lists the DNS zones in a subscription.
 
-    :param top: The maximum number of DNS zones to return. If not specified,
-    returns up to 100 zones.
+    :param resource_group: The name of the resource group to limit the results.
 
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.dns.zone.list_by_resource_group testgroup
-
-    """
-    result = {}
-    dnsconn = await hub.exec.azurerm.utils.get_client(ctx, "dns", **kwargs)
-    try:
-        zones = await hub.exec.azurerm.utils.paged_object_to_list(
-            dnsconn.zones.list_by_resource_group(
-                resource_group_name=resource_group, top=top
-            )
-        )
-
-        for zone in zones:
-            result[zone["name"]] = zone
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("dns", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def list_(hub, ctx, top=None, **kwargs):
-    """
-    .. versionadded:: 1.0.0
-
-    Lists the DNS zones in all resource groups in a subscription.
-
-    :param top: The maximum number of DNS zones to return. If not specified,
-    returns up to 100 zones.
+    :param top: The maximum number of DNS zones to return. If not specified, returns up to 100 zones.
 
     CLI Example:
 
@@ -233,9 +203,16 @@ async def list_(hub, ctx, top=None, **kwargs):
     result = {}
     dnsconn = await hub.exec.azurerm.utils.get_client(ctx, "dns", **kwargs)
     try:
-        zones = await hub.exec.azurerm.utils.paged_object_to_list(
-            dnsconn.zones.list(top=top)
-        )
+        if resource_group:
+            zones = await hub.exec.azurerm.utils.paged_object_to_list(
+                dnsconn.zones.list_by_resource_group(
+                    resource_group_name=resource_group, top=top
+                )
+            )
+        else:
+            zones = await hub.exec.azurerm.utils.paged_object_to_list(
+                dnsconn.zones.list(top=top)
+            )
 
         for zone in zones:
             result[zone["name"]] = zone
