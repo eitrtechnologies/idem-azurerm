@@ -31,7 +31,6 @@ Azure Resource Manager (ARM) Authorization Permissions Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -73,14 +72,13 @@ async def permissions_list_for_resource(
 
     :param resource_type: The resource type of the resource.
 
-    :param parent_resource_path: The namespace of the resource provider.
+    :param parent_resource_path: (Optional) The namespace of the resource provider.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.authorization.permission.list_for_resource testname testgroup testnamespace \
-                  testtype testpath
+        azurerm.authorization.permission.list_for_resource testname testgroup testnamespace testtype testpath
 
     """
     result = {}
