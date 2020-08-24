@@ -95,49 +95,48 @@ async def present(
 
     :param resource_group: The name of the resource group that the storage account belongs to.
 
-    :param sku: (Required) The name of the storage account SKU. Possible values include: 'Standard_LRS', 'Standard_GRS',
+    :param sku: The name of the storage account SKU. Possible values include: 'Standard_LRS', 'Standard_GRS',
         'Standard_RAGRS', 'Standard_ZRS', 'Premium_LRS', 'Premium_ZRS', 'Standard_GZRS', and 'Standard_RAGZRS'.
 
-    :param kind: (Required) Indicates the type of storage account. Possible values include: 'Storage', 'StorageV2',
-        'BlobStorage', 'FileStorage', and 'BlockBlobStorage'.
+    :param kind: Indicates the type of storage account. Possible values include: 'Storage', 'StorageV2', 'BlobStorage',
+        'FileStorage', and 'BlockBlobStorage'.
 
-    :param location: (Required) Gets or sets the location of the resource. This will be one of the supported and
-        registered Azure Geo Regions (e.g. West US, East US, Southeast Asia, etc.). The geo region of a resource cannot
-        be changed once it is created, but if an identical geo region is specified on update, the request will succeed.
+    :param location: Gets or sets the location of the resource. This will be one of the supported and registered Azure
+        Geo Regions (e.g. West US, East US, Southeast Asia, etc.). The geo region of a resource cannot be changed once
+        it is created, but if an identical geo region is specified on update, the request will succeed.
 
-    :param custom_domain: (Optional) User domain assigned to the storage account. Valid parameters are:
+    :param custom_domain: User domain assigned to the storage account. Valid parameters are:
+
         - ``name``: Required. Gets or sets the custom domain name assigned to the storage account. Name is the CNAME
             source. To clear the existing custom domain, use an empty string for this property.
         - ``use_sub_domain_name``: Indicates whether indirect CName validation is enabled. Default value is False.
             This should only be set on updates.
 
-    :param network_rule_set: (Optional) A dictionary representing a NetworkRuleSet object.
+    :param network_rule_set: A dictionary representing a NetworkRuleSet object.
 
-    :param access_tier: (Required for kind of "BlobStorage", Optional otherwise) The access tier is used for billing.
-        Possible values include: 'Hot' and 'Cool'.
+    :param access_tier: The access tier is used for billing. Required when the ``kind`` parameter is set to
+        "BlobStorage". Possible values include: 'Hot' and 'Cool'.
 
-    :param azure_files_identity_based_auth: (Optional) A dictionary representing a
-        AzureFilesIdentityBasedAuthentication object. Provides the identity based authentication settings for
-        Azure Files.
+    :param azure_files_identity_based_auth: A dictionary representing an AzureFilesIdentityBasedAuthentication object.
+        Provides the identity based authentication settings for Azure Files.
 
-    :param https_traffic_only: (Optional) Allows https traffic only to storage service if set to True. The default value
-        is True.
+    :param https_traffic_only: Allows https traffic only to storage service if set to True. The default value is True.
 
-    :param hns_enabled: (Optional) A boolean flag specifying whether theaccount hierarchical namespace is enabled.
+    :param hns_enabled: A boolean flag specifying whether theaccount hierarchical namespace is enabled.
 
-    :param large_file_shares: (Optional) Allow large file shares if sets to 'Enabled'. It cannot be disabled once
-        it is enabled. Possible values include: 'Disabled', 'Enabled'.
+    :param large_file_shares: Allow large file shares if sets to 'Enabled'. It cannot be disabled once it is enabled.
+        Possible values include: 'Disabled', 'Enabled'.
 
-    :param routing_preference: (Optional) A dictionary representing a RoutingPreference object. Maintains information
-        about the network routing choice opted by the user for data transfer.
+    :param routing_preference: A dictionary representing a RoutingPreference object. Maintains information about the
+        network routing choice opted by the user for data transfer.
 
-    :param blob_public_access: (Optional) A boolean flag specifying whether public access is allowed to all blobs
-        or containers in the storage account. The default value is True.
+    :param blob_public_access: A boolean flag specifying whether public access is allowed to all blobs or containers in
+        the storage account. The default value is True.
 
-    :param minimum_tls_version: (Optional) Set the minimum TLS version to be permitted on requests to storage. The
-        default interpretation is TLS 1.0 for this property. Possible values include: 'TLS1_0', 'TLS1_1', 'TLS1_2'.
+    :param minimum_tls_version: Set the minimum TLS version to be permitted on requests to storage. The default
+        interpretation is TLS 1.0 for this property. Possible values include: 'TLS1_0', 'TLS1_1', 'TLS1_2'.
 
-    :param tags: (Optional) A dictionary of strings can be passed as metadata to the storage account.
+    :param tags: A dictionary of strings can be passed as metadata to the storage account.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.

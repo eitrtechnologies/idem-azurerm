@@ -228,13 +228,12 @@ async def create(
     :param public_access: Specifies whether data in the container may be accessed publicly and the level of access.
         Possible values include: "Container", "Blob", "None".
 
-    :param default_encryption_scope: (Optional) Set the default encryption scope for the container to use for
-        all writes.
+    :param default_encryption_scope: Set the default encryption scope for the container to use for all writes.
 
-    :param deny_encryption_scope_override: (Optional) A boolean flag representing whether or not to block the override
-        of the encryption scope from the container default.
+    :param deny_encryption_scope_override: A boolean flag representing whether or not to block the override of the
+        encryption scope from the container default.
 
-    :param metadata: (Optional) A dictionary of name-value pairs to associate with the container as metadata.
+    :param metadata: A dictionary of name-value pairs to associate with the container as metadata.
 
     CLI Example:
 
@@ -314,13 +313,13 @@ async def create_or_update_immutability_policy(
     :param immutability_period: The immutability period for the blobs in the container since the policy
         creation (in days).
 
-    :param if_match: (Optional) The entity state (ETag) version of the immutability policy to update. A value of "*" can
-        be used to apply the operation only if the immutability policy already exists. If omitted, this operation will
-        always be applied. It is important to note that any ETag must be passed as a string that includes double quotes.
+    :param if_match: The entity state (ETag) version of the immutability policy to update. A value of "*" can be used
+        to apply the operation only if the immutability policy already exists. If omitted, this operation will always
+        be applied. It is important to note that any ETag must be passed as a string that includes double quotes.
         For example, '"8d7b4bb4d393b8c"' is a valid string to pass as the if_match parameter, but "8d7b4bb4d393b8c" is
         not. Defaults to None.
 
-    :param protected_append_writes: (Optional) A boolean value specifying whether new blocks can be written to an append
+    :param protected_append_writes: A boolean value specifying whether new blocks can be written to an append
         blob while maintaining immutability protection and compliance. Only new blocks can be added and any existing
         blocks cannot be modified or deleted. This property can only be changed for unlocked time-based retention
         policies.
@@ -683,16 +682,17 @@ async def lease(
 
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
-    :param lease_action: The lease action. Possible values include: 'Acquire', 'Renew', 'Change', 'Release', and 'Break'.
+    :param lease_action: The lease action. Possible values include: 'Acquire', 'Renew', 'Change', 'Release', and
+        'Break'.
 
-    :param lease_duration: (Required for the lease action "acquire") Specifies the duration of the lease, in seconds, or negative one (-1)
-        for a lease that never expires.
+    :param lease_duration: Specifies the duration of the lease, in seconds, or negative one (-1) for a lease that never
+        expires. Required for the lease action "acquire".
 
-    :param break_period: (Optional) For a break action, proposed duration the lease should continue before it is broken,
-        in seconds, between 0 and 60.
+    :param break_period: For a break action, proposed duration the lease should continue before it is broken, in
+        seconds, between 0 and 60.
 
-    :param proposed_lease_id: (Required for lease action "change", optional for "acquire") Proposed lease ID, in a GUID
-        string format.
+    :param proposed_lease_id: Proposed lease ID, in a GUID string format. Required for the lease action "change" and
+        optional for the lease action "acquire".
 
     :param lease_id: Identifies the lease. Can be specified in any valid GUID string format.
 
@@ -762,12 +762,12 @@ async def list_(
 
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
-    :param maxpagesize: (Optional) Specified maximum number of containers that can be included in the list.
+    :param maxpagesize: Specified maximum number of containers that can be included in the list.
 
-    :param list_filter: (Optional) When specified, only container names starting with the filter will be listed.
+    :param list_filter: When specified, only container names starting with the filter will be listed.
 
-    :param include_soft_deleted: (Optional) A boolean value representing whether to include the properties for soft
-        deleted blob containers. Defaults to True.
+    :param include_soft_deleted: A boolean value representing whether to include the properties for soft deleted blob
+        containers. Defaults to True.
 
     CLI Example:
 
@@ -964,13 +964,12 @@ async def update(
     :param public_access: Specifies whether data in the container may be accessed publicly and the level of access.
         Possible values include: "Container", "Blob", "None".
 
-    :param default_encryption_scope: (Optional) Set the default encryption scope for the container to use for
-        all writes.
+    :param default_encryption_scope: Set the default encryption scope for the container to use for all writes.
 
-    :param deny_encryption_scope_override: (Optional) A boolean flag representing whether or not to block the override
+    :param deny_encryption_scope_override: A boolean flag representing whether or not to block the override
         of the encryption scope from the container default.
 
-    :param metadata: (Optional) A dictionary of name-value pairs to associate with the container as metadata.
+    :param metadata: A dictionary of name-value pairs to associate with the container as metadata.
 
     CLI Example:
 
