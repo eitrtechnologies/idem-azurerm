@@ -72,6 +72,7 @@ async def present(
     workspace_capping=None,
     ingestion_public_network_access=None,
     query_public_network_access=None,
+    capacity_reservation_level=None,
     tags=None,
     connection_auth=None,
     **kwargs,
@@ -89,26 +90,25 @@ async def present(
 
     :param location: The resource location.
 
-    :param sku: (Optional) A dictionary representing a WorkspaceSku objects that sets the SKU (pricing tier) of the
-        workspace. Valid parameters include:
-        - ``name``: (Required) The name of the SKU. Possible values include: "Free", "Standard", "Premium", "PerNode",
-            "PerGB2018", "Standalone", and "CapacityReservation".
-        - ``capacity_reservation_level``: (Only necessary when CapacityReservation is specified) An integer representing
-            the capacity reservation level for this workspace.
+    :param sku: The name of the SKU. Possible values include: "Free", "Standard", "Premium", "PerNode", "PerGB2018",
+        "Standalone", and "CapacityReservation".
 
-    :param retention: (Optional) The workspace data retention period in days. -1 means Unlimited retention for
+    :param retention: The workspace data retention period in days. -1 means Unlimited retention for
         the Unlimited Sku. 730 days is the maximum allowed for all other Skus.
 
-    :param workspace_capping: (Optional) A float representing the daily volume cap in GB for ingestion.
+    :param workspace_capping: A float representing the daily volume cap in GB for ingestion.
         -1 means unlimited.
 
-    :param ingestion_public_network_access: (Optional) The network access type for accessing Log Analytics ingestion.
+    :param ingestion_public_network_access: The network access type for accessing Log Analytics ingestion.
         Possible values include: "Enabled" and "Disabled". Defaults to "Enabled".
 
-    :param query_public_network_access: (Optional) The network access type for accessing Log Analytics query. Possible
+    :param query_public_network_access: The network access type for accessing Log Analytics query. Possible
         values include: "Enabled" and "Disabled". Defaults to "Enabled".
 
-    :param tags: (Optional) A dictionary of strings can be passed as tag metadata to the workspace.
+    :param capacity_reservation_level: An integer representing the capacity reservation level for this workspace. This
+        parameter is only necessary when "CapacityReservation" is passed as the value of the ``sku`` parameter.
+
+    :param tags: A dictionary of strings can be passed as tag metadata to the workspace.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -145,21 +145,29 @@ async def present(
 
     if "error" not in workspace:
         action = "update"
+
         if tags:
             tag_changes = differ.deep_diff(workspace.get("tags", {}), tags)
             if tag_changes:
                 ret["changes"]["tags"] = tag_changes
 
         if sku:
-            if sku.get("name").lower() != workspace.get("sku").get("name").lower() or (
-                sku.get("capacity_reservation_level", None)
-                and sku.get("capacity_reservation_level", None)
-                != workspace.get("sku").get("capacity_reservation_level", None)
-            ):
+            if sku.lower() != workspace.get("sku").get("name").lower():
                 ret["changes"]["sku"] = {
                     "old": workspace.get("sku"),
-                    "new": sku,
+                    "new": {"name": sku},
                 }
+            elif sku.lower() == "capacityreservation" and capacity_reservation_level:
+                if capacity_reservation_level != workspace.get("sku").get(
+                    "capacity_reservation_level", None
+                ):
+                    ret["changes"]["sku"] = {
+                        "old": workspace.get("sku"),
+                        "new": {
+                            "name": sku,
+                            "capacity_reservation_level": capacity_reservation_level,
+                        },
+                    }
 
         if retention is not None:
             if retention != workspace.get("retention_in_days"):
@@ -222,7 +230,13 @@ async def present(
         if tags:
             ret["changes"]["new"]["tags"] = tags
         if sku:
-            ret["changes"]["new"]["sku"] = sku
+            if capacity_reservation_level:
+                ret["changes"]["new"]["sku"] = {
+                    "name": sku,
+                    "capacity_reservation_level": capacity_reservation_level,
+                }
+            else:
+                ret["changes"]["new"]["sku"] = {"name": sku}
         if workspace_capping is not None:
             ret["changes"]["new"]["workspace_capping"] = {
                 "daily_quota_gb": workspace_capping
@@ -256,6 +270,7 @@ async def present(
         workspace_capping=workspace_capping,
         ingestion_public_network_access=ingestion_public_network_access,
         query_public_network_access=query_public_network_access,
+        capacity_reservation_level=capacity_reservation_level,
         tags=tags,
         **workspace_kwargs,
     )
@@ -290,8 +305,8 @@ async def absent(
 
     :param resource_group: The resource group name of the workspace.
 
-    :param force: (Optional) Deletes the workspace without the recovery option. A workspace that was deleted with this
-        flag cannot be recovered.
+    :param force: An optional boolean flag that specifies whether or not to delete the workspace without the option of
+        recovery. A workspace that was deleted with this flag set as True cannot be recovered.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.

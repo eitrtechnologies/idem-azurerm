@@ -63,6 +63,7 @@ async def create_or_update(
     workspace_capping=None,
     ingestion_public_network_access=None,
     query_public_network_access=None,
+    capacity_reservation_level=None,
     **kwargs,
 ):
     """
@@ -78,24 +79,22 @@ async def create_or_update(
 
     :param location: The resource location.
 
-    :param sku: (Optional) A dictionary representing a WorkspaceSku objects that sets the SKU (pricing tier) of the
-        workspace. Valid parameters include:
-        - ``name``: (Required) The name of the SKU. Possible values include: "Free", "Standard", "Premium", "PerNode",
-            "PerGB2018", "Standalone", and "CapacityReservation".
-        - ``capacity_reservation_level``: (Only necessary when CapacityReservation is specified) An integer representing
-            the capacity reservation level for this workspace.
+    :param sku: The name of the SKU. Possible values include: "Free", "Standard", "Premium", "PerNode", "PerGB2018",
+        "Standalone", and "CapacityReservation".
 
-    :param retention: (Optional) The workspace data retention period in days. -1 means Unlimited retention for
-        the Unlimited Sku. 730 days is the maximum allowed for all other Skus.
+    :param retention: The workspace data retention period in days. -1 means Unlimited retention for the Unlimited Sku.
+        730 days is the maximum allowed for all other Skus.
 
-    :param workspace_capping: (Optional) A float representing the daily volume cap in GB for ingestion.
-        -1 means unlimited.
+    :param workspace_capping: A float representing the daily volume cap in GB for ingestion. -1 means unlimited.
 
-    :param ingestion_public_network_access: (Optional) The network access type for accessing Log Analytics ingestion.
-        Possible values include: "Enabled" and "Disabled". Defaults to "Enabled".
-
-    :param query_public_network_access: (Optional) The network access type for accessing Log Analytics query. Possible
+    :param ingestion_public_network_access: The network access type for accessing Log Analytics ingestion. Possible
         values include: "Enabled" and "Disabled". Defaults to "Enabled".
+
+    :param query_public_network_access: The network access type for accessing Log Analytics query. Possible values
+        include: "Enabled" and "Disabled". Defaults to "Enabled".
+
+    :param capacity_reservation_level: An integer representing the capacity reservation level for this workspace. This
+        parameter is only necessary when "CapacityReservation" is passed as the value of the ``sku`` parameter.
 
     CLI Example:
 
@@ -109,6 +108,15 @@ async def create_or_update(
 
     if workspace_capping:
         workspace_capping = {"daily_quota_gb": workspace_capping}
+
+    if sku:
+        if sku.lower() == "capacityreservation" and capacity_reservation_level:
+            sku = {
+                "name": sku,
+                "capacity_reservation_level": capacity_reservation_level,
+            }
+        else:
+            sku = {"name": sku}
 
     try:
         spacemodel = await hub.exec.azurerm.utils.create_object_model(
@@ -163,8 +171,8 @@ async def delete(hub, ctx, name, resource_group, force=None, **kwargs):
 
     :param resource_group: The resource group name of the workspace.
 
-    :param force: A boolean value that specifies whether the workspace should be deleted without the option of recovery.
-        A workspace that was deleted with this flag set as True cannot be recovered.
+    :param force: An optional boolean flag that specifies whether the workspace should be deleted without the option
+        of recovery. A workspace that was deleted with this flag set as True cannot be recovered.
 
     CLI Example:
 
