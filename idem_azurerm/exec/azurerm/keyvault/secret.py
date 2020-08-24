@@ -535,20 +535,20 @@ async def update_secret_properties(
 
     :param vault_url: The URL of the vault that the client will access.
 
-    :param version: (Optional) Used to specify the version of the secret to update. If no version is specified, the
-        latest version of the secret will be updated.
+    :param version: An optional parameter used to specify the version of the secret to update. If no version is
+        specified, the latest version of the secret will be updated.
 
-    :param content_type: (Optional) An arbitrary string indicating the type of the secret.
+    :param content_type: An arbitrary string indicating the type of the secret.
 
-    :param enabled: (Optional) Whether the secret is enabled for use.
+    :param enabled: Whether the secret is enabled for use.
 
-    :param expires_on: (Optional) When the secret will expire, in UTC. This parameter should be a string representation
-        of a Datetime object in ISO-8601 format.
+    :param expires_on: When the secret will expire, in UTC. This parameter must be a string representation of a Datetime
+        object in ISO-8601 format.
 
-    :param not_before: (Optional) The time before which the secret can not be used, in UTC. This parameter should be a
-        string representation of a Datetime object in ISO-8601 format.
+    :param not_before: The time before which the secret can not be used, in UTC. This parameter must be a string
+        representation of a Datetime object in ISO-8601 format.
 
-    :param tags: (Optional) Application specific metadata in the form of key-value pairs.
+    :param tags: Application specific metadata in the form of key-value pairs.
 
     CLI Example:
 

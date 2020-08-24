@@ -92,23 +92,23 @@ async def present(
 
     :param vault_url: The URL of the vault that the client will access.
 
-    :param key_operations: (Optional) A list of permitted key operations. Possible values include: 'decrypt', 'encrypt',
+    :param key_operations: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt',
         'sign', 'unwrap_key', 'verify', 'wrap_key'.
 
-    :param size: (Optional) RSA key size in bits, for example 2048, 3072, or 4096. Applies to RSA keys only.
+    :param size: RSA key size in bits, for example 2048, 3072, or 4096. Applies to RSA keys only.
 
-    :param curve: (Optional) Elliptic curve name. Defaults to the NIST P-256 elliptic curve. Possible values include:
+    :param curve: Elliptic curve name. Defaults to the NIST P-256 elliptic curve. Possible values include:
         "P-256", "P-256K", "P-384", "P-521".
 
-    :param enabled: (Optional) Whether the key is enabled for use.
+    :param enabled: Whether the key is enabled for use.
 
-    :param expires_on: (Optional) When the key will expire, in UTC. This parameter should be a string representation
+    :param expires_on: When the key will expire, in UTC. This parameter should be a string representation
         of a Datetime object in ISO-8601 format.
 
-    :param not_before: (Optional) The time before which the key can not be used, in UTC. This parameter should be a
+    :param not_before: The time before which the key can not be used, in UTC. This parameter should be a
         string representation of a Datetime object in ISO-8601 format.
 
-    :param tags: (Optional) Application specific metadata in the form of key-value pairs.
+    :param tags: Application specific metadata in the form of key-value pairs.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.

@@ -232,24 +232,24 @@ async def create_ec_key(
 
     :param vault_url: The URL of the vault that the client will access.
 
-    :param curve: (Optional) Elliptic curve name. Defaults to the NIST P-256 elliptic curve. Possible values include:
-        "P-256", "P-256K", "P-384", "P-521".
+    :param curve: Elliptic curve name. Defaults to the NIST P-256 elliptic curve. Possible values include: "P-256",
+        "P-256K", "P-384", "P-521".
 
-    :param key_operations: (Optional) A list of permitted key operations. Possible values include: 'decrypt', 'encrypt',
-        'sign', 'unwrap_key', 'verify', 'wrap_key'.
+    :param key_operations: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
+        'unwrap_key', 'verify', 'wrap_key'.
 
-    :param hardware_protected: (Optional) A boolean value specifying whether the key should be created in a hardware
-        security module. Defaults to False.
+    :param hardware_protected: A boolean value specifying whether the key should be created in a hardware security
+        module. Defaults to False.
 
-    :param enabled: (Optional) A boolean value specifying whether the key is enabled for use.
+    :param enabled: A boolean value specifying whether the key is enabled for use.
 
-    :param expires_on: (Optional) When the key will expire, in UTC. This parameter should be a string representation
-        of a Datetime object in ISO-8601 format.
+    :param expires_on: When the key will expire, in UTC. This parameter should be a string representation of a
+        Datetime object in ISO-8601 format.
 
-    :param not_before: (Optional) The time before which the key can not be used, in UTC. This parameter should be a
-        string representation of a Datetime object in ISO-8601 format.
+    :param not_before: The time before which the key can not be used, in UTC. This parameter should be a string
+        representation of a Datetime object in ISO-8601 format.
 
-    :param tags: (Optional) Application specific metadata in the form of key-value pairs.
+    :param tags: Application specific metadata in the form of key-value pairs.
 
     CLI Example:
 
@@ -309,23 +309,23 @@ async def create_key(
 
     :param vault_url: The URL of the vault that the client will access.
 
-    :param key_operations: (Optional) A list of permitted key operations. Possible values include: 'decrypt', 'encrypt',
-        'sign', 'unwrap_key', 'verify', 'wrap_key'.
+    :param key_operations: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
+        'unwrap_key', 'verify', 'wrap_key'.
 
-    :param size: (Optional) RSA key size in bits, for example 2048, 3072, or 4096. Applies to RSA keys only.
+    :param size: RSA key size in bits, for example 2048, 3072, or 4096. Applies to RSA keys only.
 
-    :param curve: (Optional) Elliptic curve name. Defaults to the NIST P-256 elliptic curve. Possible values include:
-        "P-256", "P-256K", "P-384", "P-521".
+    :param curve: Elliptic curve name. Defaults to the NIST P-256 elliptic curve. Possible values include: "P-256",
+        "P-256K", "P-384", "P-521".
 
-    :param enabled: (Optional) Whether the key is enabled for use.
+    :param enabled: Whether the key is enabled for use.
 
-    :param expires_on: (Optional) When the key will expire, in UTC. This parameter should be a string representation
-        of a Datetime object in ISO-8601 format.
+    :param expires_on: When the key will expire, in UTC. This parameter should be a string representation of a Datetime
+        object in ISO-8601 format.
 
-    :param not_before: (Optional) The time before which the key can not be used, in UTC. This parameter should be a
-        string representation of a Datetime object in ISO-8601 format.
+    :param not_before: The time before which the key can not be used, in UTC. This parameter should be a string
+        representation of a Datetime object in ISO-8601 format.
 
-    :param tags: (Optional) Application specific metadata in the form of key-value pairs.
+    :param tags: Application specific metadata in the form of key-value pairs.
 
     CLI Example:
 
@@ -384,23 +384,23 @@ async def create_rsa_key(
 
     :param vault_url: The URL of the vault that the client will access.
 
-    :param size: (Optional) Key size in bits, for example 2048, 3072, or 4096.
+    :param size: Key size in bits, for example 2048, 3072, or 4096.
 
-    :param key_operations: (Optional) A list of permitted key operations. Possible values include: 'decrypt', 'encrypt',
-        'sign', 'unwrap_key', 'verify', 'wrap_key'.
+    :param key_operations: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
+        'unwrap_key', 'verify', 'wrap_key'.
 
-    :param hardware_protected: (Optional) A boolean value specifying whether the key should be created in a hardware
-        security module. Defaults to False.
+    :param hardware_protected: A boolean value specifying whether the key should be created in a hardware security
+        module. Defaults to False.
 
-    :param enabled: (Optional) Whether the key is enabled for use.
+    :param enabled: Whether the key is enabled for use.
 
-    :param expires_on: (Optional) When the key will expire, in UTC. This parameter should be a string representation
-        of a Datetime object in ISO-8601 format.
+    :param expires_on: When the key will expire, in UTC. This parameter should be a string representation of a Datetime
+        object in ISO-8601 format.
 
-    :param not_before: (Optional) The time before which the key can not be used, in UTC. This parameter should be a
-        string representation of a Datetime object in ISO-8601 format.
+    :param not_before: The time before which the key can not be used, in UTC. This parameter should be a string
+        representation of a Datetime object in ISO-8601 format.
 
-    :param tags: (Optional) Application specific metadata in the form of key-value pairs.
+    :param tags: Application specific metadata in the form of key-value pairs.
 
     CLI Example:
 
@@ -471,8 +471,7 @@ async def get_key(hub, ctx, name, vault_url, version=None, **kwargs):
 
     :param vault_url: The URL of the vault that the client will access.
 
-    :param version: (Optional) Used to specify the version of the key to get. If not specified, gets the latest
-        version of the key.
+    :param version: Used to specify the version of the key to get. If not specified, gets the latest version of the key.
 
     CLI Example:
 
@@ -520,18 +519,18 @@ async def import_key(
 
     :param vault_url: The URL of the vault that the client will access.
 
-    :param hardware_protected: (Optional) A boolean value specifying whether the key should be created in a hardware
+    :param hardware_protected: A boolean value specifying whether the key should be created in a hardware
         security module. Defaults to False.
 
-    :param enabled: (Optional) A boolean value specifying whether the key is enabled for use.
+    :param enabled: A boolean value specifying whether the key is enabled for use.
 
-    :param expires_on: (Optional) When the key will expire, in UTC. This parameter should be a string representation
+    :param expires_on: When the key will expire, in UTC. This parameter should be a string representation
         of a Datetime object in ISO-8601 format.
 
-    :param not_before: (Optional) The time before which the key can not be used, in UTC. This parameter should be a
+    :param not_before: The time before which the key can not be used, in UTC. This parameter should be a
         string representation of a Datetime object in ISO-8601 format.
 
-    :param tags: (Optional) Application specific metadata in the form of key-value pairs.
+    :param tags: Application specific metadata in the form of key-value pairs.
 
     Additional parameters passed as keyword arguments are used to build a JSONWebKey object will be passed to this
         module. Below some of those parameters are defined. More information about some of those parameters can be
@@ -791,21 +790,21 @@ async def update_key_properties(
 
     :param vault_url: The URL of the vault that the client will access.
 
-    :param version: (Optional) Used to specify the version of the key to update. If no version is specified, the latest
+    :param version: Used to specify the version of the key to update. If no version is specified, the latest
         version of the key will be updated.
 
-    :param key_operations: (Optional) A list of permitted key operations. Possible values include: 'decrypt', 'encrypt',
+    :param key_operations: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt',
         'sign', 'unwrap_key', 'verify', 'wrap_key'.
 
-    :param enabled: (Optional) Whether the key is enabled for use.
+    :param enabled: Whether the key is enabled for use.
 
-    :param expires_on: (Optional) When the key will expire, in UTC. This parameter should be a string representation
+    :param expires_on: When the key will expire, in UTC. This parameter should be a string representation
         of a Datetime object in ISO-8601 format.
 
-    :param not_before: (Optional) The time before which the key can not be used, in UTC. This parameter should be a
+    :param not_before: The time before which the key can not be used, in UTC. This parameter should be a
         string representation of a Datetime object in ISO-8601 format.
 
-    :param tags: (Optional) Application specific metadata in the form of key-value pairs.
+    :param tags: Application specific metadata in the form of key-value pairs.
 
     CLI Example:
 
