@@ -75,17 +75,15 @@ async def create_or_update(
         'Enabled', 'Disabled'.
 
     :param disabled_alerts: Specifies an array of alerts that are disabled. Possible values are: 'Sql_Injection',
-        'Sql_Injection_Vulnerability', and 'Access_Anomaly'. It is important to note that the default value of this
-        parameter is [''].
+        'Sql_Injection_Vulnerability', and 'Access_Anomaly'.
 
-    :param email_addresses: Specifies an array of e-mail addresses to which the alert is sent. It is important to note
-        that the default value of this parameter is [''].
+    :param email_addresses: Specifies an array of e-mail addresses to which the alert is sent.
 
     :param email_account_admins: A boolean value that specifies whether the alert is sent to the account
         administrators or not.
 
-    :param storage_endpoint: Specifies the blob storage endpoint (e.g. https://MyAccount.blob.core.windows.net).
-        This blob storage will hold all Threat Detection audit logs.
+    :param storage_endpoint: Specifies the blob storage endpoint (e.g. https://MyAccount.blob.core.windows.net). This
+        blob storage will hold all Threat Detection audit logs.
 
     :param storage_account_access_key: Specifies the identifier key of the Threat Detection audit storage account.
 

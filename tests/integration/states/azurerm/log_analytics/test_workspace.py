@@ -56,7 +56,7 @@ async def test_absent(hub, ctx, resource_group, log_analytics_workspace):
         "result": True,
     }
     ret = await hub.states.azurerm.log_analytics.workspace.absent(
-        ctx, log_analytics_workspace, resource_group
+        ctx, name=log_analytics_workspace, resource_group=resource_group, force=True
     )
     assert ret["changes"]["new"] == expected["changes"]["new"]
     assert ret["changes"]["old"]["name"] == expected["changes"]["old"]["name"]
