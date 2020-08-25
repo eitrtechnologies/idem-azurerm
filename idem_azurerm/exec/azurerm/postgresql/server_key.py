@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Azure Resource Manager (ARM) PostgreSQL Server Configuration Operations Execution Module
+Azure Resource Manager (ARM) PostgreSQL Server Key Operations Execution Module
 
-.. versionadded:: 2.0.0
-
-.. versionchanged:: 4.0.0
+.. versionadded:: 4.0.0
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
@@ -47,49 +45,85 @@ try:
 except ImportError:
     pass
 
+__func_alias__ = {"list_": "list"}
+
 log = logging.getLogger(__name__)
 
 
 async def create_or_update(
-    hub, ctx, name, server_name, resource_group, value, **kwargs
+    hub, ctx, name, server_name, resource_group, key_uri, **kwargs,
 ):
     """
-    .. versionadded:: 2.0.0
+    .. versionadded:: 4.0.0
 
-    .. versionchanged:: 4.0.0
+    Creates or updates a PostgreSQL Server key.
 
-    Updates the specified configuration setting for the given server. A list of configuration settings that can be
-        updated for the given server can be found by using the list_by_server operation below. Additionally, all
-        possible values for each individual configuration setting can be found using that module.
-
-    :param name: The name of the server configuration setting to update.
+    :param name: The name of the PostgreSQL Server key to be operated on (updated or created)..
 
     :param server_name: The name of the server.
 
     :param resource_group: The name of the resource group. The name is case insensitive.
 
-    :param value: The value of the configuration setting.
+    :param key_uri: The URI of the key.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.postgresql.configuration.create_or_update test_name test_server test_group test_value
+        azurerm.postgresql.server_key.create_or_update test_name test_server test_group
 
     """
     result = {}
     postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
-        config = postconn.configurations.create_or_update(
-            configuration_name=name,
+        key = postconn.server_keys.create_or_update(
+            key_name=name,
             server_name=server_name,
             resource_group_name=resource_group,
-            value=value,
+            uri=key_uri,
         )
 
-        config.wait()
-        result = config.result().as_dict()
+        key.wait()
+        result = key.result().as_dict()
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
+        result = {"error": str(exc)}
+    except AttributeError as exc:
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def delete(hub, ctx, name, server_name, resource_group, **kwargs):
+    """
+    .. versionadded:: 4.0.0
+
+    Deletes the PostgreSQL Server key with the given name.
+
+    :param name: The name of the PostgreSQL Server key to be deleted.
+
+    :param server_name: The name of the server.
+
+    :param resource_group: The name of the resource group. The name is case insensitive.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.postgresql.server_key.delete test_name test_server test_group
+
+    """
+    result = {}
+    postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
+
+    try:
+        key = postconn.server_keys.delete(
+            key_name=name, server_name=server_name, resource_group_name=resource_group,
+        )
+
+        key.wait()
+        result = True
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -99,11 +133,11 @@ async def create_or_update(
 
 async def get(hub, ctx, name, server_name, resource_group, **kwargs):
     """
-    .. versionadded:: 2.0.0
+    .. versionadded:: 4.0.0
 
-    Gets information about a configuration setting for the specified server.
+    Gets a PostgreSQL Server key.
 
-    :param name: The name of the server configuration setting.
+    :param name: The name of the PostgreSQL Server key to be retrieved.
 
     :param server_name: The name of the server.
 
@@ -113,20 +147,18 @@ async def get(hub, ctx, name, server_name, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.postgresql.configuration.get test_name test_server test_group
+        azurerm.postgresql.server_key.get test_name test_server test_group
 
     """
     result = {}
     postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
-        config = postconn.configurations.get(
-            configuration_name=name,
-            server_name=server_name,
-            resource_group_name=resource_group,
+        key = postconn.server_keys.get(
+            key_name=name, server_name=server_name, resource_group_name=resource_group,
         )
 
-        result = config.as_dict()
+        result = key.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -134,11 +166,11 @@ async def get(hub, ctx, name, server_name, resource_group, **kwargs):
     return result
 
 
-async def list_by_server(hub, ctx, server_name, resource_group, **kwargs):
+async def list_(hub, ctx, server_name, resource_group, **kwargs):
     """
-    .. versionadded:: 2.0.0
+    .. versionadded:: 4.0.0
 
-    List all the configuration settings in a given server.
+    Gets a list of Server keys.
 
     :param server_name: The name of the server.
 
@@ -148,21 +180,21 @@ async def list_by_server(hub, ctx, server_name, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.postgresql.configuration.list_by_server test_server test_group
+        azurerm.postgresql.server_key.list test_server test_group
 
     """
     result = {}
     postconn = await hub.exec.azurerm.utils.get_client(ctx, "postgresql", **kwargs)
 
     try:
-        configs = await hub.exec.azurerm.utils.paged_object_to_list(
-            postconn.configurations.list_by_server(
+        keys = await hub.exec.azurerm.utils.paged_object_to_list(
+            postconn.server_keys.list(
                 server_name=server_name, resource_group_name=resource_group
             )
         )
 
-        for config in configs:
-            result[config["name"]] = config
+        for key in keys:
+            result[key["name"]] = key
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("postgresql", str(exc), **kwargs)
         result = {"error": str(exc)}

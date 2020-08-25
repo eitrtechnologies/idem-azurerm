@@ -90,8 +90,8 @@ async def present(
     :param subnet_id: The ARM Resource ID of the virtual network subnet. The ID will be in the following format:
         '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks/{virtualNetworkName}/subnets/{subnetName}'
 
-    :param ignore_missing_endpoint: A boolean value representing whether the fire wall rule is created before the
-        virtual network has vnet service endpoint enabled.
+    :param ignore_missing_endpoint: (Optional) A boolean value representing whether the firewall rule is created before
+        the virtual network has the vnet service endpoint enabled.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.

@@ -21,7 +21,6 @@ async def test_present(hub, ctx, postgresql_server, resource_group, location, pa
                 "name": postgresql_server,
                 "location": location,
                 "resource_group": resource_group,
-                "create_mode": "Default",
                 "sku": {"name": sku},
                 "administrator_login": login,
                 "administrator_login_password": "REDACTED",
