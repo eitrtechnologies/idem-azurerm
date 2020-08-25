@@ -4,7 +4,7 @@ Azure Resource Manager (ARM) Blob Container Operations Execution Module
 
 .. versionadded:: 2.0.0
 
-.. versionchanged:: 3.0.0
+.. versionchanged:: 3.0.0, 4.0.0
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
@@ -45,6 +45,7 @@ try:
     import azure.mgmt.storage  # pylint: disable=unused-import
     from azure.storage.blob import BlobClient, BlobServiceClient, ContainerClient
     from msrestazure.azure_exceptions import CloudError
+    from msrest.exceptions import SerializationError
     from azure.core.exceptions import HttpResponseError, ResourceExistsError
 
     HAS_LIBS = True
@@ -196,10 +197,21 @@ async def clear_legal_hold(hub, ctx, name, account, resource_group, tags, **kwar
 
 
 async def create(
-    hub, ctx, name, account, resource_group, public_access=None, metadata=None, **kwargs
+    hub,
+    ctx,
+    name,
+    account,
+    resource_group,
+    public_access,
+    default_encryption_scope=None,
+    deny_encryption_scope_override=None,
+    metadata=None,
+    **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Creates a new container under the specified account as described by request body. The container resource includes
         metadata and properties for that container. It does not include a list of the blobs contained by the container.
@@ -214,27 +226,47 @@ async def create(
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
     :param public_access: Specifies whether data in the container may be accessed publicly and the level of access.
-        Possible values include: "Container", "Blob", "None". Defaults to None.
+        Possible values include: "Container", "Blob", "None".
 
-    :param metadata: A dictionary of name-value pairs to associate with the container as metadata. Defaults to None.
+    :param default_encryption_scope: Set the default encryption scope for the container to use for all writes.
+
+    :param deny_encryption_scope_override: A boolean flag representing whether or not to block the override of the
+        encryption scope from the container default.
+
+    :param metadata: A dictionary of name-value pairs to associate with the container as metadata.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.storage.container.create test_name test_account test_group test_access test_metadata
+        azurerm.storage.container.create test_name test_account test_group test_access
 
     """
     result = {}
     storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
+        containermodel = await hub.exec.azurerm.utils.create_object_model(
+            "storage",
+            "BlobContainer",
+            default_encryption_scope=default_encryption_scope,
+            deny_encryption_scope_override=deny_encryption_scope_override,
+            public_access=public_access,
+            metadata=metadata,
+            **kwargs,
+        )
+    except TypeError as exc:
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
+        return result
+
+    try:
         container = storconn.blob_containers.create(
             container_name=name,
             account_name=account,
             resource_group_name=resource_group,
-            public_access=public_access,
-            metadata=metadata,
+            blob_container=containermodel,
             **kwargs,
         )
 
@@ -242,7 +274,7 @@ async def create(
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
-    except SerializationError as exc:
+    except (SerializationError, TypeError) as exc:
         result = {
             "error": "The object model could not be parsed. ({0})".format(str(exc))
         }
@@ -258,13 +290,16 @@ async def create_or_update_immutability_policy(
     resource_group,
     immutability_period,
     if_match=None,
+    protected_append_writes=None,
     **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
 
-    Creates or updates an unlocked immutability policy. The container must be of account kind 'StorageV2' in order to
-        utilize an immutability policy.
+    .. versionchanged:: 4.0.0
+
+    Creates or updates an unlocked immutability policy. ETag in If-Match is honored if given but not required for this
+        operation. The container must be of account kind 'StorageV2' in order to utilize an immutability policy.
 
     :param name: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
@@ -276,11 +311,18 @@ async def create_or_update_immutability_policy(
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
     :param immutability_period: The immutability period for the blobs in the container since the policy
-        creation, in days.
+        creation (in days).
 
-    :param if_match: The entity state (ETag) version of the immutability policy to update. It is important to note that
-        the ETag must be passed as a string that includes double quotes. For example, '"8d7b4bb4d393b8c"' is a valid
-        string to pass as the if_match parameter, but "8d7b4bb4d393b8c" is not. Defaults to None.
+    :param if_match: The entity state (ETag) version of the immutability policy to update. A value of "*" can be used
+        to apply the operation only if the immutability policy already exists. If omitted, this operation will always
+        be applied. It is important to note that any ETag must be passed as a string that includes double quotes.
+        For example, '"8d7b4bb4d393b8c"' is a valid string to pass as the if_match parameter, but "8d7b4bb4d393b8c" is
+        not. Defaults to None.
+
+    :param protected_append_writes: A boolean value specifying whether new blocks can be written to an append
+        blob while maintaining immutability protection and compliance. Only new blocks can be added and any existing
+        blocks cannot be modified or deleted. This property can only be changed for unlocked time-based retention
+        policies.
 
     CLI Example:
 
@@ -299,6 +341,7 @@ async def create_or_update_immutability_policy(
             resource_group_name=resource_group,
             immutability_period_since_creation_in_days=immutability_period,
             if_match=if_match,
+            allow_protected_append_writes=protected_append_writes,
             **kwargs,
         )
 
@@ -306,7 +349,7 @@ async def create_or_update_immutability_policy(
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
-    except SerializationError as exc:
+    except (SerializationError, TypeError) as exc:
         result = {
             "error": "The object model could not be parsed. ({0})".format(str(exc))
         }
@@ -570,7 +613,7 @@ async def get_immutability_policy(
     """
     .. versionadded:: 2.0.0
 
-    Gets properties of a specified container.
+    Gets the existing immutability policy along with the corresponding ETag in response headers and body.
 
     :param name: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
@@ -611,17 +654,47 @@ async def get_immutability_policy(
     return result
 
 
-async def list_(hub, ctx, account, resource_group, **kwargs):
+async def lease(
+    hub,
+    ctx,
+    name,
+    account,
+    resource_group,
+    lease_action,
+    lease_duration=None,
+    break_period=None,
+    proposed_lease_id=None,
+    lease_id=None,
+    **kwargs,
+):
     """
-    .. versionadded:: 2.0.0
+    .. versionadded:: 4.0.0
 
-    Lists all containers and does not support a prefix like data plane. Also SRP today does not return continuation
-        token.
+    The Lease Container operation establishes and manages a lock on a container for delete operations. The lock duration
+        can be 15 to 60 seconds, or can be infinite.
+
+    :param container: The name of the blob container within the specified storage account. Blob container names must be
+        between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
+        character must be immediately preceded and followed by a letter or number.
 
     :param account: The name of the storage account within the specified resource group. Storage account names must be
         between 3 and 24 characters in length and use numbers and lower-case letters only.
 
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
+
+    :param lease_action: The lease action. Possible values include: 'Acquire', 'Renew', 'Change', 'Release', and
+        'Break'.
+
+    :param lease_duration: Specifies the duration of the lease, in seconds, or negative one (-1) for a lease that never
+        expires. Required for the lease action "acquire".
+
+    :param break_period: For a break action, proposed duration the lease should continue before it is broken, in
+        seconds, between 0 and 60.
+
+    :param proposed_lease_id: Proposed lease ID, in a GUID string format. Required for the lease action "change" and
+        optional for the lease action "acquire".
+
+    :param lease_id: Identifies the lease. Can be specified in any valid GUID string format.
 
     CLI Example:
 
@@ -634,14 +707,93 @@ async def list_(hub, ctx, account, resource_group, **kwargs):
     storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
-        containers = storconn.blob_containers.list(
-            account_name=account, resource_group_name=resource_group
+        leasemodel = await hub.exec.azurerm.utils.create_object_model(
+            "storage",
+            "LeaseContainerRequest",
+            action=lease_action,
+            lease_id=lease_id,
+            break_period=break_period,
+            lease_duration=lease_duration,
+            proposed_lease_id=proposed_lease_id,
+            **kwargs,
+        )
+    except TypeError as exc:
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
+        return result
+
+    try:
+        lease = storconn.blob_containers.lease(
+            container_name=name,
+            account_name=account,
+            resource_group_name=resource_group,
+            parameters=leasemodel,
         )
 
-        containers_list = containers.as_dict().get("value", [])
-        for container in containers_list:
-            result[container["name"]] = container
+        result = lease.as_dict()
     except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def list_(
+    hub,
+    ctx,
+    account,
+    resource_group,
+    maxpagesize=None,
+    list_filter=None,
+    include_soft_deleted=True,
+    **kwargs,
+):
+    """
+    .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
+
+    Lists all containers and does not support a prefix like data plane. Also SRP today does not return continuation
+        token.
+
+    :param account: The name of the storage account within the specified resource group. Storage account names must be
+        between 3 and 24 characters in length and use numbers and lower-case letters only.
+
+    :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
+
+    :param maxpagesize: Specified maximum number of containers that can be included in the list.
+
+    :param list_filter: When specified, only container names starting with the filter will be listed.
+
+    :param include_soft_deleted: A boolean value representing whether to include the properties for soft deleted blob
+        containers. Defaults to True.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.storage.container.list test_account test_group
+
+    """
+    result = {}
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
+
+    try:
+        containers = await hub.exec.azurerm.utils.paged_object_to_list(
+            storconn.blob_containers.list(
+                account_name=account,
+                resource_group_name=resource_group,
+                maxpagesize=maxpagesize,
+                filter=list_filter,
+                include=include_soft_deleted,
+                **kwargs,
+            )
+        )
+
+        for container in containers:
+            result[container["name"]] = container
+    except (CloudError, AttributeError) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
 
@@ -781,10 +933,21 @@ async def set_legal_hold(hub, ctx, name, account, resource_group, tags, **kwargs
 
 
 async def update(
-    hub, ctx, name, account, resource_group, public_access=None, metadata=None, **kwargs
+    hub,
+    ctx,
+    name,
+    account,
+    resource_group,
+    public_access,
+    default_encryption_scope=None,
+    deny_encryption_scope_override=None,
+    metadata=None,
+    **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Updates container properties as specified in request body. Properties not mentioned in the request will be
         unchanged. Update fails if the specified container doesn't already exist.
@@ -799,34 +962,54 @@ async def update(
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
     :param public_access: Specifies whether data in the container may be accessed publicly and the level of access.
-        Possible values include: 'Container', 'Blob', 'None'. Defaults to None.
+        Possible values include: "Container", "Blob", "None".
 
-    :param metadata: A name-value pair to associate with the container as metadata. Defaults to None.
+    :param default_encryption_scope: Set the default encryption scope for the container to use for all writes.
+
+    :param deny_encryption_scope_override: A boolean flag representing whether or not to block the override
+        of the encryption scope from the container default.
+
+    :param metadata: A dictionary of name-value pairs to associate with the container as metadata.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.storage.container.update test_name test_account test_group test_access test_metadata
+        azurerm.storage.container.update test_name test_account test_group test_access
 
     """
+    result = {}
     storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
+
+    try:
+        containermodel = await hub.exec.azurerm.utils.create_object_model(
+            "storage",
+            "BlobContainer",
+            default_encryption_scope=default_encryption_scope,
+            deny_encryption_scope_override=deny_encryption_scope_override,
+            public_access=public_access,
+            metadata=metadata,
+            **kwargs,
+        )
+    except TypeError as exc:
+        result = {
+            "error": "The object model could not be built. ({0})".format(str(exc))
+        }
+        return result
 
     try:
         container = storconn.blob_containers.update(
             container_name=name,
             account_name=account,
             resource_group_name=resource_group,
-            public_access=public_access,
-            metadata=metadata,
-            **kwargs,
+            blob_container=containermodel,
         )
 
         result = container.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
         result = {"error": str(exc)}
-    except SerializationError as exc:
+    except (TypeError, SerializationError) as exc:
         result = {
             "error": "The object model could not be parsed. ({0})".format(str(exc))
         }

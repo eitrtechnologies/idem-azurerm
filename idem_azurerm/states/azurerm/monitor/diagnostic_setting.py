@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Diagnostic Setting State Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -66,29 +68,34 @@ async def present(
     metrics,
     logs,
     workspace_id=None,
+    log_analytics_destination_type=None,
     storage_account_id=None,
-    service_bus_rule_id=None,
-    event_hub_authorization_rule_id=None,
     event_hub_name=None,
+    event_hub_authorization_rule_id=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Ensure a diagnostic setting exists. At least one destination for the diagnostic setting logs is required. Any
         combination of the following destinations is acceptable:
-        1. Archive the diagnostic settings to a stroage account. This would require the storage_account_id param.
-        2. Stream the diagnostic settings to an event hub. This would require the event_hub_name and
-              event_hub_authorization_rule_id params.
-        3. Send the diagnostic settings to Log Analytics. This would require the workspace_id param.
+
+        1. Archive the diagnostic settings to a storage account. This would require the ``storage_account_id``
+          parameter.
+        2. Stream the diagnostic settings to an event hub. This would require the ``event_hub_name`` and
+          ``event_hub_authorization_rule_id`` parameters.
+        3. Send the diagnostic settings to Log Analytics. This would require the ``workspace_id`` parameter.
 
     :param name: The name of the diagnostic setting.
 
     :param resource_uri: The identifier of the resource.
 
-    :param metrics: A list of dictionaries representing valid MetricSettings objects. If this list is empty, then the
-        list passed as the logs parameter must have at least one element. Valid parameters are:
+    :param metrics: (Required) A list of dictionaries representing valid MetricSettings objects. If this list is empty,
+        then the list passed as the logs parameter must have at least one element. Valid parameters are:
+
         - ``category``: Name of a diagnostic metric category for the resource type this setting is applied to. To obtain
           the list of diagnostic metric categories for a resource, first perform a GET diagnostic setting operation.
           This is a required parameter.
@@ -100,8 +107,9 @@ async def present(
             - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
             - ``enabled``: A value indicating whether the retention policy is enabled.
 
-    :param logs: A list of dictionaries representing valid LogSettings objects. If this list is empty, then the list
-        passed as the metrics parameter must have at least one element. Valid parameters are:
+    :param logs: (Required) A list of dictionaries representing valid LogSettings objects. If this list is empty, then
+        the list passed as the metrics parameter must have at least one element. Valid parameters are:
+
         - ``category``: Name of a diagnostic log category for the resource type this setting is applied to. To obtain
           the list of diagnostic log categories for a resource, first perform a GET diagnostic setting operation.
           This is a required parameter.
@@ -112,17 +120,22 @@ async def present(
             - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
             - ``enabled``: A value indicating whether the retention policy is enabled.
 
-    :param workspace_id: The workspace (resource) ID for the Log Analytics workspace to which you would like to
-        send Diagnostic Logs.
+    :param workspace_id: (Required if you want to send the diagnostic settings data to Log Analytics) The workspace
+        (resource) ID for the Log Analytics workspace to which you would like to send Diagnostic Logs.
 
-    :param storage_account_id: The resource ID of the storage account to which you would like to send Diagnostic Logs.
+    :param log_analytics_destination_type: (Optional, used with workspace_id) A string indicating whether the export to
+        the Log Analytics Workspace should store the logs within the legacy default destination type, the
+        AzureDiagnostics table, or a dedicated, resource specific table. Possible values include: "Dedicated" and
+        "AzureDiagnostics".
 
-    :param service_bus_rule_id: The service bus rule ID of the diagnostic setting. This is here to
-        maintain backwards compatibility.
+    :param storage_account_id: (Required if you want to achieve the diagnostic settings data to a storage account)
+        The resource ID of the storage account to which you would like to send Diagnostic Logs.
 
-    :param event_hub_authorization_rule_id: The resource ID for the event hub authorization rule.
+    :param event_hub_name: (Required to stream the diagnostic settings data to an event hub) The name of the event hub.
+        If none is specified, the default event hub will be selected.
 
-    :param event_hub_name: The name of the event hub. If none is specified, the default event hub will be selected.
+    :param event_hub_authorization_rule_id: (Required, used with event_hub_name) The resource ID for the event hub
+        authorization rule.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -216,13 +229,6 @@ async def present(
                     "new": workspace_id,
                 }
 
-        if service_bus_rule_id:
-            if service_bus_rule_id != setting.get("service_bus_rule_id", None):
-                ret["changes"]["service_bus_rule_id"] = {
-                    "old": setting.get("service_bus_rule_id"),
-                    "new": service_bus_rule_id,
-                }
-
         if event_hub_authorization_rule_id:
             if event_hub_authorization_rule_id != setting.get(
                 "event_hub_authorization_rule_id", None
@@ -264,8 +270,10 @@ async def present(
             ret["changes"]["new"]["storage_account_id"] = storage_account_id
         if workspace_id:
             ret["changes"]["new"]["workspace_id"] = workspace_id
-        if service_bus_rule_id:
-            ret["changes"]["new"]["service_bus_rule_id"] = service_bus_rule_id
+        if log_analytics_destination_type:
+            ret["changes"]["new"][
+                "log_analytics_destination_type"
+            ] = log_analytics_destination_type
         if event_hub_authorization_rule_id:
             ret["changes"]["new"][
                 "event_hub_authorization_rule_id"
@@ -289,9 +297,9 @@ async def present(
         metrics=metrics,
         storage_account_id=storage_account_id,
         workspace_id=workspace_id,
+        log_analytics_destination_type=log_analytics_destination_type,
         event_hub_name=event_hub_name,
         event_hub_authorization_rule_id=event_hub_authorization_rule_id,
-        service_bus_rule_id=service_bus_rule_id,
         **setting_kwargs,
     )
 

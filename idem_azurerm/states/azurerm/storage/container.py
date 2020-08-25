@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Blob Container State Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -62,7 +64,14 @@ TREQ = {
             "states.azurerm.resource.group.present",
             "states.azurerm.storage.account.present",
         ]
-    }
+    },
+    "immutability_policy_present": {
+        "require": [
+            "states.azurerm.resource.group.present",
+            "states.azurerm.storage.account.present",
+            "states.azurerm.storage.container.present",
+        ]
+    },
 }
 
 
@@ -72,13 +81,17 @@ async def present(
     name,
     account,
     resource_group,
-    public_access=None,
+    public_access,
+    default_encryption_scope=None,
+    deny_encryption_scope_override=None,
     metadata=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a blob container exists.
 
@@ -92,9 +105,14 @@ async def present(
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
     :param public_access: Specifies whether data in the container may be accessed publicly and the level of access.
-        Possible values include: 'Container', 'Blob', 'None'. Defaults to None.
+        Possible values include: "Container", "Blob", "None".
 
-    :param metadata: A dictionary of name-value pairs to associate with the container as metadata. Defaults to None.
+    :param default_encryption_scope: Set the default encryption scope for the container to use for all writes.
+
+    :param deny_encryption_scope_override: A boolean flag representing whether or not to block the override of the
+        encryption scope from the container default.
+
+    :param metadata: A dictionary of name-value pairs to associate with the container as metadata.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -131,8 +149,9 @@ async def present(
     if "error" not in container:
         action = "update"
 
-        metadata = metadata or {}
-        metadata_changes = differ.deep_diff(container.get("metadata", {}), metadata)
+        metadata_changes = differ.deep_diff(
+            container.get("metadata", {}), metadata or {}
+        )
         if metadata_changes:
             ret["changes"]["metadata"] = metadata_changes
 
@@ -140,6 +159,18 @@ async def present(
             ret["changes"]["public_access"] = {
                 "old": container.get("public_access"),
                 "new": public_access,
+            }
+
+        if deny_encryption_scope_override is not None:
+            ret["changes"]["deny_encryption_scope_override"] = {
+                "old": container.get("deny_encryption_scope_override"),
+                "new": deny_encryption_scope_override,
+            }
+
+        if default_encryption_scope:
+            ret["changes"]["default_encryption_scope"] = {
+                "old": container.get("default_encryption_scope"),
+                "new": default_encryption_scope,
             }
 
         if not ret["changes"]:
@@ -159,11 +190,16 @@ async def present(
                 "name": name,
                 "account": account,
                 "resource_group": resource_group,
+                "public_access": public_access,
             },
         }
 
-        if public_access:
-            ret["changes"]["new"]["public_access"] = public_access
+        if deny_encryption_scope_override is not None:
+            ret["changes"]["new"][
+                "deny_encryption_scope_override"
+            ] = deny_encryption_scope_override
+        if default_encryption_scope:
+            ret["changes"]["new"]["default_encryption_scope"] = default_encryption_scope
         if metadata:
             ret["changes"]["new"]["metadata"] = metadata
 
@@ -182,6 +218,8 @@ async def present(
             account=account,
             resource_group=resource_group,
             public_access=public_access,
+            deny_encryption_scope_override=deny_encryption_scope_override,
+            default_encryption_scope=default_encryption_scope,
             metadata=metadata,
             **container_kwargs,
         )
@@ -193,6 +231,8 @@ async def present(
             account=account,
             resource_group=resource_group,
             public_access=public_access,
+            deny_encryption_scope_override=deny_encryption_scope_override,
+            default_encryption_scope=default_encryption_scope,
             metadata=metadata,
             **container_kwargs,
         )
@@ -218,14 +258,18 @@ async def immutability_policy_present(
     resource_group,
     immutability_period,
     if_match=None,
+    protected_append_writes=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
 
-    Ensures that the immutability policy of a specified blob container exists. The container must be of account kind
-        'StorageV2' in order to utilize an immutability policy.
+    .. versionchanged:: 4.0.0
+
+    Ensures that the immutability policy of a specified blob container exists. ETag in If-Match is honored if given but
+        not required for this operation.The container must be of account kind 'StorageV2' in order to utilize an
+        immutability policy.
 
     :param name: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
@@ -237,11 +281,18 @@ async def immutability_policy_present(
     :param resource_group: The name of the resource group within the user's subscription. The name is case insensitive.
 
     :param immutability_period: The immutability period for the blobs in the container since the policy
-        creation, in days.
+        creation (in days).
 
-    :param if_match: The entity state (ETag) version of the immutability policy to update. It is important to note that
-        the ETag must be passed as a string that includes double quotes. For example, '"8d7b4bb4d393b8c"' is a valid
-        string to pass as the if_match parameter, but "8d7b4bb4d393b8c" is not. Defaults to None.
+    :param if_match: The entity state (ETag) version of the immutability policy to update. A value of "*" can be used
+        to apply the operation only if the immutability policy already exists. If omitted, this operation will always
+        be applied. It is important to note that any ETag must be passed as a string that includes double quotes.
+        For example, '"8d7b4bb4d393b8c"' is a valid string to pass as the if_match parameter, but "8d7b4bb4d393b8c" is
+        not. Defaults to None.
+
+    :param protected_append_writes: A boolean value specifying whether new blocks can be written to an append
+        blob while maintaining immutability protection and compliance. Only new blocks can be added and any existing
+        blocks cannot be modified or deleted. This property can only be changed for unlocked time-based retention
+        policies.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -286,6 +337,15 @@ async def immutability_policy_present(
                 "new": immutability_period,
             }
 
+            if protected_append_writes is not None:
+                if protected_append_writes != policy.get(
+                    "allow_protected_append_writes"
+                ):
+                    ret["changes"]["allow_protected_append_writes"] = {
+                        "old": policy.get("allow_protected_append_writes"),
+                        "new": protected_append_writes,
+                    }
+
         if not ret["changes"]:
             ret["result"] = True
             ret[
@@ -317,6 +377,10 @@ async def immutability_policy_present(
 
         if if_match:
             ret["changes"]["new"]["if_match"] = if_match
+        if protected_append_writes is not None:
+            ret["changes"]["new"][
+                "allow_protected_append_writes"
+            ] = protected_append_writes
 
     if ctx["test"]:
         ret[
@@ -337,6 +401,7 @@ async def immutability_policy_present(
         resource_group=resource_group,
         if_match=if_match,
         immutability_period=immutability_period,
+        protected_append_writes=protected_append_writes,
         **policy_kwargs,
     )
 
