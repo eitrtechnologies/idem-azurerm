@@ -727,7 +727,7 @@ async def reset(hub, ctx, name, resource_group, gateway_vip=None, **kwargs):
 
     :param resource_group: The name of the resource group.
 
-    :param gateway_vip: Virtual network gateway vip address supplied to the beginvreset of the active-active feature
+    :param gateway_vip: Virtual network gateway vip address supplied to the begin reset of the active-active feature
         enabled gateway.
 
     CLI Example:

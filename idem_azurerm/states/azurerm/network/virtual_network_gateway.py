@@ -131,7 +131,7 @@ async def connection_present(
 
     :param local_network_gateway2:
         The valid Resource ID representing a LocalNetworkGateway Object that will be used as the second endpoint for
-        the connection. Required for a connection type of "IPSec". This valie is immutable once set.
+        the connection. Required for a connection type of "IPSec". This value is immutable once set.
 
     :param lgw2_group: The resource group for the local network gateway passed as the ``local_network_gateway2``
         parameter. If this parameter is not specified it will default to the same resource group as the virtual network
