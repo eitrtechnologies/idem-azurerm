@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Log Analytics Workspace Execution Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -58,41 +60,63 @@ async def create_or_update(
     location,
     sku=None,
     retention=None,
-    customer_id=None,
+    workspace_capping=None,
+    ingestion_public_network_access=None,
+    query_public_network_access=None,
+    capacity_reservation_level=None,
     **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Create or update a workspace.
 
-    :param name: The name of the workspace.
+    :param name: The name of the workspace. The name is case insensitive.
 
     :param resource_group: The resource group name of the workspace.
 
     :param location: The resource location.
 
-    :param sku: The name of the SKU. Possible values include: 'Free', 'Standard', 'Premium', 'Unlimited', 'PerNode',
-        'PerGB2018', 'Standalone'.
+    :param sku: The name of the SKU. Possible values include: "Free", "Standard", "Premium", "PerNode", "PerGB2018",
+        "Standalone", and "CapacityReservation".
 
-    :param retention: The workspace data retention in days. -1 means Unlimited retention for the Unlimited Sku.
+    :param retention: The workspace data retention period in days. -1 means Unlimited retention for the Unlimited Sku.
         730 days is the maximum allowed for all other Skus.
 
-    :param customer_id: The ID associated with the workspace. Setting this value at creation time allows the workspace
-        being created to be linked to an existing workspace.
+    :param workspace_capping: A float representing the daily volume cap in GB for ingestion. -1 means unlimited.
+
+    :param ingestion_public_network_access: The network access type for accessing Log Analytics ingestion. Possible
+        values include: "Enabled" and "Disabled". Defaults to "Enabled".
+
+    :param query_public_network_access: The network access type for accessing Log Analytics query. Possible values
+        include: "Enabled" and "Disabled". Defaults to "Enabled".
+
+    :param capacity_reservation_level: An integer representing the capacity reservation level for this workspace. This
+        parameter is only necessary when "CapacityReservation" is passed as the value of the ``sku`` parameter.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.log_analytics.workspace.create test_name test_group test_location
+        azurerm.log_analytics.workspace.create_or_update test_name test_group test_location
 
     """
     result = {}
     logconn = await hub.exec.azurerm.utils.get_client(ctx, "loganalytics", **kwargs)
 
+    if workspace_capping:
+        workspace_capping = {"daily_quota_gb": workspace_capping}
+
     if sku:
-        sku = {"name": sku}
+        if sku.lower() == "capacityreservation" and capacity_reservation_level:
+            sku = {
+                "name": sku,
+                "capacity_reservation_level": capacity_reservation_level,
+            }
+        else:
+            sku = {"name": sku}
 
     try:
         spacemodel = await hub.exec.azurerm.utils.create_object_model(
@@ -100,8 +124,10 @@ async def create_or_update(
             "Workspace",
             location=location,
             sku=sku,
-            customer_id=customer_id,
             retention=retention,
+            workspace_capping=workspace_capping,
+            public_network_access_for_ingestion=ingestion_public_network_access,
+            public_network_access_for_query=query_public_network_access,
             **kwargs,
         )
 
@@ -131,15 +157,22 @@ async def create_or_update(
     return result
 
 
-async def delete(hub, ctx, name, resource_group, **kwargs):
+async def delete(hub, ctx, name, resource_group, force=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
-    Deletes a workspace instance.
+    .. versionchanged:: 4.0.0
+
+    Deletes a workspace. To recover the workspace, create it again with the same name, in the same subscription,
+        resource group and location. The name is kept for 14 days and cannot be used for another workspace. To remove
+        the workspace completely and release the name, use the force flag.
 
     :param name: The name of the workspace.
 
     :param resource_group: The resource group name of the workspace.
+
+    :param force: An optional boolean flag that specifies whether the workspace should be deleted without the option
+        of recovery. A workspace that was deleted with this flag set as True cannot be recovered.
 
     CLI Example:
 
@@ -153,9 +186,10 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     try:
         workspace = logconn.workspaces.delete(
-            workspace_name=name, resource_group_name=resource_group
+            workspace_name=name, resource_group_name=resource_group, force=force,
         )
 
+        workspace.wait()
         result = True
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("loganalytics", str(exc), **kwargs)
@@ -196,11 +230,15 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, ctx, **kwargs):
+async def list_(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Gets the workspaces in a subscription.
+
+    :param resource_group: The name of the resource group to limit the results.
 
     CLI Example:
 
@@ -213,83 +251,19 @@ async def list_(hub, ctx, **kwargs):
     logconn = await hub.exec.azurerm.utils.get_client(ctx, "loganalytics", **kwargs)
 
     try:
-        workspaces = await hub.exec.azurerm.utils.paged_object_to_list(
-            logconn.workspaces.list()
-        )
-
-        for workspace in workspaces:
-            result[workspace["name"]] = workspace
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("loganalytics", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
-    """
-    .. versionadded:: 2.0.0
-
-    Gets the workspaces in a resource group.
-
-    :param resource_group: The name of the resource group to get. The name is case insensitive.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.log_analytics.workspace.list_by_resource_group test_group
-
-    """
-    result = {}
-    logconn = await hub.exec.azurerm.utils.get_client(ctx, "loganalytics", **kwargs)
-
-    try:
-        workspaces = await hub.exec.azurerm.utils.paged_object_to_list(
-            logconn.workspaces.list_by_resource_group(
-                resource_group_name=resource_group
+        if resource_group:
+            workspaces = await hub.exec.azurerm.utils.paged_object_to_list(
+                logconn.workspaces.list_by_resource_group(
+                    resource_group_name=resource_group
+                )
             )
-        )
+        else:
+            workspaces = await hub.exec.azurerm.utils.paged_object_to_list(
+                logconn.workspaces.list()
+            )
 
         for workspace in workspaces:
             result[workspace["name"]] = workspace
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("loganalytics", str(exc), **kwargs)
         result = {"error": str(exc)}
-
-    return result
-
-
-async def list_intelligence_packs(hub, ctx, name, resource_group, **kwargs):
-    """
-    .. versionadded:: 2.0.0
-
-    Lists all the intelligence packs possible and whether they are enabled or disabled for a given workspace.
-
-    :param name: Name of the workspace.
-
-    :param resource_group: The resource group name of the workspace.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.log_analytics.workspace.list_intelligence_packs test_name test_group
-
-    """
-    result = {}
-    logconn = await hub.exec.azurerm.utils.get_client(ctx, "loganalytics", **kwargs)
-
-    try:
-        packs = logconn.workspaces.list_intelligence_packs(
-            workspace_name=name, resource_group_name=resource_group
-        )
-
-        for pack in packs:
-            pack = pack.as_dict()
-            result[pack["name"]] = pack
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("loganalytics", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result

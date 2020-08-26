@@ -53,13 +53,15 @@ async def test_present(hub, ctx, resource_group, location, keyvault):
     expected = {
         "changes": {
             "new": {
-                "access_policies": access_policies,
-                "enable_soft_delete": False,
-                "location": location,
                 "name": keyvault,
-                "tenant_id": tenant_id,
+                "location": location,
                 "resource_group": resource_group,
-                "sku": "standard",
+                "properties": {
+                    "access_policies": access_policies,
+                    "enable_soft_delete": False,
+                    "tenant_id": tenant_id,
+                    "sku": {"name": sku},
+                },
             },
             "old": {},
         },
@@ -69,11 +71,11 @@ async def test_present(hub, ctx, resource_group, location, keyvault):
     }
     ret = await hub.states.azurerm.keyvault.vault.present(
         ctx,
-        keyvault,
-        resource_group,
-        location,
-        tenant_id,
-        sku,
+        name=keyvault,
+        resource_group=resource_group,
+        location=location,
+        tenant_id=tenant_id,
+        sku=sku,
         access_policies=access_policies,
         enable_soft_delete=False,
     )
@@ -137,12 +139,13 @@ async def test_changes(hub, ctx, resource_group, location, tags, keyvault):
     }
     ret = await hub.states.azurerm.keyvault.vault.present(
         ctx,
-        keyvault,
-        resource_group,
-        location,
-        tenant_id,
-        sku,
+        name=keyvault,
+        resource_group=resource_group,
+        location=location,
+        tenant_id=tenant_id,
+        sku=sku,
         access_policies=access_policies,
+        enable_soft_delete=False,
         tags=tags,
     )
     assert ret == expected
@@ -208,7 +211,9 @@ async def test_absent(hub, ctx, resource_group, location, tags, keyvault):
                     "access_policies": access_policies,
                     "enable_soft_delete": False,
                     "enabled_for_deployment": False,
+                    "enable_rbac_authorization": False,
                     "sku": {"family": "A", "name": "standard"},
+                    "soft_delete_retention_in_days": 90,
                     "tenant_id": f"{tenant_id}",
                     "vault_uri": f"https://{keyvault}.vault.azure.net/",
                 },
