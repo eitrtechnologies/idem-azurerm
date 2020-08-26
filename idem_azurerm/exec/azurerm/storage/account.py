@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Storage Account Operations Execution Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -88,15 +90,21 @@ async def create(
     kind,
     location,
     custom_domain=None,
-    encryption=None,
     network_rule_set=None,
     access_tier=None,
-    https_traffic_only=False,
-    is_hns_enabled=False,
+    azure_files_identity_based_auth=None,
+    https_traffic_only=None,
+    hns_enabled=None,
+    large_file_shares=None,
+    routing_preference=None,
+    blob_public_access=None,
+    minimum_tls_version=None,
     **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Asynchronously creates a new storage account with the specified parameters. If an account is already created and a
         subsequent create request is issued with different properties, the account properties will be updated. If an
@@ -111,30 +119,43 @@ async def create(
     :param sku: The name of the storage account SKU. Possible values include: 'Standard_LRS', 'Standard_GRS',
         'Standard_RAGRS', 'Standard_ZRS', 'Premium_LRS', 'Premium_ZRS', 'Standard_GZRS', and 'Standard_RAGZRS'.
 
-    :param kind: Indicates the type of storage account. Possible values include: 'Storage', 'StorageV2', 'BlobStorage'.
+    :param kind: Indicates the type of storage account. Possible values include: 'Storage', 'StorageV2', 'BlobStorage',
+        'FileStorage', and 'BlockBlobStorage'.
 
     :param location: Gets or sets the location of the resource. This will be one of the supported and registered Azure
         Geo Regions (e.g. West US, East US, Southeast Asia, etc.). The geo region of a resource cannot be changed once
         it is created, but if an identical geo region is specified on update, the request will succeed.
 
     :param custom_domain: User domain assigned to the storage account. Valid parameters are:
-        - ``name``: Required. Gets or sets the custom domain name assigned to the storage account. Name is the CNAME
-                    source. To clear the existing custom domain, use an empty string for this property.
-        - ``use_sub_domain_name``: Indicates whether indirect CName validation is enabled. Default value is false.
-                                   This should only be set on updates.
 
-    :param encryption: Provides the encryption settings on the account. If left unspecified the account encryption
-        settings will remain the same. The default setting is unencrypted.
+        - ``name``: Required. Gets or sets the custom domain name assigned to the storage account. Name is the CNAME
+            source. To clear the existing custom domain, use an empty string for this property.
+        - ``use_sub_domain_name``: Indicates whether indirect CName validation is enabled. Default value is False.
+            This should only be set on updates.
 
     :param network_rule_set: A dictionary representing a NetworkRuleSet object.
 
-    :param access_tier: The access tier is used for billing. Required for when the kind is set to 'BlobStorage'.
-        Possible values include: 'Hot' and 'Cool'.
+    :param access_tier: The access tier is used for billing. Required for when the ``kind`` parameter is set to
+        "BlobStorage". Possible values include: "Hot" and "Cool".
 
-    :param https_traffic_only: Allows https traffic only to storage service if set to True. The default value
-        is False.
+    :param azure_files_identity_based_auth: A dictionary representing an AzureFilesIdentityBasedAuthentication object.
+        Provides the identity based authentication settings for Azure Files.
 
-    :param is_hns_enabled: Account HierarchicalNamespace enabled if set to True. The default value is False.
+    :param https_traffic_only: Allows https traffic only to storage service if set to True. The default value is True.
+
+    :param hns_enabled: A boolean flag specifying whether the account hierarchical namespace is enabled.
+
+    :param large_file_shares: Allow large file shares if sets to 'Enabled'. It cannot be disabled once it is enabled.
+        Possible values include: 'Disabled', 'Enabled'.
+
+    :param routing_preference: A dictionary representing a RoutingPreference object. Maintains information about the
+        network routing choice opted by the user for data transfer.
+
+    :param blob_public_access: A boolean flag specifying whether public access is allowed to all blobs or containers in
+        the storage account. The default value is True.
+
+    :param minimum_tls_version: Set the minimum TLS version to be permitted on requests to storage. The default
+        interpretation is TLS 1.0 for this property. Possible values include: 'TLS1_0', 'TLS1_1', 'TLS1_2'.
 
     CLI Example:
 
@@ -143,6 +164,7 @@ async def create(
         azurerm.storage.account.create test_name test_group test_sku test_kind test_location
 
     """
+    result = {}
     storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     sku = {"name": sku}
@@ -154,12 +176,16 @@ async def create(
             sku=sku,
             kind=kind,
             location=location,
-            encryption=encryption,
             custom_domain=custom_domain,
             network_rule_set=network_rule_set,
             access_tier=access_tier,
+            azure_files_identity_based_authentication=azure_files_identity_based_auth,
             enable_https_traffic_only=https_traffic_only,
-            is_hns_enabled=is_hns_enabled,
+            is_hns_enabled=hns_enabled,
+            large_file_shares_state=large_file_shares,
+            routing_preference=routing_preference,
+            allow_blob_public_access=blob_public_access,
+            minimum_tls_version=minimum_tls_version,
             **kwargs,
         )
     except TypeError as exc:
@@ -220,6 +246,41 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
+async def failover(hub, ctx, name, resource_group, **kwargs):
+    """
+    .. versionadded:: 4.0.0
+
+    Failover request can be triggered for a storage account in case of availability issues. The failover occurs from
+        the storage account's primary cluster to secondary cluster for RA-GRS accounts. The secondary cluster will
+        become primary after failover.
+
+    :param name: The name of the storage account.
+
+    :param resource_group: The name of the resource group that the storage account belongs to.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.storage.account.failover test_name test_group
+
+    """
+    result = False
+    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
+
+    try:
+        account = storconn.storage_accounts.failover(
+            account_name=name, resource_group_name=resource_group
+        )
+
+        account.wait()
+        result = True
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
+
+    return result
+
+
 async def get_properties(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 2.0.0
@@ -253,12 +314,16 @@ async def get_properties(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, ctx, **kwargs):
+async def list_(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Lists all the storage accounts available under the subscription. Note that storage keys are not returned; use the
         ListKeys operation for this.
+
+    :param resource_group: The name of the resource group to limit the results.
 
     CLI Example:
 
@@ -271,9 +336,16 @@ async def list_(hub, ctx, **kwargs):
     storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
-        accounts = await hub.exec.azurerm.utils.paged_object_to_list(
-            storconn.storage_accounts.list()
-        )
+        if resource_group:
+            accounts = await hub.exec.azurerm.utils.paged_object_to_list(
+                storconn.storage_accounts.list_by_resource_group(
+                    resource_group_name=resource_group
+                )
+            )
+        else:
+            accounts = await hub.exec.azurerm.utils.paged_object_to_list(
+                storconn.storage_accounts.list()
+            )
 
         for account in accounts:
             result[account["name"]] = account
@@ -359,41 +431,7 @@ async def list_account_sas(
     return result
 
 
-async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
-    """
-    .. versionadded:: 2.0.0
-
-    Lists all the storage accounts available under the given resource group. Note that storage keys are not returned;
-        use the ListKeys operation for this.
-
-    :param resource_group: The name of the resource group that the storage account belongs to.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.storage.account.list_by_resource_group test_group
-
-    """
-    result = {}
-    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
-    try:
-        accounts = await hub.exec.azurerm.utils.paged_object_to_list(
-            storconn.storage_accounts.list_by_resource_group(
-                resource_group_name=resource_group
-            )
-        )
-
-        for account in accounts:
-            result[account["name"]] = account
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def list_keys(hub, ctx, name, resource_group, **kwargs):
+async def list_keys(hub, ctx, name, resource_group, expand=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
@@ -402,6 +440,8 @@ async def list_keys(hub, ctx, name, resource_group, **kwargs):
     :param name: The name of the storage account.
 
     :param resource_group: The name of the resource group that the storage account belongs to.
+
+    :param expand: Specifies type of the key to be listed. Possible values include: 'kerb'. Defaults to None.
 
     CLI Example:
 
@@ -414,7 +454,7 @@ async def list_keys(hub, ctx, name, resource_group, **kwargs):
     storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
     try:
         keys = storconn.storage_accounts.list_keys(
-            account_name=name, resource_group_name=resource_group
+            account_name=name, resource_group_name=resource_group, expand=expand
         )
 
         result = keys.as_dict()

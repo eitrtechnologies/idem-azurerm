@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Key Vault Execution Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -91,15 +93,21 @@ async def create_or_update(
     access_policies=None,
     vault_uri=None,
     create_mode=None,
-    enable_soft_delete=None,
-    enable_purge_protection=None,
     enabled_for_deployment=None,
     enabled_for_disk_encryption=None,
     enabled_for_template_deployment=None,
+    enable_soft_delete=None,
+    soft_delete_retention=None,
+    enable_purge_protection=None,
+    enable_rbac_authorization=None,
+    network_acls=None,
+    tags=None,
     **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Create or update a key vault in the specified subscription.
 
@@ -117,13 +125,15 @@ async def create_or_update(
 
     :param access_policies: A list of 0 to 16 dictionaries that represent AccessPolicyEntry objects. The
         AccessPolicyEntry objects represent identities that have access to the key vault. All identities in the
-        list must use the same tenant ID as the key vault's tenant ID. When createMode is set to recover, access
+        list must use the same tenant ID as the key vault's tenant ID. When createMode is set to "recover", access
         policies are not required. Otherwise, access policies are required. Valid parameters are:
-        - ``tenant_id``: Required. The Azure Active Directory tenant ID that should be used for authenticating
+
+        - ``tenant_id``: (Required) The Azure Active Directory tenant ID that should be used for authenticating
           requests to the key vault.
-        - ``object_id``: Required. The object ID of a user, service principal, or security group in the Azure Active
+        - ``object_id``: (Required) The object ID of a user, service principal, or security group in the Azure Active
           Directory tenant for the vault. The object ID must be unique for the list of access policies.
-        - ``permissions``: Required. A dictionary representing permissions the identity has for keys, secrets, and
+        - ``application_id``: (Optional) Application ID of the client making request on behalf of a principal.
+        - ``permissions``: (Required) A dictionary representing permissions the identity has for keys, secrets, and
           certifications. Valid parameters include:
             - ``keys``: A list that represents permissions to keys. Possible values include: 'backup', 'create',
               'decrypt', 'delete', 'encrypt', 'get', 'import_enum', 'list', 'purge', 'recover', 'restore', 'sign',
@@ -139,35 +149,51 @@ async def create_or_update(
 
     :param vault_uri: The URI of the vault for performing operations on keys and secrets.
 
-    :param create_mode: The vault's create mode to indicate whether the vault needs to be recovered or not. Possible
-        values include: 'recover' and 'default'.
-
-    :param enable_soft_delete: A boolean value specifying whether recoverable deletion is enabled for this key vault.
-        Setting this property to true activates the soft delete feature, whereby vaults or vault entities can be
-        recovered after deletion. Enabling this functionality is irreversible - that is, the property does not accept
-        false as its value. Defaults to False.
-
-    :param enable_purge_protection: A boolean value specifying whether protection against purge is enabled for this
-        vault. Setting this property to true activates protection against purge for this vault and its content - only
-        the Key Vault service may initiate a hard, irrecoverable deletion. The setting is effective only if soft
-        delete is also enabled. Enabling this functionality is irreversible - that is, the property does not accept
-        false as its value.
+    :param create_mode: The vault's create mode to indicate whether the vault needs to be recovered or not.
+        Possible values include: 'recover' and 'default'.
 
     :param enabled_for_deployment: A boolean value specifying whether Azure Virtual Machines are permitted to
-        retrieve certificates stored as secrets from the key vault. Defaults to False.
+        retrieve certificates stored as secrets from the key vault.
 
-    :param enabled_for_disk_encryption: A boolean value specifying whether Azure Disk Encrpytion is permitted to
-        retrieve secrets from the vault and unwrap keys. Defaults to False.
+    :param enabled_for_disk_encryption: A boolean value specifying whether Azure Disk Encrpytion is permitted
+        to retrieve secrets from the vault and unwrap keys.
 
-    :param enabled_for_template_deployment: A boolean value specifying whether Azure Resource Manager is permitted
-        to retrieve secrets from the key vault. Defaults to False.
+    :param enabled_for_template_deployment: A boolean value specifying whether Azure Resource Manager is
+        permitted to retrieve secrets from the key vault.
+
+    :param create_mode: The vault's create mode to indicate whether the vault needs to be recovered or not.
+        Possible values include: 'recover' and 'default'.
+
+    :param enable_soft_delete: A boolean value that specifies whether the 'soft delete' functionality is
+        enabled for this key vault. If it's not set to any value (True or False) when creating new key vault, it will
+        be set to True by default. Once set to True, it cannot be reverted to False.
+
+    :param soft_delete_retention: The soft delete data retention period in days. It accepts values between
+        7-90, inclusive. Default value is 90.
+
+    :param enable_purge_protection: A boolean value specifying whether protection against purge is enabled for this
+        vault. Setting this property to True activates protection against purge for this vault and its content - only
+        the Key Vault service may initiate a hard, irrecoverable deletion. Enabling this functionality is irreversible,
+        that is, the property does not accept False as its value. This is only effective if soft delete has been
+        enabled via the ``enable_soft_delete`` parameter.
+
+    :param enable_rbac_authorization: A boolean value that controls how data actions are authorized. When set to True,
+        the key vault will use Role Based Access Control (RBAC) for authorization of data actions, and the access
+        policies specified in vault properties will be ignored (warning: this is a preview feature). When set as
+        False, the key vault will use the access policies specified in vault properties, and any policy stored on Azure
+        Resource Manager will be ignored. Note that management actions are always authorized with RBAC. Defaults
+        to False.
+
+    :param network_acls: A dictionary representing a NetworkRuleSet. Rules governing the accessibility of
+        the key vault from specific network locations.
+
+    :param tags: The tags that will be assigned to the key vault.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.keyvault.vault.create_or_update test_name test_rg test_location test_tenant test_sku test_policies \
-              test_uri test_mode test_flags
+        azurerm.keyvault.vault.create_or_update test_name test_rg test_location test_tenant test_sku test_policies
 
     """
     result = {}
@@ -193,6 +219,10 @@ async def create_or_update(
             enabled_for_deployment=enabled_for_deployment,
             enabled_for_disk_encryption=enabled_for_disk_encryption,
             enabled_for_template_deployment=enabled_for_template_deployment,
+            soft_delete_retention_in_days=soft_delete_retention,
+            enable_rbac_authorization=enable_rbac_authorization,
+            network_acls=network_acls,
+            **kwargs,
         )
     except TypeError as exc:
         result = {
@@ -207,15 +237,13 @@ async def create_or_update(
             "VaultCreateOrUpdateParameters",
             location=location,
             properties=propsmodel,
-            **kwargs,
+            tags=tags,
         )
     except TypeError as exc:
         result = {
             "error": "The object model could not be built. ({0})".format(str(exc))
         }
         return result
-
-    log.debug("Model for creation: %s", paramsmodel.as_dict())
 
     try:
         vault = vconn.vaults.create_or_update(
@@ -323,11 +351,15 @@ async def get_deleted(hub, ctx, name, location, **kwargs):
     return result
 
 
-async def list_(hub, ctx, top=None, **kwargs):
+async def list_(hub, ctx, resource_group=None, top=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
-    The List operation gets information about the vaults associated with the subscription.
+    .. versionchanged:: 4.0.0
+
+    Gets information about the vaults associated with the subscription.
+
+    :param resource_group: The name of the resource group to limit the results.
 
     :param top: Maximum number of results to return.
 
@@ -342,46 +374,16 @@ async def list_(hub, ctx, top=None, **kwargs):
     vconn = await hub.exec.azurerm.utils.get_client(ctx, "keyvault", **kwargs)
 
     try:
-        vaults = await hub.exec.azurerm.utils.paged_object_to_list(
-            vconn.vaults.list(top=top)
-        )
-
-        for vault in vaults:
-            result[vault["name"]] = vault
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("keyvault", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def list_by_resource_group(hub, ctx, resource_group, top=None, **kwargs):
-    """
-    .. versionadded:: 2.0.0
-
-    The List operation gets information about the vaults associated with the subscription
-        and within the specified resource group.
-
-    :param resource_group: The name of the resource group to which the vault belongs.
-
-    :param top: Maximum number of results to return.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.keyvault.vault.list_by_resource_group test_rg
-
-    """
-    result = {}
-    vconn = await hub.exec.azurerm.utils.get_client(ctx, "keyvault", **kwargs)
-
-    try:
-        vaults = await hub.exec.azurerm.utils.paged_object_to_list(
-            vconn.vaults.list_by_resource_group(
-                resource_group_name=resource_group, top=top
+        if resource_group:
+            vaults = await hub.exec.azurerm.utils.paged_object_to_list(
+                vconn.vaults.list_by_resource_group(
+                    resource_group_name=resource_group, top=top
+                )
             )
-        )
+        else:
+            vaults = await hub.exec.azurerm.utils.paged_object_to_list(
+                vconn.vaults.list(top=top)
+            )
 
         for vault in vaults:
             result[vault["name"]] = vault
@@ -458,6 +460,8 @@ async def purge_deleted(hub, ctx, name, location, **kwargs):
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Permanently deletes (purges) the specified Azure key vault.
 
     :param name: The name of the soft-deleted vault.
@@ -477,6 +481,7 @@ async def purge_deleted(hub, ctx, name, location, **kwargs):
     try:
         vault = vconn.vaults.purge_deleted(vault_name=name, location=location)
 
+        vault.wait()
         result = True
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("keyvault", str(exc), **kwargs)

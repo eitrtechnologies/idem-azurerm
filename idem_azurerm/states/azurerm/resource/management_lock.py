@@ -85,9 +85,9 @@ async def present_by_scope(
         authorized users are able to read and modify the resources, but not delete. ReadOnly means authorized users
         can only read from a resource, but they can't modify or delete it.
 
-    :param notes: An optional string representing notes about the lock. Maximum of 512 characters.
+    :param notes: A string representing notes about the lock. Maximum of 512 characters.
 
-    :param owners: An optional list of strings representing owners of the lock. Each string represents the application
+    :param owners: A list of strings representing owners of the lock. Each string represents the application
         id of the lock owner.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
@@ -302,9 +302,9 @@ async def present_at_resource_level(
 
     :param parent_resource_path: The parent resource identity.
 
-    :param notes: An optional string representing notes about the lock. Maximum of 512 characters.
+    :param notes: A string representing notes about the lock. Maximum of 512 characters.
 
-    :param owners: An optional list of strings representing owners of the lock. Each string represents the application
+    :param owners: A list of strings representing owners of the lock. Each string represents the application
         id of the lock owner.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
@@ -565,11 +565,11 @@ async def present(
         authorized users are able to read and modify the resources, but not delete. ReadOnly means authorized users
         can only read from a resource, but they can't modify or delete it.
 
-    :param resource_group: The name of the resource group. This is an optional parameter.
+    :param resource_group: The name of the resource group.
 
-    :param notes: An optional string representing notes about the lock. Maximum of 512 characters.
+    :param notes: A string representing notes about the lock. Maximum of 512 characters.
 
-    :param owners: An optional list of strings representing owners of the lock. Each string represents the application
+    :param owners: A list of strings representing owners of the lock. Each string represents the application
         id of the lock owner.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
@@ -700,7 +700,7 @@ async def absent(hub, ctx, name, resource_group=None, connection_auth=None, **kw
     :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
         :, ?, /, or any control characters.
 
-    :param resource_group: The name of the resource group. This is an optional parameter.
+    :param resource_group: The name of the resource group.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.

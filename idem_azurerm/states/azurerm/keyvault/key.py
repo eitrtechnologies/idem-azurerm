@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Key State Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -56,7 +58,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-TREQ = {"present": {"require": ["states.azurerm.keyvault.vault.present",]}}
+TREQ = {"present": {"require": ["states.azurerm.keyvault.vault.present"]}}
 
 
 async def present(
@@ -65,7 +67,10 @@ async def present(
     name,
     key_type,
     vault_url,
-    key_ops=None,
+    key_operations=None,
+    size=None,
+    curve=None,
+    hardware_protected=None,
     enabled=None,
     expires_on=None,
     not_before=None,
@@ -76,6 +81,8 @@ async def present(
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Ensure the specified key exists within the given key vault. Requires keys/create permission. Key properties can be
         specified as keyword arguments.
 
@@ -85,18 +92,23 @@ async def present(
 
     :param vault_url: The URL of the vault that the client will access.
 
-    :param key_ops: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
-        'unwrap_key', 'verify', 'wrap_key'.
+    :param key_operations: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt',
+        'sign', 'unwrap_key', 'verify', 'wrap_key'.
+
+    :param size: RSA key size in bits, for example 2048, 3072, or 4096. Applies to RSA keys only.
+
+    :param curve: Elliptic curve name. Defaults to the NIST P-256 elliptic curve. Possible values include:
+        "P-256", "P-256K", "P-384", "P-521".
 
     :param enabled: Whether the key is enabled for use.
 
-    :param expires_on: When the key will expire, in UTC. This parameter must be a string representation of a Datetime
-        object in ISO-8601 format.
+    :param expires_on: When the key will expire, in UTC. This parameter should be a string representation
+        of a Datetime object in ISO-8601 format.
 
-    :param not_before: The time before which the key can not be used, in UTC. This parameter must be a string
-        representation of a Datetime object in ISO-8601 format.
+    :param not_before: The time before which the key can not be used, in UTC. This parameter should be a
+        string representation of a Datetime object in ISO-8601 format.
 
-    :param tags: A dictionary of strings can be passed as tag metadata to the key.
+    :param tags: Application specific metadata in the form of key-value pairs.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -147,11 +159,11 @@ async def present(
             if tag_changes:
                 ret["changes"]["tags"] = tag_changes
 
-        if isinstance(key_ops, list):
-            if sorted(key_ops) != sorted(key.get("key_operations", [])):
+        if isinstance(key_operations, list):
+            if sorted(key_operations) != sorted(key.get("key_operations", [])):
                 ret["changes"]["key_operations"] = {
                     "old": key.get("key_operations"),
-                    "new": key_ops,
+                    "new": key_operations,
                 }
 
         if enabled is not None:
@@ -159,6 +171,13 @@ async def present(
                 ret["changes"]["enabled"] = {
                     "old": key.get("properties", {}).get("enabled"),
                     "new": enabled,
+                }
+
+        if hardware_protected is not None:
+            if enabled != key.get("properties", {}).get("hardware_protected"):
+                ret["changes"]["hardware_protected"] = {
+                    "old": key.get("properties", {}).get("hardware_protected"),
+                    "new": hardware_protected,
                 }
 
         if expires_on:
@@ -190,14 +209,20 @@ async def present(
 
         if tags:
             ret["changes"]["new"]["tags"] = tags
-        if key_ops is not None:
-            ret["changes"]["new"]["key_operations"] = key_ops
+        if key_operations is not None:
+            ret["changes"]["new"]["key_operations"] = key_operations
+        if hardware_protected is not None:
+            ret["changes"]["new"]["hardware_protected"] = hardware_protected
         if enabled is not None:
             ret["changes"]["new"]["enabled"] = enabled
         if expires_on:
             ret["changes"]["new"]["expires_on"] = expires_on
         if not_before:
             ret["changes"]["new"]["not_before"] = not_before
+        if size:
+            ret["changes"]["new"]["size"] = size
+        if curve:
+            ret["changes"]["new"]["curve"] = curve
 
     if ctx["test"]:
         ret["comment"] = "Key {0} would be created.".format(name)
@@ -213,10 +238,13 @@ async def present(
         vault_url=vault_url,
         key_type=key_type,
         tags=tags,
-        key_ops=key_ops,
+        key_operations=key_operations,
         enabled=enabled,
+        hardware_protected=hardware_protected,
         not_before=not_before,
         expires_on=expires_on,
+        size=size,
+        curve=curve,
         **key_kwargs,
     )
 
@@ -236,6 +264,8 @@ async def present(
 async def absent(hub, ctx, name, vault_url, connection_auth=None, **kwargs):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure the specified key does not exist within the given key vault.
 

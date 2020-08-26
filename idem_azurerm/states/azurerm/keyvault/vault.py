@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Key Vault State Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -71,17 +73,22 @@ async def present(
     access_policies=None,
     vault_uri=None,
     create_mode=None,
-    enable_soft_delete=None,
-    enable_purge_protection=None,
     enabled_for_deployment=None,
     enabled_for_disk_encryption=None,
     enabled_for_template_deployment=None,
+    enable_soft_delete=None,
+    soft_delete_retention=None,
+    enable_purge_protection=None,
+    enable_rbac_authorization=None,
+    network_acls=None,
     tags=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a specified keyvault exists.
 
@@ -99,13 +106,15 @@ async def present(
 
     :param access_policies: A list of 0 to 16 dictionaries that represent AccessPolicyEntry objects. The
         AccessPolicyEntry objects represent identities that have access to the key vault. All identities in the
-        list must use the same tenant ID as the key vault's tenant ID. When createMode is set to recover, access
+        list must use the same tenant ID as the key vault's tenant ID. When createMode is set to "recover", access
         policies are not required. Otherwise, access policies are required. Valid parameters are:
-        - ``tenant_id``: Required. The Azure Active Directory tenant ID that should be used for authenticating
+
+        - ``tenant_id``: (Required) The Azure Active Directory tenant ID that should be used for authenticating
           requests to the key vault.
-        - ``object_id``: Required. The object ID of a user, service principal, or security group in the Azure Active
+        - ``object_id``: (Required) The object ID of a user, service principal, or security group in the Azure Active
           Directory tenant for the vault. The object ID must be unique for the list of access policies.
-        - ``permissions``: Required. A dictionary representing permissions the identity has for keys, secrets, and
+        - ``application_id``: (Optional) Application ID of the client making request on behalf of a principal.
+        - ``permissions``: (Required) A dictionary representing permissions the identity has for keys, secrets, and
           certifications. Valid parameters include:
             - ``keys``: A list that represents permissions to keys. Possible values include: 'backup', 'create',
               'decrypt', 'delete', 'encrypt', 'get', 'import_enum', 'list', 'purge', 'recover', 'restore', 'sign',
@@ -121,30 +130,45 @@ async def present(
 
     :param vault_uri: The URI of the vault for performing operations on keys and secrets.
 
-    :param create_mode: The vault's create mode to indicate whether the vault needs to be recovered or not. Possible
-        values include: 'recover' and 'default'.
-
-    :param enable_soft_delete: A boolean value specifying whether recoverable deletion is enabled for this key vault.
-        Setting this property to true activates the soft delete feature, whereby vaults or vault entities can be
-        recovered after deletion. Enabling this functionality is irreversible - that is, the property does not accept
-        false as its value. Defaults to False.
-
-    :param enable_purge_protection: A boolean value specifying whether protection against purge is enabled for this
-        vault. Setting this property to true activates protection against purge for this vault and its content - only
-        the Key Vault service may initiate a hard, irrecoverable deletion. The setting is effective only if soft
-        delete is also enabled. Enabling this functionality is irreversible - that is, the property does not accept
-        false as its value.
+    :param create_mode: The vault's create mode to indicate whether the vault needs to be recovered or not.
+        Possible values include: 'recover' and 'default'.
 
     :param enabled_for_deployment: A boolean value specifying whether Azure Virtual Machines are permitted to
-        retrieve certificates stored as secrets from the key vault. Defaults to False.
+        retrieve certificates stored as secrets from the key vault.
 
-    :param enabled_for_disk_encryption: A boolean value specifying whether Azure Disk Encrpytion is permitted to
-        retrieve secrets from the vault and unwrap keys. Defaults to False.
+    :param enabled_for_disk_encryption: A boolean value specifying whether Azure Disk Encrpytion is permitted
+        to retrieve secrets from the vault and unwrap keys.
 
-    :param enabled_for_template_deployment: A boolean value specifying whether Azure Resource Manager is permitted
-        to retrieve secrets from the key vault. Defaults to False.
+    :param enabled_for_template_deployment: A boolean value specifying whether Azure Resource Manager is
+        permitted to retrieve secrets from the key vault.
 
-    :param tags: A dictionary of strings can be passed as tag metadata to the key vault.
+    :param create_mode: The vault's create mode to indicate whether the vault needs to be recovered or not.
+        Possible values include: 'recover' and 'default'.
+
+    :param enable_soft_delete: A boolean value that specifies whether the 'soft delete' functionality is
+        enabled for this key vault. If it's not set to any value (True or False) when creating new key vault, it will
+        be set to True by default. Once set to True, it cannot be reverted to False.
+
+    :param soft_delete_retention: The soft delete data retention period in days. It accepts values between
+        7-90, inclusive. Default value is 90.
+
+    :param enable_purge_protection: A boolean value specifying whether protection against purge is enabled for this
+        vault. Setting this property to True activates protection against purge for this vault and its content - only
+        the Key Vault service may initiate a hard, irrecoverable deletion. Enabling this functionality is irreversible,
+        that is, the property does not accept False as its value. This is only effective if soft delete has been
+        enabled via the ``enable_soft_delete`` parameter.
+
+    :param enable_rbac_authorization: A boolean value that controls how data actions are authorized. When set to True,
+        the key vault will use Role Based Access Control (RBAC) for authorization of data actions, and the access
+        policies specified in vault properties will be ignored (warning: this is a preview feature). When set as
+        False, the key vault will use the access policies specified in vault properties, and any policy stored on Azure
+        Resource Manager will be ignored. Note that management actions are always authorized with RBAC. Defaults
+        to False.
+
+    :param network_acls: A dictionary representing a NetworkRuleSet. Rules governing the accessibility of
+        the key vault from specific network locations.
+
+    :param tags: The tags that will be assigned to the key vault.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -199,6 +223,9 @@ async def present(
 
     if "error" not in vault:
         action = "update"
+
+        ret["changes"]["properties"] = {}
+
         tag_changes = differ.deep_diff(vault.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
@@ -229,6 +256,11 @@ async def present(
                     changed = True
                     break
 
+                # Checks for changes with the application_id key
+                if old_policy.get("application_id") != new_policy.get("application_id"):
+                    changed = True
+                    break
+
                 # Checks for changes within the permissions key
                 if new_policy["permissions"].get("keys") is not None:
                     new_keys = sorted(new_policy["permissions"].get("keys"))
@@ -237,6 +269,7 @@ async def present(
                         changed = True
                         break
 
+                # Checks for changes within the secrets key
                 if new_policy["permissions"].get("secrets") is not None:
                     new_secrets = sorted(new_policy["permissions"].get("secrets"))
                     old_secrets = sorted(old_policy["permissions"].get("secrets", []))
@@ -244,6 +277,7 @@ async def present(
                         changed = True
                         break
 
+                # Checks for changes within the certificates key
                 if new_policy["permissions"].get("certificates") is not None:
                     new_certificates = sorted(
                         new_policy["permissions"].get("certificates")
@@ -256,28 +290,28 @@ async def present(
                         break
 
             if changed:
-                ret["changes"]["access_policies"] = {
+                ret["changes"]["properties"]["access_policies"] = {
                     "old": vault.get("properties").get("access_policies", []),
                     "new": access_policies,
                 }
 
         else:
-            ret["changes"]["access_policies"] = {
+            ret["changes"]["properties"]["access_policies"] = {
                 "old": vault.get("properties").get("access_policies", []),
                 "new": access_policies,
             }
 
         if sku != vault.get("properties").get("sku").get("name"):
-            ret["changes"]["sku"] = {
-                "old": vault.get("properties").get("sku").get("name"),
-                "new": sku,
+            ret["changes"]["properties"]["sku"] = {
+                "old": vault.get("properties").get("sku"),
+                "new": {"name": sku},
             }
 
         if enabled_for_deployment is not None:
             if enabled_for_deployment != vault.get("properties").get(
                 "enabled_for_deployment"
             ):
-                ret["changes"]["enabled_for_deployment"] = {
+                ret["changes"]["properties"]["enabled_for_deployment"] = {
                     "old": vault.get("properties").get("enabled_for_deployment"),
                     "new": enabled_for_deployment,
                 }
@@ -286,7 +320,7 @@ async def present(
             if enabled_for_disk_encryption != vault.get("properties").get(
                 "enabled_for_disk_encryption"
             ):
-                ret["changes"]["enabled_for_disk_encryption"] = {
+                ret["changes"]["properties"]["enabled_for_disk_encryption"] = {
                     "old": vault.get("properties").get("enabled_for_disk_encryption"),
                     "new": enabled_for_disk_encryption,
                 }
@@ -295,7 +329,7 @@ async def present(
             if enabled_for_template_deployment != vault.get("properties").get(
                 "enabled_for_template_deployment"
             ):
-                ret["changes"]["enabled_for_template_deployment"] = {
+                ret["changes"]["properties"]["enabled_for_template_deployment"] = {
                     "old": vault.get("properties").get(
                         "enabled_for_template_deployment"
                     ),
@@ -304,7 +338,7 @@ async def present(
 
         if enable_soft_delete is not None:
             if enable_soft_delete != vault.get("properties").get("enable_soft_delete"):
-                ret["changes"]["enable_soft_delete"] = {
+                ret["changes"]["properties"]["enable_soft_delete"] = {
                     "old": vault.get("properties").get("enable_soft_delete"),
                     "new": enable_soft_delete,
                 }
@@ -313,10 +347,29 @@ async def present(
             if enable_purge_protection != vault.get("properties").get(
                 "enable_purge_protection"
             ):
-                ret["changes"]["enable_purge_protection"] = {
+                ret["changes"]["properties"]["enable_purge_protection"] = {
                     "old": vault.get("properties").get("enable_purge_protection"),
                     "new": enable_purge_protection,
                 }
+
+        if enable_rbac_authorization is not None:
+            if enable_rbac_authorization != vault.get("properties").get(
+                "enable_rbac_authorization"
+            ):
+                ret["changes"]["properties"]["enable_rbac_authorization"] = {
+                    "old": vault.get("properties").get("enable_rbac_authorization"),
+                    "new": enable_rbac_authorization,
+                }
+
+        if network_acls:
+            acls_changes = differ.deep_diff(
+                vault.get("properties").get("network_acls", {}), network_acls or {}
+            )
+            if acls_changes:
+                ret["changes"]["properties"]["network_acls"] = acls_changes
+
+        if not ret["changes"]["properties"]:
+            del ret["changes"]["properties"]
 
         if not ret["changes"]:
             ret["result"] = True
@@ -335,33 +388,48 @@ async def present(
                 "name": name,
                 "resource_group": resource_group,
                 "location": location,
-                "tenant_id": tenant_id,
-                "sku": sku,
+                "properties": {"tenant_id": tenant_id, "sku": {"name": sku}},
             },
         }
 
         if tags:
-            ret["changes"]["new"]["tags"] = tags
+            ret["changes"]["new"]["properties"]["tags"] = tags
         if access_policies:
-            ret["changes"]["new"]["access_policies"] = access_policies
+            ret["changes"]["new"]["properties"]["access_policies"] = access_policies
         if vault_uri:
-            ret["changes"]["new"]["vault_uri"] = vault_uri
+            ret["changes"]["new"]["properties"]["vault_uri"] = vault_uri
         if enabled_for_deployment is not None:
-            ret["changes"]["new"]["enabled_for_deployment"] = enabled_for_deployment
+            ret["changes"]["new"]["properties"][
+                "enabled_for_deployment"
+            ] = enabled_for_deployment
         if enabled_for_disk_encryption is not None:
-            ret["changes"]["new"][
+            ret["changes"]["new"]["properties"][
                 "enabled_for_disk_encryption"
             ] = enabled_for_disk_encryption
         if enabled_for_template_deployment is not None:
-            ret["changes"]["new"][
+            ret["changes"]["new"]["properties"][
                 "enabled_for_template_deployment"
             ] = enabled_for_template_deployment
         if enable_soft_delete is not None:
-            ret["changes"]["new"]["enable_soft_delete"] = enable_soft_delete
+            ret["changes"]["new"]["properties"][
+                "enable_soft_delete"
+            ] = enable_soft_delete
+        if soft_delete_retention:
+            ret["changes"]["new"]["properties"][
+                "soft_delete_retention_in_days"
+            ] = soft_delete_retention
         if create_mode:
-            ret["changes"]["new"]["create_mode"] = create_mode
+            ret["changes"]["new"]["properties"]["create_mode"] = create_mode
         if enable_purge_protection is not None:
-            ret["changes"]["new"]["enable_purge_protection"] = enable_purge_protection
+            ret["changes"]["new"]["properties"][
+                "enable_purge_protection"
+            ] = enable_purge_protection
+        if enable_rbac_authorization is not None:
+            ret["changes"]["new"]["properties"][
+                "enable_rbac_authorization"
+            ] = enable_rbac_authorization
+        if network_acls:
+            ret["changes"]["new"]["properties"]["network_acls"] = network_acls
 
     if ctx["test"]:
         ret["comment"] = "Key vault {0} would be created.".format(name)
@@ -383,9 +451,12 @@ async def present(
         create_mode=create_mode,
         enable_soft_delete=enable_soft_delete,
         enable_purge_protection=enable_purge_protection,
+        soft_delete_retention=soft_delete_retention,
         enabled_for_deployment=enabled_for_deployment,
         enabled_for_disk_encryption=enabled_for_disk_encryption,
         enabled_for_template_deployment=enabled_for_template_deployment,
+        enable_rbac_authorization=enable_rbac_authorization,
+        network_acls=network_acls,
         tags=tags,
         **vault_kwargs,
     )

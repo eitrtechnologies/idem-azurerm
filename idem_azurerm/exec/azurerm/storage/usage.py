@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Usage Operations Execution Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -45,44 +47,12 @@ try:
 except ImportError:
     pass
 
-__func_alias__ = {"list_": "list"}
-
 log = logging.getLogger(__name__)
-
-
-async def list_(hub, ctx, **kwargs):
-    """
-    .. versionadded:: 2.0.0
-
-    Gets the current usage count and the limit for the resources under the subscription.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-       azurerm.storage.usage.list
-
-    """
-    result = {}
-    storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
-
-    try:
-        usages = await hub.exec.azurerm.utils.paged_object_to_list(
-            storconn.usage.list()
-        )
-
-        for usage in usages:
-            result[usage["name"]["value"]] = usage
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("storage", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result
 
 
 async def list_by_location(hub, ctx, location, **kwargs):
     """
-    .. versionadded:: 2.0.0
+    .. versionadded:: 4.0.0
 
     Gets the current usage count and the limit for the resources of the location under the subscription.
 
@@ -92,7 +62,7 @@ async def list_by_location(hub, ctx, location, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.storage.usage.list_by_location test_location
+       azurerm.storage.usage.list_by_location "eastus"
 
     """
     result = {}
@@ -100,7 +70,7 @@ async def list_by_location(hub, ctx, location, **kwargs):
 
     try:
         usages = await hub.exec.azurerm.utils.paged_object_to_list(
-            storconn.usage.list_by_location(location)
+            storconn.usages.list_by_location(location=location)
         )
 
         for usage in usages:
