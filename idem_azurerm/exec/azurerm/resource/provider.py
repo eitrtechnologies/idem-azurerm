@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Resource Provider Execution Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -31,10 +33,8 @@ Azure Resource Manager (ARM) Resource Provider Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
-from json import loads, dumps
 import logging
 
 # Azure libs
@@ -51,6 +51,35 @@ except ImportError:
 __func_alias__ = {"list_": "list"}
 
 log = logging.getLogger(__name__)
+
+
+async def get(hub, ctx, name, resource_group, **kwargs):
+    """
+    .. versionadded:: 4.0.0
+
+    Gets the specified resource provider.
+
+    :param name: The namespace of the resource provider.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.resource.provider.get test_name
+
+    """
+    result = {}
+    resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
+
+    try:
+        provider = resconn.providers.get(resource_provider_namespace=name)
+
+        result = ret.as_dict()
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
 
 
 async def list_(hub, ctx, top=None, expand=None, **kwargs):
