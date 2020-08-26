@@ -4,7 +4,7 @@ Azure Resource Manager (ARM) Resource Policy State Module
 
 .. versionadded:: 1.0.0
 
-.. versionchanged:: 2.3.2, 2.0.0
+.. versionchanged:: 2.0.0, 2.3.2, 4.0.0
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
@@ -49,24 +49,6 @@ Azure Resource Manager (ARM) Resource Policy State Module
 
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
-
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: jinja
-
-        Ensure resource group exists:
-            azurerm.resource.group.present:
-                - name: my_rg
-                - location: westus
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
-
-        Ensure resource group is absent:
-            azurerm.resource.group.absent:
-                - name: other_rg
-                - connection_auth: {{ profile }}
 
 """
 # Import Python libs
@@ -135,12 +117,12 @@ async def definition_present(
         will override the ``name`` parameter in the state.
 
     :param policy_type:
-        The type of policy definition. Possible values are NotSpecified, BuiltIn, and Custom. Only used with the
-        ``policy_rule`` parameter.
+        The type of policy definition. Possible values are "NotSpecified", "BuiltIn", "Static", and "Custom". Only used
+        with the ``policy_rule`` parameter.
 
     :param mode:
-        The policy definition mode. Possible values are NotSpecified, Indexed, and All. Only used with the
-        ``policy_rule`` parameter.
+        The policy definition mode. Possible values include, but are not limited to, "NotSpecified", "Indexed", "All",
+        and "Microsoft.KeyVault.Data". Only used with thev``policy_rule`` parameter.
 
     :param display_name:
         The display name of the policy definition. Only used with the ``policy_rule`` parameter.
@@ -422,6 +404,7 @@ async def assignment_present(
     display_name=None,
     description=None,
     parameters=None,
+    enforcement_mode=None,
     connection_auth=None,
     **kwargs,
 ):
@@ -450,6 +433,9 @@ async def assignment_present(
     :param parameters:
         Required dictionary if a parameter is used in the policy rule. Note that parameters will require a "value" key
         underneath the actual parameter name before specifying the values being passed. See the example for details.
+
+    :param enforcement_mode:
+        The policy assignment enforcement mode. Possible values are "Default" and DoNotEnforce".
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
@@ -516,6 +502,13 @@ async def assignment_present(
                 "new": description,
             }
 
+        if enforcement_mode:
+            if enforcement_mode.lower() != policy.get("enforcement_mode", "").lower():
+                ret["changes"]["enforcement_mode"] = {
+                    "old": policy.get("enforcement_mode"),
+                    "new": enforcement_mode,
+                }
+
         param_changes = differ.deep_diff(policy.get("parameters", {}), parameters or {})
         if param_changes:
             ret["changes"]["parameters"] = param_changes
@@ -540,6 +533,7 @@ async def assignment_present(
                 "display_name": display_name,
                 "description": description,
                 "parameters": parameters,
+                "enforcement_mode": enforcement_mode,
             },
         }
 
@@ -561,6 +555,7 @@ async def assignment_present(
         display_name=display_name,
         description=description,
         parameters=parameters,
+        enforcement_mode=enforcement_mode,
         **policy_kwargs,
     )
 

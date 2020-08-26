@@ -31,10 +31,8 @@ Azure Resource Manager (ARM) Resource Deployment Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
-from json import loads, dumps
 import logging
 
 # Azure libs
@@ -72,6 +70,7 @@ async def operation_get(hub, ctx, operation, deployment, resource_group, **kwarg
         azurerm.resource.deployment.operation_get testoperation testdeploy testgroup
 
     """
+    result = {}
     resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     try:
         operation = resconn.deployment_operations.get(
@@ -98,7 +97,7 @@ async def operations_list(hub, ctx, name, resource_group, result_limit=10, **kwa
 
     :param resource_group: The resource group name assigned to the deployment.
 
-    :param result_limit: (Default: 10) The limit on the list of deployment operations.
+    :param result_limit: The limit on the list of deployment operations. Defaults to 10.
 
     CLI Example:
 
@@ -243,6 +242,7 @@ async def create_or_update(
         azurerm.resource.deployment.create_or_update testdeploy testgroup
 
     """
+    result = {}
     resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
 
     prop_kwargs = {"mode": deploy_mode}
@@ -299,8 +299,7 @@ async def create_or_update(
                 properties=deploy_model,
             )
             deploy.wait()
-            deploy_result = deploy.result()
-            result = deploy_result.as_dict()
+            result = deploy.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -329,6 +328,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.resource.deployment.get testdeploy testgroup
 
     """
+    result = {}
     resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     try:
         deploy = resconn.deployments.get(
@@ -359,6 +359,7 @@ async def cancel(hub, ctx, name, resource_group, **kwargs):
         azurerm.resource.deployment.cancel testdeploy testgroup
 
     """
+    result = {}
     resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     try:
         resconn.deployments.cancel(
@@ -428,6 +429,7 @@ async def validate(
         azurerm.resource.deployment.validate testdeploy testgroup
 
     """
+    result = {}
     resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
 
     prop_kwargs = {"mode": deploy_mode}
@@ -501,6 +503,7 @@ async def export_template(hub, ctx, name, resource_group, **kwargs):
         azurerm.resource.deployment.export_template testdeploy testgroup
 
     """
+    result = {}
     resconn = await hub.exec.azurerm.utils.get_client(ctx, "resource", **kwargs)
     try:
         deploy = resconn.deployments.export_template(
