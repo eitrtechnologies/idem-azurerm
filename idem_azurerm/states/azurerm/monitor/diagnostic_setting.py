@@ -93,7 +93,7 @@ async def present(
 
     :param resource_uri: The identifier of the resource.
 
-    :param metrics: (Required) A list of dictionaries representing valid MetricSettings objects. If this list is empty,
+    :param metrics: A list of dictionaries representing valid MetricSettings objects. If this list is empty,
         then the list passed as the logs parameter must have at least one element. Valid parameters are:
 
         - ``category``: Name of a diagnostic metric category for the resource type this setting is applied to. To obtain
@@ -107,7 +107,7 @@ async def present(
             - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
             - ``enabled``: A value indicating whether the retention policy is enabled.
 
-    :param logs: (Required) A list of dictionaries representing valid LogSettings objects. If this list is empty, then
+    :param logs: A list of dictionaries representing valid LogSettings objects. If this list is empty, then
         the list passed as the metrics parameter must have at least one element. Valid parameters are:
 
         - ``category``: Name of a diagnostic log category for the resource type this setting is applied to. To obtain
@@ -120,22 +120,22 @@ async def present(
             - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
             - ``enabled``: A value indicating whether the retention policy is enabled.
 
-    :param workspace_id: (Required if you want to send the diagnostic settings data to Log Analytics) The workspace
-        (resource) ID for the Log Analytics workspace to which you would like to send Diagnostic Logs.
+    :param workspace_id: The resource ID of the Log Analytics workspace to which you would like to send Diagnostic Logs.
+        Required if you want to send the diagnostic settings data to Log Analytics.
 
-    :param log_analytics_destination_type: (Optional, used with workspace_id) A string indicating whether the export to
-        the Log Analytics Workspace should store the logs within the legacy default destination type, the
-        AzureDiagnostics table, or a dedicated, resource specific table. Possible values include: "Dedicated" and
-        "AzureDiagnostics".
+    :param log_analytics_destination_type: A string indicating whether the export to the Log Analytics Workspace
+        should store the logs within the legacy default destination type, the AzureDiagnostics table, or a dedicated,
+        resource specific table. Optional, used with the ``workspace_id`` parameter. Possible values include:
+        "Dedicated" and "AzureDiagnostics".
 
-    :param storage_account_id: (Required if you want to achieve the diagnostic settings data to a storage account)
-        The resource ID of the storage account to which you would like to send Diagnostic Logs.
+    :param storage_account_id: The resource ID of the storage account to which you would like to send Diagnostic Logs.
+        Required if you want to archive the diagnostic settings data to a storage account.
 
-    :param event_hub_name: (Required to stream the diagnostic settings data to an event hub) The name of the event hub.
-        If none is specified, the default event hub will be selected.
+    :param event_hub_name: The name of the event hub. If none is specified, the default event hub will be selected.
+        Required to stream the diagnostic settings data to an event hub.
 
-    :param event_hub_authorization_rule_id: (Required, used with event_hub_name) The resource ID for the event hub
-        authorization rule.
+    :param event_hub_authorization_rule_id: The resource ID for the event hub authorization rule. Required with the
+        ``event_hub_name`` parameter.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
