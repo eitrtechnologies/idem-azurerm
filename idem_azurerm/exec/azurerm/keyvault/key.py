@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Key Execution Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -35,15 +37,11 @@ Azure Resource Manager (ARM) Key Execution Module
 from __future__ import absolute_import
 import datetime
 import logging
-import os
 
 # Azure libs
 HAS_LIBS = False
 try:
     from azure.keyvault.keys import KeyClient
-    from azure.keyvault.keys._shared._generated.v7_0.models._models_py3 import (
-        KeyVaultErrorException,
-    )
     from azure.core.exceptions import (
         ResourceNotFoundError,
         HttpResponseError,
@@ -134,10 +132,10 @@ async def backup_key(hub, ctx, name, vault_url, **kwargs):
     kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
-        backup = kconn.backup_key(name=name,)
+        backup = kconn.backup_key(name=name)
 
         result = backup
-    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
+    except ResourceNotFoundError as exc:
         result = {"error": str(exc)}
 
     return result
@@ -147,9 +145,8 @@ async def begin_delete_key(hub, ctx, name, vault_url, **kwargs):
     """
     .. versionadded:: 2.0.0
 
-    Delete all versions of a key and its cryptographic material. Requires keys/delete permission. When this method
-        returns Key Vault has begun deleting the key. Deletion may take several seconds in a vault with soft-delete
-        enabled. This method therefore returns a poller enabling you to wait for deletion to complete.
+    Delete all versions of a key and its cryptographic material. Requires keys/delete permission. If the vault has
+        soft-delete enabled, deletion may take several seconds to complete.
 
     :param name: The name of the key to delete.
 
@@ -166,11 +163,11 @@ async def begin_delete_key(hub, ctx, name, vault_url, **kwargs):
     kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
-        key = kconn.begin_delete_key(name=name,)
+        key = kconn.begin_delete_key(name=name)
 
         key.wait()
         result = _key_as_dict(key.result())
-    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
+    except ResourceNotFoundError as exc:
         result = {"error": str(exc)}
 
     return result
@@ -181,9 +178,8 @@ async def begin_recover_deleted_key(hub, ctx, name, vault_url, **kwargs):
     .. versionadded:: 2.0.0
 
     Recover a deleted key to its latest version. Possible only in a vault with soft-delete enabled. Requires
-        keys/recover permission. When this method returns Key Vault has begun recovering the key. Recovery may take
-        several seconds. This method therefore returns a poller enabling you to wait for recovery to complete. Waiting
-        is only necessary when you want to use the recovered key in another operation immediately.
+        keys/recover permission. If the vault does not have soft-delete enabled, the begin_delete_key operation is permanent,
+        and this method will raise an error. Attempting to recover a non-deleted key will also raise an error.
 
     :param name: The name of the deleted key to recover.
 
@@ -200,11 +196,11 @@ async def begin_recover_deleted_key(hub, ctx, name, vault_url, **kwargs):
     kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
-        key = kconn.begin_recover_deleted_key(name=name,)
+        key = kconn.begin_recover_deleted_key(name=name)
 
         key.wait()
         result = _key_as_dict(key.result())
-    except (KeyVaultErrorException, HttpResponseError) as exc:
+    except HttpResponseError as exc:
         result = {"error": str(exc)}
 
     return result
@@ -215,7 +211,9 @@ async def create_ec_key(
     ctx,
     name,
     vault_url,
-    key_ops=None,
+    curve=None,
+    key_operations=None,
+    hardware_protected=None,
     enabled=None,
     expires_on=None,
     not_before=None,
@@ -225,6 +223,8 @@ async def create_ec_key(
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Create a new elliptic curve key or, if name is already in use, create a new version of the key. Requires the
         keys/create permission. Key properties can be specified as keyword arguments.
 
@@ -232,15 +232,21 @@ async def create_ec_key(
 
     :param vault_url: The URL of the vault that the client will access.
 
-    :param key_ops: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
+    :param curve: Elliptic curve name. Defaults to the NIST P-256 elliptic curve. Possible values include: "P-256",
+        "P-256K", "P-384", "P-521".
+
+    :param key_operations: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
         'unwrap_key', 'verify', 'wrap_key'.
 
-    :param enabled: Whether the key is enabled for use.
+    :param hardware_protected: A boolean value specifying whether the key should be created in a hardware security
+        module. Defaults to False.
 
-    :param expires_on: When the key will expire, in UTC. This parameter must be a string representation of a Datetime
-        object in ISO-8601 format.
+    :param enabled: A boolean value specifying whether the key is enabled for use.
 
-    :param not_before: The time before which the key can not be used, in UTC. This parameter must be a string
+    :param expires_on: When the key will expire, in UTC. This parameter should be a string representation of a
+        Datetime object in ISO-8601 format.
+
+    :param not_before: The time before which the key can not be used, in UTC. This parameter should be a string
         representation of a Datetime object in ISO-8601 format.
 
     :param tags: Application specific metadata in the form of key-value pairs.
@@ -258,7 +264,9 @@ async def create_ec_key(
     try:
         key = kconn.create_ec_key(
             name=name,
-            key_operations=key_ops,
+            curve=curve,
+            key_operations=key_operations,
+            hardware_protected=hardware_protected,
             enabled=enabled,
             expires_on=expires_on,
             not_before=not_before,
@@ -266,7 +274,7 @@ async def create_ec_key(
         )
 
         result = _key_as_dict(key)
-    except (KeyVaultErrorException, ValidationError, HttpResponseError) as exc:
+    except (ValidationError, HttpResponseError) as exc:
         result = {"error": str(exc)}
 
     return result
@@ -278,7 +286,9 @@ async def create_key(
     name,
     key_type,
     vault_url,
-    key_ops=None,
+    key_operations=None,
+    size=None,
+    curve=None,
     enabled=None,
     expires_on=None,
     not_before=None,
@@ -287,6 +297,8 @@ async def create_key(
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Create a key or, if name is already in use, create a new version of the key. Requires keys/create permission.
         Key properties can be specified as keyword arguments.
@@ -297,15 +309,20 @@ async def create_key(
 
     :param vault_url: The URL of the vault that the client will access.
 
-    :param key_ops: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
+    :param key_operations: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
         'unwrap_key', 'verify', 'wrap_key'.
+
+    :param size: RSA key size in bits, for example 2048, 3072, or 4096. Applies to RSA keys only.
+
+    :param curve: Elliptic curve name. Defaults to the NIST P-256 elliptic curve. Possible values include: "P-256",
+        "P-256K", "P-384", "P-521".
 
     :param enabled: Whether the key is enabled for use.
 
-    :param expires_on: When the key will expire, in UTC. This parameter must be a string representation of a Datetime
+    :param expires_on: When the key will expire, in UTC. This parameter should be a string representation of a Datetime
         object in ISO-8601 format.
 
-    :param not_before: The time before which the key can not be used, in UTC. This parameter must be a string
+    :param not_before: The time before which the key can not be used, in UTC. This parameter should be a string
         representation of a Datetime object in ISO-8601 format.
 
     :param tags: Application specific metadata in the form of key-value pairs.
@@ -328,14 +345,16 @@ async def create_key(
             name=name,
             key_type=key_type,
             enabled=enabled,
+            size=size,
+            curve=curve,
             expires_on=expires_on,
             not_before=not_before,
             tags=tags,
-            key_operations=key_ops,
+            key_operations=key_operations,
         )
 
         result = _key_as_dict(key)
-    except (KeyVaultErrorException, ValidationError, HttpResponseError) as exc:
+    except (ValidationError, HttpResponseError) as exc:
         result = {"error": str(exc)}
 
     return result
@@ -346,7 +365,9 @@ async def create_rsa_key(
     ctx,
     name,
     vault_url,
-    key_ops=None,
+    size=None,
+    key_operations=None,
+    hardware_protected=None,
     enabled=None,
     expires_on=None,
     not_before=None,
@@ -363,15 +384,20 @@ async def create_rsa_key(
 
     :param vault_url: The URL of the vault that the client will access.
 
-    :param key_ops: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
+    :param size: Key size in bits, for example 2048, 3072, or 4096.
+
+    :param key_operations: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt', 'sign',
         'unwrap_key', 'verify', 'wrap_key'.
+
+    :param hardware_protected: A boolean value specifying whether the key should be created in a hardware security
+        module. Defaults to False.
 
     :param enabled: Whether the key is enabled for use.
 
-    :param expires_on: When the key will expire, in UTC. This parameter must be a string representation of a Datetime
+    :param expires_on: When the key will expire, in UTC. This parameter should be a string representation of a Datetime
         object in ISO-8601 format.
 
-    :param not_before: The time before which the key can not be used, in UTC. This parameter must be a string
+    :param not_before: The time before which the key can not be used, in UTC. This parameter should be a string
         representation of a Datetime object in ISO-8601 format.
 
     :param tags: Application specific metadata in the form of key-value pairs.
@@ -389,7 +415,9 @@ async def create_rsa_key(
     try:
         key = kconn.create_rsa_key(
             name=name,
-            key_operations=key_ops,
+            key_operations=key_operations,
+            size=size,
+            hardware_protected=hardware_protected,
             enabled=enabled,
             expires_on=expires_on,
             not_before=not_before,
@@ -397,7 +425,7 @@ async def create_rsa_key(
         )
 
         result = _key_as_dict(key)
-    except (KeyVaultErrorException, ValidationError, HttpResponseError) as exc:
+    except (ValidationError, HttpResponseError) as exc:
         result = {"error": str(exc)}
 
     return result
@@ -424,10 +452,10 @@ async def get_deleted_key(hub, ctx, name, vault_url, **kwargs):
     kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
-        key = kconn.get_deleted_key(name=name,)
+        key = kconn.get_deleted_key(name=name)
 
         result = _key_as_dict(key)
-    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
+    except ResourceNotFoundError as exc:
         result = {"error": str(exc)}
 
     return result
@@ -443,32 +471,44 @@ async def get_key(hub, ctx, name, vault_url, version=None, **kwargs):
 
     :param vault_url: The URL of the vault that the client will access.
 
-    :param version: An optional parameter used to specify the version of the key to get. If not specified, gets the
-        latest version of the key.
+    :param version: Used to specify the version of the key to get. If not specified, gets the latest version of the key.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.keyvault.key.get_key test_name test_vault test_version
+        azurerm.keyvault.key.get_key test_name test_vault
 
     """
     result = {}
     kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
-        key = kconn.get_key(name=name, version=version,)
+        key = kconn.get_key(name=name, version=version)
 
         result = _key_as_dict(key)
-    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
+    except ResourceNotFoundError as exc:
         result = {"error": str(exc)}
 
     return result
 
 
-async def import_key(hub, ctx, name, vault_url, **kwargs):
+async def import_key(
+    hub,
+    ctx,
+    name,
+    vault_url,
+    hardware_protected=None,
+    enabled=None,
+    not_before=None,
+    expires_on=None,
+    tags=None,
+    **kwargs,
+):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Import a key created externally. Requires keys/import permission. If name is already in use, the key will be
         imported as a new version. Parameters used to build a JSONWebKey object will be passed to this module. More
@@ -479,6 +519,19 @@ async def import_key(hub, ctx, name, vault_url, **kwargs):
 
     :param vault_url: The URL of the vault that the client will access.
 
+    :param hardware_protected: A boolean value specifying whether the key should be created in a hardware
+        security module. Defaults to False.
+
+    :param enabled: A boolean value specifying whether the key is enabled for use.
+
+    :param expires_on: When the key will expire, in UTC. This parameter should be a string representation
+        of a Datetime object in ISO-8601 format.
+
+    :param not_before: The time before which the key can not be used, in UTC. This parameter should be a
+        string representation of a Datetime object in ISO-8601 format.
+
+    :param tags: Application specific metadata in the form of key-value pairs.
+
     Additional parameters passed as keyword arguments are used to build a JSONWebKey object will be passed to this
         module. Below some of those parameters are defined. More information about some of those parameters can be
         found at the following link: https://tools.ietf.org/html/draft-ietf-jose-json-web-key-18.
@@ -487,8 +540,8 @@ async def import_key(hub, ctx, name, vault_url, **kwargs):
 
     :param kty: Key type. Possible values inclide: 'ec', 'ec_hsm', 'oct', 'rsa', 'rsa_hsm'.
 
-    :param key_ops: A list of allow operations for the key. Possible elements of the list include: 'decrypt', 'encrypt',
-        'sign', 'unwrap_key', 'verify', 'wrap_key'
+    :param key_ops: A list of allow operations for the key. Possible elements of the list include: 'decrypt',
+        'encrypt', 'sign', 'unwrap_key', 'verify', 'wrap_key'
 
     :param n: RSA modulus.
 
@@ -540,10 +593,18 @@ async def import_key(hub, ctx, name, vault_url, **kwargs):
         return result
 
     try:
-        key = kconn.import_key(name=name, key=keymodel,)
+        key = kconn.import_key(
+            name=name,
+            hardware_protected=hardware_protected,
+            enabled=enabled,
+            tags=tags,
+            not_before=not_before,
+            expires_on=expires_on,
+            key=keymodel,
+        )
 
         result = _key_as_dict(key)
-    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
+    except (HttpResponseError, ResourceNotFoundError) as exc:
         result = {"error": str(exc)}
 
     return result
@@ -572,7 +633,7 @@ async def list_(hub, ctx, vault_url, **kwargs):
 
         for key in keys:
             result[key.name] = _key_properties_as_dict(key)
-    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
+    except ResourceNotFoundError as exc:
         result = {"error": str(exc)}
 
     return result
@@ -599,11 +660,11 @@ async def list_properties_of_key_versions(hub, ctx, name, vault_url, **kwargs):
     kconn = await hub.exec.azurerm.keyvault.key.get_key_client(ctx, vault_url, **kwargs)
 
     try:
-        keys = kconn.list_properties_of_key_versions(name=name,)
+        keys = kconn.list_properties_of_key_versions(name=name)
 
         for key in keys:
             result[key.name] = _key_properties_as_dict(key)
-    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
+    except ResourceNotFoundError as exc:
         result = {"error": str(exc)}
 
     return result
@@ -633,7 +694,7 @@ async def list_deleted_keys(hub, ctx, vault_url, **kwargs):
 
         for key in keys:
             result[key.name] = _key_as_dict(key)
-    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
+    except ResourceNotFoundError as exc:
         result = {"error": str(exc)}
 
     return result
@@ -666,7 +727,7 @@ async def purge_deleted_key(hub, ctx, name, vault_url, **kwargs):
         key = kconn.purge_deleted_key(name=name,)
 
         result = True
-    except (KeyVaultErrorException, HttpResponseError) as exc:
+    except HttpResponseError as exc:
         result = {"error": str(exc)}
 
     return result
@@ -680,7 +741,7 @@ async def restore_key_backup(hub, ctx, backup, vault_url, **kwargs):
         control policies. If the key's name is already in use, restoring it will fail. Also, the target vault must be
         owned by the same Microsoft Azure subscription as the source vault. Requires keys/restore permission.
 
-    :param backup: A key backup as returned by the backup_key execution module.
+    :param backup: A key backup as returned by the backup_key operation.
 
     :param vault_url: The URL of the vault that the client will access.
 
@@ -698,7 +759,7 @@ async def restore_key_backup(hub, ctx, backup, vault_url, **kwargs):
         key = kconn.restore_key_backup(backup=backup,)
 
         result = _key_as_dict(key)
-    except (KeyVaultErrorException, ResourceExistsError, SerializationError) as exc:
+    except (ResourceExistsError, SerializationError) as exc:
         result = {"error": str(exc)}
 
     return result
@@ -710,6 +771,7 @@ async def update_key_properties(
     name,
     vault_url,
     version=None,
+    key_operations=None,
     enabled=None,
     expires_on=None,
     not_before=None,
@@ -719,6 +781,8 @@ async def update_key_properties(
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Change a key's properties (not its cryptographic material). Requires keys/update permission. Key properties that
         need to be updated can be specified as keyword arguments.
 
@@ -726,16 +790,19 @@ async def update_key_properties(
 
     :param vault_url: The URL of the vault that the client will access.
 
-    :param version: An optional parameter used to specify the version of the key to update. If no version is specified,
-        the latest version of the key will be updated.
+    :param version: Used to specify the version of the key to update. If no version is specified, the latest
+        version of the key will be updated.
+
+    :param key_operations: A list of permitted key operations. Possible values include: 'decrypt', 'encrypt',
+        'sign', 'unwrap_key', 'verify', 'wrap_key'.
 
     :param enabled: Whether the key is enabled for use.
 
-    :param expires_on: When the key will expire, in UTC. This parameter must be a string representation of a Datetime
-        object in ISO-8601 format.
+    :param expires_on: When the key will expire, in UTC. This parameter should be a string representation
+        of a Datetime object in ISO-8601 format.
 
-    :param not_before: The time before which the key can not be used, in UTC. This parameter must be a string
-        representation of a Datetime object in ISO-8601 format.
+    :param not_before: The time before which the key can not be used, in UTC. This parameter should be a
+        string representation of a Datetime object in ISO-8601 format.
 
     :param tags: Application specific metadata in the form of key-value pairs.
 
@@ -753,6 +820,7 @@ async def update_key_properties(
         key = kconn.update_key_properties(
             name=name,
             version=version,
+            key_operations=key_operations,
             enabled=enabled,
             expires_on=expires_on,
             not_before=not_before,
@@ -760,7 +828,7 @@ async def update_key_properties(
         )
 
         result = _key_as_dict(key)
-    except (KeyVaultErrorException, ResourceNotFoundError) as exc:
+    except ResourceNotFoundError as exc:
         result = {"error": str(exc)}
 
     return result
