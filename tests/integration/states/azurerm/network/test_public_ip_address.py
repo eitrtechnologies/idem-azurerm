@@ -10,9 +10,9 @@ async def test_present(hub, ctx, public_ip_addr, resource_group):
             "new": {
                 "name": public_ip_addr,
                 "resource_group": resource_group,
-                "sku": None,
+                "sku": {"name": "Standard"},
                 "tags": None,
-                "public_ip_allocation_method": None,
+                "public_ip_allocation_method": "Static",
                 "public_ip_address_version": None,
                 "idle_timeout_in_minutes": idle_timeout,
             },
@@ -26,6 +26,8 @@ async def test_present(hub, ctx, public_ip_addr, resource_group):
         ctx,
         name=public_ip_addr,
         resource_group=resource_group,
+        public_ip_allocation_method="Static",
+        sku="Standard",
         idle_timeout_in_minutes=idle_timeout,
     )
     assert ret == expected
@@ -49,6 +51,8 @@ async def test_changes(hub, ctx, public_ip_addr, resource_group, tags):
         ctx,
         name=public_ip_addr,
         resource_group=resource_group,
+        sku="Standard",
+        public_ip_allocation_method="Static",
         idle_timeout_in_minutes=new_timeout,
         tags=tags,
     )

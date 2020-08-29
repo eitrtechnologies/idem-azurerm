@@ -46,7 +46,7 @@ async def test_changes(
     hub, ctx, vnet, resource_group, subnet,
 ):
     vnet_addr_prefixes = ["10.0.0.0/16"]
-    changed_vnet_addr_prefixes = ["10.0.0.0/16", "192.168.0.0/16"]
+    changed_vnet_addr_prefixes = ["10.0.0.0/16", "192.168.0.0/16", "172.18.0.0/16"]
     expected = {
         "changes": {
             "address_space": {
@@ -69,13 +69,15 @@ async def test_changes(
     assert ret == expected
 
 
-# Tests the creation of a subnet with service endpoints and a GatewaySubnet (both are necessary for other tests)
+# Tests the creation of a subnet with service endpoints, a GatewaySubnet, and a AzureBastionSubnet (all are necessary
+# for other tests)
 @pytest.mark.run(order=3, after="test_changes", before="test_subnet_changes")
 @pytest.mark.asyncio
 async def test_subnet_present(hub, ctx, subnet, vnet, resource_group):
     subnet_addr_prefix = "10.0.0.0/16"
     gateway_snet_addr_prefix = "192.168.0.0/16"
-    normal_expected = {
+    bastion_snet_addr_prefix = "172.18.0.0/16"
+    snet_expected = {
         "changes": {
             "new": {
                 "name": subnet,
@@ -110,6 +112,23 @@ async def test_subnet_present(hub, ctx, subnet, vnet, resource_group):
         "result": True,
     }
 
+    bastion_expected = {
+        "changes": {
+            "new": {
+                "name": "AzureBastionSubnet",
+                "virtual_network": vnet,
+                "resource_group": resource_group,
+                "address_prefix": bastion_snet_addr_prefix,
+                "network_security_group": None,
+                "route_table": None,
+            },
+            "old": {},
+        },
+        "comment": f"Subnet AzureBastionSubnet has been created.",
+        "name": "AzureBastionSubnet",
+        "result": True,
+    }
+
     # Tests creation of a regular subnet with a service_endpoint
     ret = await hub.states.azurerm.network.virtual_network.subnet_present(
         ctx,
@@ -120,7 +139,7 @@ async def test_subnet_present(hub, ctx, subnet, vnet, resource_group):
         # Service endpoints used for testing PostgreSQL virtual network rules
         service_endpoints=["Microsoft.Sql"],
     )
-    assert ret == normal_expected
+    assert ret == snet_expected
 
     # Tests creation of a GatewaySubnet used by a virtual network gateway
     ret = await hub.states.azurerm.network.virtual_network.subnet_present(
@@ -131,6 +150,16 @@ async def test_subnet_present(hub, ctx, subnet, vnet, resource_group):
         address_prefix=gateway_snet_addr_prefix,
     )
     assert ret == gateway_expected
+
+    # Tests creation of an AzureBastionSubnet used by a Bastion Host
+    ret = await hub.states.azurerm.network.virtual_network.subnet_present(
+        ctx,
+        name="AzureBastionSubnet",
+        virtual_network=vnet,
+        resource_group=resource_group,
+        address_prefix=bastion_snet_addr_prefix,
+    )
+    assert ret == bastion_expected
 
 
 @pytest.mark.run(order=3, after="test_subnet_present", before="test_subnet_absent")

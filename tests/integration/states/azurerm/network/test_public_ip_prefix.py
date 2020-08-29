@@ -20,7 +20,7 @@ async def test_present(hub, ctx, public_ip_prefix, resource_group):
                 "resource_group": resource_group,
                 "sku": {"name": "standard"},
                 "public_ip_address_version": "IPv4",
-                "prefix_length": 28,
+                "prefix_length": 31,
                 "zones": [],
                 "tags": None,
             },
@@ -31,7 +31,7 @@ async def test_present(hub, ctx, public_ip_prefix, resource_group):
         "result": True,
     }
     ret = await hub.states.azurerm.network.public_ip_prefix.present(
-        ctx, name=public_ip_prefix, resource_group=resource_group, prefix_length=28
+        ctx, name=public_ip_prefix, resource_group=resource_group, prefix_length=31
     )
     assert ret == expected
 
@@ -49,7 +49,7 @@ async def test_changes(hub, ctx, public_ip_prefix, resource_group, tags):
         ctx,
         name=public_ip_prefix,
         resource_group=resource_group,
-        prefix_length=28,
+        prefix_length=31,
         tags=tags,
     )
     assert ret == expected
