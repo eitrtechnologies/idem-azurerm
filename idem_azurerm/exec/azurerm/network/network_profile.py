@@ -167,8 +167,7 @@ async def update_tags(
             network_profile_name=name, resource_group_name=resource_group, tags=tags,
         )
 
-        prf.wait()
-        result = prf.result().as_dict()
+        result = prf.as_dict()
     except (CloudError, SerializationError) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}

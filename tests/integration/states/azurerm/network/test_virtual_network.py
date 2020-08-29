@@ -46,7 +46,7 @@ async def test_changes(
     hub, ctx, vnet, resource_group, subnet,
 ):
     vnet_addr_prefixes = ["10.0.0.0/16"]
-    changed_vnet_addr_prefixes = ["10.0.0.0/16", "192.168.0.0/16", "172.18.0.0/16"]
+    changed_vnet_addr_prefixes = ["10.0.0.0/16", "192.168.0.0/16", "128.0.0.0/16"]
     expected = {
         "changes": {
             "address_space": {
@@ -76,7 +76,7 @@ async def test_changes(
 async def test_subnet_present(hub, ctx, subnet, vnet, resource_group):
     subnet_addr_prefix = "10.0.0.0/16"
     gateway_snet_addr_prefix = "192.168.0.0/16"
-    bastion_snet_addr_prefix = "172.18.0.0/16"
+    bastion_snet_addr_prefix = "128.0.0.0/16"
     snet_expected = {
         "changes": {
             "new": {

@@ -12,6 +12,7 @@ def bastion_host():
 
 @pytest.mark.run(order=4)
 @pytest.mark.asyncio
+@pytest.mark.slow
 async def test_present(hub, ctx, bastion_host, resource_group, vnet, public_ip_addr):
     subscription_id = (
         hub.acct.PROFILES["azurerm"].get("default", {}).get("subscription_id")
@@ -49,6 +50,7 @@ async def test_present(hub, ctx, bastion_host, resource_group, vnet, public_ip_a
 
 @pytest.mark.run(order=4, after="test_present", before="test_absent")
 @pytest.mark.asyncio
+@pytest.mark.slow
 async def test_changes(
     hub, ctx, bastion_host, resource_group, vnet, public_ip_addr, tags
 ):
@@ -80,6 +82,7 @@ async def test_changes(
 
 @pytest.mark.run(order=-4)
 @pytest.mark.asyncio
+@pytest.mark.slow
 async def test_absent(hub, ctx, bastion_host, resource_group):
     expected = {
         "changes": {"new": {}, "old": {"name": bastion_host,},},

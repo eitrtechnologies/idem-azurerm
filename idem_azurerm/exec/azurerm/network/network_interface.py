@@ -511,8 +511,7 @@ async def update_tags(
             network_interface_name=name, resource_group_name=resource_group, tags=tags,
         )
 
-        nic.wait()
-        result = nic.result().as_dict()
+        result = nic.as_dict()
     except (CloudError, SerializationError) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}

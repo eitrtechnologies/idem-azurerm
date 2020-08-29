@@ -597,8 +597,7 @@ async def update_tags(
             tags=tags,
         )
 
-        secgroup.wait()
-        result = secgroup.result().as_dict()
+        result = secgroup.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
