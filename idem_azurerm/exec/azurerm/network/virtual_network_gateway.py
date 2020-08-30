@@ -296,7 +296,8 @@ async def connection_update_tags(
             tags=tags,
         )
 
-        result = connection.as_dict()
+        connection.wait()
+        result = connection.result().as_dict()
     except (CloudError, SerializationError) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}

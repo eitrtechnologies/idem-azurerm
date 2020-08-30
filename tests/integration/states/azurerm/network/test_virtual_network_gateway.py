@@ -35,7 +35,7 @@ def ipsec_policy():
 @pytest.mark.slow
 @pytest.mark.asyncio
 async def test_present(
-    hub, ctx, vnet_gateway, resource_group, ip_config, public_ip_addr, vnet,
+    hub, ctx, vnet_gateway, resource_group, ip_config, public_ip_addr2, vnet,
 ):
     gateway_type = "Vpn"
     vpn_type = "RouteBased"
@@ -43,7 +43,7 @@ async def test_present(
     configs = [
         {
             "name": ip_config,
-            "public_ip_address": public_ip_addr,
+            "public_ip_address": public_ip_addr2,
             "private_ip_allocation_method": "Dynamic",
         }
     ]
@@ -87,7 +87,7 @@ async def test_present(
 @pytest.mark.slow
 @pytest.mark.asyncio
 async def test_changes(
-    hub, ctx, vnet_gateway, resource_group, ip_config, public_ip_addr, vnet, tags,
+    hub, ctx, vnet_gateway, resource_group, ip_config, public_ip_addr2, vnet, tags,
 ):
     gateway_type = "Vpn"
     vpn_type = "RouteBased"
@@ -95,7 +95,7 @@ async def test_changes(
     configs = [
         {
             "name": ip_config,
-            "public_ip_address": public_ip_addr,
+            "public_ip_address": public_ip_addr2,
             "private_ip_allocation_method": "Dynamic",
         }
     ]

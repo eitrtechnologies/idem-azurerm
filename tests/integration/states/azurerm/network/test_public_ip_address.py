@@ -3,9 +3,11 @@ import pytest
 
 @pytest.mark.run(order=3)
 @pytest.mark.asyncio
-async def test_present(hub, ctx, public_ip_addr, resource_group):
+# Creates a public IP address with a "Standard" SKU for Bastion Host tests and another one with a "Basic" SKU
+# for the virtual network gateway tests
+async def test_present(hub, ctx, public_ip_addr, public_ip_addr2, resource_group):
     idle_timeout = 10
-    expected = {
+    standard_expected = {
         "changes": {
             "new": {
                 "name": public_ip_addr,
@@ -22,6 +24,25 @@ async def test_present(hub, ctx, public_ip_addr, resource_group):
         "name": public_ip_addr,
         "result": True,
     }
+
+    basic_expected = {
+        "changes": {
+            "new": {
+                "name": public_ip_addr2,
+                "resource_group": resource_group,
+                "sku": {"name": "Basic"},
+                "tags": None,
+                "public_ip_allocation_method": None,
+                "public_ip_address_version": None,
+                "idle_timeout_in_minutes": idle_timeout,
+            },
+            "old": {},
+        },
+        "comment": f"Public IP address {public_ip_addr2} has been created.",
+        "name": public_ip_addr2,
+        "result": True,
+    }
+
     ret = await hub.states.azurerm.network.public_ip_address.present(
         ctx,
         name=public_ip_addr,
@@ -30,7 +51,16 @@ async def test_present(hub, ctx, public_ip_addr, resource_group):
         sku="Standard",
         idle_timeout_in_minutes=idle_timeout,
     )
-    assert ret == expected
+    assert ret == standard_expected
+
+    ret = await hub.states.azurerm.network.public_ip_address.present(
+        ctx,
+        name=public_ip_addr2,
+        resource_group=resource_group,
+        sku="Basic",
+        idle_timeout_in_minutes=idle_timeout,
+    )
+    assert ret == basic_expected
 
 
 @pytest.mark.run(order=3, after="test_present", before="test_absent")
