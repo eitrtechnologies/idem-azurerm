@@ -33,7 +33,6 @@ Azure Resource Manager (ARM) Compute Availability Set Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -44,7 +43,6 @@ try:
     import azure.mgmt.compute.models  # pylint: disable=unused-import
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
-    from msrestazure.tools import is_valid_resource_id
 
     HAS_LIBS = True
 except ImportError:
@@ -63,8 +61,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The availability set to create.
 
-    :param resource_group: The resource group name assigned to the
-        availability set.
+    :param resource_group: The resource group name assigned to the availability set.
 
     CLI Example:
 
@@ -85,6 +82,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
             }
         kwargs["location"] = rg_props["location"]
 
+    result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
 
     # Use VM names to link to the IDs of existing VMs.
@@ -135,8 +133,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The availability set to delete.
 
-    :param resource_group: The resource group name assigned to the
-        availability set.
+    :param resource_group: The resource group name assigned to the availability set.
 
     CLI Example:
 
@@ -147,14 +144,16 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     result = False
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
     try:
         compconn.availability_sets.delete(
             resource_group_name=resource_group, availability_set_name=name
         )
-        result = True
 
+        result = True
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
@@ -167,8 +166,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The availability set to get.
 
-    :param resource_group: The resource group name assigned to the
-        availability set.
+    :param resource_group: The resource group name assigned to the availability set.
 
     CLI Example:
 
@@ -177,7 +175,9 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.compute.availability_set.get testset testgroup
 
     """
+    result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
     try:
         av_set = compconn.availability_sets.get(
             resource_group_name=resource_group, availability_set_name=name
@@ -191,28 +191,35 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, ctx, resource_group, **kwargs):
+async def list_(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    List all availability sets within a resource group.
+    .. versionchanged:: 4.0.0
 
-    :param resource_group: The resource group name to list availability
-        sets within.
+    Lists all availability sets in a subscription.
+
+    :param resource_group: The name of the resource group to limit the results.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.compute.availability_set.list testgroup
+        azurerm.compute.availability_set.list
 
     """
     result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
     try:
-        avail_sets = await hub.exec.azurerm.utils.paged_object_to_list(
-            compconn.availability_sets.list(resource_group_name=resource_group)
-        )
+        if resource_group:
+            avail_sets = await hub.exec.azurerm.utils.paged_object_to_list(
+                compconn.availability_sets.list(resource_group_name=resource_group)
+            )
+        else:
+            avail_sets = await hub.exec.azurerm.utils.paged_object_to_list(
+                compconn.availability_sets.list_by_subscription()
+            )
 
         for avail_set in avail_sets:
             result[avail_set["name"]] = avail_set
@@ -227,14 +234,12 @@ async def list_available_sizes(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    List all available virtual machine sizes that can be used to
-    to create a new virtual machine in an existing availability set.
+    List all available virtual machine sizes that can be used to create a new virtual machine in an existing
+        availability set.
 
-    :param name: The availability set name to list available
-        virtual machine sizes within.
+    :param name: The availability set name to list available virtual machine sizes within.
 
-    :param resource_group: The resource group name to list available
-        availability set sizes within.
+    :param resource_group: The resource group name to list available availability set sizes within.
 
     CLI Example:
 
@@ -245,6 +250,7 @@ async def list_available_sizes(hub, ctx, name, resource_group, **kwargs):
     """
     result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
     try:
         sizes = await hub.exec.azurerm.utils.paged_object_to_list(
             compconn.availability_sets.list_available_sizes(

@@ -7,4 +7,6 @@ compute state modules
    :glob:
 
    availability_set
+   disk
+   proximity_placement_group
    virtual_machine
