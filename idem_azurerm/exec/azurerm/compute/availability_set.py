@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Compute Availability Set Execution Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.

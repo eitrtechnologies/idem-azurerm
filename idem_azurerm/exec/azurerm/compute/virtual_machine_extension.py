@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Compute Virtual Machine Extension Operations Execut
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -61,6 +63,7 @@ async def create_or_update(
     extension_type,
     version,
     settings,
+    auto_upgrade_minor_version=None,
     **kwargs,
 ):
     """
@@ -83,7 +86,13 @@ async def create_or_update(
     :param version: Specifies the version of the script handler.
 
     :param settings: A dictionary representing the public settings for the extension. This dictionary will be
-        utilized as JSON by the SDK operation..
+        utilized as JSON by the SDK operation.
+
+    :param auto_upgrade_minor_version: A boolean value indicating whether the extension should use a newer minor version
+        if one is available at deployment time. Once deployed, however, the extension will not upgrade minor versions
+        unless redeployed, even with this property set to True.
+
+    :param tags: A dictionary of strings can be passed as tag metadata to the virtual machine extension object.
 
     CLI Example:
 
@@ -105,6 +114,7 @@ async def create_or_update(
             publisher=publisher,
             virtual_machine_extension_type=extension_type,
             type_handler_version=version,
+            auto_upgrade_minor_version=auto_upgrade_minor_version,
             **kwargs,
         )
     except TypeError as exc:

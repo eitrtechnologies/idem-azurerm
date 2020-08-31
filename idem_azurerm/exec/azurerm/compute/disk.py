@@ -67,18 +67,18 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.compute.disk.get testdisk testgroup
+        azurerm.compute.disk.get test_name test_group
 
     """
     result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
 
     try:
-
         disk = compconn.disks.get(resource_group_name=resource_group, disk_name=name)
         result = disk.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
@@ -97,18 +97,18 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.compute.disk.delete testdisk testgroup
+        azurerm.compute.disk.delete test_name test_group
 
     """
     result = False
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
 
     try:
-
         disk = compconn.disks.delete(resource_group_name=resource_group, disk_name=name)
         result = True
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
@@ -134,7 +134,9 @@ async def list_(hub, ctx, resource_group=None, **kwargs):
     try:
         if resource_group:
             disks = await hub.exec.azurerm.utils.paged_object_to_list(
-                compconn.disks.list_by_resource_group(resource_group_name=resource_group)
+                compconn.disks.list_by_resource_group(
+                    resource_group_name=resource_group
+                )
             )
         else:
             disks = await hub.exec.azurerm.utils.paged_object_to_list(
@@ -143,6 +145,79 @@ async def list_(hub, ctx, resource_group=None, **kwargs):
 
         for disk in disks:
             result[disk["name"]] = disk
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def grant_access(hub, ctx, name, resource_group, access, duration, **kwargs):
+    """
+    .. versionadded:: 4.0.0
+
+    Grants access to a disk.
+
+    :param name: The name of the disk to grant access to.
+
+    :param resource_group: The resource group name assigned to the disk.
+
+    :param access: Possible values include: 'None', 'Read', 'Write'.
+
+    :param duration: Time duration in seconds until the SAS access expires.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.compute.disk.grant_access test_name test_group
+
+    """
+    result = False
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
+    try:
+        disk = compconn.disks.grant_access(
+            resource_group_name=resource_group,
+            disk_name=name,
+            access=access,
+            duration_in_seconds=duration,
+        )
+        disk.wait()
+        result = True
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def revoke_access(hub, ctx, name, resource_group, **kwargs):
+    """
+    .. versionadded:: 4.0.0
+
+    Revokes access to a disk.
+
+    :param name: The name of the disk to revoke access to.
+
+    :param resource_group: The resource group name assigned to the disk.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.compute.disk.revoke_access test_name test_group
+
+    """
+    result = False
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
+    try:
+        disk = compconn.disks.revoke_access(
+            resource_group_name=resource_group, disk_name=name
+        )
+        disk.wait()
+        result = True
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}

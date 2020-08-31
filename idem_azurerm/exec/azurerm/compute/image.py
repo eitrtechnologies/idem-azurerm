@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Compute Image Execution Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -31,10 +33,10 @@ Azure Resource Manager (ARM) Compute Image Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
+import six
 
 # Azure libs
 HAS_LIBS = False
@@ -47,6 +49,8 @@ try:
     HAS_LIBS = True
 except ImportError:
     pass
+
+__func_alias__ = {"list_": "list"}
 
 log = logging.getLogger(__name__)
 
@@ -61,10 +65,13 @@ async def create_or_update(
     os_disk=None,
     data_disks=None,
     zone_resilient=False,
+    hyper_vgeneration=None,
     **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Create or update an image.
 
@@ -72,8 +79,8 @@ async def create_or_update(
 
     :param resource_group: The resource group name assigned to the image.
 
-    :param source_vm: The name of the virtual machine from which the image is created. This parameter
-        or a valid os_disk is required.
+    :param source_vm: The name of the virtual machine from which the image is created. This parameter or a valid
+        os_disk is required.
 
     :param source_vm_group: The name of the resource group containing the source virtual machine.
         This defaults to the same resource group specified for the resultant image.
@@ -85,6 +92,9 @@ async def create_or_update(
 
     :param zone_resilient: Specifies whether an image is zone resilient or not. Zone resilient images
         can be created only in regions that provide Zone Redundant Storage (ZRS).
+
+    :param hyper_vgeneration: Gets the HyperVGenerationType of the VirtualMachine created from the image. Possible
+        values include: "V1" and "V2".
 
     CLI Example:
 
@@ -105,6 +115,7 @@ async def create_or_update(
             }
         kwargs["location"] = rg_props["location"]
 
+    result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
 
     if source_vm:
@@ -167,6 +178,7 @@ async def create_or_update(
             "Image",
             source_virtual_machine=source_vm,
             storage_profile=spmodel,
+            hyper_vgeneration=hyper_vgeneration,
             **kwargs,
         )
     except TypeError as exc:
@@ -179,10 +191,9 @@ async def create_or_update(
         image = compconn.images.create_or_update(
             resource_group_name=resource_group, image_name=name, parameters=imagemodel
         )
-        image.wait()
-        image_result = image.result()
-        result = image_result.as_dict()
 
+        image.wait()
+        result = image.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -197,6 +208,8 @@ async def create_or_update(
 async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Delete an image.
 
@@ -213,12 +226,16 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     result = False
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
-    try:
-        compconn.images.delete(resource_group_name=resource_group, image_name=name)
-        result = True
 
+    try:
+        image = compconn.images.delete(
+            resource_group_name=resource_group, image_name=name
+        )
+        image.wait()
+        result = True
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
 
@@ -227,9 +244,9 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Get a dictionary representing an image's properties.
+    Get properties of the specified image.
 
-    :param name: The image to get.
+    :param name: The name of the image to query.
 
     :param resource_group: The resource group name assigned to the image.
 
@@ -240,11 +257,12 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.compute.image.get testimage testgroup
 
     """
+    result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
     try:
         image = compconn.images.get(resource_group_name=resource_group, image_name=name)
         result = image.as_dict()
-
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -252,42 +270,13 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def images_list_by_resource_group(hub, ctx, resource_group, **kwargs):
+async def list_(hub, ctx, resource_group=None, **kwargs):
     """
-    .. versionadded:: 1.0.0
+    .. versionadded:: 4.0.0
 
-    List all images within a resource group.
+    Gets the list of Images in the subscription.
 
-    :param resource_group: The resource group name to list images within.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.compute.image.list_by_resource_group testgroup
-
-    """
-    result = {}
-    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
-    try:
-        images = await hub.exec.azurerm.utils.paged_object_to_list(
-            compconn.images.list_by_resource_group(resource_group_name=resource_group)
-        )
-
-        for image in images:
-            result[image["name"]] = image
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def images_list(hub, ctx, **kwargs):
-    """
-    .. versionadded:: 1.0.0
-
-    List all images in a subscription.
+    :param resource_group: The name of the resource group to limit the results.
 
     CLI Example:
 
@@ -298,10 +287,18 @@ async def images_list(hub, ctx, **kwargs):
     """
     result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
     try:
-        images = await hub.exec.azurerm.utils.paged_object_to_list(
-            compconn.images.list()
-        )
+        if resource_group:
+            images = await hub.exec.azurerm.utils.paged_object_to_list(
+                compconn.images.list_by_resource_group(
+                    resource_group_name=resource_group
+                )
+            )
+        else:
+            images = await hub.exec.azurerm.utils.paged_object_to_list(
+                compconn.images.list()
+            )
 
         for image in images:
             result[image["name"]] = image
