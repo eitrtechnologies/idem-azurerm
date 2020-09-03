@@ -4,7 +4,7 @@ Azure Resource Manager (ARM) Compute Virtual Machine Execution Module
 
 .. versionadded:: 1.0.0
 
-.. versionchanged:: 2.0.0
+.. versionchanged:: 2.0.0, 4.0.0
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
@@ -100,12 +100,19 @@ async def create_or_update(
     disk_enc_volume_type=None,
     disk_enc_kek_url=None,
     data_disks=None,
+    availability_set=None,
+    virtual_machine_scale_set=None,
+    proximity_placement_group=None,
+    host=None,
+    host_group=None,
+    encryption_at_host=False,
+    extensions_time_budget=None,
     **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
 
-    .. versionchanged:: 2.0.0
+    .. versionchanged:: 2.0.0, 4.0.0
 
     Create or update a virtual machine.
 
@@ -232,22 +239,6 @@ async def create_or_update(
         max_price to -1 to indicate that the Azure Spot VM/VMSS should not be evicted for price reasons. Also, the
         default max price is -1 if it is not provided by you.
 
-    :param availability_set: Specifies information about the availability set that the virtual machine should be
-        assigned to. Virtual machines specified in the same availability set are allocated to different nodes to
-        maximize availability. For more information about availability sets, see `Manage the availability of virtual
-        machines <https://docs.microsoft.com/azure/virtual-machines/virtual-machines-windows-manage-availability>`_.
-        Currently, a VM can only be added to availability set at creation time. An existing VM cannot be added to an
-        availability set. (resource ID path)
-
-    :param virtual_machine_scale_set: Specifies information about the virtual machine scale set that the virtual machine
-        should be assigned to. Virtual machines specified in the same virtual machine scale set are allocated to
-        different nodes to maximize availability. Currently, a VM can only be added to virtual machine scale set at
-        creation time. An existing VM cannot be added to a virtual machine scale set. This property cannot exist along
-        with a non-null availability_set reference. (resource ID path)
-
-    :param proximity_placement_group: Specifies information about the proximity placement group that the virtual machine
-        should be assigned to.
-
     :param priority: (low or regular) Specifies the priority for the virtual machine.
 
     :param eviction_policy: (deallocate or delete) Specifies the eviction policy for the Azure Spot virtual machine.
@@ -256,6 +247,37 @@ async def create_or_update(
         licensed on-premises. This element is only used for images that contain the Windows Server operating system.
 
     :param zones: A list of the virtual machine zones.
+
+    :param availability_set: The resource ID of the availability set that the virtual machine should be assigned to.
+        Virtual machines specified in the same availability set are allocated to different nodes to maximize
+        availability. For more information about availability sets, see `Manage the availability of virtual
+        machines <https://docs.microsoft.com/azure/virtual-machines/virtual-machines-windows-manage-availability>`_.
+        Currently, a VM can only be added to availability set at creation time. An existing VM cannot be added to an
+        availability set. This parameter cannot be specified if the ``virtual_machine_scale_set`` parameter is also
+        specified.
+
+    :param virtual_machine_scale_set: The resource ID of the virtual machine scale set that the virtual machine should
+        be assigned to. Virtual machines specified in the same virtual machine scale set are allocated to different
+        nodes to maximize availability. Currently, a VM can only be added to virtual machine scale set at creation time.
+        An existing VM cannot be added to a virtual machine scale set. This parameter cannot be specified if the
+        ``availability_set`` parameter is also specified.
+
+    :param proximity_placement_group: The resource ID of the proximity placement group that the virtual machine should
+        be assigned to.
+
+    :param host: The resource ID of the dedicated host that the virtual machine resides in. This parameter cannot be
+        specified if the ``host_group`` parameter is also specified.
+
+    :param host_group: The resource ID of the dedicated host group that the virtual machine resides in. This
+        parameter cannot be specified if the ``host`` parameter is also specified.
+
+    :param encryption_at_host: A boolean value that can be used by user in the request to enable or disable the Host
+        Encryption for the virtual machine or virtual machine scale set. This will enable encryption for all the
+        disks including Resource/Temp disk at host itself. Defaults to False.
+
+    :param extensions_time_budget: Specifies the time alloted for all extensions to start. The time duration should be
+        between 15 minutes and 120 minutes (inclusive) and should be specified in ISO 8601 format. The default value is
+        90 minutes (PT1H30M).
 
     Virtual Machine Disk Encryption:
         If you would like to enable disk encryption within the virtual machine you must set the enable_disk_enc
@@ -270,6 +292,7 @@ async def create_or_update(
         https://docs.microsoft.com/en-us/azure/virtual-machines/linux/disk-encryption-overview
 
         The following parameters may be used to implement virtual machine disk encryption:
+
         :param enable_disk_enc: This boolean flag will represent whether disk encryption has been enabled for the
             virtual machine. This is a required parameter.
 
@@ -340,36 +363,12 @@ async def create_or_update(
             }
         kwargs["location"] = rg_props["location"]
 
-    if not network_interfaces:
-        network_interfaces = []
-
+    result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
 
     params = kwargs.copy()
 
     # This section creates dictionaries if required in order to properly create SubResource objects
-    if "availability_set" in params and not isinstance(
-        params["availability_set"], dict
-    ):
-        params.update({"availability_set": {"id": params["availability_set"]}})
-
-    if "virtual_machine_scale_set" in params and not isinstance(
-        params["virtual_machine_scale_set"], dict
-    ):
-        params.update(
-            {"virtual_machine_scale_set": {"id": params["virtual_machine_scale_set"]}}
-        )
-
-    if "proximity_placement_group" in params and not isinstance(
-        params["proximity_placement_group"], dict
-    ):
-        params.update(
-            {"proximity_placement_group": {"id": params["proximity_placement_group"]}}
-        )
-
-    if "host" in params and not isinstance(params["host"], dict):
-        params.update({"host": {"id": params["host"]}})
-
     if os_managed_disk and not isinstance(os_managed_disk, dict):
         os_managed_disk = {"id": os_managed_disk}
 
@@ -378,6 +377,9 @@ async def create_or_update(
 
     if os_disk_vhd_uri and not isinstance(os_disk_vhd_uri, dict):
         os_disk_vhd_uri = {"uri": os_disk_vhd_uri}
+
+    if not network_interfaces:
+        network_interfaces = []
 
     # network interface creation
     if not network_interfaces and create_interfaces:
@@ -522,6 +524,8 @@ async def create_or_update(
                     "storage_uri": diag_storage_uri,
                 }
             },
+            "security_profile": {"encryption_at_host": encryption_at_host},
+            "extensions_time_budget": extensions_time_budget,
             # "identity": {
             #    "type": None, # SystemAssigned or UserAssigned
             #    "user_assigned_identities": None # VirtualMachineIdentityUserAssignedIdentitiesValue
@@ -561,6 +565,62 @@ async def create_or_update(
                 }
             }
         )
+
+    if availability_set and virtual_machine_scale_set:
+        log.error(
+            "The availability_set and virtual_machine_scale_set parameters have both been specified. "
+            "Only one of those two parameters may be specified during creation. "
+            "Both parameters will now be ignored during execution."
+        )
+        availability_set = None
+        virtual_machine_scale_set = None
+
+    if availability_set:
+        if is_valid_resource_id(availability_set):
+            params["availability_set"] = {"id": availability_set}
+        else:
+            log.error(
+                "The resource ID passed within the availability_set parameter is invalid and will be ignored."
+            )
+    elif virtual_machine_scale_set:
+        if is_valid_resource_id(virtual_machine_scale_set):
+            params["virtual_machine_scale_set"] = {"id": virtual_machine_scale_set}
+        else:
+            log.error(
+                "The resource ID passed within the virtual_machine_scale_set parameter is invalid and will be ignored."
+            )
+
+    if host and host_group:
+        log.error(
+            "The host and host_group parameters have both been specified. "
+            "Only one of those two parameters may be specified. "
+            "Both parameters will now be ignored during execution."
+        )
+        host = None
+        host_group = None
+
+    if host:
+        if is_valid_resource_id(host):
+            params["host"] = {"id": host}
+        else:
+            log.error(
+                "The resource ID passed within the host parameter is invalid and will be ignored."
+            )
+    elif host_group:
+        if is_valid_resource_id(host_group):
+            params["host_group"] = {"id": host_group}
+        else:
+            log.error(
+                "The resource ID passed within the host_group parameter is invalid and will be ignored."
+            )
+
+    if proximity_placement_group:
+        if is_valid_resource_id(proximity_placement_group):
+            params["proximity_placement_group"] = {"id": proximity_placement_group}
+        else:
+            log.error(
+                "The resource ID passed within the proximity_placement_group parameter is invalid and will be ignored."
+            )
 
     if image:
         if is_valid_resource_id(image):
@@ -625,8 +685,7 @@ async def create_or_update(
         )
 
         vm.wait()
-        vm_result = vm.result()
-        result = vm_result.as_dict()
+        result = vm.result().as_dict()
 
         # Extract connection auth values for virtual machine extensions
         auth_kwargs = (
@@ -907,6 +966,7 @@ async def capture(
         azure.mgmt.compute.models, "VirtualMachineCaptureParameters"
     )
 
+    result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         # pylint: disable=invalid-name
@@ -920,8 +980,7 @@ async def capture(
             ),
         )
         vm.wait()
-        vm_result = vm.result()
-        result = vm_result.as_dict()
+        result = vm.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -933,8 +992,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Retrieves information about the model view or the instance view of a
-    virtual machine.
+    Retrieves information about the model view or the instance view of a virtual machine.
 
     :param name: The name of the virtual machine.
 
@@ -950,6 +1008,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     """
     expand = kwargs.get("expand")
 
+    result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         # pylint: disable=invalid-name
@@ -964,19 +1023,16 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def convert_to_managed_disks(
-    hub, ctx, name, resource_group, **kwargs
-):  # pylint: disable=invalid-name
+async def convert_to_managed_disks(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Converts virtual machine disks from blob-based to managed disks. Virtual
-    machine must be stop-deallocated before invoking this operation.
+    Converts virtual machine disks from blob-based to managed disks. Virtual machine must be stop-deallocated before
+    invoking this operation.
 
     :param name: The name of the virtual machine to convert.
 
-    :param resource_group: The resource group name assigned to the
-        virtual machine.
+    :param resource_group: The resource group name assigned to the virtual machine.
 
     CLI Example:
 
@@ -992,8 +1048,7 @@ async def convert_to_managed_disks(
             resource_group_name=resource_group, vm_name=name
         )
         vm.wait()
-        vm_result = vm.result()
-        result = vm_result.as_dict()
+        result = vm.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -1009,8 +1064,7 @@ async def deallocate(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the virtual machine to deallocate.
 
-    :param resource_group: The resource group name assigned to the
-        virtual machine.
+    :param resource_group: The resource group name assigned to thevvirtual machine.
 
     CLI Example:
 
@@ -1019,8 +1073,9 @@ async def deallocate(hub, ctx, name, resource_group, **kwargs):
         azurerm.compute.virtual_machine.deallocate testvm testgroup
 
     """
-    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     result = False
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.deallocate(
@@ -1043,8 +1098,7 @@ async def generalize(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the virtual machine.
 
-    :param resource_group: The resource group name assigned to the
-        virtual machine.
+    :param resource_group: The resource group name assigned to the virtual machine.
 
     CLI Example:
 
@@ -1066,58 +1120,37 @@ async def generalize(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, ctx, resource_group, **kwargs):
+async def list_(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    List all virtual machines within a resource group.
-
-    :param resource_group: The resource group name to list virtual
-        machines within.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.compute.virtual_machine.list testgroup
-
-    """
-    result = {}
-    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
-    try:
-        vms = await hub.exec.azurerm.utils.paged_object_to_list(
-            compconn.virtual_machines.list(resource_group_name=resource_group)
-        )
-        for vm in vms:  # pylint: disable=invalid-name
-            result[vm["name"]] = vm
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def list_all(hub, ctx, **kwargs):
-    """
-    .. versionadded:: 1.0.0
+    .. versionchanged:: 4.0.0
 
     List all virtual machines within a subscription.
 
+    :param resource_group: The name of the resource group to limit the results.
+
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.compute.virtual_machine.list_all
+        azurerm.compute.virtual_machine.list
 
     """
     result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
     try:
-        vms = await hub.exec.azurerm.utils.paged_object_to_list(
-            compconn.virtual_machines.list_all()
-        )
-        for vm in vms:  # pylint: disable=invalid-name
-            result[vm["name"]] = vm
+        if resource_group:
+            vms = await hub.exec.azurerm.utils.paged_object_to_list(
+                compconn.virtual_machines.list(resource_group_name=resource_group)
+            )
+        else:
+            vms = await hub.exec.azurerm.utils.paged_object_to_list(
+                compconn.virtual_machines.list_all()
+            )
+            for vm in vms:  # pylint: disable=invalid-name
+                result[vm["name"]] = vm
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -1125,19 +1158,15 @@ async def list_all(hub, ctx, **kwargs):
     return result
 
 
-async def list_available_sizes(
-    hub, ctx, name, resource_group, **kwargs
-):  # pylint: disable=invalid-name
+async def list_available_sizes(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Lists all available virtual machine sizes to which the specified virtual
-    machine can be resized.
+    Lists all available virtual machine sizes to which the specified virtual machine can be resized.
 
     :param name: The name of the virtual machine.
 
-    :param resource_group: The resource group name assigned to the
-        virtual machine.
+    :param resource_group: The resource group name assigned to the virtual machine.
 
     CLI Example:
 
@@ -1148,6 +1177,7 @@ async def list_available_sizes(
     """
     result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
     try:
         sizes = await hub.exec.azurerm.utils.paged_object_to_list(
             compconn.virtual_machines.list_available_sizes(
@@ -1181,15 +1211,17 @@ async def power_off(hub, ctx, name, resource_group, **kwargs):
         azurerm.compute.virtual_machine.power_off testvm testgroup
 
     """
+    result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.power_off(
             resource_group_name=resource_group, vm_name=name
         )
+
         vm.wait()
-        vm_result = vm.result()
-        result = vm_result.as_dict()
+        result = vm.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -1205,8 +1237,7 @@ async def restart(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the virtual machine to restart.
 
-    :param resource_group: The resource group name assigned to the
-        virtual machine.
+    :param resource_group: The resource group name assigned to the virtual machine.
 
     CLI Example:
 
@@ -1215,15 +1246,17 @@ async def restart(hub, ctx, name, resource_group, **kwargs):
         azurerm.compute.virtual_machine.restart testvm testgroup
 
     """
+    result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.restart(
             resource_group_name=resource_group, vm_name=name
         )
+
         vm.wait()
-        vm_result = vm.result()
-        result = vm_result.as_dict()
+        result = vm.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -1239,8 +1272,7 @@ async def start(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the virtual machine to start.
 
-    :param resource_group: The resource group name assigned to the
-        virtual machine.
+    :param resource_group: The resource group name assigned to the virtual machine.
 
     CLI Example:
 
@@ -1249,15 +1281,16 @@ async def start(hub, ctx, name, resource_group, **kwargs):
         azurerm.compute.virtual_machine.start testvm testgroup
 
     """
+    result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.start(
             resource_group_name=resource_group, vm_name=name
         )
+
         vm.wait()
-        vm_result = vm.result()
-        result = vm_result.as_dict()
+        result = vm.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -1273,8 +1306,7 @@ async def redeploy(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the virtual machine to redeploy.
 
-    :param resource_group: The resource group name assigned to the
-        virtual machine.
+    :param resource_group: The resource group name assigned to the virtual machine.
 
     CLI Example:
 
@@ -1283,6 +1315,7 @@ async def redeploy(hub, ctx, name, resource_group, **kwargs):
         azurerm.compute.virtual_machine.redeploy testvm testgroup
 
     """
+    result = {}
     compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
     try:
         # pylint: disable=invalid-name
@@ -1290,8 +1323,7 @@ async def redeploy(hub, ctx, name, resource_group, **kwargs):
             resource_group_name=resource_group, vm_name=name
         )
         vm.wait()
-        vm_result = vm.result()
-        result = vm_result.as_dict()
+        result = vm.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}

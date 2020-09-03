@@ -50,30 +50,6 @@ Azure Resource Manager (ARM) Compute Virtual Machine State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: jinja
-
-        Ensure virtual machine exists:
-          azurerm.compute.virtual_machine.present:
-            - name: idem-vm01
-            - resource_group: idem
-            - vm_size: Standard_B1s
-            - virtual_network: vnet1
-            - subnet: default
-            - allocate_public_ip: True
-            - ssh_public_keys:
-                - /home/myuser/.ssh/id_rsa.pub
-            - tags:
-                contact_name: Elmer Fudd Gantry
-            - connection_auth: {{ profile }}
-
-        Ensure virtual machine is absent:
-            azurerm.compute.virtual_machine.absent:
-                - name: idem-vm01
-                - resource_group: idem
-                - connection_auth: {{ profile }}
-
 """
 # Python libs
 from __future__ import absolute_import
@@ -150,6 +126,13 @@ async def present(
     disk_enc_volume_type=None,
     disk_enc_kek_url=None,
     data_disks=None,
+    availability_set=None,
+    virtual_machine_scale_set=None,
+    proximity_placement_group=None,
+    host=None,
+    host_group=None,
+    encryption_at_host=False,
+    extensions_time_budget=None,
     tags=None,
     connection_auth=None,
     **kwargs,
@@ -157,11 +140,11 @@ async def present(
     """
     .. versionadded:: 1.0.0
 
-    .. versionchanged:: 2.0.0
+    .. versionchanged:: 2.0.0, 4.0.0
 
     Ensure a virtual machine exists.
 
-    :param name: The virtual machine to ensure is present
+    :param name: The virtual machine to ensure is present.
 
     :param resource_group: The resource group name assigned to the virtual machine.
 
@@ -280,22 +263,6 @@ async def present(
         max_price to -1 to indicate that the Azure Spot VM/VMSS should not be evicted for price reasons. Also, the
         default max price is -1 if it is not provided by you.
 
-    :param availability_set: Specifies information about the availability set that the virtual machine should be
-        assigned to. Virtual machines specified in the same availability set are allocated to different nodes to
-        maximize availability. For more information about availability sets, see `Manage the availability of virtual
-        machines <https://docs.microsoft.com/azure/virtual-machines/virtual-machines-windows-manage-availability>`_.
-        Currently, a VM can only be added to availability set at creation time. An existing VM cannot be added to an
-        availability set. (resource ID path)
-
-    :param virtual_machine_scale_set: Specifies information about the virtual machine scale set that the virtual machine
-        should be assigned to. Virtual machines specified in the same virtual machine scale set are allocated to
-        different nodes to maximize availability. Currently, a VM can only be added to virtual machine scale set at
-        creation time. An existing VM cannot be added to a virtual machine scale set. This property cannot exist along
-        with a non-null availability_set reference. (resource ID path)
-
-    :param proximity_placement_group: Specifies information about the proximity placement group that the virtual machine
-        should be assigned to.
-
     :param priority: (low or regular) Specifies the priority for the virtual machine.
 
     :param eviction_policy: (deallocate or delete) Specifies the eviction policy for the Azure Spot virtual machine.
@@ -304,6 +271,37 @@ async def present(
         licensed on-premises. This element is only used for images that contain the Windows Server operating system.
 
     :param zones: A list of the virtual machine zones.
+
+    :param availability_set: The resource ID of the availability set that the virtual machine should be assigned to.
+        Virtual machines specified in the same availability set are allocated to different nodes to maximize
+        availability. For more information about availability sets, see `Manage the availability of virtual
+        machines <https://docs.microsoft.com/azure/virtual-machines/virtual-machines-windows-manage-availability>`_.
+        Currently, a VM can only be added to availability set at creation time. An existing VM cannot be added to an
+        availability set. This parameter cannot be specified if the ``virtual_machine_scale_set`` parameter is also
+        specified.
+
+    :param virtual_machine_scale_set: The resource ID of the virtual machine scale set that the virtual machine should
+        be assigned to. Virtual machines specified in the same virtual machine scale set are allocated to different
+        nodes to maximize availability. Currently, a VM can only be added to virtual machine scale set at creation time.
+        An existing VM cannot be added to a virtual machine scale set. This parameter cannot be specified if the
+        ``availability_set`` parameter is also specified.
+
+    :param proximity_placement_group: The resource ID of the proximity placement group that the virtual machine should
+        be assigned to.
+
+    :param host: The resource ID of the dedicated host that the virtual machine resides in. This parameter cannot be
+        specified if the ``host_group`` parameter is also specified.
+
+    :param host_group: The resource ID of the dedicated host group that the virtual machine resides in. This
+        parameter cannot be specified if the ``host`` parameter is also specified.
+
+    :param encryption_at_host: A boolean value that can be used by user in the request to enable or disable the Host
+        Encryption for the virtual machine or virtual machine scale set. This will enable encryption for all the
+        disks including Resource/Temp disk at host itself. Defaults to False.
+
+    :param extensions_time_budget: Specifies the time alloted for all extensions to start. The time duration should be
+        between 15 minutes and 120 minutes (inclusive) and should be specified in ISO 8601 format. The default value is
+        90 minutes (PT1H30M).
 
     :param tags: A dictionary of strings can be passed as tag metadata to the virtual machine object.
 
@@ -604,88 +602,6 @@ async def present(
             ret["result"] = None
             ret["comment"] = "Virtual machine {0} would be updated.".format(name)
             return ret
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "vm_size": vm_size,
-                "os_disk_create_option": os_disk_create_option,
-                "os_disk_size_gb": os_disk_size_gb,
-            },
-        }
-
-        if ssh_public_keys:
-            ret["changes"]["new"]["ssh_public_keys"] = ssh_public_keys
-        if disable_password_auth is not None:
-            ret["changes"]["new"]["disable_password_auth"] = disable_password_auth
-        if custom_data:
-            ret["changes"]["new"]["custom_data"] = custom_data
-        if allow_extensions is not None:
-            ret["changes"]["new"]["allow_extensions"] = allow_extensions
-        if enable_automatic_updates is not None:
-            ret["changes"]["new"]["enable_automatic_updates"] = enable_automatic_updates
-        if time_zone:
-            ret["changes"]["new"]["time_zone"] = time_zone
-        if allocate_public_ip is not None:
-            ret["changes"]["new"]["allocate_public_ip"] = allocate_public_ip
-        if create_interfaces is not None:
-            ret["changes"]["new"]["create_interfaces"] = create_interfaces
-        if network_resource_group:
-            ret["changes"]["new"]["network_resource_group"] = network_resource_group
-        if virtual_network:
-            ret["changes"]["new"]["virtual_network"] = virtual_network
-        if subnet:
-            ret["changes"]["new"]["subnet"] = subnet
-        if network_interfaces:
-            ret["changes"]["new"]["network_interfaces"] = network_interfaces
-        if os_managed_disk:
-            ret["changes"]["new"]["os_managed_disk"] = os_managed_disk
-        if os_disk_vhd_uri:
-            ret["changes"]["new"]["os_disk_vhd_uri"] = os_disk_vhd_uri
-        if os_disk_image_uri:
-            ret["changes"]["new"]["os_disk_image_uri"] = os_disk_image_uri
-        if os_type:
-            ret["changes"]["new"]["os_type"] = os_type
-        if os_disk_name:
-            ret["changes"]["new"]["os_disk_name"] = os_disk_name
-        if os_disk_caching:
-            ret["changes"]["new"]["os_disk_caching"] = os_disk_caching
-        if os_write_accel is not None:
-            ret["changes"]["new"]["os_write_accel"] = os_write_accel
-        if os_ephemeral_disk is not None:
-            ret["changes"]["new"]["os_ephemeral_disk"] = os_ephemeral_disk
-        if ultra_ssd_enabled is not None:
-            ret["changes"]["new"]["ultra_ssd_enabled"] = ultra_ssd_enabled
-        if image:
-            ret["changes"]["new"]["image"] = image
-        if boot_diags_enabled is not None:
-            ret["changes"]["new"]["boot_diags_enabled"] = boot_diags_enabled
-        if diag_storage_uri:
-            ret["changes"]["new"]["diag_storage_uri"] = diag_storage_uri
-        if admin_password:
-            ret["changes"]["new"]["admin_password"] = admin_password
-        if max_price:
-            ret["changes"]["new"]["max_price"] = max_price
-        if provision_vm_agent is not None:
-            ret["changes"]["new"]["provision_vm_agent"] = provision_vm_agent
-        if userdata_file:
-            ret["changes"]["new"]["userdata_file"] = userdata_file
-        if userdata:
-            ret["changes"]["new"]["userdata"] = userdata
-        if enable_disk_enc is not None:
-            ret["changes"]["new"]["enable_disk_enc"] = enable_disk_enc
-        if disk_enc_keyvault:
-            ret["changes"]["new"]["disk_enc_keyvault"] = disk_enc_keyvault
-        if disk_enc_volume_type:
-            ret["changes"]["new"]["disk_enc_volume_type"] = disk_enc_volume_type
-        if disk_enc_kek_url:
-            ret["changes"]["new"]["disk_enc_kek_url"] = disk_enc_kek_url
-        if data_disks:
-            ret["changes"]["new"]["data_disks"] = data_disks
-        if tags is not None:
-            ret["changes"]["new"]["tags"] = tags
 
     if ctx["test"]:
         ret["result"] = None
@@ -737,6 +653,13 @@ async def present(
         disk_enc_volume_type=disk_enc_volume_type,
         disk_enc_kek_url=disk_enc_kek_url,
         data_disks=data_disks,
+        availability_set=availability_set,
+        virtual_machine_scale_set=virtual_machine_scale_set,
+        proximity_placement_group=proximity_placement_group,
+        host=host,
+        host_group=host_group,
+        encryption_at_host=encryption_at_host,
+        extensions_time_budget=extensions_time_budget,
         tags=tags,
         **vm_kwargs,
     )

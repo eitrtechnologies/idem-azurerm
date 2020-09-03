@@ -195,10 +195,13 @@ async def present(
                 }
 
         if proximity_placement_group:
-            if proximity_placement_group.get("id").lower() != aset.get("proximity_placement_group").get("id").lower():
+            if (
+                proximity_placement_group.get("id").lower()
+                != aset.get("proximity_placement_group").get("id").lower()
+            ):
                 ret["changes"]["proximity_placement_group"] = {
                     "old": aset.get("proximity_placement_group"),
-                    "new": proximity_placement_group
+                    "new": proximity_placement_group,
                 }
 
         if not ret["changes"]:
