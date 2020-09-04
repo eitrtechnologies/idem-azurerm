@@ -131,7 +131,6 @@ async def present(
     proximity_placement_group=None,
     host=None,
     host_group=None,
-    encryption_at_host=False,
     extensions_time_budget=None,
     tags=None,
     connection_auth=None,
@@ -294,10 +293,6 @@ async def present(
 
     :param host_group: The resource ID of the dedicated host group that the virtual machine resides in. This
         parameter cannot be specified if the ``host`` parameter is also specified.
-
-    :param encryption_at_host: A boolean value that can be used by user in the request to enable or disable the Host
-        Encryption for the virtual machine or virtual machine scale set. This will enable encryption for all the
-        disks including Resource/Temp disk at host itself. Defaults to False.
 
     :param extensions_time_budget: Specifies the time alloted for all extensions to start. The time duration should be
         between 15 minutes and 120 minutes (inclusive) and should be specified in ISO 8601 format. The default value is
@@ -658,7 +653,6 @@ async def present(
         proximity_placement_group=proximity_placement_group,
         host=host,
         host_group=host_group,
-        encryption_at_host=encryption_at_host,
         extensions_time_budget=extensions_time_budget,
         tags=tags,
         **vm_kwargs,

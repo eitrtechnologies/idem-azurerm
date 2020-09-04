@@ -93,7 +93,7 @@ async def present(
     .. code-block:: yaml
 
         Ensure proximity placement group exists:
-            azurerm.proximity_placement_group.present:
+            azurerm.compute.proximity_placement_group.present:
                 - name: test_ppg
                 - resource_group: test_group
                 - group_type: test_type

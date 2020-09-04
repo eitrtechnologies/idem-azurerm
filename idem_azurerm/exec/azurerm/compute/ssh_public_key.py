@@ -92,7 +92,11 @@ async def create(hub, ctx, name, resource_group, public_key=None, tags=None, **k
 
     try:
         keymodel = await hub.exec.azurerm.utils.create_object_model(
-            "compute", "SshPublicKeyResource", public_key=public_key, tags=tags, **kwargs
+            "compute",
+            "SshPublicKeyResource",
+            public_key=public_key,
+            tags=tags,
+            **kwargs,
         )
     except TypeError as exc:
         result = {
