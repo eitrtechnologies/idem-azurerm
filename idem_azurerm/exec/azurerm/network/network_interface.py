@@ -207,7 +207,9 @@ async def create_or_update(
                     if isinstance(ipconfig.get("virtual_network_taps"), list):
                         # TODO: Add ID lookup for referenced object names
                         pass
-                    if ipconfig.get("public_ip_address"):
+                    if ipconfig.get("public_ip_address") and not isinstance(
+                        ipconfig.get("public_ip_address"), dict
+                    ):
                         pub_ip = await hub.exec.azurerm.network.public_ip_address.get(
                             ctx=ctx,
                             name=ipconfig["public_ip_address"],
