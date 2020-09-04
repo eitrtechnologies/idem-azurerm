@@ -934,15 +934,14 @@ async def capture(
     """
     .. versionadded:: 1.0.0
 
-    Captures the VM by copying virtual hard disks of the VM and outputs
-    a template that can be used to create similar VMs.
+    Captures the VM by copying virtual hard disks of the VM and outputs a template that can be used to create
+        similar VMs.
 
     :param name: The name of the virtual machine.
 
     :param destination_name: The destination container name.
 
-    :param resource_group: The resource group name assigned to the
-        virtual machine.
+    :param resource_group: The resource group name assigned to the virtual machine.
 
     :param prefix: (Default: 'capture-') The captured virtual hard disk's name prefix.
 
@@ -990,8 +989,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the virtual machine.
 
-    :param resource_group: The resource group name assigned to the
-        virtual machine.
+    :param resource_group: The resource group name assigned to the virtual machine.
 
     CLI Example:
 
@@ -1017,12 +1015,47 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
+async def assess_patches(hub, ctx, name, resource_group, **kwargs):
+    """
+    .. versionadded:: 4.0.0
+
+    Assess patches on the VM.
+
+    :param name: The name of the virtual machine.
+
+    :param resource_group: The resource group name assigned to the virtual machine.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.compute.virtual_machine.assess_patches testvm testgroup
+
+    """
+    result = {}
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
+    try:
+        # pylint: disable=invalid-name
+        vm = compconn.virtual_machines.assess_patches(
+            resource_group_name=resource_group, vm_name=name
+        )
+
+        vm.wait()
+        result = vm.result().as_dict()
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
 async def convert_to_managed_disks(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
     Converts virtual machine disks from blob-based to managed disks. Virtual machine must be stop-deallocated before
-    invoking this operation.
+        invoking this operation.
 
     :param name: The name of the virtual machine to convert.
 
@@ -1058,7 +1091,7 @@ async def deallocate(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the virtual machine to deallocate.
 
-    :param resource_group: The resource group name assigned to thevvirtual machine.
+    :param resource_group: The resource group name assigned to the virtual machine.
 
     CLI Example:
 
@@ -1141,10 +1174,43 @@ async def list_(hub, ctx, resource_group=None, **kwargs):
             )
         else:
             vms = await hub.exec.azurerm.utils.paged_object_to_list(
-                compconn.virtual_machines.list_all()
+                compconn.virtual_machines.list_all(**kwargs)
             )
-            for vm in vms:  # pylint: disable=invalid-name
-                result[vm["name"]] = vm
+
+        for vm in vms:  # pylint: disable=invalid-name
+            result[vm["name"]] = vm
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def list_by_location(hub, ctx, location, **kwargs):
+    """
+    .. versionadded:: 4.0.0
+
+    Gets all the virtual machines under the specified subscription for the specified location.
+
+    :param location: The location for which virtual machines under the subscription are queried.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.compute.virtual_machine.list "eastus"
+
+    """
+    result = {}
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
+    try:
+        vms = await hub.exec.azurerm.utils.paged_object_to_list(
+            compconn.virtual_machines.list_by_location(location=location)
+        )
+
+        for vm in vms:  # pylint: disable=invalid-name
+            result[vm["name"]] = vm
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -1187,16 +1253,89 @@ async def list_available_sizes(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def power_off(hub, ctx, name, resource_group, **kwargs):
+async def instance_view(hub, ctx, name, resource_group, **kwargs):
+    """
+    .. versionadded:: 4.0.0
+
+    Retrieves information about the run-time state of a virtual machine.
+
+    :param name: The name of the virtual machine.
+
+    :param resource_group: The resource group name assigned to the virtual machine.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.compute.virtual_machine.instance_view testvm testgroup
+
+    """
+    result = {}
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
+    try:
+        # pylint: disable=invalid-name
+        vm = compconn.virtual_machines.instance_view(
+            resource_group_name=resource_group, vm_name=name
+        )
+
+        result = vm.as_dict()
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def perform_maintenance(hub, ctx, name, resource_group, **kwargs):
+    """
+    .. versionadded:: 4.0.0
+
+    The operation to perform maintenance on a virtual machine.
+
+    :param name: The name of the virtual machine.
+
+    :param resource_group: The resource group name assigned to the virtual machine.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.compute.virtual_machine.perform_maintenance testvm testgroup
+
+    """
+    result = {}
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
+    try:
+        # pylint: disable=invalid-name
+        vm = compconn.virtual_machines.perform_maintenance(
+            resource_group_name=resource_group, vm_name=name
+        )
+
+        result = vm.as_dict()
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def power_off(hub, ctx, name, resource_group, skip_shutdown=False, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Power off (stop) a virtual machine.
+    .. versionchanged:: 4.0.0
+
+    The operation to power off (stop) a virtual machine. The virtual machine can be restarted with the same
+        provisioned resources. You are still charged for this virtual machine.
 
     :param name: The name of the virtual machine to stop.
 
-    :param resource_group: The resource group name assigned to the
-        virtual machine.
+    :param resource_group: The resource group name assigned to the virtual machine.
+
+    :param skip_shutdown: A boolean value representing wheter to request non-graceful VM shutdown. True value for this
+        flag indicates non-graceful shutdown whereas False indicates otherwise. Defaults to False.
 
     CLI Example:
 
@@ -1211,11 +1350,84 @@ async def power_off(hub, ctx, name, resource_group, **kwargs):
     try:
         # pylint: disable=invalid-name
         vm = compconn.virtual_machines.power_off(
-            resource_group_name=resource_group, vm_name=name
+            resource_group_name=resource_group,
+            vm_name=name,
+            skip_shutdown=skip_shutdown,
         )
 
         vm.wait()
         result = vm.result().as_dict()
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def reapply(hub, ctx, name, resource_group, **kwargs):
+    """
+    .. versionadded:: 4.0.0
+
+    The operation to reapply a virtual machine's state.
+
+    :param name: The name of the virtual machine.
+
+    :param resource_group: The resource group name assigned to the virtual machine.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.compute.virtual_machine.reapply testvm testgroup
+
+    """
+    result = False
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
+    try:
+        # pylint: disable=invalid-name
+        vm = compconn.virtual_machines.reapply(
+            resource_group_name=resource_group, vm_name=name
+        )
+        vm.wait()
+        result = True
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def reimage(hub, ctx, name, resource_group, temp_disk=False, **kwargs):
+    """
+    .. versionadded:: 4.0.0
+
+    Reimages the virtual machine which has an ephemeral OS disk back to its initial state.
+
+    :param name: The name of the virtual machine.
+
+    :param resource_group: The resource group name assigned to the virtual machine.
+
+    :param temp_disk: A boolean value specifying whether to reimage temp disk. This parameter is only supported for
+        VM/VMSS with Ephemral OS disk. Defaults to False.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.compute.virtual_machine.reimage testvm testgroup
+
+    """
+    result = False
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
+    try:
+        # pylint: disable=invalid-name
+        vm = compconn.virtual_machines.reimage(
+            resource_group_name=resource_group, vm_name=name, temp_disk=temp_disk
+        )
+        vm.wait()
+        result = True
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -1318,6 +1530,82 @@ async def redeploy(hub, ctx, name, resource_group, **kwargs):
         )
         vm.wait()
         result = vm.result().as_dict()
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def retrieve_boot_diagnostics_data(
+    hub, ctx, name, resource_group, sas_uri_expiration_time=None, **kwargs
+):
+    """
+    .. versionadded:: 4.0.0
+
+    The operation to retrieve SAS URIs for a virtual machine's boot diagnostic logs.
+
+    :param name: The name of the virtual machine.
+
+    :param resource_group: The resource group name assigned to the virtual machine.
+
+    :param sas_uri_expiration_time: Expiration duration in minutes for the SAS URIs with a value between 1 to 1440
+        minutes. NOTE: If not specified, SAS URIs will be generated with a default expiration duration of 120 minutes.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.compute.virtual_machine.retrieve_boot_diagnostics_data testvm testgroup
+
+    """
+    result = {}
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
+    try:
+        # pylint: disable=invalid-name
+        vm = compconn.virtual_machines.retrieve_boot_diagnostics_data(
+            resource_group_name=resource_group,
+            vm_name=name,
+            sas_uri_expiration_time_in_minutes=sas_uri_expiration_time,
+        )
+        vm.wait()
+        result = vm.result().as_dict()
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
+        result = {"error": str(exc)}
+
+    return result
+
+
+async def simulate_eviction(hub, ctx, name, resource_group, **kwargs):
+    """
+    .. versionadded:: 4.0.0
+
+    The operation to simulate the eviction of spot virtual machine. The eviction will occur within 30 minutes of
+        calling the API.
+
+    :param name: The name of the virtual machine.
+
+    :param resource_group: The resource group name assigned to the virtual machine.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.compute.virtual_machine.simulate_eviction testvm testgroup
+
+    """
+    result = False
+    compconn = await hub.exec.azurerm.utils.get_client(ctx, "compute", **kwargs)
+
+    try:
+        # pylint: disable=invalid-name
+        vm = compconn.virtual_machines.simulate_eviction(
+            resource_group_name=resource_group, vm_name=name,
+        )
+        vm.wait()
+        result = True
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("compute", str(exc), **kwargs)
         result = {"error": str(exc)}
