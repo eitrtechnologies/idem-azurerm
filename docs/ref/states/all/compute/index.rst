@@ -9,4 +9,5 @@ compute state modules
    availability_set
    disk
    proximity_placement_group
+   ssh_public_key
    virtual_machine

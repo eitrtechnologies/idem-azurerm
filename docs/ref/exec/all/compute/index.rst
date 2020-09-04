@@ -10,6 +10,7 @@ compute execution modules
    disk
    image
    proximity_placement_group
+   ssh_public_key
    virtual_machine_extension_image
    virtual_machine_extension
    virtual_machine
