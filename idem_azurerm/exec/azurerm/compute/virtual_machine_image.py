@@ -79,7 +79,11 @@ async def get(hub, ctx, location, publisher, offer, sku, version, **kwargs):
 
     try:
         image = compconn.virtual_machine_images.get(
-            location=location, publisher_name=publisher, offer=offer, skus=sku, version=version
+            location=location,
+            publisher_name=publisher,
+            offer=offer,
+            skus=sku,
+            version=version,
         )
 
         result = image.as_dict()
