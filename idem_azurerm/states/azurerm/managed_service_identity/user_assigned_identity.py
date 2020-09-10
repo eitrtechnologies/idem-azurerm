@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Azure Resource Manager (ARM) User Assigned Identity State Module
+Azure Resource Manager (ARM) MSI User Assigned Identity State Module
 
 .. versionadded:: 4.0.0
 

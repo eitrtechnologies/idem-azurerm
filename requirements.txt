@@ -20,6 +20,7 @@ azure-mgmt-keyvault==2.2.0
 azure-mgmt-loganalytics==0.7.0
 azure-mgmt-managementgroups==0.2.0
 azure-mgmt-monitor==0.11.0
+azure-mgmt-msi==1.0.0
 azure-mgmt-network==2.7.0
 azure-mgmt-rdbms==2.2.0
 azure-mgmt-redis==5.0.0

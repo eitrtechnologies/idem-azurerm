@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Azure Resource Manager (ARM) User Assigned Identity Execution Module
+Azure Resource Manager (ARM) MSI User Assigned Identity Execution Module
 
 .. versionadded:: 4.0.0
 
@@ -31,7 +31,6 @@ Azure Resource Manager (ARM) User Assigned Identity Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -106,7 +105,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     Delete an identity.
 
-    :param name: The image to delete.
+    :param name: The identity to delete.
 
     :param resource_group: The resource group name assigned to the identity.
 

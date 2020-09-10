@@ -6,4 +6,4 @@ managed_service_identity state modules
    :maxdepth: 1
    :glob:
 
-   managed_service_identity
+   user_assigned_identity
