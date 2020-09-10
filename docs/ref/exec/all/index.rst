@@ -12,6 +12,7 @@ execution modules
    containerinstance/index
    containerregistry/index
    dns/index
+   graphrbac/index
    keyvault/index
    log_analytics/index
    managementgroup/index
