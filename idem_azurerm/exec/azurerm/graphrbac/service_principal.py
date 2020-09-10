@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Graph RBAC Service Principal Execution Module
 
 .. versionadded:: 2.4.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -37,13 +39,7 @@ import logging
 # Azure libs
 HAS_LIBS = False
 try:
-    from azure.graphrbac.models.graph_error import GraphErrorException
-    from azure.core.exceptions import (
-        ResourceNotFoundError,
-        HttpResponseError,
-        ResourceExistsError,
-    )
-    from msrest.exceptions import SerializationError
+    from azure.graphrbac.models.graph_error_py3 import GraphErrorException
 
     HAS_LIBS = True
 except ImportError:
@@ -62,9 +58,40 @@ def __virtual__(hub):
     return HAS_LIBS
 
 
+async def get(hub, ctx, object_id, **kwargs):
+    """
+    .. versionadded:: 4.0.0
+
+    Gets service principal information from the directory.
+
+    :param object_id: The object ID of the service principal to get.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.graphrbac.service_principal.get test_id
+
+    """
+    result = {}
+    graphconn = await hub.exec.azurerm.graphrbac.client.get(
+        ctx, resource="https://graph.windows.net", **kwargs
+    )
+
+    try:
+        principal = graphconn.service_principals.get(object_id=object_id)
+        result = principal.as_dict()
+    except GraphErrorException as exc:
+        result = {"error": str(exc)}
+
+    return result
+
+
 async def list_(hub, ctx, sp_filter=None, **kwargs):
     """
     .. versionadded:: 2.4.0
+
+    .. versionchanged:: 4.0.0
 
     Gets list of service principals from the current tenant.
 
@@ -78,16 +105,17 @@ async def list_(hub, ctx, sp_filter=None, **kwargs):
 
     """
     result = {}
-
     graphconn = await hub.exec.azurerm.graphrbac.client.get(
         ctx, resource="https://graph.windows.net", **kwargs
     )
 
     try:
-        spns = graphconn.service_principals.list(filter=sp_filter)
-        for spn in spns:
-            result[spn.object_id] = spn.as_dict()
-    except (AttributeError, GraphErrorException, HttpResponseError) as exc:
+        principals = await hub.exec.azurerm.utils.paged_object_to_list(
+            graphconn.service_principals.list(filter=sp_filter)
+        )
+        for principal in principals:
+            result[principal["object_id"]] = principal
+    except GraphErrorException as exc:
         result = {"error": str(exc)}
 
     return result
