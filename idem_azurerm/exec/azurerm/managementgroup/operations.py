@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Management Group Operations Execution Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -215,6 +217,8 @@ async def list_(hub, ctx, skip_token=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     List management groups for the authenticated user.
 
     :param skip_token: Page continuation token is only used if a previous operation returned a partial result.
@@ -239,7 +243,7 @@ async def list_(hub, ctx, skip_token=None, **kwargs):
         )
 
         for mgroup in mgroups:
-            result[mgroup["display_name"]] = mgroup
+            result[mgroup["name"]] = mgroup
     except ErrorResponseException as exc:
         result = {"error": str(exc)}
 
