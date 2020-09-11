@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Management Group State Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -61,6 +63,8 @@ async def present(
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensures that the specified management group is present.
 
@@ -127,14 +131,6 @@ async def present(
             ret["comment"] = "Management Group {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {"old": {}, "new": {"name": name,}}
-
-        if parent:
-            ret["changes"]["new"]["parent"] = {"id": parent}
-        if display_name:
-            ret["changes"]["new"]["display_name"] = display_name
-
     if ctx["test"]:
         ret["comment"] = "Management Group {0} would be created.".format(name)
         ret["result"] = None
@@ -146,6 +142,9 @@ async def present(
     mgroup = await hub.exec.azurerm.managementgroup.operations.create_or_update(
         ctx=ctx, name=name, parent=parent, display_name=display_name, **mgroup_kwargs
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": mgroup}
 
     if "error" not in mgroup:
         ret["result"] = True

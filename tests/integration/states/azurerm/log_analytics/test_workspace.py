@@ -9,7 +9,13 @@ async def test_present(hub, ctx, resource_group, location, log_analytics_workspa
             "new": {
                 "name": log_analytics_workspace,
                 "location": location,
-                "resource_group": resource_group,
+                "provisioning_state": "Succeeded",
+                "public_network_access_for_ingestion": "Enabled",
+                "public_network_access_for_query": "Enabled",
+                "retention_in_days": 30,
+                "sku": {"max_capacity_reservation_level": 3000, "name": "pergb2018"},
+                "type": "Microsoft.OperationalInsights/workspaces",
+                "workspace_capping": {"daily_quota_gb": -1.0},
             },
             "old": {},
         },
@@ -23,6 +29,12 @@ async def test_present(hub, ctx, resource_group, location, log_analytics_workspa
         resource_group=resource_group,
         location=location,
     )
+
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("customer_id")
+    ret["changes"]["new"]["sku"].pop("last_sku_update")
+    ret["changes"]["new"]["workspace_capping"].pop("quota_next_reset_time")
+    ret["changes"]["new"]["workspace_capping"].pop("data_ingestion_status")
     assert ret == expected
 
 
