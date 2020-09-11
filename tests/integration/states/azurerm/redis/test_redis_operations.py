@@ -30,7 +30,7 @@ async def test_present(hub, ctx, resource_group, location, sku, redis_cache):
                 "redis_configuration": {
                     "maxclients": "2000",
                     "maxmemory-reserved": "100",
-                    "maxfragmentationmemory-reserved:": "125",
+                    "maxfragmentationmemory-reserved": "125",
                     "maxmemory-delta": "100",
                 },
                 "enable_non_ssl_port": False,
