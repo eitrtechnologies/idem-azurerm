@@ -55,13 +55,18 @@ async def test_present(hub, ctx, resource_group, location, keyvault):
             "new": {
                 "name": keyvault,
                 "location": location,
-                "resource_group": resource_group,
                 "properties": {
                     "access_policies": access_policies,
+                    "enable_rbac_authorization": False,
                     "enable_soft_delete": False,
+                    "enabled_for_deployment": False,
                     "tenant_id": tenant_id,
-                    "sku": {"name": sku},
+                    "sku": {"name": sku, "family": "A"},
+                    "soft_delete_retention_in_days": 90,
+                    "vault_uri": f"https://{keyvault}.vault.azure.net/",
                 },
+                "type": "Microsoft.KeyVault/vaults",
+                "tags": {},
             },
             "old": {},
         },
@@ -81,6 +86,7 @@ async def test_present(hub, ctx, resource_group, location, keyvault):
     )
     # sleep because access policies need some time to take effect
     time.sleep(5)
+    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 
