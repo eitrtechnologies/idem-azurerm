@@ -23,15 +23,15 @@ async def test_present(hub, ctx, resource_group, location, sku, redis_cache):
         "changes": {
             "new": {
                 "name": redis_cache,
-                "location": location,
+                "location": "East US",
                 "type": "Microsoft.Cache/Redis",
                 "sku": sku,
-                "tags": None,
+                "tags": {},
                 "redis_configuration": {
-                    "maxclients": 2000,
-                    "maxmemory-reserved": 100,
-                    "maxfragmentationmemory-reserved:": 125,
-                    "maxmemory-delta": 100,
+                    "maxclients": "2000",
+                    "maxmemory-reserved": "100",
+                    "maxfragmentationmemory-reserved:": "125",
+                    "maxmemory-delta": "100",
                 },
                 "enable_non_ssl_port": False,
                 "host_name": f"{redis_cache}.redis.cache.windows.net",
