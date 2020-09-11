@@ -50,25 +50,6 @@ Azure Resource Manager (ARM) DNS Zone State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: yaml
-
-        Ensure DNS zone exists:
-            azurerm.dns.zone.present:
-                - name: contoso.com
-                - resource_group: my_rg
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
-
-        Ensure DNS zone is absent:
-            azurerm.dns.zone.absent:
-                - name: contoso.com
-                - resource_group: my_rg
-                - connection_auth: {{ profile }}
-
 """
 # Python libs
 from __future__ import absolute_import

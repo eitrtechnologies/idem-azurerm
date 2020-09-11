@@ -50,8 +50,6 @@ Azure Resource Manager (ARM) DNS Record Set State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
 """
 # Python libs
 from __future__ import absolute_import
