@@ -32,6 +32,7 @@ def logs():
     ]
 
 
+
 @pytest.mark.run(order=4)
 @pytest.mark.asyncio
 async def test_present(
@@ -46,7 +47,6 @@ async def test_present(
         "changes": {
             "new": {
                 "name": diag_setting,
-                "resource_uri": resource_uri,
                 "metrics": metrics,
                 "logs": logs,
                 "storage_account_id": storage_account_id,
@@ -65,6 +65,8 @@ async def test_present(
         logs=logs,
         storage_account_id=storage_account_id,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"]["metrics"][0].pop("time_grain")
     assert ret == expected
 
 
