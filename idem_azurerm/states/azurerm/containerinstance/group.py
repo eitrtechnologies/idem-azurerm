@@ -50,6 +50,32 @@ Azure Resource Manager (ARM) Container Instance Group State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
+    Example states using Azure Resource Manager authentication:
+
+    .. code-block:: yaml
+
+        Ensure container instance group exists:
+            azurerm.containerinstance.group.present:
+                - name: containergroup
+                - resource_group: testgroup
+                - containers:
+                    - name: mycoolwebcontainer
+                      image: "nginx:latest"
+                      resources:
+                          requests:
+                              memory_in_gb: 1
+                              cpu: 1
+                - os_type: Linux
+                - restart_policy: OnFailure
+                - tags:
+                    how_awesome: very
+                    contact_name: Elmer Fudd Gantry
+
+        Ensure container instance group is absent:
+            azurerm.containerinstance.group.absent:
+                - name: containergroup
+                - resource_group: testgroup
+
 """
 # Import Python libs
 from dict_tools import differ
@@ -166,10 +192,9 @@ async def present(
         include: 'Windows', 'Linux'
 
     :param restart_policy: Restart policy for all containers within the container group. Possible values are:
-
-        - ``Always``: Always restart
-        - ``OnFailure``: Restart on failure
-        - ``Never``: Never restart
+    - ``Always``: Always restart
+    - ``OnFailure``: Restart on failure
+    - ``Never``: Never restart
 
     :param identity: A dictionary defining a ContainerGroupIdentity object which represents the identity for the
         container group.
@@ -179,12 +204,11 @@ async def present(
 
     :param ip_address: A dictionary defining an IpAddress object which represents the IP address for the container
         group. Possible keys are:
-
-        - ``ports``: Required if ip_address is used. The list of ports exposed on the container group.
-        - ``type``: Required if ip_address is used. Specifies if the IP is exposed to the public internet or private VNET.
-          Possible values include: 'Public', 'Private'
-        - ``ip``: The IP exposed to the public internet.
-        - ``dns_name_label``: The Dns name label for the IP.
+    - ``ports``: Required if ip_address is used. The list of ports exposed on the container group.
+    - ``type``: Required if ip_address is used. Specifies if the IP is exposed to the public internet or private VNET.
+      Possible values include: 'Public', 'Private'
+    - ``ip``: The IP exposed to the public internet.
+    - ``dns_name_label``: The Dns name label for the IP.
 
     :param volumes: The list of dictionaries representing Volume objects that can be mounted by containers in this
         container group.
@@ -208,8 +232,6 @@ async def present(
 
     :param tags: A dictionary of strings can be passed as tag metadata to the object.
 
-    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
-        Azure Resource Manager API.
 
     Example usage:
 
@@ -447,9 +469,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     :param name: Name of the container instance group.
 
     :param resource_group: The name of the resource group to which the container instance group belongs.
-
-    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
-        Azure Resource Manager API.
 
     .. code-block:: yaml
 
