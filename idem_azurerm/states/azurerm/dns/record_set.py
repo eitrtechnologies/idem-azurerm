@@ -48,32 +48,6 @@ Azure Resource Manager (ARM) DNS Record Set State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: yaml
-
-        Ensure DNS record set exists:
-            azurerm.dns.record_set.present:
-                - name: web
-                - zone_name: contoso.com
-                - resource_group: my_rg
-                - record_type: A
-                - ttl: 300
-                - arecords:
-                  - ipv4_address: 10.0.0.1
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
-
-        Ensure DNS record set is absent:
-            azurerm.dns.record_set.absent:
-                - name: web
-                - zone_name: contoso.com
-                - resource_group: my_rg
-                - record_type: A
-                - connection_auth: {{ profile }}
-
 """
 # Python libs
 from __future__ import absolute_import
