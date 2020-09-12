@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Container Instance Group State Module
 
 .. versionadded:: 3.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -48,32 +50,6 @@ Azure Resource Manager (ARM) Container Instance Group State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: yaml
-
-        Ensure container instance group exists:
-            azurerm.containerinstance.group.present:
-                - name: containergroup
-                - resource_group: testgroup
-                - containers:
-                    - name: mycoolwebcontainer
-                      image: "nginx:latest"
-                      resources:
-                          requests:
-                              memory_in_gb: 1
-                              cpu: 1
-                - os_type: Linux
-                - restart_policy: OnFailure
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-
-        Ensure container instance group is absent:
-            azurerm.containerinstance.group.absent:
-                - name: containergroup
-                - resource_group: testgroup
-
 """
 # Import Python libs
 from dict_tools import differ
@@ -107,6 +83,8 @@ async def present(
 ):
     """
     .. versionadded:: 3.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a container instance group exists.
 
@@ -188,9 +166,10 @@ async def present(
         include: 'Windows', 'Linux'
 
     :param restart_policy: Restart policy for all containers within the container group. Possible values are:
-    - ``Always``: Always restart
-    - ``OnFailure``: Restart on failure
-    - ``Never``: Never restart
+
+        - ``Always``: Always restart
+        - ``OnFailure``: Restart on failure
+        - ``Never``: Never restart
 
     :param identity: A dictionary defining a ContainerGroupIdentity object which represents the identity for the
         container group.
@@ -200,11 +179,12 @@ async def present(
 
     :param ip_address: A dictionary defining an IpAddress object which represents the IP address for the container
         group. Possible keys are:
-    - ``ports``: Required if ip_address is used. The list of ports exposed on the container group.
-    - ``type``: Required if ip_address is used. Specifies if the IP is exposed to the public internet or private VNET.
-      Possible values include: 'Public', 'Private'
-    - ``ip``: The IP exposed to the public internet.
-    - ``dns_name_label``: The Dns name label for the IP.
+
+        - ``ports``: Required if ip_address is used. The list of ports exposed on the container group.
+        - ``type``: Required if ip_address is used. Specifies if the IP is exposed to the public internet or private VNET.
+          Possible values include: 'Public', 'Private'
+        - ``ip``: The IP exposed to the public internet.
+        - ``dns_name_label``: The Dns name label for the IP.
 
     :param volumes: The list of dictionaries representing Volume objects that can be mounted by containers in this
         container group.
@@ -228,6 +208,8 @@ async def present(
 
     :param tags: A dictionary of strings can be passed as tag metadata to the object.
 
+    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
+        Azure Resource Manager API.
 
     Example usage:
 
@@ -271,7 +253,6 @@ async def present(
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
     action = "create"
-    new = {}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -281,29 +262,6 @@ async def present(
                 "comment"
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
-
-    # populate dictionary of settings for changes output on creation
-    for param in [
-        "name",
-        "resource_group",
-        "containers",
-        "os_type",
-        "restart_policy",
-        "identity",
-        "image_registry_credentials",
-        "ip_address",
-        "volumes",
-        "diagnostics",
-        "network_profile",
-        "dns_config",
-        "sku",
-        "encryption_properties",
-        "init_containers",
-        "tags",
-    ]:
-        value = locals()[param]
-        if value is not None:
-            new[param] = value
 
     # get existing container instance group if present
     acig = await hub.exec.azurerm.containerinstance.group.get(
@@ -431,10 +389,6 @@ async def present(
     elif ctx["test"]:
         ret["comment"] = "Container instance group {0} would be created.".format(name)
         ret["result"] = None
-        ret["changes"] = {
-            "old": {},
-            "new": new,
-        }
         return ret
 
     acig_kwargs = kwargs.copy()
@@ -468,11 +422,12 @@ async def present(
             ctx, name, resource_group, tags=tags, **acig_kwargs,
         )
 
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": acig}
+
     if "error" not in acig:
         ret["result"] = True
         ret["comment"] = f"Container instance group {name} has been {action}d."
-        if not ret["changes"]:
-            ret["changes"] = {"old": {}, "new": new}
         return ret
 
     ret["comment"] = "Failed to {0} container instance group {1}! ({2})".format(
@@ -493,6 +448,9 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
 
     :param resource_group: The name of the resource group to which the container instance group belongs.
 
+    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
+        Azure Resource Manager API.
+
     .. code-block:: yaml
 
         Ensure container instance group is absent:
@@ -511,8 +469,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
                 "comment"
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
-
-    acig = {}
 
     acig = await hub.exec.azurerm.containerinstance.group.get(
         ctx, name, resource_group, azurerm_log_level="info", **connection_auth
