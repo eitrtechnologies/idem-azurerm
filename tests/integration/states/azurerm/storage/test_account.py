@@ -11,9 +11,37 @@ async def test_present(hub, ctx, resource_group, location, storage_account):
             "new": {
                 "name": storage_account,
                 "location": location,
+                "primary_location": location,
                 "kind": kind,
-                "resource_group": resource_group,
-                "sku": sku,
+                "sku": {"name": sku, "tier": "Standard"},
+                "tags": {},
+                "type": "Microsoft.Storage/storageAccounts",
+                "status_of_primary": "available",
+                "access_tier": "Hot",
+                "private_endpoint_connections": [],
+                "provisioning_state": "Succeeded",
+                "primary_endpoints": {
+                    "blob": f"https://{storage_account}.blob.core.windows.net/",
+                    "dfs": f"https://{storage_account}.dfs.core.windows.net/",
+                    "file": f"https://{storage_account}.file.core.windows.net/",
+                    "queue": f"https://{storage_account}.queue.core.windows.net/",
+                    "table": f"https://{storage_account}.table.core.windows.net/",
+                    "web": f"https://{storage_account}.z13.web.core.windows.net/",
+                },
+                "network_rule_set": {
+                    "bypass": "AzureServices",
+                    "default_action": "Allow",
+                    "ip_rules": [],
+                    "virtual_network_rules": [],
+                },
+                "enable_https_traffic_only": True,
+                "encryption": {
+                    "key_source": "Microsoft.Storage",
+                    "services": {
+                        "blob": {"enabled": True, "key_type": "Account",},
+                        "file": {"enabled": True, "key_type": "Account",},
+                    },
+                },
             },
             "old": {},
         },
@@ -29,6 +57,10 @@ async def test_present(hub, ctx, resource_group, location, storage_account):
         kind=kind,
         sku=sku,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("creation_time")
+    ret["changes"]["new"]["encryption"]["services"]["blob"].pop("last_enabled_time")
+    ret["changes"]["new"]["encryption"]["services"]["file"].pop("last_enabled_time")
     assert ret == expected
 
 
