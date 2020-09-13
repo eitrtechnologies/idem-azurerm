@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Network Security Group Execution Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -31,21 +33,14 @@ Azure Resource Manager (ARM) Network Security Group Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
-
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
 
 # Azure libs
 HAS_LIBS = False
 try:
     import azure.mgmt.network.models  # pylint: disable=unused-import
-    from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
 
@@ -68,11 +63,9 @@ async def default_security_rule_get(
 
     :param name: The name of the security rule to query.
 
-    :param security_group: The network security group containing the
-        security rule.
+    :param security_group: The network security group containing the security rule.
 
-    :param resource_group: The resource group name assigned to the
-        network security group.
+    :param resource_group: The resource group name assigned to the network security group.
 
     CLI Example:
 
@@ -115,8 +108,7 @@ async def default_security_rules_list(
 
     :param security_group: The network security group to query.
 
-    :param resource_group: The resource group name assigned to the
-        network security group.
+    :param resource_group: The resource group name assigned to the network security group.
 
     CLI Example:
 
@@ -151,8 +143,7 @@ async def security_rules_list(hub, ctx, security_group, resource_group, **kwargs
 
     :param security_group: The network security group to query.
 
-    :param resource_group: The resource group name assigned to the
-        network security group.
+    :param resource_group: The resource group name assigned to the network security group.
 
     CLI Example:
 
@@ -161,12 +152,14 @@ async def security_rules_list(hub, ctx, security_group, resource_group, **kwargs
         azurerm.network.network_security_group.security_rules_list testnsg testgroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         secrules = netconn.security_rules.list(
             network_security_group_name=security_group,
             resource_group_name=resource_group,
         )
+
         result = await hub.exec.azurerm.utils.paged_object_to_list(secrules)
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
@@ -283,6 +276,7 @@ async def security_rule_create_or_update(
             # pylint: disable=exec-used
             exec("{0} = None".format(params[1]))
 
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
@@ -317,9 +311,9 @@ async def security_rule_create_or_update(
             security_rule_name=name,
             security_rule_parameters=rulemodel,
         )
+
         secrule.wait()
-        secrule_result = secrule.result()
-        result = secrule_result.as_dict()
+        result = secrule.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -332,20 +326,20 @@ async def security_rule_create_or_update(
 
 
 async def security_rule_delete(
-    hub, ctx, security_rule, security_group, resource_group, **kwargs
+    hub, ctx, name, security_group, resource_group, **kwargs
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Delete a security rule within a specified security group.
 
     :param name: The name of the security rule to delete.
 
-    :param security_group: The network security group containing the
-        security rule.
+    :param security_group: The network security group containing the security rule.
 
-    :param resource_group: The resource group name assigned to the
-        network security group.
+    :param resource_group: The resource group name assigned to the network security group.
 
     CLI Example:
 
@@ -360,8 +354,9 @@ async def security_rule_delete(
         secrule = netconn.security_rules.delete(
             network_security_group_name=security_group,
             resource_group_name=resource_group,
-            security_rule_name=security_rule,
+            security_rule_name=name,
         )
+
         secrule.wait()
         result = True
     except CloudError as exc:
@@ -370,11 +365,11 @@ async def security_rule_delete(
     return result
 
 
-async def security_rule_get(
-    hub, ctx, security_rule, security_group, resource_group, **kwargs
-):
+async def security_rule_get(hub, ctx, name, security_group, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Get a security rule within a specified network security group.
 
@@ -398,8 +393,9 @@ async def security_rule_get(
         secrule = netconn.security_rules.get(
             network_security_group_name=security_group,
             resource_group_name=resource_group,
-            security_rule_name=security_rule,
+            security_rule_name=name,
         )
+
         result = secrule.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
@@ -416,8 +412,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the network security group to create.
 
-    :param resource_group: The resource group name assigned to the
-        network security group.
+    :param resource_group: The resource group name assigned to the network security group.
 
     CLI Example:
 
@@ -438,6 +433,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
             }
         kwargs["location"] = rg_props["location"]
 
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
@@ -456,9 +452,9 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
             network_security_group_name=name,
             parameters=secgroupmodel,
         )
+
         secgroup.wait()
-        secgroup_result = secgroup.result()
-        result = secgroup_result.as_dict()
+        result = secgroup.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -478,8 +474,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the network security group to delete.
 
-    :param resource_group: The resource group name assigned to the
-        network security group.
+    :param resource_group: The resource group name assigned to the network security group.
 
     CLI Example:
 
@@ -510,8 +505,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the network security group to query.
 
-    :param resource_group: The resource group name assigned to the
-        network security group.
+    :param resource_group: The resource group name assigned to the network security group.
 
     CLI Example:
 
@@ -520,6 +514,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.network_security_group.get testnsg testgroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         secgroup = netconn.network_security_groups.get(
@@ -533,14 +528,15 @@ async def get(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def list_(hub, ctx, resource_group, **kwargs):
+async def list_(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    List all network security groups within a resource group.
+    .. versionchanged:: 4.0.0
 
-    :param resource_group: The resource group name to list network security \
-        groups within.
+    List all network security groups within a subscription.
+
+    :param resource_group: The name of the resource group to limit the results.
 
     CLI Example:
 
@@ -552,9 +548,15 @@ async def list_(hub, ctx, resource_group, **kwargs):
     result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
-        secgroups = await hub.exec.azurerm.utils.paged_object_to_list(
-            netconn.network_security_groups.list(resource_group_name=resource_group)
-        )
+        if resource_group:
+            secgroups = await hub.exec.azurerm.utils.paged_object_to_list(
+                netconn.network_security_groups.list(resource_group_name=resource_group)
+            )
+        else:
+            secgroups = await hub.exec.azurerm.utils.paged_object_to_list(
+                netconn.network_security_groups.list_all()
+            )
+
         for secgroup in secgroups:
             result[secgroup["name"]] = secgroup
     except CloudError as exc:
@@ -564,27 +566,38 @@ async def list_(hub, ctx, resource_group, **kwargs):
     return result
 
 
-async def list_all(hub, ctx, **kwargs):
+async def update_tags(
+    hub, ctx, name, resource_group, tags=None, **kwargs,
+):
     """
-    .. versionadded:: 1.0.0
+    .. versionadded:: 4.0.0
 
-    List all network security groups within a subscription.
+    Updates a network security group tags.
+
+    :param name: The name of the network security group.
+
+    :param resource_group: The name of the resource group.
+
+    :param tags: The tags of the resource.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.network_security_groups.list_all
+        azurerm.network.network_security_group.update_tags test_name test_group tags='{"owner": "me"}'
 
     """
     result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     try:
-        secgroups = await hub.exec.azurerm.utils.paged_object_to_list(
-            netconn.network_security_groups.list_all()
+        secgroup = netconn.network_security_groups.update_tags(
+            network_security_group_name=name,
+            resource_group_name=resource_group,
+            tags=tags,
         )
-        for secgroup in secgroups:
-            result[secgroup["name"]] = secgroup
+
+        result = secgroup.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
