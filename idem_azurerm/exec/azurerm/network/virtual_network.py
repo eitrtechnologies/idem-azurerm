@@ -5,8 +5,8 @@ Azure Resource Manager (ARM) Virtual Network Execution Module
 .. versionadded:: 1.0.0
 
 :maintainer: <devops@eitr.tech>
-:configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
-    to every function or via acct in order to work properly.
+:configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
+    authentication parameters are case sensitive.
 
     Required provider parameters:
 
@@ -23,29 +23,40 @@ Azure Resource Manager (ARM) Virtual Network Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
-    Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-"""
+    Example acct setup for Azure Resource Manager authentication:
 
+    .. code-block:: yaml
+
+        azurerm:
+            default:
+                subscription_id: 3287abc8-f98a-c678-3bde-326766fd3617
+                tenant: ABCDEFAB-1234-ABCD-1234-ABCDEFABCDEF
+                client_id: ABCDEFAB-1234-ABCD-1234-ABCDEFABCDEF
+                secret: XXXXXXXXXXXXXXXXXXXXXXXX
+                cloud_environment: AZURE_PUBLIC_CLOUD
+            user_pass_auth:
+                subscription_id: 3287abc8-f98a-c678-3bde-326766fd3617
+                username: fletch
+                password: 123pass
+
+    The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
+    parameter of each state, but this is not preferred and could be deprecated in the future.
+
+"""
 # Python libs
 from __future__ import absolute_import
 import logging
-
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
 
 # Azure libs
 HAS_LIBS = False
 try:
     import azure.mgmt.network.models  # pylint: disable=unused-import
-    from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
 
@@ -66,8 +77,7 @@ async def subnets_list(hub, ctx, virtual_network, resource_group, **kwargs):
 
     :param virtual_network: The virtual network name to list subnets within.
 
-    :param resource_group: The resource group name assigned to the
-        virtual network.
+    :param resource_group: The resource group name assigned to the virtual network.
 
     CLI Example:
 
@@ -102,11 +112,9 @@ async def subnet_get(hub, ctx, name, virtual_network, resource_group, **kwargs):
 
     :param name: The name of the subnet to query.
 
-    :param virtual_network: The virtual network name containing the
-        subnet.
+    :param virtual_network: The virtual network name containing the subnet.
 
-    :param resource_group: The resource group name assigned to the
-        virtual network.
+    :param resource_group: The resource group name assigned to the virtual network.
 
     CLI Example:
 
@@ -115,6 +123,7 @@ async def subnet_get(hub, ctx, name, virtual_network, resource_group, **kwargs):
         azurerm.network.virtual_network_gateway.subnet_get testsubnet testnet testgroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         subnet = netconn.subnets.get(
@@ -143,20 +152,18 @@ async def subnet_create_or_update(
 
     :param address_prefix: A valid CIDR block within the virtual network.
 
-    :param virtual_network: The virtual network name containing the
-        subnet.
+    :param virtual_network: The virtual network name containing the subnet.
 
-    :param resource_group: The resource group name assigned to the
-        virtual network.
+    :param resource_group: The resource group name assigned to the virtual network.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network_gateway.subnet_create_or_update testsubnet \
-                  '10.0.0.0/24' testnet testgroup
+        azurerm.network.virtual_network_gateway.subnet_create_or_update testsubnet '10.0.0.0/24' testnet testgroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     # Use NSG name to link to the ID of an existing NSG.
@@ -199,9 +206,9 @@ async def subnet_create_or_update(
             subnet_name=name,
             subnet_parameters=snetmodel,
         )
+
         subnet.wait()
-        sn_result = subnet.result()
-        result = sn_result.as_dict()
+        result = subnet.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -221,11 +228,9 @@ async def subnet_delete(hub, ctx, name, virtual_network, resource_group, **kwarg
 
     :param name: The name of the subnet to delete.
 
-    :param virtual_network: The virtual network name containing the
-        subnet.
+    :param virtual_network: The virtual network name containing the subnet.
 
-    :param resource_group: The resource group name assigned to the
-        virtual network.
+    :param resource_group: The resource group name assigned to the virtual network.
 
     CLI Example:
 
@@ -250,57 +255,35 @@ async def subnet_delete(hub, ctx, name, virtual_network, resource_group, **kwarg
     return result
 
 
-async def list_all(hub, ctx, **kwargs):
+async def list_(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 1.0.0
+
+    .. verionchanged:: 4.0.0
 
     List all virtual networks within a subscription.
 
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.network.virtual_network.list_all
-
-    """
-    result = {}
-    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
-    try:
-        vnets = await hub.exec.azurerm.utils.paged_object_to_list(
-            netconn.virtual_networks.list_all()
-        )
-
-        for vnet in vnets:
-            result[vnet["name"]] = vnet
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def list_(hub, ctx, resource_group, **kwargs):
-    """
-    .. versionadded:: 1.0.0
-
-    List all virtual networks within a resource group.
-
-    :param resource_group: The resource group name to list virtual networks
-        within.
+    :param resource_group: The name of the resource group to limit the results.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network.list testgroup
+        azurerm.network.virtual_network.list
 
     """
     result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     try:
-        vnets = await hub.exec.azurerm.utils.paged_object_to_list(
-            netconn.virtual_networks.list(resource_group_name=resource_group)
-        )
+        if resource_group:
+            vnets = await hub.exec.azurerm.utils.paged_object_to_list(
+                netconn.virtual_networks.list(resource_group_name=resource_group)
+            )
+        else:
+            vnets = await hub.exec.azurerm.utils.paged_object_to_list(
+                netconn.virtual_networks.list_all()
+            )
 
         for vnet in vnets:
             result[vnet["name"]] = vnet
@@ -317,23 +300,22 @@ async def create_or_update(hub, ctx, name, address_prefixes, resource_group, **k
 
     Create or update a virtual network.
 
-    :param name: The name assigned to the virtual network being
-        created or updated.
+    :param name: The name assigned to the virtual network being created or updated.
 
-    :param address_prefixes: A list of CIDR blocks which can be used
-        by subnets within the virtual network.
+    :param address_prefixes: A list of CIDR blocks which can be used by subnets within the virtual network.
 
-    :param resource_group: The resource group name assigned to the
-        virtual network.
+    :param resource_group: The resource group name assigned to the virtual network.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network.create_or_update \
-                  testnet ['10.0.0.0/16'] testgroup
+        azurerm.network.virtual_network.create_or_update testnet ['10.0.0.0/16'] testgroup
 
     """
+    result = {}
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     if "location" not in kwargs:
         rg_props = await hub.exec.azurerm.resource.group.get(
             ctx, resource_group, **kwargs
@@ -349,8 +331,6 @@ async def create_or_update(hub, ctx, name, address_prefixes, resource_group, **k
     if not isinstance(address_prefixes, list):
         log.error("Address prefixes must be specified as a list!")
         return {"error": "Address prefixes must be specified as a list!"}
-
-    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     address_space = {"address_prefixes": address_prefixes}
     dhcp_options = {"dns_servers": kwargs.get("dns_servers")}
@@ -375,9 +355,9 @@ async def create_or_update(hub, ctx, name, address_prefixes, resource_group, **k
             resource_group_name=resource_group,
             parameters=vnetmodel,
         )
+
         vnet.wait()
-        vnet_result = vnet.result()
-        result = vnet_result.as_dict()
+        result = vnet.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -397,8 +377,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the virtual network to delete.
 
-    :param resource_group: The resource group name assigned to the
-        virtual network
+    :param resource_group: The resource group name assigned to the virtual network.
 
     CLI Example:
 
@@ -413,6 +392,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
         vnet = netconn.virtual_networks.delete(
             virtual_network_name=name, resource_group_name=resource_group
         )
+
         vnet.wait()
         result = True
     except CloudError as exc:
@@ -429,8 +409,7 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the virtual network to query.
 
-    :param resource_group: The resource group name assigned to the
-        virtual network.
+    :param resource_group: The resource group name assigned to the virtual network.
 
     CLI Example:
 
@@ -439,7 +418,9 @@ async def get(hub, ctx, name, resource_group, **kwargs):
         azurerm.network.virtual_network.get testnet testgroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     try:
         vnet = netconn.virtual_networks.get(
             virtual_network_name=name, resource_group_name=resource_group

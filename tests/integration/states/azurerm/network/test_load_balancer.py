@@ -17,7 +17,7 @@ async def test_present(hub, ctx, load_balancer, resource_group):
                 "probes": None,
                 "inbound_nat_rules": None,
                 "inbound_nat_pools": None,
-                "outbound_nat_rules": None,
+                "outbound_rules": None,
             },
             "old": {},
         },
