@@ -48,35 +48,10 @@ Azure Resource Manager (ARM) Virtual Network Peering State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: jinja
-
-        Ensure virtual network exists:
-            azurerm.network.virtual_network.present:
-                - name: my_vnet
-                - resource_group: my_rg
-                - address_prefixes:
-                    - '10.0.0.0/8'
-                    - '192.168.0.0/16'
-                - dns_servers:
-                    - '8.8.8.8'
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
-
-        Ensure virtual network is absent:
-            azurerm.network.virtual_network.absent:
-                - name: other_vnet
-                - resource_group: my_rg
-                - connection_auth: {{ profile }}
-
 """
 # Python libs
 from __future__ import absolute_import
 import logging
-import re
 
 log = logging.getLogger(__name__)
 
@@ -117,8 +92,8 @@ async def present(
         The name of the remote virtual network.
 
     :param remote_vnet_group:
-        The resource group of the remote virtual network. Defaults to the same resource group
-        as the local virtual network.
+        The resource group of the remote virtual network. Defaults to the same resource group as the "local"
+        virtual network.
 
     :param virtual_network:
         Name of the existing virtual network to contain the peering object.
@@ -127,21 +102,21 @@ async def present(
         The resource group assigned to the local virtual network.
 
     :param allow_virtual_network_access:
-        Whether the VMs in the local virtual network space would be able to access
-        the VMs in remote virtual network space.
+        Whether the VMs in the local virtual network space would be able to access the VMs in remote virtual
+        network space.
 
     :param allow_forwarded_traffic:
-        Whether the forwarded traffic from the VMs in the local virtual network will
-        be allowed/disallowed in remote virtual network.
+        Whether the forwarded traffic from the VMs in the local virtual network will be allowed/disallowed
+        in remote virtual network.
 
     :param allow_gateway_transit:
         If gateway links can be used in remote virtual networking to link to this virtual network.
 
     :param use_remote_gateways:
-        If remote gateways can be used on this virtual network. If the flag is set to true, and allow_gateway_transit
-        on remote peering is also true, virtual network will use gateways of remote virtual network for transit.
-        Only one peering can have this flag set to true. This flag cannot be set if virtual network already has a
-        gateway.
+        If remote gateways can be used on this virtual network. If the flag is set to True, and
+        allow_gateway_transit on remote peering is also True, virtual network will use gateways of remote virtual
+        network for transit. Only one peering can have this flag set to True. This flag cannot be set if virtual network
+        already has a gateway.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the

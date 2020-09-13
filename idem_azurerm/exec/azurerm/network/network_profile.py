@@ -93,6 +93,7 @@ async def create_or_update(
 
     """
     result = {}
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     if "location" not in kwargs:
         rg_props = await hub.exec.azurerm.resource.group.get(
@@ -105,8 +106,6 @@ async def create_or_update(
                 "error": "Unable to determine location from resource group specified."
             }
         kwargs["location"] = rg_props["location"]
-
-    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
         prfmodel = await hub.exec.azurerm.utils.create_object_model(
@@ -129,6 +128,7 @@ async def create_or_update(
             resource_group_name=resource_group,
             parameters=prfmodel,
         )
+
         prf.wait()
         result = prf.result().as_dict()
     except (CloudError, SerializationError) as exc:
@@ -160,15 +160,14 @@ async def update_tags(
 
     """
     result = {}
-
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
         prf = netconn.network_profiles.update_tags(
             network_profile_name=name, resource_group_name=resource_group, tags=tags,
         )
-        prf.wait()
-        result = prf.result().as_dict()
+
+        result = prf.as_dict()
     except (CloudError, SerializationError) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -233,6 +232,7 @@ async def list_(hub, ctx, resource_group=None, **kwargs):
             profiles = await hub.exec.azurerm.utils.paged_object_to_list(
                 netconn.network_profiles.list_all()
             )
+
         for profile in profiles:
             result[profile["name"]] = profile
     except (CloudError, Exception) as exc:
@@ -265,6 +265,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
         ret = netconn.network_profiles.delete(
             network_profile_name=name, resource_group_name=resource_group
         )
+
         ret.wait()
         result = True
     except CloudError as exc:

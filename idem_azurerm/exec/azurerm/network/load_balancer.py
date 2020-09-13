@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Network Load Balancer Execution Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -31,7 +33,6 @@ Azure Resource Manager (ARM) Network Load Balancer Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -45,7 +46,6 @@ except ImportError:
 HAS_LIBS = False
 try:
     import azure.mgmt.network.models  # pylint: disable=unused-import
-    from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
 
@@ -58,57 +58,35 @@ __func_alias__ = {"list_": "list"}
 log = logging.getLogger(__name__)
 
 
-async def list_all(hub, ctx, **kwargs):
+async def list_(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     List all load balancers within a subscription.
 
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.network.load_balancer.list_all
-
-    """
-    result = {}
-    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
-    try:
-        load_balancers = await hub.exec.azurerm.utils.paged_object_to_list(
-            netconn.load_balancers.list_all()
-        )
-
-        for load_balancer in load_balancers:
-            result[load_balancer["name"]] = load_balancer
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def list_(hub, ctx, resource_group, **kwargs):
-    """
-    .. versionadded:: 1.0.0
-
-    List all load balancers within a resource group.
-
-    :param resource_group: The resource group name to list load balancers
-        within.
+    :param resource_group: The name of the resource group to limit the results.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.load_balancer.list testgroup
+        azurerm.network.load_balancer.list
 
     """
     result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     try:
-        load_balancers = await hub.exec.azurerm.utils.paged_object_to_list(
-            netconn.load_balancers.list(resource_group_name=resource_group)
-        )
+        if resource_group:
+            load_balancers = await hub.exec.azurerm.utils.paged_object_to_list(
+                netconn.load_balancers.list(resource_group_name=resource_group)
+            )
+        else:
+            load_balancers = await hub.exec.azurerm.utils.paged_object_to_list(
+                netconn.load_balancers.list_all()
+            )
 
         for load_balancer in load_balancers:
             result[load_balancer["name"]] = load_balancer
@@ -127,21 +105,23 @@ async def get(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the load balancer to query.
 
-    :param resource_group: The resource group name assigned to the
-        load balancer.
+    :param resource_group: The resource group name assigned to the load balancer.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.load_balancer.get testlb testgroup
+        azurerm.network.load_balancer.get test_name test_group
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     try:
         load_balancer = netconn.load_balancers.get(
             load_balancer_name=name, resource_group_name=resource_group
         )
+
         result = load_balancer.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
@@ -158,14 +138,13 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the load balancer to create.
 
-    :param resource_group: The resource group name assigned to the
-        load balancer.
+    :param resource_group: The resource group name assigned to the load balancer.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.load_balancer.create_or_update testlb testgroup
+        azurerm.network.load_balancer.create_or_update test_name test_group
 
     """
     if "location" not in kwargs:
@@ -180,6 +159,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
             }
         kwargs["location"] = rg_props["location"]
 
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     if isinstance(kwargs.get("frontend_ip_configurations"), list):
@@ -290,27 +270,27 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
                     )
                 }
 
-    if isinstance(kwargs.get("outbound_nat_rules"), list):
-        for idx in six_range(0, len(kwargs["outbound_nat_rules"])):
+    if isinstance(kwargs.get("outbound_rules"), list):
+        for idx in six_range(0, len(kwargs["outbound_rules"])):
             # Link to sub-objects which might be created at the same time as the load balancer
-            if "frontend_ip_configuration" in kwargs["outbound_nat_rules"][idx]:
-                kwargs["outbound_nat_rules"][idx]["frontend_ip_configuration"] = {
+            if "frontend_ip_configuration" in kwargs["outbound_rules"][idx]:
+                kwargs["outbound_rules"][idx]["frontend_ip_configuration"] = {
                     "id": id_url.format(
                         kwargs.get("subscription_id"),
                         resource_group,
                         name,
                         "frontendIPConfigurations",
-                        kwargs["outbound_nat_rules"][idx]["frontend_ip_configuration"],
+                        kwargs["outbound_rules"][idx]["frontend_ip_configuration"],
                     )
                 }
-            if "backend_address_pool" in kwargs["outbound_nat_rules"][idx]:
-                kwargs["outbound_nat_rules"][idx]["backend_address_pool"] = {
+            if "backend_address_pool" in kwargs["outbound_rules"][idx]:
+                kwargs["outbound_rules"][idx]["backend_address_pool"] = {
                     "id": id_url.format(
                         kwargs.get("subscription_id"),
                         resource_group,
                         name,
                         "backendAddressPools",
-                        kwargs["outbound_nat_rules"][idx]["backend_address_pool"],
+                        kwargs["outbound_rules"][idx]["backend_address_pool"],
                     )
                 }
 
@@ -330,9 +310,9 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
             load_balancer_name=name,
             parameters=lbmodel,
         )
+
         load_balancer.wait()
-        lb_result = load_balancer.result()
-        result = lb_result.as_dict()
+        result = load_balancer.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -348,29 +328,65 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Delete a load balancer.
+    Deletes the specified load balancer.
 
     :param name: The name of the load balancer to delete.
 
-    :param resource_group: The resource group name assigned to the
-        load balancer.
+    :param resource_group: The resource group name assigned to the load balancer.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.load_balancer.delete testlb testgroup
+        azurerm.network.load_balancer.delete test_name test_group
 
     """
     result = False
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     try:
         load_balancer = netconn.load_balancers.delete(
             load_balancer_name=name, resource_group_name=resource_group
         )
+
         load_balancer.wait()
         result = True
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
+
+    return result
+
+
+async def update_tags(hub, ctx, name, resource_group, tags=None, **kwargs):
+    """
+    .. versionadded:: 4.0.0
+
+    Updates a load balancer tags.
+
+    :param name: The name of the load balancer.
+
+    :param resource_group: The resource group of the load balancer.
+
+    :param tags: The resource tags to update.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.network.load_balancer.update_tags test_name test_group test_tags
+
+    """
+    result = {}
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
+    try:
+        load_balancer = netconn.load_balancers.update_tags(
+            load_balancer_name=name, resource_group_name=resource_group, tags=tags
+        )
+
+        result = load_balancer.as_dict()
+    except CloudError as exc:
+        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
+        result = {"error": str(exc)}
 
     return result
