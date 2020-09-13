@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Network Load Balancer State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -48,36 +50,11 @@ Azure Resource Manager (ARM) Network Load Balancer State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: jinja
-
-        Ensure virtual network exists:
-            azurerm.network.virtual_network.present:
-                - name: my_vnet
-                - resource_group: my_rg
-                - address_prefixes:
-                    - '10.0.0.0/8'
-                    - '192.168.0.0/16'
-                - dns_servers:
-                    - '8.8.8.8'
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
-
-        Ensure virtual network is absent:
-            azurerm.network.virtual_network.absent:
-                - name: other_vnet
-                - resource_group: my_rg
-                - connection_auth: {{ profile }}
-
 """
 # Python libs
 from __future__ import absolute_import
 from dict_tools import differ
 import logging
-import re
 
 log = logging.getLogger(__name__)
 
@@ -105,13 +82,15 @@ async def present(
     probes=None,
     inbound_nat_rules=None,
     inbound_nat_pools=None,
-    outbound_nat_rules=None,
+    outbound_rules=None,
     tags=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a load balancer exists.
 
@@ -122,32 +101,31 @@ async def present(
         The resource group assigned to the load balancer.
 
     :param sku:
-        The load balancer SKU, which can be 'Basic' or 'Standard'. This property cannot be changed once the load
-        balancer is created.
-
-    :param tags:
-        A dictionary of strings can be passed as tag metadata to the load balancer object.
+        The load balancer SKU, which can be 'Basic' or 'Standard'. This property cannot be changed once the
+        load balancer is created.
 
     :param frontend_ip_configurations:
-        An optional list of dictionaries representing valid FrontendIPConfiguration objects. A frontend IP
+        A list of dictionaries representing valid FrontendIPConfiguration objects. A frontend IP
         configuration can be either private (using private IP address and subnet parameters) or public (using a
         reference to a public IP address object). Valid parameters are:
 
         - ``name``: The name of the resource that is unique within a resource group.
-        - ``private_ip_address``: The private IP address of the IP configuration. Required if
-          'private_ip_allocation_method' is 'Static'.
-        - ``private_ip_allocation_method``: The Private IP allocation method. Possible values are: 'Static' and
-          'Dynamic'.
+        - ``private_ip_address``: The private IP address of the IP configuration. Required if ``private_ip_allocation_method``
+            is 'Static'.
+        - ``private_ip_allocation_method``: The Private IP allocation method. Possible values are: 'Static', 'Dynamic'.
         - ``subnet``: Name of an existing subnet inside of which the frontend IP will reside.
         - ``public_ip_address``: Name of an existing public IP address which will be assigned to the frontend IP object.
 
     :param backend_address_pools:
-        An optional list of dictionaries representing valid BackendAddressPool objects. Only the 'name' parameter is
-        valid for a BackendAddressPool dictionary. All other parameters are read-only references from other objects
-        linking to the backend address pool. Inbound traffic is randomly load balanced across IPs in the backend IPs.
+        A list of dictionaries representing valid BackendAddressPool objects. Inbound traffic is randomly
+        load balanced across IPs in the backend IPs. Valid parameters include:
+
+        - ``name``: (Required) The name of the resource that is unique within the set of backend address pools used
+            by the load balancer.
+        - ``load_balancer_backend_addresses``: A list of LoadBalancerBackendAddress objects.
 
     :param probes:
-        An optional list of dictionaries representing valid Probe objects. Valid parameters are:
+        A list of dictionaries representing valid Probe objects. Valid parameters are:
 
         - ``name``: The name of the resource that is unique within a resource group.
         - ``protocol``: The protocol of the endpoint. Possible values are 'Http' or 'Tcp'. If 'Tcp' is specified, a
@@ -164,30 +142,30 @@ async def present(
           set to 'Http'. Otherwise, it is not allowed. There is no default value.
 
     :param load_balancing_rules:
-        An optional list of dictionaries representing valid LoadBalancingRule objects. Valid parameters are:
+        A list of dictionaries representing valid LoadBalancingRule objects. Valid parameters are:
 
         - ``name``: The name of the resource that is unique within a resource group.
         - ``load_distribution``: The load distribution policy for this rule. Possible values are 'Default', 'SourceIP',
-          and 'SourceIPProtocol'.
+            and 'SourceIPProtocol'.
         - ``frontend_port``: The port for the external endpoint. Port numbers for each rule must be unique within the
-          Load Balancer. Acceptable values are between 0 and 65534. Note that value 0 enables 'Any Port'.
+            Load Balancer. Acceptable values are between 0 and 65534. Note that value 0 enables 'Any Port'.
         - ``backend_port``: The port used for internal connections on the endpoint. Acceptable values are between 0 and
-          65535. Note that value 0 enables 'Any Port'.
+            65535. Note that value 0 enables 'Any Port'.
         - ``idle_timeout_in_minutes``: The timeout for the TCP idle connection. The value can be set between 4 and 30
-          minutes. The default value is 4 minutes. This element is only used when the protocol is set to TCP.
+            minutes. The default value is 4 minutes. This element is only used when the protocol is set to TCP.
         - ``enable_floating_ip``: Configures a virtual machine's endpoint for the floating IP capability required
-          to configure a SQL AlwaysOn Availability Group. This setting is required when using the SQL AlwaysOn
-          Availability Groups in SQL server. This setting can't be changed after you create the endpoint.
+            to configure a SQL AlwaysOn Availability Group. This setting is required when using the SQL AlwaysOn
+            Availability Groups in SQL server. This setting can't be changed after you create the endpoint.
         - ``disable_outbound_snat``: Configures SNAT for the VMs in the backend pool to use the public IP address
-          specified in the frontend of the load balancing rule.
+            specified in the frontend of the load balancing rule.
         - ``frontend_ip_configuration``: Name of the frontend IP configuration object used by the load balancing rule
-          object.
+            object.
         - ``backend_address_pool``: Name of the backend address pool object used by the load balancing rule object.
-          Inbound traffic is randomly load balanced across IPs in the backend IPs.
+            Inbound traffic is randomly load balanced across IPs in the backend IPs.
         - ``probe``: Name of the probe object used by the load balancing rule object.
 
     :param inbound_nat_rules:
-        An optional list of dictionaries representing valid InboundNatRule objects. Defining inbound NAT rules on your
+        A list of dictionaries representing valid InboundNatRule objects. Defining inbound NAT rules on your
         load balancer is mutually exclusive with defining an inbound NAT pool. Inbound NAT pools are referenced from
         virtual machine scale sets. NICs that are associated with individual virtual machines cannot reference an
         Inbound NAT pool. They have to reference individual inbound NAT rules. Valid parameters are:
@@ -206,7 +184,7 @@ async def present(
           Availability Groups in SQL server. This setting can't be changed after you create the endpoint.
 
     :param inbound_nat_pools:
-        An optional list of dictionaries representing valid InboundNatPool objects. They define an external port range
+        A list of dictionaries representing valid InboundNatPool objects. They define an external port range
         for inbound NAT to a single backend port on NICs associated with a load balancer. Inbound NAT rules are created
         automatically for each NIC associated with the Load Balancer using an external port from this range. Defining an
         Inbound NAT pool on your Load Balancer is mutually exclusive with defining inbound NAT rules. Inbound NAT pools
@@ -215,24 +193,40 @@ async def present(
 
         - ``name``: The name of the resource that is unique within a resource group.
         - ``frontend_ip_configuration``: Name of the frontend IP configuration object used by the inbound NAT pool
-          object.
+            object.
         - ``protocol``: Possible values include 'Udp', 'Tcp', or 'All'.
         - ``frontend_port_range_start``: The first port number in the range of external ports that will be used to
-          provide Inbound NAT to NICs associated with a load balancer. Acceptable values range between 1 and 65534.
+            provide Inbound NAT to NICs associated with a load balancer. Acceptable values range between 1 and 65534.
         - ``frontend_port_range_end``: The last port number in the range of external ports that will be used to
-          provide Inbound NAT to NICs associated with a load balancer. Acceptable values range between 1 and 65535.
+            provide Inbound NAT to NICs associated with a load balancer. Acceptable values range between 1 and 65535.
         - ``backend_port``: The port used for internal connections to the endpoint. Acceptable values are between 1 and
-          65535.
+            65535.
+        - ``idle_timeout_in_minutes``: The timeout for the TCP idle connection. The value can be set between 4 and 30
+            minutes. This element is only used when the protocol is set to TCP. The default value is 4 minutes.
+        - ``enable_floating_ip``: A boolean value whether to configure a virtual machine's endpoint for the floating
+            IP capability required to configure a SQL AlwaysOn Availability Group. This setting is required when using
+            the SQL AlwaysOn Availability Groups in SQL server. This setting can't be changed after you create the
+            endpoint.
+        - ``enable_tcp_reset``: A boolean value whether to receive bidirectional TCP Reset on TCP flow idle timeout or
+            unexpected connection termination. This element is only used when the protocol is set to TCP.
 
-    :param outbound_nat_rules:
-        An optional list of dictionaries representing valid OutboundNatRule objects. Valid parameters are:
+    :param outbound_rules:
+        A list of dictionaries representing valid OutboundNatRule objects. Valid parameters are:
 
         - ``name``: The name of the resource that is unique within a resource group.
         - ``frontend_ip_configuration``: Name of the frontend IP configuration object used by the outbound NAT rule
-          object.
+            object.
         - ``backend_address_pool``: Name of the backend address pool object used by the outbound NAT rule object.
-          Outbound traffic is randomly load balanced across IPs in the backend IPs.
+            Outbound traffic is randomly load balanced across IPs in the backend IPs.
         - ``allocated_outbound_ports``: The number of outbound ports to be used for NAT.
+        - ``protocol``: The protocol for the outbound rule in load balancer. Possible values include: 'Tcp',
+            'Udp', 'All'.
+        - ``enable_tcp_reset``: A boolean value whether to receive bidirectional TCP Reset on TCP flow idle timeout or
+            unexpected connection termination. This element is only used when the protocol is set to TCP.
+        - ``idle_timeout_in_minutes``: The timeout for the TCP idle connection.
+
+    :param tags:
+        A dictionary of strings can be passed as tag metadata to the load balancer object.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
@@ -293,6 +287,7 @@ async def present(
 
     if "error" not in load_bal:
         action = "update"
+
         # tag changes
         tag_changes = differ.deep_diff(load_bal.get("tags", {}), tags or {})
         if tag_changes:
@@ -404,20 +399,20 @@ async def present(
             if comp_ret.get("changes"):
                 ret["changes"]["inbound_nat_pools"] = comp_ret["changes"]
 
-        # outbound_nat_rules changes
-        if outbound_nat_rules:
+        # outbound_rules changes
+        if outbound_rules:
             comp_ret = await hub.exec.azurerm.utils.compare_list_of_dicts(
-                load_bal.get("outbound_nat_rules", []),
-                outbound_nat_rules,
+                load_bal.get("outbound_rules", []),
+                outbound_rules,
                 ["frontend_ip_configuration"],
             )
 
             if comp_ret.get("comment"):
-                ret["comment"] = '"outbound_nat_rules" {0}'.format(comp_ret["comment"])
+                ret["comment"] = '"outbound_rules" {0}'.format(comp_ret["comment"])
                 return ret
 
             if comp_ret.get("changes"):
-                ret["changes"]["outbound_nat_rules"] = comp_ret["changes"]
+                ret["changes"]["outbound_rules"] = comp_ret["changes"]
 
         if not ret["changes"]:
             ret["result"] = True
@@ -438,11 +433,11 @@ async def present(
                 "tags": tags,
                 "frontend_ip_configurations": frontend_ip_configurations,
                 "backend_address_pools": backend_address_pools,
-                "load_balancing_rules": load_balancing_rules,
-                "probes": probes,
-                "inbound_nat_rules": inbound_nat_rules,
+                "outbound_rules": outbound_rules,
                 "inbound_nat_pools": inbound_nat_pools,
-                "outbound_nat_rules": outbound_nat_rules,
+                "inbound_nat_rules": inbound_nat_rules,
+                "probes": probes,
+                "load_balancing_rules": load_balancing_rules,
             },
         }
 
@@ -454,21 +449,28 @@ async def present(
     lb_kwargs = kwargs.copy()
     lb_kwargs.update(connection_auth)
 
-    load_bal = await hub.exec.azurerm.network.load_balancer.create_or_update(
-        ctx=ctx,
-        name=name,
-        resource_group=resource_group,
-        sku=sku,
-        tags=tags,
-        frontend_ip_configurations=frontend_ip_configurations,
-        backend_address_pools=backend_address_pools,
-        load_balancing_rules=load_balancing_rules,
-        probes=probes,
-        inbound_nat_rules=inbound_nat_rules,
-        inbound_nat_pools=inbound_nat_pools,
-        outbound_nat_rules=outbound_nat_rules,
-        **lb_kwargs,
-    )
+    if action == "create" or len(ret["changes"]) > 1 or not tag_changes:
+        load_bal = await hub.exec.azurerm.network.load_balancer.create_or_update(
+            ctx=ctx,
+            name=name,
+            resource_group=resource_group,
+            sku=sku,
+            tags=tags,
+            frontend_ip_configurations=frontend_ip_configurations,
+            backend_address_pools=backend_address_pools,
+            load_balancing_rules=load_balancing_rules,
+            probes=probes,
+            inbound_nat_rules=inbound_nat_rules,
+            inbound_nat_pools=inbound_nat_pools,
+            outbound_rules=outbound_rules,
+            **lb_kwargs,
+        )
+
+    # no idea why create_or_update doesn't work for tags
+    if action == "update" and tag_changes:
+        load_bal = await hub.exec.azurerm.network.load_balancer.update_tags(
+            ctx, name=name, resource_group=resource_group, tags=tags, **lb_kwargs,
+        )
 
     if "error" not in load_bal:
         ret["result"] = True
@@ -530,7 +532,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.network.load_balancer.delete(
-        ctx, name, resource_group, **connection_auth
+        ctx, name=name, resource_group=resource_group, **connection_auth
     )
 
     if deleted:

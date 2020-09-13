@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Network Interface State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -48,36 +50,11 @@ Azure Resource Manager (ARM) Network Interface State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: jinja
-
-        Ensure virtual network exists:
-            azurerm.network.virtual_network.present:
-                - name: my_vnet
-                - resource_group: my_rg
-                - address_prefixes:
-                    - '10.0.0.0/8'
-                    - '192.168.0.0/16'
-                - dns_servers:
-                    - '8.8.8.8'
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
-
-        Ensure virtual network is absent:
-            azurerm.network.virtual_network.absent:
-                - name: other_vnet
-                - resource_group: my_rg
-                - connection_auth: {{ profile }}
-
 """
 # Python libs
 from __future__ import absolute_import
 from dict_tools import differ
 import logging
-import re
 
 log = logging.getLogger(__name__)
 
@@ -102,19 +79,18 @@ async def present(
     subnet,
     virtual_network,
     resource_group,
-    tags=None,
-    virtual_machine=None,
     network_security_group=None,
     dns_settings=None,
-    mac_address=None,
-    primary=None,
     enable_accelerated_networking=None,
     enable_ip_forwarding=None,
+    tags=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a network interface exists.
 
@@ -122,8 +98,8 @@ async def present(
         Name of the network interface.
 
     :param ip_configurations:
-        A list of dictionaries representing valid NetworkInterfaceIPConfiguration objects. The 'name' key is required at
-        minimum. At least one IP Configuration must be present.
+        A list of dictionaries representing valid NetworkInterfaceIPConfiguration objects. The ``name`` parameter is
+        required at minimum. At least one IP Configuration must be present.
 
     :param subnet:
         Name of the existing subnet assigned to the network interface.
@@ -134,41 +110,26 @@ async def present(
     :param resource_group:
         The resource group assigned to the virtual network.
 
-    :param tags:
-        A dictionary of strings can be passed as tag metadata to the network interface object.
-
     :param network_security_group:
         The name of the existing network security group to assign to the network interface.
 
-    :param virtual_machine:
-        The name of the existing virtual machine to assign to the network interface.
-
     :param dns_settings:
-        An optional dictionary representing a valid NetworkInterfaceDnsSettings object. Valid parameters are:
+        A dictionary representing a valid NetworkInterfaceDnsSettings object. Valid parameters are:
 
         - ``dns_servers``: List of DNS server IP addresses. Use 'AzureProvidedDNS' to switch to Azure provided DNS
           resolution. 'AzureProvidedDNS' value cannot be combined with other IPs, it must be the only value in
           dns_servers collection.
         - ``internal_dns_name_label``: Relative DNS name for this NIC used for internal communications between VMs in
           the same virtual network.
-        - ``internal_fqdn``: Fully qualified DNS name supporting internal communications between VMs in the same virtual
-          network.
-        - ``internal_domain_name_suffix``: Even if internal_dns_name_label is not specified, a DNS entry is created for
-          the primary NIC of the VM. This DNS name can be constructed by concatenating the VM name with the value of
-          internal_domain_name_suffix.
-
-    :param mac_address:
-        Optional string containing the MAC address of the network interface.
-
-    :param primary:
-        Optional boolean allowing the interface to be set as the primary network interface on a virtual machine
-        with multiple interfaces attached.
 
     :param enable_accelerated_networking:
-        Optional boolean indicating whether accelerated networking should be enabled for the interface.
+        A boolean indicating whether accelerated networking should be enabled for the interface.
 
     :param enable_ip_forwarding:
-        Optional boolean indicating whether IP forwarding should be enabled for the interface.
+        A boolean indicating whether IP forwarding should be enabled for the interface.
+
+    :param tags:
+        A dictionary of strings can be passed as tag metadata to the network interface object.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
@@ -189,7 +150,6 @@ async def present(
                     public_ip_address: pub_ip2
                 - dns_settings:
                     internal_dns_name_label: decisionlab-int-test-label
-                - primary: True
                 - enable_accelerated_networking: True
                 - enable_ip_forwarding: False
                 - network_security_group: nsg1
@@ -214,25 +174,11 @@ async def present(
 
     if "error" not in iface:
         action = "update"
+
         # tag changes
         tag_changes = differ.deep_diff(iface.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
-
-        # mac_address changes
-        if mac_address and (mac_address != iface.get("mac_address")):
-            ret["changes"]["mac_address"] = {
-                "old": iface.get("mac_address"),
-                "new": mac_address,
-            }
-
-        # primary changes
-        if primary is not None:
-            if primary != iface.get("primary", True):
-                ret["changes"]["primary"] = {
-                    "old": iface.get("primary"),
-                    "new": primary,
-                }
 
         # enable_accelerated_networking changes
         if enable_accelerated_networking is not None:
@@ -263,17 +209,10 @@ async def present(
                 "new": network_security_group,
             }
 
-        # virtual_machine changes
-        vm_name = None
-        if iface.get("virtual_machine"):
-            vm_name = iface["virtual_machine"]["id"].split("/")[-1]
-
-        if virtual_machine and (virtual_machine != vm_name):
-            ret["changes"]["virtual_machine"] = {"old": vm_name, "new": virtual_machine}
-
         # dns_settings changes
         if dns_settings:
             if not isinstance(dns_settings, dict):
+                ret["changes"] = {}
                 ret["comment"] = "DNS settings must be provided as a dictionary!"
                 return ret
 
@@ -320,11 +259,8 @@ async def present(
                 "ip_configurations": ip_configurations,
                 "dns_settings": dns_settings,
                 "network_security_group": network_security_group,
-                "virtual_machine": virtual_machine,
                 "enable_accelerated_networking": enable_accelerated_networking,
                 "enable_ip_forwarding": enable_ip_forwarding,
-                "mac_address": mac_address,
-                "primary": primary,
                 "tags": tags,
             },
         }
@@ -337,23 +273,27 @@ async def present(
     iface_kwargs = kwargs.copy()
     iface_kwargs.update(connection_auth)
 
-    iface = await hub.exec.azurerm.network.network_interface.create_or_update(
-        ctx=ctx,
-        name=name,
-        subnet=subnet,
-        virtual_network=virtual_network,
-        resource_group=resource_group,
-        ip_configurations=ip_configurations,
-        dns_settings=dns_settings,
-        enable_accelerated_networking=enable_accelerated_networking,
-        enable_ip_forwarding=enable_ip_forwarding,
-        mac_address=mac_address,
-        primary=primary,
-        network_security_group=network_security_group,
-        virtual_machine=virtual_machine,
-        tags=tags,
-        **iface_kwargs,
-    )
+    if action == "create" or len(ret["changes"]) > 1 or not tag_changes:
+        iface = await hub.exec.azurerm.network.network_interface.create_or_update(
+            ctx=ctx,
+            name=name,
+            subnet=subnet,
+            virtual_network=virtual_network,
+            resource_group=resource_group,
+            ip_configurations=ip_configurations,
+            dns_settings=dns_settings,
+            enable_accelerated_networking=enable_accelerated_networking,
+            enable_ip_forwarding=enable_ip_forwarding,
+            network_security_group=network_security_group,
+            tags=tags,
+            **iface_kwargs,
+        )
+
+    # no idea why create_or_update doesn't work for tags
+    if action == "update" and tag_changes:
+        iface = await hub.exec.azurerm.network.network_interface.update_tags(
+            ctx, name=name, resource_group=resource_group, tags=tags, **iface_kwargs,
+        )
 
     if "error" not in iface:
         ret["result"] = True
@@ -425,7 +365,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.network.network_interface.delete(
-        ctx, name, resource_group, **connection_auth
+        ctx, name=name, resource_group=resource_group, **connection_auth
     )
 
     if deleted:
