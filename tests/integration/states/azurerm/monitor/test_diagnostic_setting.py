@@ -32,7 +32,6 @@ def logs():
     ]
 
 
-
 @pytest.mark.run(order=4)
 @pytest.mark.asyncio
 async def test_present(

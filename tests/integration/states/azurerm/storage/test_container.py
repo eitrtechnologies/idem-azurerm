@@ -16,7 +16,7 @@ async def test_present(
                 "has_immutability_policy": False,
                 "has_legal_hold": False,
                 "remaining_retention_days": 0,
-                "type": "Microsoft.Storage/storageAccounts/blobServices/containers"
+                "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
             },
             "old": {},
         },
