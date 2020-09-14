@@ -36,7 +36,6 @@ Azure Resource Manager (ARM) Compute Image Execution Module
 # Python libs
 from __future__ import absolute_import
 import logging
-import six
 
 # Azure libs
 HAS_LIBS = False
@@ -149,7 +148,7 @@ async def create_or_update(
         if data_disks:
             if isinstance(data_disks, list):
                 data_disks = [{"id": dd} for dd in data_disks]
-            elif isinstance(data_disks, six.string_types):
+            elif isinstance(data_disks, str):
                 data_disks = [{"id": data_disks}]
             else:
                 errmsg = "The data_disk parameter is a single resource ID string or a list of resource IDs."

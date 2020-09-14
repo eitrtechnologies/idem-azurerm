@@ -4,7 +4,7 @@ Azure Resource Manager (ARM) Compute Disk Execution Module
 
 .. versionadded:: 1.0.0
 
-.. versiochanged:: 4.0.0
+.. versionchanged:: 4.0.0
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
