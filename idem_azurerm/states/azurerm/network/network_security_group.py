@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Network Security Group State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -48,36 +50,11 @@ Azure Resource Manager (ARM) Network Security Group State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: jinja
-
-        Ensure virtual network exists:
-            azurerm.network.virtual_network.present:
-                - name: my_vnet
-                - resource_group: my_rg
-                - address_prefixes:
-                    - '10.0.0.0/8'
-                    - '192.168.0.0/16'
-                - dns_servers:
-                    - '8.8.8.8'
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
-
-        Ensure virtual network is absent:
-            azurerm.network.virtual_network.absent:
-                - name: other_vnet
-                - resource_group: my_rg
-                - connection_auth: {{ profile }}
-
 """
 # Python libs
 from __future__ import absolute_import
 from dict_tools import differ
 import logging
-import re
 
 log = logging.getLogger(__name__)
 
@@ -105,6 +82,8 @@ async def present(
     """
     .. versionadded:: 1.0.0
 
+    .. versionchanged:: 4.0.0
+
     Ensure a network security group exists.
 
     :param name:
@@ -116,11 +95,11 @@ async def present(
     :param tags:
         A dictionary of strings can be passed as tag metadata to the network security group object.
 
-    :param security_rules: An optional list of dictionaries representing valid SecurityRule objects. See the
-        documentation for the security_rule_present state or security_rule_create_or_update execution module
-        for more information on required and optional parameters for security rules. The rules are only
-        managed if this parameter is present. When this parameter is absent, implemented rules will not be removed,
-        and will merely become unmanaged.
+    :param security_rules:
+        A list of dictionaries representing valid SecurityRule objects. See the documentation for the
+        security_rule_present state or security_rule_create_or_update execution module for more information on required
+        and optional parameters for security rules. The rules are only managed if this parameter is present. When this
+        parameter is absent, implemented rules will not be removed, and will merely become unmanaged.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
@@ -225,14 +204,21 @@ async def present(
     nsg_kwargs = kwargs.copy()
     nsg_kwargs.update(connection_auth)
 
-    nsg = await hub.exec.azurerm.network.network_security_group.create_or_update(
-        ctx=ctx,
-        name=name,
-        resource_group=resource_group,
-        tags=tags,
-        security_rules=security_rules,
-        **nsg_kwargs,
-    )
+    if action == "create" or len(ret["changes"]) > 1 or not tag_changes:
+        nsg = await hub.exec.azurerm.network.network_security_group.create_or_update(
+            ctx=ctx,
+            name=name,
+            resource_group=resource_group,
+            tags=tags,
+            security_rules=security_rules,
+            **nsg_kwargs,
+        )
+
+    # no idea why create_or_update doesn't work for tags
+    if action == "update" and tag_changes:
+        nsg = await hub.exec.azurerm.network.network_security_group.update_tags(
+            ctx, name=name, resource_group=resource_group, tags=tags, **nsg_kwargs,
+        )
 
     if "error" not in nsg:
         ret["result"] = True
@@ -304,7 +290,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         return ret
 
     deleted = await hub.exec.azurerm.network.network_security_group.delete(
-        ctx, name, resource_group, **connection_auth
+        ctx, name=name, resource_group=resource_group, **connection_auth
     )
 
     if deleted:
@@ -474,6 +460,7 @@ async def security_rule_present(
 
     if "error" not in rule:
         action = "update"
+
         # access changes
         if access.capitalize() != rule.get("access"):
             ret["changes"]["access"] = {"old": rule.get("access"), "new": access}
@@ -739,7 +726,7 @@ async def security_rule_absent(
         return ret
 
     deleted = await hub.exec.azurerm.network.network_security_group.security_rule_delete(
-        ctx, name, security_group, resource_group, **connection_auth
+        ctx, name, security_group, resource_group, **connection_auth,
     )
 
     if deleted:

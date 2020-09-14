@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Network Route Execution Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -31,27 +33,22 @@ Azure Resource Manager (ARM) Network Route Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
-
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
 
 # Azure libs
 HAS_LIBS = False
 try:
     import azure.mgmt.network.models  # pylint: disable=unused-import
-    from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
 
     HAS_LIBS = True
 except ImportError:
     pass
+
+__func_alias__ = {"list_": "list"}
 
 log = logging.getLogger(__name__)
 
@@ -66,14 +63,13 @@ async def filter_rule_delete(hub, ctx, name, route_filter, resource_group, **kwa
 
     :param route_filter: The route filter containing the rule.
 
-    :param resource_group: The resource group name assigned to the
-        route filter.
+    :param resource_group: The resource group name assigned to the route filter.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.filter_rule_delete test-rule test-filter testgroup
+        azurerm.network.route.filter_rule_delete test_name test_filter test_group
 
     """
     result = False
@@ -84,6 +80,7 @@ async def filter_rule_delete(hub, ctx, name, route_filter, resource_group, **kwa
             route_filter_name=route_filter,
             rule_name=name,
         )
+
         rule.wait()
         result = True
     except CloudError as exc:
@@ -102,14 +99,13 @@ async def filter_rule_get(hub, ctx, name, route_filter, resource_group, **kwargs
 
     :param route_filter: The route filter containing the rule.
 
-    :param resource_group: The resource group name assigned to the
-        route filter.
+    :param resource_group: The resource group name assigned to the route filter.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.filter_rule_get test-rule test-filter testgroup
+        azurerm.network.route.filter_rule_get test_name test_filter test_group
 
     """
     result = {}
@@ -145,15 +141,13 @@ async def filter_rule_create_or_update(
 
     :param route_filter: The name of the route filter containing the rule.
 
-    :param resource_group: The resource group name assigned to the
-        route filter.
+    :param resource_group: The resource group name assigned to the route filter.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.filter_rule_create_or_update \
-                  test-rule allow "['12076:51006']" test-filter testgroup
+        azurerm.network.route.filter_rule_create_or_update test_name allow "['12076:51006']" test_filter test_group
 
     """
     if not isinstance(communities, list):
@@ -172,6 +166,7 @@ async def filter_rule_create_or_update(
             }
         kwargs["location"] = rg_props["location"]
 
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
@@ -195,9 +190,9 @@ async def filter_rule_create_or_update(
             rule_name=name,
             route_filter_rule_parameters=rule_model,
         )
+
         rule.wait()
-        rule_result = rule.result()
-        result = rule_result.as_dict()
+        result = rule.result().as_dict()
     except CloudError as exc:
         message = str(exc)
         if kwargs.get("subscription_id") == str(message).strip():
@@ -220,14 +215,13 @@ async def filter_rules_list(hub, ctx, route_filter, resource_group, **kwargs):
 
     :param route_filter: The route filter to query.
 
-    :param resource_group: The resource group name assigned to the
-        route filter.
+    :param resource_group: The resource group name assigned to the route filter.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.filter_rules_list test-filter testgroup
+        azurerm.network.route.filter_rules_list test_name test_group
 
     """
     result = {}
@@ -256,14 +250,13 @@ async def filter_delete(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the route filter to delete.
 
-    :param resource_group: The resource group name assigned to the
-        route filter.
+    :param resource_group: The resource group name assigned to the route filter.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.filter_delete test-filter testgroup
+        azurerm.network.route.filter_delete test_name test_group
 
     """
     result = False
@@ -272,6 +265,7 @@ async def filter_delete(hub, ctx, name, resource_group, **kwargs):
         route_filter = netconn.route_filters.delete(
             route_filter_name=name, resource_group_name=resource_group
         )
+
         route_filter.wait()
         result = True
     except CloudError as exc:
@@ -280,32 +274,35 @@ async def filter_delete(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def filter_get(hub, ctx, name, resource_group, **kwargs):
+async def filter_get(hub, ctx, name, resource_group, expand=None, **kwargs):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Get details about a specific route filter.
 
     :param name: The name of the route table to query.
 
-    :param resource_group: The resource group name assigned to the
-        route filter.
+    :param resource_group: The resource group name assigned to the route filter.
+
+    :param expand: Expands referenced express route bgp peering resources.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.filter_get test-filter testgroup
+        azurerm.network.route.filter_get test_name test_group
 
     """
-    expand = kwargs.get("expand")
-
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
         route_filter = netconn.route_filters.get(
             route_filter_name=name, resource_group_name=resource_group, expand=expand
         )
+
         result = route_filter.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
@@ -322,16 +319,18 @@ async def filter_create_or_update(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the route filter to create.
 
-    :param resource_group: The resource group name assigned to the
-        route filter.
+    :param resource_group: The resource group name assigned to the route filter.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.filter_create_or_update test-filter testgroup
+        azurerm.network.route.filter_create_or_update test_name test_group
 
     """
+    result = {}
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     if "location" not in kwargs:
         rg_props = await hub.exec.azurerm.resource.group.get(
             ctx, resource_group, **kwargs
@@ -343,8 +342,6 @@ async def filter_create_or_update(hub, ctx, name, resource_group, **kwargs):
                 "error": "Unable to determine location from resource group specified."
             }
         kwargs["location"] = rg_props["location"]
-
-    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
         rt_filter_model = await hub.exec.azurerm.utils.create_object_model(
@@ -362,9 +359,9 @@ async def filter_create_or_update(hub, ctx, name, resource_group, **kwargs):
             route_filter_name=name,
             route_filter_parameters=rt_filter_model,
         )
+
         rt_filter.wait()
-        rt_result = rt_filter.result()
-        result = rt_result.as_dict()
+        result = rt_filter.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -376,59 +373,37 @@ async def filter_create_or_update(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def filters_list(hub, ctx, resource_group, **kwargs):
+async def filters_list(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    List all route filters within a resource group.
+    .. versionchanged:: 4.0.0
 
-    :param resource_group: The resource group name to list route
-        filters within.
+    Lists all route filters in a subscription.
+
+    :param resource_group: The name of the resource group to limit the results.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.filters_list testgroup
+        azurerm.network.route.filters_list
 
     """
     result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     try:
-        filters = await hub.exec.azurerm.utils.paged_object_to_list(
-            netconn.route_filters.list_by_resource_group(
-                resource_group_name=resource_group
+        if resource_group:
+            filters = await hub.exec.azurerm.utils.paged_object_to_list(
+                netconn.route_filters.list_by_resource_group(
+                    resource_group_name=resource_group
+                )
             )
-        )
-
-        for route_filter in filters:
-            result[route_filter["name"]] = route_filter
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def filters_list_all(hub, ctx, **kwargs):
-    """
-    .. versionadded:: 1.0.0
-
-    List all route filters within a subscription.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.network.route.filters_list_all
-
-    """
-    result = {}
-    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
-    try:
-        filters = await hub.exec.azurerm.utils.paged_object_to_list(
-            netconn.route_filters.list()
-        )
+        else:
+            filters = await hub.exec.azurerm.utils.paged_object_to_list(
+                netconn.route_filters.list()
+            )
 
         for route_filter in filters:
             result[route_filter["name"]] = route_filter
@@ -449,14 +424,13 @@ async def delete(hub, ctx, name, route_table, resource_group, **kwargs):
 
     :param route_table: The route table containing the route.
 
-    :param resource_group: The resource group name assigned to the
-        route table.
+    :param resource_group: The resource group name assigned to the route table.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.delete test-rt test-rt-table testgroup
+        azurerm.network.route.delete test_name test_rt_table test_group
 
     """
     result = False
@@ -467,6 +441,7 @@ async def delete(hub, ctx, name, route_table, resource_group, **kwargs):
             route_table_name=route_table,
             route_name=name,
         )
+
         route.wait()
         result = True
     except CloudError as exc:
@@ -485,14 +460,13 @@ async def get(hub, ctx, name, route_table, resource_group, **kwargs):
 
     :param route_table: The route table containing the route.
 
-    :param resource_group: The resource group name assigned to the
-        route table.
+    :param resource_group: The resource group name assigned to the route table.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.get test-rt test-rt-table testgroup
+        azurerm.network.route.get test_name test_rt_table test_group
 
     """
     result = {}
@@ -516,10 +490,10 @@ async def create_or_update(
     hub,
     ctx,
     name,
-    address_prefix,
-    next_hop_type,
     route_table,
     resource_group,
+    address_prefix,
+    next_hop_type,
     next_hop_ip_address=None,
     **kwargs,
 ):
@@ -530,26 +504,26 @@ async def create_or_update(
 
     :param name: The name of the route to create.
 
-    :param address_prefix: The destination CIDR to which the route applies.
-
-    :param next_hop_type: The type of Azure hop the packet should be sent to. Possible values are:
-        'VirtualNetworkGateway', 'VnetLocal', 'Internet', 'VirtualAppliance', and 'None'.
-
-    :param next_hop_ip_address: Optional IP address to which packets should be forwarded. Next hop
-        values are only allowed in routes where the next_hop_type is 'VirtualAppliance'.
-
     :param route_table: The name of the route table containing the route.
 
-    :param resource_group: The resource group name assigned to the
-        route table.
+    :param resource_group: The resource group name assigned to the route table.
+
+    :param address_prefix: The destination CIDR to which the route applies.
+
+    :param next_hop_type: The type of Azure hop the packet should be sent to. Possible values are: 'VnetLocal',
+        'VirtualNetworkGateway', 'Internet', 'VirtualAppliance', and 'None'.
+
+    :param next_hop_ip_address: IP address to which packets should be forwarded. Next hop values are only
+        allowed in routes where the next_hop_type is 'VirtualAppliance'.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.create_or_update test-rt '10.0.0.0/8' test-rt-table testgroup
+        azurerm.network.route.create_or_update test_name '10.0.0.0/8' test_rt_table test_group
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
@@ -574,9 +548,9 @@ async def create_or_update(
             route_name=name,
             route_parameters=rt_model,
         )
+
         route.wait()
-        rt_result = route.result()
-        result = rt_result.as_dict()
+        result = route.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -588,22 +562,21 @@ async def create_or_update(
     return result
 
 
-async def routes_list(hub, ctx, route_table, resource_group, **kwargs):
+async def list_(hub, ctx, route_table, resource_group, **kwargs):
     """
-    .. versionadded:: 1.0.0
+    .. versionadded:: 4.0.0
 
-    List all routes within a route table.
+    Lists all routes in a route table.
 
     :param route_table: The route table to query.
 
-    :param resource_group: The resource group name assigned to the
-        route table.
+    :param resource_group: The name of the resource group.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.routes_list test-rt-table testgroup
+        azurerm.network.routes_list test_table test_group
 
     """
     result = {}
@@ -632,14 +605,13 @@ async def table_delete(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the route table to delete.
 
-    :param resource_group: The resource group name assigned to the
-        route table.
+    :param resource_group: The resource group name assigned to the route table.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.table_delete test-rt-table testgroup
+        azurerm.network.route.table_delete test_name test_group
 
     """
     result = False
@@ -648,6 +620,7 @@ async def table_delete(hub, ctx, name, resource_group, **kwargs):
         table = netconn.route_tables.delete(
             route_table_name=name, resource_group_name=resource_group
         )
+
         table.wait()
         result = True
     except CloudError as exc:
@@ -656,7 +629,7 @@ async def table_delete(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def table_get(hub, ctx, name, resource_group, **kwargs):
+async def table_get(hub, ctx, name, resource_group, expand=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
@@ -664,24 +637,25 @@ async def table_get(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the route table to query.
 
-    :param resource_group: The resource group name assigned to the
-        route table.
+    :param resource_group: The resource group name assigned to the route table
+
+    :param expand: Expands referenced resources.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.table_get test-rt-table testgroup
+        azurerm.network.route.table_get test_rt_table test_group
 
     """
-    expand = kwargs.get("expand")
-
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
         table = netconn.route_tables.get(
             route_table_name=name, resource_group_name=resource_group, expand=expand
         )
+
         result = table.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
@@ -698,16 +672,18 @@ async def table_create_or_update(hub, ctx, name, resource_group, **kwargs):
 
     :param name: The name of the route table to create.
 
-    :param resource_group: The resource group name assigned to the
-        route table.
+    :param resource_group: The resource group name assigned to the route table.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.table_create_or_update test-rt-table testgroup
+        azurerm.network.route.table_create_or_update test_rt_table test_group
 
     """
+    result = {}
+    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     if "location" not in kwargs:
         rg_props = await hub.exec.azurerm.resource.group.get(
             ctx, resource_group, **kwargs
@@ -719,8 +695,6 @@ async def table_create_or_update(hub, ctx, name, resource_group, **kwargs):
                 "error": "Unable to determine location from resource group specified."
             }
         kwargs["location"] = rg_props["location"]
-
-    netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     try:
         rt_tbl_model = await hub.exec.azurerm.utils.create_object_model(
@@ -738,9 +712,9 @@ async def table_create_or_update(hub, ctx, name, resource_group, **kwargs):
             route_table_name=name,
             parameters=rt_tbl_model,
         )
+
         table.wait()
-        tbl_result = table.result()
-        result = tbl_result.as_dict()
+        result = table.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}
@@ -752,28 +726,35 @@ async def table_create_or_update(hub, ctx, name, resource_group, **kwargs):
     return result
 
 
-async def tables_list(hub, ctx, resource_group, **kwargs):
+async def tables_list(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    List all route tables within a resource group.
+    .. versionchanged:: 4.0.0
 
-    :param resource_group: The resource group name to list route
-        tables within.
+    List all route tables within a subscription.
+
+    :param resource_group: The name of the resource group to limit the results.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.tables_list testgroup
+        azurerm.network.route.tables_list
 
     """
     result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     try:
-        tables = await hub.exec.azurerm.utils.paged_object_to_list(
-            netconn.route_tables.list(resource_group_name=resource_group)
-        )
+        if resource_group:
+            tables = await hub.exec.azurerm.utils.paged_object_to_list(
+                netconn.route_tables.list(resource_group_name=resource_group)
+            )
+        else:
+            tables = await hub.exec.azurerm.utils.paged_object_to_list(
+                netconn.route_tables.list_all()
+            )
 
         for table in tables:
             result[table["name"]] = table
@@ -784,28 +765,34 @@ async def tables_list(hub, ctx, resource_group, **kwargs):
     return result
 
 
-async def tables_list_all(hub, ctx, **kwargs):
+async def table_update_tags(hub, ctx, name, resource_group, tags=None, **kwargs):
     """
-    .. versionadded:: 1.0.0
+    .. versionadded:: 4.0.0
 
-    List all route tables within a subscription.
+    Updates a route table tags.
+
+    :param name: The name of the route table.
+
+    :param resource_group: The resource group of the route table.
+
+    :param tags: The resource tags to update.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.route.tables_list_all
+        azurerm.network.route.table_update_tags test_name test_group test_tags
 
     """
     result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
+
     try:
-        tables = await hub.exec.azurerm.utils.paged_object_to_list(
-            netconn.route_tables.list_all()
+        table = netconn.route_tables.update_tags(
+            route_table_name=name, resource_group_name=resource_group, tags=tags
         )
 
-        for table in tables:
-            result[table["name"]] = table
+        result = table.as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}

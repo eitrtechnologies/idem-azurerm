@@ -48,34 +48,10 @@ Azure Resource Manager (ARM) Network Profile State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: jinja
-
-        Ensure network profile exists:
-            azurerm.network.network_profile.present:
-                - name: aci-network-profile
-                - resource_group: testgroup
-                - container_network_interface_configurations:
-                    - name: eth0
-                      ip_configurations:
-                        - name: ipconfigprofile
-                          subnet:
-                              id: {{ subnet_resource_id }}
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-
-        Ensure network profile is absent:
-            azurerm.network.network_profile.absent:
-                - name: aci-network-profile
-                - resource_group: testgroup
-
 """
 # Import Python libs
 from dict_tools import differ
 import logging
-
 
 log = logging.getLogger(__name__)
 
@@ -107,7 +83,6 @@ async def present(
         <https://docs.microsoft.com/en-us/python/api/azure-mgmt-network/azure.mgmt.network.v2018_12_01.models.containernetworkinterfaceconfiguration?view=azure-python>`_.
 
     :param tags: A dictionary of strings can be passed as tag metadata to the object.
-
 
     Example usage:
 
