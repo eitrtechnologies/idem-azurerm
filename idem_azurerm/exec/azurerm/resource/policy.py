@@ -189,7 +189,7 @@ async def assignment_get(hub, ctx, name, scope, **kwargs):
     return result
 
 
-async def assignments_list(hub, ctx, resource_group=None, filter=None, **kwargs):
+async def assignments_list(hub, ctx, resource_group=None, assign_filter=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 

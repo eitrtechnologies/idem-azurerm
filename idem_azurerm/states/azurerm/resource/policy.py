@@ -89,7 +89,7 @@ async def definition_present(
     """
     .. versionadded:: 1.0.0
 
-    .. versionchanged:: 2.0.0
+    .. versionchanged:: 2.0.0, 4.0.0
 
     Ensure a security policy definition exists.
 
@@ -283,21 +283,6 @@ async def definition_present(
             ret["result"] = None
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": policy_name,
-                "policy_type": policy_type,
-                "mode": mode,
-                "display_name": display_name,
-                "description": description,
-                "metadata": metadata,
-                "parameters": parameters,
-                "policy_rule": policy_rule,
-            },
-        }
-
     if ctx["test"]:
         ret["comment"] = "Policy definition {0} would be created.".format(name)
         ret["result"] = None
@@ -324,6 +309,9 @@ async def definition_present(
         parameters=parameters,
         **policy_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": policy}
 
     if "error" not in policy:
         ret["result"] = True
@@ -411,7 +399,7 @@ async def assignment_present(
     """
     .. versionadded:: 1.0.0
 
-    .. versionchanged:: 2.3.2
+    .. versionchanged:: 2.3.2, 4.0.0
 
     Ensure a security policy assignment exists.
 
@@ -523,20 +511,6 @@ async def assignment_present(
             ret["result"] = None
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "scope": scope,
-                "definition_name": definition_name,
-                "display_name": display_name,
-                "description": description,
-                "parameters": parameters,
-                "enforcement_mode": enforcement_mode,
-            },
-        }
-
     if ctx["test"]:
         ret["comment"] = "Policy assignment {0} would be created.".format(name)
         ret["result"] = None
@@ -558,6 +532,9 @@ async def assignment_present(
         enforcement_mode=enforcement_mode,
         **policy_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": policy}
 
     if "error" not in policy:
         ret["result"] = True

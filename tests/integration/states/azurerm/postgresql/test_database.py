@@ -17,8 +17,9 @@ async def test_present(hub, ctx, postgresql_db, postgresql_server, resource_grou
         "changes": {
             "new": {
                 "name": postgresql_db,
-                "server_name": postgresql_server,
-                "resource_group": resource_group,
+                "type": "Microsoft.DBforPostgreSQL/servers/databases",
+                "charset": "UTF8",
+                "collation": "English_United States.1252",
             },
             "old": {},
         },
@@ -32,6 +33,7 @@ async def test_present(hub, ctx, postgresql_db, postgresql_server, resource_grou
         server_name=postgresql_server,
         resource_group=resource_group,
     )
+    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 

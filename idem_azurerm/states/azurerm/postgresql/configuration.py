@@ -143,19 +143,6 @@ async def present(
             ret["comment"] = "Configuration Setting {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "server_name": server_name,
-                "resource_group": resource_group,
-            },
-        }
-
-        if value:
-            ret["changes"]["new"]["value"] = value
-
     if ctx["test"]:
         ret["comment"] = "Configuration Setting {0} would be created.".format(name)
         ret["result"] = None
@@ -172,6 +159,9 @@ async def present(
         value=value,
         **config_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": config}
 
     if "error" not in config:
         ret["result"] = True

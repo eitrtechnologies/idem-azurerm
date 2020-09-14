@@ -20,10 +20,33 @@ async def test_present(hub, ctx, postgresql_server, resource_group, location, pa
             "new": {
                 "name": postgresql_server,
                 "location": location,
-                "resource_group": resource_group,
-                "sku": {"name": sku},
+                "sku": {
+                    "name": sku,
+                    "capacity": 4,
+                    "family": "Gen5",
+                    "tier": "GeneralPurpose",
+                },
                 "administrator_login": login,
-                "administrator_login_password": "REDACTED",
+                "replica_capacity": 5,
+                "replication_role": "None",
+                "type": "Microsoft.DBforPostgreSQL/servers",
+                "user_visible_state": "Ready",
+                "private_endpoint_connections": [],
+                "public_network_access": "Enabled",
+                "replica_capacity": 5,
+                "replication_role": "None",
+                "ssl_enforcement": "Enabled",
+                "storage_profile": {
+                    "backup_retention_days": 7,
+                    "geo_redundant_backup": "Disabled",
+                    "storage_autogrow": "Disabled",
+                    "storage_mb": 5120,
+                },
+                "infrastructure_encryption": "Disabled",
+                "master_server_id": "",
+                "minimal_tls_version": "TLSEnforcementDisabled",
+                "byok_enforcement": "Disabled",
+                "fully_qualified_domain_name": f"{postgresql_server}.postgres.database.azure.com",
             },
             "old": {},
         },
@@ -40,6 +63,9 @@ async def test_present(hub, ctx, postgresql_server, resource_group, location, pa
         login_password=password,
         sku=sku,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("version")
+    ret["changes"]["new"].pop("earliest_restore_date")
     assert ret == expected
 
 

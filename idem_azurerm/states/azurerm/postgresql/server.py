@@ -243,39 +243,6 @@ async def present(
             ret["comment"] = "Server {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "location": location,
-            },
-        }
-
-        if tags:
-            ret["changes"]["new"]["tags"] = tags
-        if sku:
-            ret["changes"]["new"]["sku"] = sku
-        if version:
-            ret["changes"]["new"]["version"] = version
-        if ssl_enforcement:
-            ret["changes"]["new"]["ssl_enforcement"] = ssl_enforcement
-        if minimal_tls_version:
-            ret["changes"]["new"]["minimal_tls_version"] = minimal_tls_version
-        if public_network_access:
-            ret["changes"]["new"]["public_network_access"] = public_network_access
-        if infrastructure_encryption:
-            ret["changes"]["new"][
-                "infrastructure_encryption"
-            ] = infrastructure_encryption
-        if storage_profile:
-            ret["changes"]["new"]["storage_profile"] = storage_profile
-        if login:
-            ret["changes"]["new"]["administrator_login"] = login
-        if login_password:
-            ret["changes"]["new"]["administrator_login_password"] = "REDACTED"  # nosec
-
     if ctx["test"]:
         ret["comment"] = "Server {0} would be created.".format(name)
         ret["result"] = None
@@ -318,6 +285,9 @@ async def present(
             tags=tags,
             **server_kwargs,
         )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": server}
 
     if "error" not in server:
         ret["result"] = True
