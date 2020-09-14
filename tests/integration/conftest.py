@@ -114,6 +114,13 @@ def public_ip_addr():
 
 
 @pytest.fixture(scope="session")
+def public_ip_addr2():
+    yield "pip-idem-2-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
+
+
+@pytest.fixture(scope="session")
 def route_table():
     yield "rt-table-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
