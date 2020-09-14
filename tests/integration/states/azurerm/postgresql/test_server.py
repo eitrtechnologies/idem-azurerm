@@ -33,8 +33,6 @@ async def test_present(hub, ctx, postgresql_server, resource_group, location, pa
                 "user_visible_state": "Ready",
                 "private_endpoint_connections": [],
                 "public_network_access": "Enabled",
-                "replica_capacity": 5,
-                "replication_role": "None",
                 "ssl_enforcement": "Enabled",
                 "storage_profile": {
                     "backup_retention_days": 7,

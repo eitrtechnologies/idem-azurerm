@@ -92,7 +92,6 @@ async def test_assignment_present(hub, ctx, assignment_name, def_name):
                 "name": assignment_name,
                 "scope": scope,
                 "enforcement_mode": "Default",
-                "scope": "/subscriptions/4677297b-9565-4371-bf72-eafcc80b8155",
                 "sku": {"name": "A0", "tier": "Free"},
                 "type": "Microsoft.Authorization/policyAssignments",
             },
