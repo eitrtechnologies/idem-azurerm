@@ -4,7 +4,7 @@ Azure Resource Manager (ARM) Redis Operations Execution Module
 
 .. versionadded:: 2.0.0
 
-.. versionchanged:: 3.0.0
+.. versionchanged:: 3.0.0, 4.0.0
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
@@ -59,7 +59,7 @@ async def check_name_availability(hub, ctx, name, **kwargs):
 
     Checks that the redis cache name is valid and is not already in use.
 
-    :param name: The name of the Redis cache to check the availability of
+    :param name: The name of the Redis cache to check if it exists already.
 
     CLI Example:
 
@@ -117,16 +117,17 @@ async def create(
     :param location: The geo-location where the resource lives.
 
     :param sku: A dictionary representing the SKU of the Redis cache to deploy. Required parameters include:
+
         - ``name``: The type of Redis cache to deploy. Possible values include: 'Basic', 'Standard', and 'Premium'.
         - ``family``: The SKU family to use. Possible values include 'C' for Basic/Standard and 'P' for Premium.
         - ``capacity``: The size of the Redis cache to deploy. Possible values include 0, 1, 2, 3, 4, 5, and 6 for the
-                        C (Basic/Standard) family and 1, 2, 3, and 4 for the P (Premium) family.
+          C (Basic/Standard) family and 1, 2, 3, and 4 for the P (Premium) family.
 
-    :param redis_configuration: A dictionary of string key-value pairs that represent all Redis Settings. Some possible
-        keys include: rdb-backup-enabled, rdb-storage-connection-string, rdb-backup-frequency, maxmemory-delta,
-        maxmemory-policy, notify-keyspace-events, maxmemory-samples, slowlog-log-slower-than, slowlog-max-len,
-        list-max-ziplist-entries, list-max-ziplist-value, hash-max-ziplist-entries, hash-max-ziplist-value,
-        set-max-intset-entries, zset-max-ziplist-entries, zset-max-ziplist-value, and more.
+    :param redis_configuration: A dictionary of string key-value pairs that represent all Redis Settings.
+        Some possible keys include: rdb-backup-enabled, rdb-storage-connection-string, rdb-backup-frequency,
+        maxmemory-delta, maxmemory-policy, notify-keyspace-events, maxmemory-samples, slowlog-log-slower-than,
+        slowlog-max-len, list-max-ziplist-entries, list-max-ziplist-value, hash-max-ziplist-entries,
+        hash-max-ziplist-value, set-max-intset-entries, zset-max-ziplist-entries, zset-max-ziplist-value, and more.
 
     :param enable_non_ssl_port: Specifies whether the non-ssl Redis server port (6379) is enabled. Defaults to False.
 
@@ -134,20 +135,23 @@ async def create(
 
     :param shard_count: The number of shards to be created on a Premium Cluster Cache.
 
-    :param minimum_tls_version: The specified TLS version (or higher) that clients are required to use. Possible values
-        include: '1.0', '1.1', and '1.2'.
+    :param minimum_tls_version: The specified TLS version (or higher) that clients are required to use.
+        Possible values include: '1.0', '1.1', and '1.2'.
 
-    :param subnet_id: The full resource ID of a subnet in a virtual network to deploy the Redis cache in. Example
-        format: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/Microsoft.{Network|ClassicNetwork}/VirtualNetworks/vnet1/subnets/subnet1
+    :param subnet_id: The full resource ID of a subnet in a virtual network to deploy the Redis cache in.
+        Example format: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/Microsoft.{Network|ClassicNetwork}/VirtualNetworks/vnet1/subnets/subnet1.
 
-    :param static_ip: Static IP address. Required when deploying a Redis cache inside an existing Azure Virtual Network.
+    :param static_ip: Static IP address. Required when deploying a Redis cache inside an existing Azure
+        Virtual Network.
 
     :param zones: A list of availability zones denoting where the resource needs to come from.
 
-    :param polling: A boolean flag representing whether a Poller will be used during the creation of the Redis Cache.
-        If set to True, a Poller will be used by this operation and the module will not return until the Redis Cache
-        has completed its creation process and has been successfully provisioned. If set to False, the module will
-        return once the Redis Cache has successfully begun its creation process. Defaults to True.
+    :param tags: A dictionary of strings can be passed as tag metadata to the Redis cache object.
+
+    :param polling: An optional boolean flag representing whether a Poller will be used during the creation of the
+        Redis Cache. If set to True, a Poller will be used by this operation and the module will not return until the
+        Redis Cache has completed its creation process and has been successfully provisioned. If set to False, the
+        module will return once the Redis Cache has successfully begun its creation process. Defaults to True.
 
     CLI Example:
 
@@ -156,6 +160,7 @@ async def create(
         azurerm.redis.operations.create test_name test_rg test_location test_sku
 
     """
+    result = {}
     redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:
@@ -406,11 +411,15 @@ async def import_data(
     return result
 
 
-async def list_(hub, ctx, **kwargs):
+async def list_(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Gets all Redis caches in the specified subscription.
+
+    :param resource_group: The name of the resource group to limit the results.
 
     CLI Example:
 
@@ -423,39 +432,14 @@ async def list_(hub, ctx, **kwargs):
     redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:
-        caches = await hub.exec.azurerm.utils.paged_object_to_list(redconn.redis.list())
-
-        for cache in caches:
-            result[cache["name"]] = cache
-    except CloudError as exc:
-        await hub.exec.azurerm.utils.log_cloud_error("redis", str(exc), **kwargs)
-        result = {"error": str(exc)}
-
-    return result
-
-
-async def list_by_resource_group(hub, ctx, resource_group, **kwargs):
-    """
-    .. versionadded:: 2.0.0
-
-    Lists all Redis caches in a resource group.
-
-    :param resource_group: The name of the resource group.
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        azurerm.redis.operations.list_by_resource_group test_rg
-
-    """
-    result = {}
-    redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
-
-    try:
-        caches = await hub.exec.azurerm.utils.paged_object_to_list(
-            redconn.redis.list_by_resource_group(resource_group_name=resource_group,)
-        )
+        if resource_group:
+            caches = await hub.exec.azurerm.utils.paged_object_to_list(
+                redconn.redis.list_by_resource_group(resource_group_name=resource_group)
+            )
+        else:
+            caches = await hub.exec.azurerm.utils.paged_object_to_list(
+                redconn.redis.list()
+            )
 
         for cache in caches:
             result[cache["name"]] = cache
@@ -507,7 +491,7 @@ async def list_upgrade_notifications(hub, ctx, name, resource_group, history, **
 
     :param resource_group: The name of the resource group.
 
-    :param history: A float representing how many minutes in past to look for upgrade notifications.
+    :param history: A float value representing how many minutes in past to look for upgrade notifications.
 
     CLI Example:
 
@@ -589,6 +573,7 @@ async def update(
     :param resource_group: The name of the resource group.
 
     :param sku: A dictionary representing the SKU of the Redis cache to deploy. Required parameters include:
+
         - ``name``: The type of Redis cache to deploy. Possible values include: 'Basic', 'Standard', and 'Premium'.
         - ``family``: The SKU family to use. Possible values include 'C' for Basic/Standard and 'P' for Premium.
         - ``capacity``: The size of the Redis cache to deploy. Possible values include 0, 1, 2, 3, 4, 5, and 6 for the
