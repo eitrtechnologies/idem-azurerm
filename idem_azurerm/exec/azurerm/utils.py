@@ -4,7 +4,7 @@ Azure Resource Manager (ARM) Utilities
 
 .. versionadded:: 1.0.0
 
-.. versionchanged:: 2.4.0, 2.0.0
+.. versionchanged:: 2.4.0, 2.0.0, 4.0.0
 
 :maintainer: <devops@eitr.tech>
 
@@ -161,6 +161,7 @@ async def get_client(hub, ctx, client_type, **kwargs):
         "postgresql": "PostgreSQLManagement",
         "loganalytics": "LogAnalyticsManagement",
         "applicationinsights": "ApplicationInsightsManagement",
+        "msi": "ManagedServiceIdentity",
     }
 
     if client_type not in client_map:
