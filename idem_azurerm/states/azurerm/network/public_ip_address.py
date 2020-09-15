@@ -264,29 +264,6 @@ async def present(
             ret["comment"] = "Public IP address {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "tags": tags,
-                "sku": sku,
-                "resource_group": resource_group,
-                "public_ip_allocation_method": public_ip_allocation_method,
-                "public_ip_address_version": public_ip_address_version,
-                "idle_timeout_in_minutes": idle_timeout_in_minutes,
-            },
-        }
-
-        if dns_settings:
-            ret["changes"]["new"]["dns_settings"] = dns_settings
-        if ddos_settings:
-            ret["changes"]["new"]["ddos_settings"] = ddos_settings
-        if zones is not None:
-            ret["changes"]["new"]["zones"] = zones
-        if public_ip_prefix:
-            ret["changes"]["new"]["public_ip_prefix"] = public_ip_prefix
-
     if ctx["test"]:
         ret["comment"] = "Public IP address {0} would be created.".format(name)
         ret["result"] = None
@@ -317,6 +294,9 @@ async def present(
         pub_ip = await hub.exec.azurerm.network.public_ip_address.update_tags(
             ctx, name=name, resource_group=resource_group, tags=tags, **pub_ip_kwargs,
         )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": pub_ip}
 
     if "error" not in pub_ip:
         ret["result"] = True

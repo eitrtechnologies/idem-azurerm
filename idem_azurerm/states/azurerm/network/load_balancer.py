@@ -424,23 +424,6 @@ async def present(
             ret["comment"] = "Load balancer {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "sku": sku,
-                "tags": tags,
-                "frontend_ip_configurations": frontend_ip_configurations,
-                "backend_address_pools": backend_address_pools,
-                "outbound_rules": outbound_rules,
-                "inbound_nat_pools": inbound_nat_pools,
-                "inbound_nat_rules": inbound_nat_rules,
-                "probes": probes,
-                "load_balancing_rules": load_balancing_rules,
-            },
-        }
-
     if ctx["test"]:
         ret["comment"] = "Load balancer {0} would be created.".format(name)
         ret["result"] = None
@@ -471,6 +454,9 @@ async def present(
         load_bal = await hub.exec.azurerm.network.load_balancer.update_tags(
             ctx, name=name, resource_group=resource_group, tags=tags, **lb_kwargs,
         )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": load_bal}
 
     if "error" not in load_bal:
         ret["result"] = True

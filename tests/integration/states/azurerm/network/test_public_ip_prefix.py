@@ -17,12 +17,13 @@ async def test_present(hub, ctx, public_ip_prefix, resource_group):
         "changes": {
             "new": {
                 "name": public_ip_prefix,
-                "resource_group": resource_group,
-                "sku": {"name": "standard"},
+                "sku": {"name": "Standard"},
                 "public_ip_address_version": "IPv4",
                 "prefix_length": 31,
-                "zones": [],
-                "tags": None,
+                "ip_tags": [],
+                "provisioning_state": "Succeeded",
+                "type": "Microsoft.Network/publicIPPrefixes",
+                "location": "eastus",
             },
             "old": {},
         },
@@ -33,6 +34,10 @@ async def test_present(hub, ctx, public_ip_prefix, resource_group):
     ret = await hub.states.azurerm.network.public_ip_prefix.present(
         ctx, name=public_ip_prefix, resource_group=resource_group, prefix_length=31
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("resource_guid")
+    ret["changes"]["new"].pop("ip_prefix")
+    ret["changes"]["new"].pop("etag")
     assert ret == expected
 
 

@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Virtual Network Peering State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -82,6 +84,8 @@ async def present(
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a virtual network peering object exists.
 
@@ -195,20 +199,6 @@ async def present(
             ret["comment"] = "Peering object {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "remote_virtual_network": remote_virtual_network,
-                "remote_vnet_group": (remote_vnet_group or resource_group),
-                "use_remote_gateways": use_remote_gateways,
-                "allow_forwarded_traffic": allow_forwarded_traffic,
-                "allow_virtual_network_access": allow_virtual_network_access,
-                "allow_gateway_transit": allow_gateway_transit,
-            },
-        }
-
     if ctx["test"]:
         ret["comment"] = "Subnet {0} would be created.".format(name)
         ret["result"] = None
@@ -276,6 +266,9 @@ async def present(
             allow_gateway_transit=allow_gateway_transit,
             **peering_kwargs,
         )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": peering}
 
     if "error" not in peering:
         ret["result"] = True

@@ -24,9 +24,10 @@ async def test_present(hub, ctx, nsg, resource_group):
         "changes": {
             "new": {
                 "name": nsg,
-                "tags": None,
-                "resource_group": resource_group,
-                "security_rules": None,
+                "security_rules": [],
+                "location": "eastus",
+                "provisioning_state": "Succeeded",
+                "type": "Microsoft.Network/networkSecurityGroups",
             },
             "old": {},
         },
@@ -37,6 +38,10 @@ async def test_present(hub, ctx, nsg, resource_group):
     ret = await hub.states.azurerm.network.network_security_group.present(
         ctx, name=nsg, resource_group=resource_group
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("resource_guid")
+    ret["changes"]["new"].pop("etag")
+    ret["changes"]["new"].pop("default_security_rules")
     assert ret == expected
 
 
@@ -66,18 +71,17 @@ async def test_rule_present(
                 "name": rule,
                 "priority": 100,
                 "protocol": "tcp",
-                "access": "allow",
-                "direction": "outbound",
+                "access": "Allow",
+                "direction": "Outbound",
                 "source_address_prefix": "virtualnetwork",
-                "source_address_prefixes": None,
+                "source_address_prefixes": [],
                 "destination_address_prefix": "internet",
-                "source_port_range": "*",
                 "destination_port_range": "*",
-                "destination_port_ranges": None,
-                "description": None,
-                "destination_address_prefixes": None,
+                "destination_port_ranges": [],
+                "destination_address_prefixes": [],
                 "source_port_range": "*",
-                "source_port_ranges": None,
+                "source_port_ranges": [],
+                "provisioning_state": "Succeeded",
             },
             "old": {},
         },
@@ -99,6 +103,8 @@ async def test_rule_present(
         source_port_range="*",
         destination_port_range="*",
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("etag")
     assert ret == expected
 
 

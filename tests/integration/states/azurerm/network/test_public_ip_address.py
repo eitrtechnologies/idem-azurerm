@@ -11,12 +11,14 @@ async def test_present(hub, ctx, public_ip_addr, public_ip_addr2, resource_group
         "changes": {
             "new": {
                 "name": public_ip_addr,
-                "resource_group": resource_group,
                 "sku": {"name": "Standard"},
-                "tags": None,
                 "public_ip_allocation_method": "Static",
-                "public_ip_address_version": None,
+                "public_ip_address_version": "IPv4",
                 "idle_timeout_in_minutes": idle_timeout,
+                "type": "Microsoft.Network/publicIPAddresses",
+                "provisioning_state": "Succeeded",
+                "location": "eastus",
+                "ip_tags": [],
             },
             "old": {},
         },
@@ -29,12 +31,14 @@ async def test_present(hub, ctx, public_ip_addr, public_ip_addr2, resource_group
         "changes": {
             "new": {
                 "name": public_ip_addr2,
-                "resource_group": resource_group,
                 "sku": {"name": "Basic"},
-                "tags": None,
-                "public_ip_allocation_method": None,
-                "public_ip_address_version": None,
+                "public_ip_allocation_method": "Dynamic",
+                "public_ip_address_version": "IPv4",
                 "idle_timeout_in_minutes": idle_timeout,
+                "type": "Microsoft.Network/publicIPAddresses",
+                "provisioning_state": "Succeeded",
+                "location": "eastus",
+                "ip_tags": [],
             },
             "old": {},
         },
@@ -51,6 +55,10 @@ async def test_present(hub, ctx, public_ip_addr, public_ip_addr2, resource_group
         sku="Standard",
         idle_timeout_in_minutes=idle_timeout,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("resource_guid")
+    ret["changes"]["new"].pop("ip_address")
+    ret["changes"]["new"].pop("etag")
     assert ret == standard_expected
 
     ret = await hub.states.azurerm.network.public_ip_address.present(
@@ -60,6 +68,9 @@ async def test_present(hub, ctx, public_ip_addr, public_ip_addr2, resource_group
         sku="Basic",
         idle_timeout_in_minutes=idle_timeout,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("resource_guid")
+    ret["changes"]["new"].pop("etag")
     assert ret == basic_expected
 
 

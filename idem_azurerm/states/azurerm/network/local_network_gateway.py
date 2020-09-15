@@ -215,26 +215,6 @@ async def present(
             ret["comment"] = "Local network gateway {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "gateway_ip_address": gateway_ip_address,
-                "tags": tags,
-            },
-        }
-
-        if fqdn:
-            ret["changes"]["new"]["fqdn"] = fqdn
-        if bgp_settings:
-            ret["changes"]["new"]["bgp_settings"] = bgp_settings
-        if address_prefixes:
-            ret["changes"]["new"]["local_network_address_space"] = {
-                "address_prefixes": address_prefixes
-            }
-
     if ctx["test"]:
         ret["comment"] = "Local network gateway {0} would be created.".format(name)
         ret["result"] = None
@@ -261,6 +241,9 @@ async def present(
         gateway = await hub.exec.azurerm.network.local_network_gateway.update_tags(
             ctx, name=name, resource_group=resource_group, tags=tags, **gateway_kwargs,
         )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": gateway}
 
     if "error" not in gateway:
         ret["result"] = True

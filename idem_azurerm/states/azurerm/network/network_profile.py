@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Network Profile State Module
 
 .. versionadded:: 3.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -69,6 +71,8 @@ async def present(
 ):
     """
     .. versionadded:: 3.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a network profile exists.
 
@@ -198,6 +202,9 @@ async def present(
         prf = await hub.exec.azurerm.network.network_profile.update_tags(
             ctx, name, resource_group, tags=tags, **prf_kwargs,
         )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": prf}
 
     if "error" not in prf:
         ret["result"] = True

@@ -244,23 +244,6 @@ async def present(
             ret["comment"] = "Virtual network {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "address_space": {"address_prefixes": address_prefixes},
-                "dhcp_options": {"dns_servers": dns_servers or []},
-                "enable_ddos_protection": enable_ddos_protection,
-                "enable_vm_protection": enable_vm_protection,
-                "tags": tags,
-            },
-        }
-
-        if ddos_protection_plan:
-            ret["changes"]["new"]["ddos_protection_plan"] = ddos_protection_plan
-
     if ctx["test"]:
         ret["comment"] = "Virtual network {0} would be created.".format(name)
         ret["result"] = None
@@ -281,6 +264,9 @@ async def present(
         tags=tags,
         **vnet_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": vnet}
 
     if "error" not in vnet:
         ret["result"] = True
@@ -499,22 +485,6 @@ async def subnet_present(
             ret["comment"] = "Subnet {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "virtual_network": virtual_network,
-                "resource_group": resource_group,
-                "address_prefix": address_prefix,
-                "network_security_group": security_group,
-                "route_table": route_table,
-            },
-        }
-
-        if service_endpoints:
-            ret["changes"]["new"]["service_endpoints"] = service_endpoints
-
     if ctx["test"]:
         ret["comment"] = "Subnet {0} would be created.".format(name)
         ret["result"] = None
@@ -534,6 +504,9 @@ async def subnet_present(
         service_endpoints=service_endpoints,
         **snet_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": snet}
 
     if "error" not in snet:
         ret["result"] = True

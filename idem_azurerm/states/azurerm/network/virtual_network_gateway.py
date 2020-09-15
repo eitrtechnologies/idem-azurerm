@@ -369,50 +369,6 @@ async def connection_present(
             ] = "Virtual network gateway connection {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "virtual_network_gateway": virtual_network_gateway,
-                "connection_type": connection_type,
-            },
-        }
-
-        if tags:
-            ret["changes"]["new"]["tags"] = tags
-        if enable_bgp is not None:
-            ret["changes"]["new"]["enable_bgp"] = enable_bgp
-        if connection_protocol:
-            ret["changes"]["new"]["connection_protocol"] = connection_protocol
-        if shared_key:
-            ret["changes"]["new"]["shared_key"] = "REDACTED"
-        if local_network_gateway2:
-            ret["changes"]["new"]["local_network_gateway2"] = local_network_gateway2
-        if ipsec_policy:
-            ret["changes"]["new"]["ipsec_policies"] = [ipsec_policy]
-        if virtual_network_gateway2:
-            ret["changes"]["new"]["virtual_network_gateway2"] = virtual_network_gateway2
-        if express_route_gateway_bypass is not None:
-            ret["changes"]["new"][
-                "express_route_gateway_bypass"
-            ] = express_route_gateway_bypass
-        if use_policy_based_traffic_selectors is not None:
-            ret["changes"]["new"][
-                "use_policy_based_traffic_selectors"
-            ] = use_policy_based_traffic_selectors
-        if authorization_key:
-            ret["changes"]["new"]["authorization_key"] = authorization_key
-        if peer:
-            ret["changes"]["new"]["peer"] = peer
-        if routing_weight is not None:
-            ret["changes"]["new"]["routing_weight"] = routing_weight
-        if use_local_azure_ip_address is not None:
-            ret["changes"]["new"][
-                "use_local_azure_ip_address"
-            ] = use_local_azure_ip_address
-
     if ctx["test"]:
         ret[
             "comment"
@@ -469,6 +425,9 @@ async def connection_present(
             tags=tags,
             **connection_kwargs,
         )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": con}
 
     if "error" not in con:
         ret["result"] = True
@@ -832,42 +791,6 @@ async def present(
             )
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "virtual_network": virtual_network,
-                "ip_configurations": ip_configurations,
-                "sku": {"name": sku, "tier": sku},
-                "gateway_type": gateway_type,
-            },
-        }
-
-        if tags:
-            ret["changes"]["new"]["tags"] = tags
-        if vpn_type:
-            ret["changes"]["new"]["vpn_type"] = vpn_type
-        if enable_bgp is not None:
-            ret["changes"]["new"]["enable_bgp"] = enable_bgp
-        if bgp_settings:
-            ret["changes"]["new"]["bgp_settings"] = bgp_settings
-        if active_active is not None:
-            ret["changes"]["new"]["active_active"] = active_active
-        if address_prefixes:
-            ret["changes"]["new"]["custom_routes"] = {
-                "address_prefixes": address_prefixes
-            }
-        if enable_dns_forwarding is not None:
-            ret["changes"]["new"]["enable_dns_forwarding"] = enable_dns_forwarding
-        if enable_private_ip_address is not None:
-            ret["changes"]["new"][
-                "enable_private_ip_address"
-            ] = enable_private_ip_address
-        if generation:
-            ret["changes"]["new"]["vpn_gateway_generation"] = generation
-
     if ctx["test"]:
         ret["comment"] = "Virtual network gateway {0} would be created.".format(name)
         ret["result"] = None
@@ -875,36 +798,6 @@ async def present(
 
     gateway_kwargs = kwargs.copy()
     gateway_kwargs.update(connection_auth)
-
-    """
-    if action == "create" or len(ret["changes"]) > 1 or not tag_changes:
-        gateway = await hub.exec.azurerm.network.virtual_network_gateway.create_or_update(
-            ctx=ctx,
-            name=name,
-            resource_group=resource_group,
-            virtual_network=virtual_network,
-            ip_configurations=ip_configurations,
-            gateway_type=gateway_type,
-            vpn_type=vpn_type,
-            tags=tags,
-            sku=sku,
-            enable_bgp=enable_bgp,
-            bgp_settings=bgp_settings,
-            active_active=active_active,
-            custom_routes={"address_prefixes": address_prefixes},
-            vpn_gateway_generation=generation,
-            enable_dns_forwarding=enable_dns_forwarding,
-            enable_private_ip_address=enable_private_ip_address,
-            polling=polling,
-            **gateway_kwargs,
-        )
-
-    # no idea why create_or_update doesn't work for tags
-    if action == "update" and tag_changes:
-        gateway = await hub.exec.azurerm.network.virtual_network_gateway.update_tags(
-            ctx, name=name, resource_group=resource_group, tags=tags, **gateway_kwargs,
-        )
-    """
 
     gateway = await hub.exec.azurerm.network.virtual_network_gateway.create_or_update(
         ctx=ctx,
@@ -926,6 +819,9 @@ async def present(
         polling=polling,
         **gateway_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": gateway}
 
     if "error" not in gateway:
         ret["result"] = True

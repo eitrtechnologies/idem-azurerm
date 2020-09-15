@@ -185,17 +185,6 @@ async def present(
             ret["comment"] = "Network security group {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "tags": tags,
-                "security_rules": security_rules,
-            },
-        }
-
     if ctx["test"]:
         ret["comment"] = "Network security group {0} would be created.".format(name)
         ret["result"] = None
@@ -219,6 +208,9 @@ async def present(
         nsg = await hub.exec.azurerm.network.network_security_group.update_tags(
             ctx, name=name, resource_group=resource_group, tags=tags, **nsg_kwargs,
         )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": nsg}
 
     if "error" not in nsg:
         ret["result"] = True
@@ -327,6 +319,8 @@ async def security_rule_present(
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a security rule exists.
 
@@ -595,27 +589,6 @@ async def security_rule_present(
             ret["comment"] = "Security rule {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "access": access,
-                "description": description,
-                "direction": direction,
-                "priority": priority,
-                "protocol": protocol,
-                "destination_address_prefix": destination_address_prefix,
-                "destination_address_prefixes": destination_address_prefixes,
-                "destination_port_range": destination_port_range,
-                "destination_port_ranges": destination_port_ranges,
-                "source_address_prefix": source_address_prefix,
-                "source_address_prefixes": source_address_prefixes,
-                "source_port_range": source_port_range,
-                "source_port_ranges": source_port_ranges,
-            },
-        }
-
     if ctx["test"]:
         ret["comment"] = "Security rule {0} would be created.".format(name)
         ret["result"] = None
@@ -644,6 +617,9 @@ async def security_rule_present(
         source_port_ranges=source_port_ranges,
         **rule_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": rule}
 
     if "error" not in rule:
         ret["result"] = True
