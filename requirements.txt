@@ -6,13 +6,13 @@ takara==1.2
 dict-toolbox==1.9
 azure-common==1.1.25
 azure-core==1.8.1
-azure-graphrbac==0.40.0
+azure-graphrbac==0.61.1
 azure-identity==1.4.0
 azure-keyvault-keys==4.2.0
 azure-keyvault-secrets==4.2.0
 azure-mgmt-applicationinsights==0.2.0
 azure-mgmt-authorization==0.61.0
-azure-mgmt-compute==4.6.2
+azure-mgmt-compute==13.0.0
 azure-mgmt-containerregistry==3.0.0rc14
 azure-mgmt-containerinstance==2.0.0
 azure-mgmt-dns==3.0.0
