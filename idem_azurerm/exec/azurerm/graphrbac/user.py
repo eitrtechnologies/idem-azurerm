@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Graph RBAC User Execution Module
 
 .. versionadded:: 2.4.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -37,13 +39,7 @@ import logging
 # Azure libs
 HAS_LIBS = False
 try:
-    from azure.graphrbac.models.graph_error import GraphErrorException
-    from azure.core.exceptions import (
-        ResourceNotFoundError,
-        HttpResponseError,
-        ResourceExistsError,
-    )
-    from msrest.exceptions import SerializationError
+    from azure.graphrbac.models.graph_error_py3 import GraphErrorException
 
     HAS_LIBS = True
 except ImportError:
@@ -62,9 +58,40 @@ def __virtual__(hub):
     return HAS_LIBS
 
 
+async def get(hub, ctx, upn_or_object_id, **kwargs):
+    """
+    .. versionadded:: 4.0.0
+
+    Gets service principal information from the directory.
+
+    :param upn_or_object_id: The object ID or principal name of the user for which to get information.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.graphrbac.user.get test_id
+
+    """
+    result = {}
+    graphconn = await hub.exec.azurerm.graphrbac.client.get(
+        ctx, resource="https://graph.windows.net", **kwargs
+    )
+
+    try:
+        user = graphconn.users.get(upn_or_object_id=upn_or_object_id)
+        result = user.as_dict()
+    except GraphErrorException as exc:
+        result = {"error": str(exc)}
+
+    return result
+
+
 async def list_(hub, ctx, user_filter=None, **kwargs):
     """
     .. versionadded:: 2.4.0
+
+    .. versionchanged:: 4.0.0
 
     Gets list of users for the current tenant.
 
@@ -78,16 +105,17 @@ async def list_(hub, ctx, user_filter=None, **kwargs):
 
     """
     result = {}
-
     graphconn = await hub.exec.azurerm.graphrbac.client.get(
         ctx, resource="https://graph.windows.net", **kwargs
     )
 
     try:
-        users = graphconn.users.list(filter=user_filter)
+        users = await hub.exec.azurerm.utils.paged_object_to_list(
+            graphconn.users.list(filter=user_filter)
+        )
         for user in users:
-            result[user.object_id] = user.as_dict()
-    except (AttributeError, GraphErrorException, HttpResponseError) as exc:
+            result[user["object_id"]] = user
+    except GraphErrorException as exc:
         result = {"error": str(exc)}
 
     return result
