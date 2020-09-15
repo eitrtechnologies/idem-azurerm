@@ -30,7 +30,6 @@ Azure Resource Manager (ARM) Compute Virtual Machine Size Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 import logging
 
@@ -55,8 +54,7 @@ async def list_(hub, ctx, location, **kwargs):
 
     Get all supported sizes of Virtual Machine in a given region.
 
-    :param  location: The name of the location to query for all possible vm sizes.
-        This parameter is required.
+    :param location: The name of the location to query for all possible vm sizes. This is a required parameter.
 
     CLI Example:
 
