@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Key Vault Secret Execution Module
 
 .. versionadded:: 2.4.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed as keyword arguments
     to every function or via acct in order to work properly.
@@ -477,9 +479,23 @@ async def restore_secret_backup(hub, ctx, backup, vault_url, **kwargs):
     return result
 
 
-async def set_secret(hub, ctx, name, value, vault_url, **kwargs):
+async def set_secret(
+    hub,
+    ctx,
+    name,
+    value,
+    vault_url,
+    content_type=None,
+    enabled=None,
+    expires_on=None,
+    not_before=None,
+    tags=None,
+    **kwargs,
+):
     """
     .. versionadded:: 2.4.0
+
+    .. versionchanged:: 4.0.0
 
     Set a secret value. If name is in use, create a new version of the secret. If not, create a new secret. Requires
     secrets/set permission.
@@ -490,6 +506,24 @@ async def set_secret(hub, ctx, name, value, vault_url, **kwargs):
 
     :param vault_url: The URL of the vault that the client will access.
 
+    :param content_type: An arbitrary string indicating the type of the secret.
+
+    :param enabled: Whether the secret is enabled for use.
+
+    :param expires_on: When the secret will expire, in UTC. This parameter should be a string representation
+        of a Datetime object in ISO-8601 format.
+
+    :param not_before: The time before which the secret cannot be used, in UTC. This parameter should be a
+        string representation of a Datetime object in ISO-8601 format.
+
+    :param tags: A dictionary of strings can be passed as tag metadata to the secret.
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        azurerm.keyvault.secret.set_secret test_name test_secret https://myvault.vault.azure.net/
+
     """
     result = {}
     sconn = await hub.exec.azurerm.keyvault.secret.get_secret_client(
@@ -497,7 +531,15 @@ async def set_secret(hub, ctx, name, value, vault_url, **kwargs):
     )
 
     try:
-        secret = sconn.set_secret(name=name, value=value)
+        secret = sconn.set_secret(
+            name=name,
+            value=value,
+            content_type=content_type,
+            enabled=enabled,
+            expires_on=expires_on,
+            not_before=not_before,
+            tags=tags,
+        )
 
         result = _secret_as_dict(secret)
     except (

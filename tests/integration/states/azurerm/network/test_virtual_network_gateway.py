@@ -53,7 +53,6 @@ async def test_present(
         "changes": {
             "new": {
                 "name": vnet_gateway,
-                "resource_group": resource_group,
                 "virtual_network": vnet,
                 "ip_configurations": configs,
                 "gateway_type": gateway_type,
@@ -80,6 +79,7 @@ async def test_present(
         vpn_type=vpn_type,
         sku=sku,
     )
+    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 
@@ -144,7 +144,6 @@ async def test_connection_present(
         "changes": {
             "new": {
                 "name": vnet_gateway_connection,
-                "resource_group": resource_group,
                 "virtual_network_gateway": vnet_gateway,
                 "connection_type": connection_type,
                 "local_network_gateway2": local_network_gateway,
@@ -171,6 +170,7 @@ async def test_connection_present(
         use_policy_based_traffic_selectors=use_selectors,
         ipsec_policy=ipsec_policy,
     )
+    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 

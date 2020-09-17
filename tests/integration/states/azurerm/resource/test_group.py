@@ -19,7 +19,7 @@ async def test_present(hub, ctx, resource_group, location):
         "result": True,
     }
     ret = await hub.states.azurerm.resource.group.present(ctx, resource_group, location)
-    expected["changes"]["new"]["id"] = ret["changes"]["new"]["id"]
+    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 
