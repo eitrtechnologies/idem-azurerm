@@ -139,17 +139,6 @@ async def present(
             )
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "proximity_placement_group_type": group_type,
-                "tags": tags,
-            },
-        }
-
     if ctx["test"]:
         ret["comment"] = "Proximity placement group {0} would be created.".format(name)
         ret["result"] = None
@@ -166,6 +155,9 @@ async def present(
         tags=tags,
         **ppg_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": ppg}
 
     if "error" not in ppg:
         ret["result"] = True

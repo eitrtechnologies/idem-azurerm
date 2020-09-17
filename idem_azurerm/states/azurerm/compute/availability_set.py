@@ -214,19 +214,6 @@ async def present(
             ret["comment"] = "Availability set {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "virtual_machines": virtual_machines,
-                "platform_update_domain_count": platform_update_domain_count,
-                "platform_fault_domain_count": platform_fault_domain_count,
-                "sku": sku,
-                "tags": tags,
-            },
-        }
-
     if ctx["test"]:
         ret["comment"] = "Availability set {0} would be created.".format(name)
         ret["result"] = None
@@ -247,6 +234,9 @@ async def present(
         tags=tags,
         **aset_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": aset}
 
     if "error" not in aset:
         ret["result"] = True

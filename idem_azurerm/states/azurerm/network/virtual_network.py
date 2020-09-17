@@ -177,8 +177,7 @@ async def present(
                 "comment"
             ] = "The specified resource ID of the DDOS Protection Plan is invalid."
             return ret
-        else:
-            ddos_protection_plan = {"id": ddos_protection_plan}
+        ddos_protection_plan = {"id": ddos_protection_plan}
 
     vnet = await hub.exec.azurerm.network.virtual_network.get(
         ctx, name, resource_group, azurerm_log_level="info", **connection_auth

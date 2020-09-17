@@ -14,7 +14,6 @@ async def test_present(hub, ctx, resource_group, acr):
                 "location": "eastus",
                 "provisioning_state": "Succeeded",
                 "scope": "",
-                "status": "enabled",
                 "tags": {},
                 "type": "Microsoft.ContainerRegistry/registries/webhooks",
             },

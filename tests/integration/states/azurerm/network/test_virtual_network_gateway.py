@@ -176,15 +176,13 @@ async def test_connection_present(
         "changes": {
             "new": {
                 "name": vnet_gateway_connection,
-                "connection_type": connection_type,
                 "enable_bgp": enable_bgp,
                 "shared_key": "REDACTED",
                 "connection_protocol": "IKEv2",
                 "connection_status": "Unknown",
-                "connection_type": "IPsec",
+                "connection_type": connection_type,
                 "dpd_timeout_seconds": 0,
                 "egress_bytes_transferred": 0,
-                "enable_bgp": False,
                 "express_route_gateway_bypass": False,
                 "ingress_bytes_transferred": 0,
                 "type": "Microsoft.Network/connections",
