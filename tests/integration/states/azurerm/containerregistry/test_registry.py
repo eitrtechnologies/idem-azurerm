@@ -9,9 +9,17 @@ async def test_present(hub, ctx, resource_group, location, acr):
             "new": {
                 "admin_user_enabled": False,
                 "name": acr,
-                "resource_group": resource_group,
-                "sku": "Basic",
-                "replica_locations": [],
+                "sku": {"name": "Basic", "tier": "Basic"},
+                "location": "eastus",
+                "tags": {},
+                "provisioning_state": "Succeeded",
+                "login_server": f"{acr}.azurecr.io",
+                "policies": {
+                    "quarantine_policy": {"status": "disabled"},
+                    "retention_policy": {"days": 7, "status": "disabled"},
+                    "trust_policy": {"status": "disabled", "type": "Notary"},
+                },
+                "type": "Microsoft.ContainerRegistry/registries",
             },
             "old": {},
         },
@@ -22,6 +30,9 @@ async def test_present(hub, ctx, resource_group, location, acr):
     ret = await hub.states.azurerm.containerregistry.registry.present(
         ctx, acr, resource_group, sku="Basic", location=location,
     )
+    ret["changes"]["new"].pop("creation_date")
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"]["policies"]["retention_policy"].pop("last_updated_time")
     assert ret == expected
 
 

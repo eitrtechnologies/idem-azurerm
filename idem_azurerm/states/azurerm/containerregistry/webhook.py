@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Container Registry Webhook State Module
 
 .. versionadded:: 3.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -97,6 +99,8 @@ async def present(
     """
     .. versionadded:: 3.0.0
 
+    .. versionchanged:: 4.0.0
+
     Ensure a container registry webhook exists.
 
     :param name: The name of the webhook.
@@ -143,7 +147,6 @@ async def present(
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
     action = "create"
-    new = {}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -153,22 +156,6 @@ async def present(
                 "comment"
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
-
-    # populate dictionary of settings for changes output on creation
-    for param in [
-        "name",
-        "registry_name",
-        "resource_group",
-        "service_uri",
-        "actions",
-        "custom_headers",
-        "status",
-        "scope",
-        "tags",
-    ]:
-        value = locals()[param]
-        if value is not None:
-            new[param] = value
 
     # get existing container registry webhook if present
     hook = await hub.exec.azurerm.containerregistry.webhook.get(
@@ -238,10 +225,6 @@ async def present(
     elif ctx["test"]:
         ret["comment"] = "Container registry webhook {0} would be created.".format(name)
         ret["result"] = None
-        ret["changes"] = {
-            "old": {},
-            "new": new,
-        }
         return ret
 
     hook_kwargs = kwargs.copy()
@@ -261,11 +244,12 @@ async def present(
         **hook_kwargs,
     )
 
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": hook}
+
     if "error" not in hook:
         ret["result"] = True
         ret["comment"] = f"Container registry webhook {name} has been {action}d."
-        if not ret["changes"]:
-            ret["changes"] = {"old": {}, "new": new}
         return ret
 
     ret["comment"] = "Failed to {0} container registry webhook {1}! ({2})".format(

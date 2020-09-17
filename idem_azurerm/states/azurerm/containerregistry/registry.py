@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Container Registry State Module
 
 .. versionadded:: 3.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -96,6 +98,8 @@ async def present(
     """
     .. versionadded:: 3.0.0
 
+    .. versionchanged:: 4.0.0
+
     Ensure a container registry exists.
 
     :param name: The name of the container registry.
@@ -165,7 +169,6 @@ async def present(
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
     action = "create"
     just_repl = False
-    new = {}
 
     if not replica_locations:
         replica_locations = []
@@ -178,26 +181,6 @@ async def present(
                 "comment"
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
-
-    # populate dictionary of settings for changes output on creation
-    for param in [
-        "name",
-        "resource_group",
-        "sku",
-        "replica_locations",
-        "admin_user_enabled",
-        "default_action",
-        "virtual_network_rules",
-        "ip_rules",
-        "trust_policy",
-        "quarantine_policy",
-        "retention_policy",
-        "retention_days",
-        "tags",
-    ]:
-        value = locals()[param]
-        if value is not None:
-            new[param] = value
 
     # get existing container registry if present
     acr = await hub.exec.azurerm.containerregistry.registry.get(
@@ -308,10 +291,6 @@ async def present(
     elif ctx["test"]:
         ret["comment"] = "Container registry {0} would be created.".format(name)
         ret["result"] = None
-        ret["changes"] = {
-            "old": {},
-            "new": new,
-        }
         return ret
 
     acr_kwargs = kwargs.copy()
@@ -335,6 +314,9 @@ async def present(
             tags=tags,
             **acr_kwargs,
         )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": acr}
 
     if "error" not in acr:
         if "location" in acr_kwargs:
@@ -376,8 +358,6 @@ async def present(
 
         ret["result"] = True
         ret["comment"] = f"Container registry {name} has been {action}d."
-        if not ret["changes"]:
-            ret["changes"] = {"old": {}, "new": new}
         return ret
 
     ret["comment"] = "Failed to {0} container registry {1}! ({2})".format(

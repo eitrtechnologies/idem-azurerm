@@ -428,6 +428,8 @@ async def connection_present(
 
     if action == "create":
         ret["changes"] = {"old": {}, "new": con}
+        if ret["changes"]["new"].get("shared_key"):
+            ret["changes"]["new"]["shared_key"] = "REDACTED"
 
     if "error" not in con:
         ret["result"] = True

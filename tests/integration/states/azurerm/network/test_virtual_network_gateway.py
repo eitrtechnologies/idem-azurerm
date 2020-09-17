@@ -52,14 +52,31 @@ async def test_present(
     expected = {
         "changes": {
             "new": {
+                "bgp_settings": {
+                    "asn": 65515,
+                    "bgp_peering_address": "192.168.255.254",
+                    "bgp_peering_addresses": [{"custom_bgp_ip_addresses": [],}],
+                    "peer_weight": 0,
+                },
+                "custom_routes": {"address_prefixes": []},
+                "ip_configurations": [
+                    {
+                        "name": ip_config,
+                        "private_ip_allocation_method": "Dynamic",
+                        "provisioning_state": "Succeeded",
+                    },
+                ],
                 "name": vnet_gateway,
-                "virtual_network": vnet,
-                "ip_configurations": configs,
                 "gateway_type": gateway_type,
                 "enable_bgp": enable_bgp,
+                "enable_private_ip_address": False,
                 "active_active": active_active,
                 "vpn_type": vpn_type,
-                "sku": {"name": sku, "tier": sku},
+                "location": "eastus",
+                "type": "Microsoft.Network/virtualNetworkGateways",
+                "vpn_gateway_generation": "Generation1",
+                "provisioning_state": "Succeeded",
+                "sku": {"name": sku, "tier": sku, "capacity": 2},
             },
             "old": {},
         },
@@ -80,6 +97,21 @@ async def test_present(
         sku=sku,
     )
     ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("resource_guid")
+    ret["changes"]["new"].pop("etag")
+    ret["changes"]["new"]["ip_configurations"][0].pop("public_ip_address")
+    ret["changes"]["new"]["ip_configurations"][0].pop("subnet")
+    ret["changes"]["new"]["ip_configurations"][0].pop("etag")
+    ret["changes"]["new"]["ip_configurations"][0].pop("id")
+    ret["changes"]["new"]["bgp_settings"]["bgp_peering_addresses"][0].pop(
+        "ipconfiguration_id"
+    )
+    ret["changes"]["new"]["bgp_settings"]["bgp_peering_addresses"][0].pop(
+        "default_bgp_ip_addresses"
+    )
+    ret["changes"]["new"]["bgp_settings"]["bgp_peering_addresses"][0].pop(
+        "tunnel_ip_addresses"
+    )
     assert ret == expected
 
 
@@ -144,11 +176,23 @@ async def test_connection_present(
         "changes": {
             "new": {
                 "name": vnet_gateway_connection,
-                "virtual_network_gateway": vnet_gateway,
                 "connection_type": connection_type,
-                "local_network_gateway2": local_network_gateway,
                 "enable_bgp": enable_bgp,
                 "shared_key": "REDACTED",
+                "connection_protocol": "IKEv2",
+                "connection_status": "Unknown",
+                "connection_type": "IPsec",
+                "dpd_timeout_seconds": 0,
+                "egress_bytes_transferred": 0,
+                "enable_bgp": False,
+                "express_route_gateway_bypass": False,
+                "ingress_bytes_transferred": 0,
+                "type": "Microsoft.Network/connections",
+                "location": "eastus",
+                "provisioning_state": "Succeeded",
+                "routing_weight": 0,
+                "traffic_selector_policies": [],
+                "use_local_azure_ip_address": False,
                 "use_policy_based_traffic_selectors": use_selectors,
                 "ipsec_policies": [ipsec_policy],
             },
@@ -171,6 +215,10 @@ async def test_connection_present(
         ipsec_policy=ipsec_policy,
     )
     ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("resource_guid")
+    ret["changes"]["new"].pop("etag")
+    ret["changes"]["new"].pop("virtual_network_gateway1")
+    ret["changes"]["new"].pop("local_network_gateway2")
     assert ret == expected
 
 
