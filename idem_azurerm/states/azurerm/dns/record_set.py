@@ -81,7 +81,6 @@ Azure Resource Manager (ARM) DNS Record Set State Module
 from __future__ import absolute_import
 from dict_tools import differ
 import logging
-import six
 
 log = logging.getLogger(__name__)
 
@@ -311,9 +310,9 @@ async def present(
                         for key, val in local_dict.items():
                             local_val = val
                             remote_val = remote[idx].get(key)
-                            if isinstance(local_val, six.string_types):
+                            if isinstance(local_val, str):
                                 local_val = local_val.lower()
-                            if isinstance(remote_val, six.string_types):
+                            if isinstance(remote_val, str):
                                 remote_val = remote_val.lower()
                             if local_val != remote_val:
                                 ret["changes"] = {"new": {record_str: record}}

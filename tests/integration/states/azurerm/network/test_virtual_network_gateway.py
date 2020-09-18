@@ -52,12 +52,6 @@ async def test_present(
     expected = {
         "changes": {
             "new": {
-                "bgp_settings": {
-                    "asn": 65515,
-                    "bgp_peering_address": "192.168.255.254",
-                    "bgp_peering_addresses": [{"custom_bgp_ip_addresses": [],}],
-                    "peer_weight": 0,
-                },
                 "custom_routes": {"address_prefixes": []},
                 "ip_configurations": [
                     {
@@ -103,15 +97,7 @@ async def test_present(
     ret["changes"]["new"]["ip_configurations"][0].pop("subnet")
     ret["changes"]["new"]["ip_configurations"][0].pop("etag")
     ret["changes"]["new"]["ip_configurations"][0].pop("id")
-    ret["changes"]["new"]["bgp_settings"]["bgp_peering_addresses"][0].pop(
-        "ipconfiguration_id"
-    )
-    ret["changes"]["new"]["bgp_settings"]["bgp_peering_addresses"][0].pop(
-        "default_bgp_ip_addresses"
-    )
-    ret["changes"]["new"]["bgp_settings"]["bgp_peering_addresses"][0].pop(
-        "tunnel_ip_addresses"
-    )
+    ret["changes"]["new"].pop("bgp_settings")
     assert ret == expected
 
 
@@ -180,7 +166,7 @@ async def test_connection_present(
                 "shared_key": "REDACTED",
                 "connection_protocol": "IKEv2",
                 "connection_status": "Unknown",
-                "connection_type": connection_type,
+                "connection_type": "IPsec",
                 "dpd_timeout_seconds": 0,
                 "egress_bytes_transferred": 0,
                 "express_route_gateway_bypass": False,

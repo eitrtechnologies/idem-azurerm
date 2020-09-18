@@ -43,7 +43,7 @@ async def test_present(
         ignore_missing_endpoint=ignore_missing_endpoint,
     )
     ret["changes"]["new"].pop("id")
-    ret["changes"]["new"].pop("virtual_network_id")
+    ret["changes"]["new"].pop("virtual_network_subnet_id")
     assert ret == expected
 
 

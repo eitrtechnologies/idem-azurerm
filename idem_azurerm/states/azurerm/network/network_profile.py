@@ -109,7 +109,6 @@ async def present(
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
     action = "create"
-    new = {}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -119,18 +118,6 @@ async def present(
                 "comment"
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
-
-    # populate dictionary of settings for changes output on creation
-    for param in [
-        "name",
-        "resource_group",
-        "container_network_interfaces",
-        "container_network_interface_configurations",
-        "tags",
-    ]:
-        value = locals()[param]
-        if value is not None:
-            new[param] = value
 
     # get existing network profile if present
     prf = await hub.exec.azurerm.network.network_profile.get(
@@ -177,10 +164,6 @@ async def present(
     elif ctx["test"]:
         ret["comment"] = "Network profile {0} would be created.".format(name)
         ret["result"] = None
-        ret["changes"] = {
-            "old": {},
-            "new": new,
-        }
         return ret
 
     prf_kwargs = kwargs.copy()
@@ -209,8 +192,6 @@ async def present(
     if "error" not in prf:
         ret["result"] = True
         ret["comment"] = f"Network profile {name} has been {action}d."
-        if not ret["changes"]:
-            ret["changes"] = {"old": {}, "new": new}
         return ret
 
     ret["comment"] = "Failed to {0} network profile {1}! ({2})".format(

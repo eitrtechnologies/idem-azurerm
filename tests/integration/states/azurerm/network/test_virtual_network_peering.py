@@ -23,7 +23,6 @@ async def test_present(hub, ctx, vnet_peering, resource_group, vnet, vnet2):
                 "use_remote_gateways": False,
                 "peering_state": "Initiated",
                 "provisioning_state": "Succeeded",
-                "remote_address_space": {"address_prefixes": ["172.0.0.0/8"]},
             },
             "old": {},
         },
@@ -42,6 +41,7 @@ async def test_present(hub, ctx, vnet_peering, resource_group, vnet, vnet2):
     ret["changes"]["new"].pop("id")
     ret["changes"]["new"].pop("etag")
     ret["changes"]["new"].pop("remote_virtual_network")
+    ret["changes"]["new"].pop("remote_address_space")
     assert ret == expected
 
 
