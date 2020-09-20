@@ -14,7 +14,19 @@ def management_group():
 @pytest.mark.asyncio
 async def test_present(hub, ctx, management_group):
     expected = {
-        "changes": {"new": {"name": management_group,}, "old": {},},
+        "changes": {
+            "new": {
+                "name": management_group,
+                "id": f"/providers/Microsoft.Management/managementGroups/{management_group}",
+                "properties": {
+                    "details": {"parent": {"displayName": "Tenant Root Group"}},
+                    "displayName": management_group,
+                },
+                "status": "Succeeded",
+                "type": "/providers/Microsoft.Management/managementGroups",
+            },
+            "old": {},
+        },
         "comment": f"Management Group {management_group} has been created.",
         "name": management_group,
         "result": True,
@@ -22,6 +34,12 @@ async def test_present(hub, ctx, management_group):
     ret = await hub.states.azurerm.managementgroup.operations.present(
         ctx, name=management_group,
     )
+    ret["changes"]["new"]["properties"].pop("tenantId")
+    ret["changes"]["new"]["properties"]["details"]["parent"].pop("id")
+    ret["changes"]["new"]["properties"]["details"]["parent"].pop("name")
+    ret["changes"]["new"]["properties"]["details"].pop("version")
+    ret["changes"]["new"]["properties"]["details"].pop("updatedBy")
+    ret["changes"]["new"]["properties"]["details"].pop("updatedTime")
     assert ret == expected
 
 

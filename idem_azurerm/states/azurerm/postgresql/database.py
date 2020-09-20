@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) PostgreSQL Database Operations State Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -79,6 +81,8 @@ async def present(
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Ensures that the specified database exists within the given PostgreSQL database.
 
     :param name: The name of the database.
@@ -153,21 +157,6 @@ async def present(
             ret["comment"] = "Database {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "server_name": server_name,
-                "resource_group": resource_group,
-            },
-        }
-
-        if charset:
-            ret["changes"]["new"]["charset"] = charset
-        if collation:
-            ret["collation"]["new"]["collation"] = collation
-
     if ctx["test"]:
         ret["comment"] = "Database {0} would be created.".format(name)
         ret["result"] = None
@@ -185,6 +174,9 @@ async def present(
         collation=collation,
         **database_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": database}
 
     if "error" not in database:
         ret["result"] = True

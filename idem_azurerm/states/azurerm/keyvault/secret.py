@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Key Vault Secret State Module
 
 .. versionadded:: 2.4.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -77,6 +79,8 @@ async def present(
     """
     .. versionadded:: 2.4.0
 
+    .. versionchanged:: 4.0.0
+
     Ensure the specified secret exists within the given key vault. Requires secrets/set permission. Secret properties
         can be specified as keyword arguments.
 
@@ -98,10 +102,9 @@ async def present(
 
     :param tags: A dictionary of strings can be passed as tag metadata to the secret.
 
-    :param version: By default, a new version of the secret will not be created if the name is already in
-        use UNLESS the value of the secret is changed. Secret properties will be updated on the latest version unless
-        otherwise specified with this parameter. Set ``version`` to ``new`` in order to forse the creation of a new
-        secret version.
+    :param version: The version of the secret. By default, a new version of the secret will not be created if the name
+        is already in use UNLESS the value of the secret is changed. Secret properties will be updated on the latest
+        version unless otherwise specified with this parameter.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -196,23 +199,6 @@ async def present(
             ret["comment"] = "Secret {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "name": {"new": name},
-            "value": {"new": "REDACTED_VALUE"},
-        }
-
-        if tags:
-            ret["changes"]["tags"] = {"new": tags}
-        if content_type:
-            ret["changes"]["content_type"] = {"new": content_type}
-        if enabled is not None:
-            ret["changes"]["enabled"] = {"new": enabled}
-        if expires_on:
-            ret["changes"]["expires_on"] = {"new": expires_on}
-        if not_before:
-            ret["changes"]["not_before"] = {"new": not_before}
-
     if ctx["test"]:
         ret["comment"] = "Secret {0} would be created.".format(name)
         ret["result"] = None
@@ -220,14 +206,21 @@ async def present(
 
     secret_kwargs = kwargs.copy()
     secret_kwargs.update(connection_auth)
-    secret = {}
 
-    if ret["changes"].get("value"):
+    if action == "create" or (action == "update" and ret["changes"].get("value")):
         secret = await hub.exec.azurerm.keyvault.secret.set_secret(
-            ctx=ctx, name=name, value=value, vault_url=vault_url, **secret_kwargs
+            ctx=ctx,
+            name=name,
+            value=value,
+            vault_url=vault_url,
+            content_type=content_type,
+            enabled=enabled,
+            expires_on=expires_on,
+            not_before=not_before,
+            tags=tags,
+            **secret_kwargs,
         )
-
-    if [key for key in ret["changes"] if key not in ["name", "value"]]:
+    else:
         secret = await hub.exec.azurerm.keyvault.secret.update_secret_properties(
             ctx=ctx,
             name=name,
@@ -240,6 +233,11 @@ async def present(
             tags=tags,
             **secret_kwargs,
         )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": secret}
+        if ret["changes"]["new"].get("value"):
+            ret["changes"]["new"]["value"] = "REDACTED"
 
     if "error" not in secret:
         ret["result"] = True

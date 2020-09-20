@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Redis Operations State Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -52,6 +54,7 @@ Azure Resource Manager (ARM) Redis Operations State Module
 # Python libs
 from __future__ import absolute_import
 from dict_tools import differ
+import time
 import logging
 
 log = logging.getLogger(__name__)
@@ -75,12 +78,16 @@ async def present(
     static_ip=None,
     zones=None,
     polling=True,
+    poller_interval=60,
+    poller_timeout=60,
     tags=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a redis cache exists in the resource group.
 
@@ -91,39 +98,51 @@ async def present(
     :param location: The geo-location where the resource lives.
 
     :param sku: A dictionary representing the SKU of the Redis cache to deploy. Required parameters include:
+
         - ``name``: The type of Redis cache to deploy. Possible values include: 'Basic', 'Standard', and 'Premium'.
         - ``family``: The SKU family to use. Possible values include 'C' for Basic/Standard and 'P' for Premium.
         - ``capacity``: The size of the Redis cache to deploy. Possible values include 0, 1, 2, 3, 4, 5, and 6 for the
-                        C (Basic/Standard) family and 1, 2, 3, and 4 for the P (Premium) family.
+          C (Basic/Standard) family and 1, 2, 3, and 4 for the P (Premium) family.
 
-    :param redis_configuration: A dictionary of string key-value pairs that represent all Redis Settings. Some possible
-        keys include: rdb-backup-enabled, rdb-storage-connection-string, rdb-backup-frequency, maxmemory-delta,
-        maxmemory-policy, notify-keyspace-events, maxmemory-samples, slowlog-log-slower-than, slowlog-max-len,
-        list-max-ziplist-entries, list-max-ziplist-value, hash-max-ziplist-entries, hash-max-ziplist-value,
-        set-max-intset-entries, zset-max-ziplist-entries, zset-max-ziplist-value, and more.
+    :param redis_configuration: A dictionary of string key-value pairs that represent all Redis Settings.
+        Some possible keys include: rdb-backup-enabled, rdb-storage-connection-string, rdb-backup-frequency,
+        maxmemory-delta, maxmemory-policy, notify-keyspace-events, maxmemory-samples, slowlog-log-slower-than,
+        slowlog-max-len, list-max-ziplist-entries, list-max-ziplist-value, hash-max-ziplist-entries,
+        hash-max-ziplist-value, set-max-intset-entries, zset-max-ziplist-entries, zset-max-ziplist-value, and more.
 
-    :param enable_non_ssl_port: Specifies whether the non-ssl Redis server port (6379) is enabled. Defaults to False.
+    :param enable_non_ssl_port: Specifies whether the non-ssl Redis server port (6379) is enabled.
+        Defaults to False.
 
     :param tenant_settings: A dictionary of tenant settings.
 
     :param shard_count: The number of shards to be created on a Premium Cluster Cache.
 
-    :param minimum_tls_version: The specified TLS version (or higher) that clients are required to use. Possible values
-        include: '1.0', '1.1', and '1.2'.
+    :param minimum_tls_version: The specified TLS version (or higher) that clients are required to use.
+        Possible values include: '1.0', '1.1', and '1.2'.
 
-    :param subnet_id: The full resource ID of a subnet in a virtual network to deploy the Redis cache in. Example
-        format: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/Microsoft.{Network|ClassicNetwork}/VirtualNetworks/vnet1/subnets/subnet1
+    :param subnet_id: The full resource ID of a subnet in a virtual network to deploy the Redis cache in.
+        Example format: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/Microsoft.{Network|ClassicNetwork}/VirtualNetworks/vnet1/subnets/subnet1.
 
     :param static_ip: Static IP address. Required when deploying a Redis cache inside an existing Azure Virtual Network.
 
     :param zones: A list of availability zones denoting where the resource needs to come from.
 
-    :param tags: A dictionary of strings can be passed as tag metadata to the storage account object.
+    :param tags: A dictionary of strings can be passed as tag metadata to the Redis cache object.
 
-    :param polling: A boolean flag representing whether a Poller will be used during the creation of the Redis Cache.
-        If set to True, a Poller will be used by this operation and the module will not return until the Redis Cache
-        has completed its creation process and has been successfully provisioned. If set to False, the module will
-        return once the Redis Cache has successfully begun its creation process. Defaults to True.
+    :param polling: An optional boolean flag representing whether a Poller will be used during the creation of the
+        Redis Cache. If set to True, a Poller will be used by this operation and the module will not return until the
+        Redis Cache has completed its creation process and has been successfully provisioned. If set to False, the
+        module will return once the Redis Cache has successfully begun its creation process. Due to an issue with
+        polling within the most recent packages of ``azure-mgmt-redis``, the ``poller_interval`` and ``poller_timeout``
+        parameters are used to assist with polling if this parameter is set to True. Defaults to True.
+
+    :param poller_interval: The number of seconds between every attempt of the state module to poll Azure and check if
+        the Redis Cache has been successfully provisioned. This parameter must be an integer between 30 and 300.
+        Defaults to 60.
+
+    :param poller_timeout: The number of minutes that the state module should attempt to poll Azure about the
+        provisioning status of the Redis Cache before just returning the result of the execution. This parameter must
+        be an integer between 30 and 120. Defaults to 45.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -134,8 +153,8 @@ async def present(
 
         Ensure redis cache exists:
             azurerm.redis.operations.present:
-                - name: my_account
-                - resource_group: my_rg
+                - name: my_cache
+                - resource_group: my_group
                 - sku:
                     name: 'Premium'
                     family: 'P'
@@ -218,36 +237,6 @@ async def present(
             ret["comment"] = "Redis cache {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "sku": sku,
-                "location": location,
-            },
-        }
-
-        if tags:
-            ret["changes"]["new"]["tags"] = tags
-        if redis_configuration:
-            ret["changes"]["new"]["redis_configuration"] = redis_configuration
-        if enable_non_ssl_port is not None:
-            ret["changes"]["new"]["enable_non_ssl_port"] = enable_non_ssl_port
-        if tenant_settings:
-            ret["changes"]["new"]["tenant_settings"] = tenant_settings
-        if shard_count is not None:
-            ret["changes"]["new"]["shard_count"] = shard_count
-        if minimum_tls_version:
-            ret["changes"]["new"]["minimum_tls_version"] = minimum_tls_version
-        if subnet_id:
-            ret["changes"]["new"]["subnet_id"] = subnet_id
-        if static_ip:
-            ret["changes"]["new"]["static_ip"] = static_ip
-        if zones:
-            ret["changes"]["new"]["zones"] = zones
-
     if ctx["test"]:
         ret["comment"] = "Redis cache {0} would be created.".format(name)
         ret["result"] = None
@@ -290,6 +279,33 @@ async def present(
             **cache_kwargs,
         )
 
+    if polling:
+        if poller_interval < 30 or poller_interval > 300:
+            log.error(
+                "An invalid value was specified within the poller_interval parameter. The default value of 60 (seconds) will be used."
+            )
+            poller_interval = 60
+        if poller_timeout < 30 or poller_timeout > 120:
+            log.error(
+                "An invalid value was specified within the poller_timeout parameter. The default value of 60 (minutes) will be used."
+            )
+            poller_timeout = 60
+
+        # Convert poller_timeout from minutes to seconds
+        poller_timeout = poller_timeout * 60
+        polled_time = 0
+        while polled_time < poller_timeout:
+            time.sleep(poller_interval)
+            polled_time += poller_interval
+            status = await hub.exec.azurerm.redis.operations.get(
+                ctx=ctx, name=name, resource_group=resource_group
+            )
+            if status.get("provisioning_state").lower() in ["succeeded", "failed"]:
+                break
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": cache}
+
     if "error" not in cache:
         ret["result"] = True
         ret["comment"] = f"Redis cache {name} has been {action}d."
@@ -322,7 +338,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
 
         Ensure redis cache does not exist:
             azurerm.redis.operations.absent:
-                - name: my_account
+                - name: my_redis_cache
                 - resource_group: my_rg
                 - connection_auth: {{ profile }}
 

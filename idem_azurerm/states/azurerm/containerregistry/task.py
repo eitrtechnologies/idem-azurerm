@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Container Registry Task State Module
 
 .. versionadded:: 3.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -123,6 +125,8 @@ async def present(
     """
     .. versionadded:: 3.0.0
 
+    .. versionchanged:: 4.0.0
+
     Ensure a container registry task exists.
 
     :param name: The name of the task.
@@ -228,7 +232,6 @@ async def present(
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
     action = "create"
-    new = {}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -238,44 +241,6 @@ async def present(
                 "comment"
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
-
-    # populate dictionary of settings for changes output on creation
-    for param in [
-        "name",
-        "registry_name",
-        "resource_group",
-        "task_type",
-        "platform_os",
-        "platform_arch",
-        "platform_variant",
-        "context_path",
-        "context_access_token",
-        "task_file_path",
-        "image_names",
-        "is_push_enabled",
-        "no_cache",
-        "target",
-        "encoded_task_content",
-        "encoded_values_content",
-        "values_file_path",
-        "values_dict",
-        "agent_num_cores",
-        "status",
-        "trigger",
-        "timeout",
-        "credential_login_mode",
-        "credential_login_server",
-        "credential_username",
-        "credential_password",
-        "identity_principal_id",
-        "identity_tenant_id",
-        "identity_type",
-        "user_assigned_identities",
-        "tags",
-    ]:
-        value = locals()[param]
-        if value is not None:
-            new[param] = value
 
     # get existing container registry task if present
     task = await hub.exec.azurerm.containerregistry.task.get(
@@ -518,10 +483,6 @@ async def present(
     elif ctx["test"]:
         ret["comment"] = "Container registry task {0} would be created.".format(name)
         ret["result"] = None
-        ret["changes"] = {
-            "old": {},
-            "new": new,
-        }
         return ret
 
     task_kwargs = kwargs.copy()
@@ -563,11 +524,12 @@ async def present(
         **task_kwargs,
     )
 
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": task}
+
     if "error" not in task:
         ret["result"] = True
         ret["comment"] = f"Container registry task {name} has been {action}d."
-        if not ret["changes"]:
-            ret["changes"] = {"old": {}, "new": new}
         return ret
 
     ret["comment"] = "Failed to {0} container registry task {1}! ({2})".format(

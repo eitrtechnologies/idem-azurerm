@@ -204,26 +204,6 @@ async def present(
             ret["comment"] = "Key {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {"old": {}, "new": {"name": name, "key_type": key_type}}
-
-        if tags:
-            ret["changes"]["new"]["tags"] = tags
-        if key_operations is not None:
-            ret["changes"]["new"]["key_operations"] = key_operations
-        if hardware_protected is not None:
-            ret["changes"]["new"]["hardware_protected"] = hardware_protected
-        if enabled is not None:
-            ret["changes"]["new"]["enabled"] = enabled
-        if expires_on:
-            ret["changes"]["new"]["expires_on"] = expires_on
-        if not_before:
-            ret["changes"]["new"]["not_before"] = not_before
-        if size:
-            ret["changes"]["new"]["size"] = size
-        if curve:
-            ret["changes"]["new"]["curve"] = curve
-
     if ctx["test"]:
         ret["comment"] = "Key {0} would be created.".format(name)
         ret["result"] = None
@@ -247,6 +227,9 @@ async def present(
         curve=curve,
         **key_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": key}
 
     if "error" not in key:
         ret["result"] = True

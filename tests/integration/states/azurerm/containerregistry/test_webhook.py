@@ -10,10 +10,12 @@ async def test_present(hub, ctx, resource_group, acr):
             "new": {
                 "actions": ["push"],
                 "name": hook,
-                "registry_name": acr,
-                "resource_group": resource_group,
-                "service_uri": "http://idem.eitr.tech/webhook",
                 "status": "enabled",
+                "location": "eastus",
+                "provisioning_state": "Succeeded",
+                "scope": "",
+                "tags": {},
+                "type": "Microsoft.ContainerRegistry/registries/webhooks",
             },
             "old": {},
         },
@@ -24,6 +26,7 @@ async def test_present(hub, ctx, resource_group, acr):
     ret = await hub.states.azurerm.containerregistry.webhook.present(
         ctx, hook, acr, resource_group, "http://idem.eitr.tech/webhook", ["push"]
     )
+    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 

@@ -9,12 +9,15 @@ async def test_present(hub, ctx, vnet, vnet2, resource_group):
         "changes": {
             "new": {
                 "name": vnet,
-                "resource_group": resource_group,
                 "address_space": {"address_prefixes": vnet_addr_prefixes},
-                "dhcp_options": {"dns_servers": None},
+                "dhcp_options": {"dns_servers": []},
+                "location": "eastus",
                 "enable_ddos_protection": False,
                 "enable_vm_protection": False,
-                "tags": None,
+                "subnets": [],
+                "virtual_network_peerings": [],
+                "type": "Microsoft.Network/virtualNetworks",
+                "provisioning_state": "Succeeded",
             },
             "old": {},
         },
@@ -28,6 +31,9 @@ async def test_present(hub, ctx, vnet, vnet2, resource_group):
         resource_group=resource_group,
         address_prefixes=vnet_addr_prefixes,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("etag")
+    ret["changes"]["new"].pop("resource_guid")
     assert ret == expected
 
     # A second vnet is created here to be used in the vnet peering tests
@@ -46,7 +52,7 @@ async def test_changes(
     hub, ctx, vnet, resource_group, subnet,
 ):
     vnet_addr_prefixes = ["10.0.0.0/16"]
-    changed_vnet_addr_prefixes = ["10.0.0.0/16", "192.168.0.0/16"]
+    changed_vnet_addr_prefixes = ["10.0.0.0/16", "192.168.0.0/16", "128.0.0.0/16"]
     expected = {
         "changes": {
             "address_space": {
@@ -69,19 +75,30 @@ async def test_changes(
     assert ret == expected
 
 
-# Tests the creation of a subnet with service endpoints and a GatewaySubnet (both are necessary for other tests)
+# Tests the creation of a subnet with service endpoints, a GatewaySubnet, and a AzureBastionSubnet (all are necessary
+# for other tests)
 @pytest.mark.run(order=3, after="test_changes", before="test_subnet_changes")
 @pytest.mark.asyncio
 async def test_subnet_present(hub, ctx, subnet, vnet, resource_group):
     subnet_addr_prefix = "10.0.0.0/16"
     gateway_snet_addr_prefix = "192.168.0.0/16"
-    normal_expected = {
+    bastion_snet_addr_prefix = "128.0.0.0/16"
+    snet_expected = {
         "changes": {
             "new": {
                 "name": subnet,
                 "address_prefix": subnet_addr_prefix,
-                "network_security_group": None,
-                "route_table": None,
+                "delegations": [],
+                "provisioning_state": "Succeeded",
+                "private_endpoint_network_policies": "Enabled",
+                "private_link_service_network_policies": "Enabled",
+                "service_endpoints": [
+                    {
+                        "service": "Microsoft.Sql",
+                        "provisioning_state": "Succeeded",
+                        "locations": ["eastus"],
+                    }
+                ],
             },
             "old": {},
         },
@@ -95,13 +112,32 @@ async def test_subnet_present(hub, ctx, subnet, vnet, resource_group):
             "new": {
                 "name": "GatewaySubnet",
                 "address_prefix": gateway_snet_addr_prefix,
-                "network_security_group": None,
-                "route_table": None,
+                "private_endpoint_network_policies": "Enabled",
+                "private_link_service_network_policies": "Enabled",
+                "provisioning_state": "Succeeded",
+                "delegations": [],
             },
             "old": {},
         },
         "comment": f"Subnet GatewaySubnet has been created.",
         "name": "GatewaySubnet",
+        "result": True,
+    }
+
+    bastion_expected = {
+        "changes": {
+            "new": {
+                "name": "AzureBastionSubnet",
+                "address_prefix": bastion_snet_addr_prefix,
+                "private_endpoint_network_policies": "Enabled",
+                "private_link_service_network_policies": "Enabled",
+                "provisioning_state": "Succeeded",
+                "delegations": [],
+            },
+            "old": {},
+        },
+        "comment": f"Subnet AzureBastionSubnet has been created.",
+        "name": "AzureBastionSubnet",
         "result": True,
     }
 
@@ -113,9 +149,11 @@ async def test_subnet_present(hub, ctx, subnet, vnet, resource_group):
         resource_group=resource_group,
         address_prefix=subnet_addr_prefix,
         # Service endpoints used for testing PostgreSQL virtual network rules
-        service_endpoints=[{"service": "Microsoft.sql"}],
+        service_endpoints=["Microsoft.Sql"],
     )
-    assert ret == normal_expected
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("etag")
+    assert ret == snet_expected
 
     # Tests creation of a GatewaySubnet used by a virtual network gateway
     ret = await hub.states.azurerm.network.virtual_network.subnet_present(
@@ -125,7 +163,21 @@ async def test_subnet_present(hub, ctx, subnet, vnet, resource_group):
         resource_group=resource_group,
         address_prefix=gateway_snet_addr_prefix,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("etag")
     assert ret == gateway_expected
+
+    # Tests creation of an AzureBastionSubnet used by a Bastion Host
+    ret = await hub.states.azurerm.network.virtual_network.subnet_present(
+        ctx,
+        name="AzureBastionSubnet",
+        virtual_network=vnet,
+        resource_group=resource_group,
+        address_prefix=bastion_snet_addr_prefix,
+    )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("etag")
+    assert ret == bastion_expected
 
 
 @pytest.mark.run(order=3, after="test_subnet_present", before="test_subnet_absent")
@@ -154,7 +206,7 @@ async def test_subnet_changes(
         resource_group=resource_group,
         address_prefix=changed_subnet_addr_prefix,
         # Service endpoints used for testing PostgreSQL virtual network rules
-        service_endpoints=[{"service": "Microsoft.sql"}],
+        service_endpoints=["Microsoft.Sql"],
     )
     assert ret == expected
 

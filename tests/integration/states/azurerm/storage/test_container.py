@@ -11,9 +11,12 @@ async def test_present(
         "changes": {
             "new": {
                 "name": storage_container,
-                "resource_group": resource_group,
                 "public_access": public_access,
-                "account": storage_account,
+                "deleted": False,
+                "has_immutability_policy": False,
+                "has_legal_hold": False,
+                "remaining_retention_days": 0,
+                "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
             },
             "old": {},
         },
@@ -29,6 +32,7 @@ async def test_present(
         resource_group=resource_group,
         public_access=public_access,
     )
+    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 

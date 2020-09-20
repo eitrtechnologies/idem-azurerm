@@ -5,7 +5,24 @@ import pytest
 @pytest.mark.asyncio
 async def test_present(hub, ctx, keyvault):
     expected = {
-        "changes": {"name": {"new": "secretname"}, "value": {"new": "REDACTED_VALUE"},},
+        "changes": {
+            "new": {
+                "name": "secretname",
+                "properties": {
+                    "content_type": None,
+                    "enabled": True,
+                    "expires_on": None,
+                    "key_id": None,
+                    "name": "secretname",
+                    "not_before": None,
+                    "recovery_level": "Purgeable",
+                    "tags": None,
+                    "vault_url": f"https://{keyvault}.vault.azure.net",
+                },
+                "value": "REDACTED",
+            },
+            "old": {},
+        },
         "comment": "Secret secretname has been created.",
         "name": "secretname",
         "result": True,
@@ -13,6 +30,11 @@ async def test_present(hub, ctx, keyvault):
     ret = await hub.states.azurerm.keyvault.secret.present(
         ctx, "secretname", "supersecret", f"https://{keyvault}.vault.azure.net/",
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"]["properties"].pop("created_on")
+    ret["changes"]["new"]["properties"].pop("updated_on")
+    ret["changes"]["new"]["properties"].pop("id")
+    ret["changes"]["new"]["properties"].pop("version")
     assert ret == expected
 
 

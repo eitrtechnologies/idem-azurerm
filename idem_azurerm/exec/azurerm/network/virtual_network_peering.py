@@ -31,7 +31,6 @@ Azure Resource Manager (ARM) Virtual Network Peering Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -45,7 +44,6 @@ except ImportError:
 HAS_LIBS = False
 try:
     import azure.mgmt.network.models  # pylint: disable=unused-import
-    from msrestazure.tools import is_valid_resource_id, parse_resource_id
     from msrest.exceptions import SerializationError
     from msrestazure.azure_exceptions import CloudError
 
@@ -101,17 +99,15 @@ async def delete(hub, ctx, name, virtual_network, resource_group, **kwargs):
 
     :param name: The name of the virtual network peering object to delete.
 
-    :param virtual_network: The virtual network name containing the
-        peering object.
+    :param virtual_network: The virtual network name containing the peering object.
 
-    :param resource_group: The resource group name assigned to the
-        virtual network.
+    :param resource_group: The resource group name assigned to the virtual network.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network_peering.delete peer1 testnet testgroup
+        azurerm.network.virtual_network_peering.delete testname testnet testgroup
 
     """
     result = False
@@ -122,6 +118,7 @@ async def delete(hub, ctx, name, virtual_network, resource_group, **kwargs):
             virtual_network_name=virtual_network,
             virtual_network_peering_name=name,
         )
+
         peering.wait()
         result = True
     except CloudError as exc:
@@ -138,11 +135,9 @@ async def get(hub, ctx, name, virtual_network, resource_group, **kwargs):
 
     :param name: The name of the virtual network peering to query.
 
-    :param virtual_network: The virtual network name containing the
-        peering object.
+    :param virtual_network: The virtual network name containing the peering object.
 
-    :param resource_group: The resource group name assigned to the
-        virtual network.
+    :param resource_group: The resource group name assigned to the virtual network.
 
     CLI Example:
 
@@ -151,6 +146,7 @@ async def get(hub, ctx, name, virtual_network, resource_group, **kwargs):
         azurerm.network.virtual_network_peering.get peer1 testnet testgroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
     try:
         peering = netconn.virtual_network_peerings.get(
@@ -186,14 +182,12 @@ async def create_or_update(
 
     :param remote_virtual_network: A valid name of a virtual network with which to peer.
 
-    :param remote_vnet_group: The resource group of the remote virtual network. Defaults to
-        the same resource group as the "local" virtual network.
+    :param remote_vnet_group: The resource group of the remote virtual network. Defaults to the same resource
+        group as the "local" virtual network.
 
-    :param virtual_network: The virtual network name containing the
-        peering object.
+    :param virtual_network: The virtual network name containing the peering object.
 
-    :param resource_group: The resource group name assigned to the
-        virtual network.
+    :param resource_group: The resource group name assigned to the virtual network.
 
     CLI Example:
 
@@ -203,6 +197,7 @@ async def create_or_update(
                   remotenet testnet testgroup remote_vnet_group=remotegroup
 
     """
+    result = {}
     netconn = await hub.exec.azurerm.utils.get_client(ctx, "network", **kwargs)
 
     # Use Remote Virtual Network name to link to the ID of an existing object
@@ -235,9 +230,9 @@ async def create_or_update(
             virtual_network_peering_name=name,
             virtual_network_peering_parameters=peermodel,
         )
+
         peering.wait()
-        peer_result = peering.result()
-        result = peer_result.as_dict()
+        result = peering.result().as_dict()
     except CloudError as exc:
         await hub.exec.azurerm.utils.log_cloud_error("network", str(exc), **kwargs)
         result = {"error": str(exc)}

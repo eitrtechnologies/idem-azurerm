@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) PostgreSQL Server Security Alert Policy Operations 
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -83,6 +85,8 @@ async def present(
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensures that the specified server security alert policy exists within the given PostgreSQL server.
 
@@ -218,29 +222,6 @@ async def present(
             )
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "server_name": server_name,
-                "resource_group": resource_group,
-                "state": policy_state,
-            },
-        }
-
-        if disabled_alerts:
-            ret["changes"]["new"]["disabled_alerts"] = disabled_alerts
-        if email_addresses:
-            ret["changes"]["new"]["email_addresses"] = email_addresses
-        if email_account_admins is not None:
-            ret["changes"]["new"]["email_account_admins"] = email_account_admins
-        if storage_endpoint:
-            ret["changes"]["new"]["storage_endpoint"] = storage_endpoint
-        if storage_account_access_key:
-            ret["changes"]["new"]["storage_account_access_key"] = "REDACTED"
-        if retention_days is not None:
-            ret["changes"]["new"]["retention_days"] = retention_days
-
     if ctx["test"]:
         ret[
             "comment"
@@ -266,6 +247,9 @@ async def present(
         retention_days=retention_days,
         **policy_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": policy}
 
     if "error" not in policy:
         ret["result"] = True

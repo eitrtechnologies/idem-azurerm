@@ -23,9 +23,18 @@ async def test_present(hub, ctx, resource_group, location, sku, redis_cache):
         "changes": {
             "new": {
                 "name": redis_cache,
-                "location": location,
-                "resource_group": resource_group,
+                "location": "East US",
+                "type": "Microsoft.Cache/Redis",
                 "sku": sku,
+                "tags": {},
+                "redis_configuration": {
+                    "maxclients": "2000",
+                    "maxmemory-reserved": "100",
+                    "maxfragmentationmemory-reserved": "125",
+                    "maxmemory-delta": "100",
+                },
+                "enable_non_ssl_port": False,
+                "host_name": f"{redis_cache}.redis.cache.windows.net",
             },
             "old": {},
         },
@@ -40,6 +49,12 @@ async def test_present(hub, ctx, resource_group, location, sku, redis_cache):
         location=location,
         sku=sku,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("redis_version")
+    ret["changes"]["new"].pop("provisioning_state")
+    ret["changes"]["new"].pop("port")
+    ret["changes"]["new"].pop("ssl_port")
+    ret["changes"]["new"].pop("linked_servers")
     assert ret == expected
 
 

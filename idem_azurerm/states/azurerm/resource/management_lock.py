@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Management Lock State Module
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -69,6 +71,8 @@ async def present_by_scope(
 ):
     """
     .. versionadded:: 2.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a management lock exists by scope.
 
@@ -152,17 +156,6 @@ async def present_by_scope(
             ret["comment"] = "Management lock {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {"name": name, "scope": scope, "lock_level": lock_level,},
-        }
-
-        if owners:
-            ret["changes"]["new"]["owners"] = owners
-        if notes:
-            ret["changes"]["new"]["notes"] = notes
-
     if ctx["test"]:
         ret["comment"] = "Management lock {0} would be created.".format(name)
         ret["result"] = None
@@ -180,6 +173,9 @@ async def present_by_scope(
         owners=owners,
         **lock_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": lock}
 
     if "error" not in lock:
         ret["result"] = True
@@ -283,6 +279,8 @@ async def present_at_resource_level(
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Ensure a management lock exists at resource level.
 
     :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain<, > %, &,
@@ -380,26 +378,6 @@ async def present_at_resource_level(
             ret["comment"] = "Management lock {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "lock_level": lock_level,
-                "resource": resource,
-                "resource_type": resource_type,
-                "resource_provider_namespace": resource_provider_namespace,
-            },
-        }
-
-        if owners:
-            ret["changes"]["new"]["owners"] = owners
-        if notes:
-            ret["changes"]["new"]["notes"] = notes
-        if parent_resource_path:
-            ret["changes"]["new"]["parent_resource_path"] = parent_resource_path
-
     if ctx["test"]:
         ret["comment"] = "Management lock {0} would be created.".format(name)
         ret["result"] = None
@@ -421,6 +399,9 @@ async def present_at_resource_level(
         owners=owners,
         **lock_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": lock}
 
     if "error" not in lock:
         ret["result"] = True
@@ -554,6 +535,8 @@ async def present(
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Ensure a management lock exists. By default this module ensures that the management lock exists at the
         subscription level. If you would like to ensure that the management lock exists at the resource group level
         instead, you can specify a resource group using the resource_group parameter.
@@ -638,16 +621,6 @@ async def present(
             ret["comment"] = "Management lock {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {"old": {}, "new": {"name": name, "lock_level": lock_level,}}
-
-        if resource_group:
-            ret["changes"]["new"]["resource_group"] = resource_group
-        if owners:
-            ret["changes"]["new"]["owners"] = owners
-        if notes:
-            ret["changes"]["new"]["notes"] = notes
-
     if ctx["test"]:
         ret["comment"] = "Management lock {0} would be created.".format(name)
         ret["result"] = None
@@ -675,6 +648,9 @@ async def present(
             owners=owners,
             **lock_kwargs,
         )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": lock}
 
     if "error" not in lock:
         ret["result"] = True

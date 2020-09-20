@@ -14,10 +14,31 @@ def key():
 @pytest.mark.asyncio
 async def test_present(hub, ctx, key, keyvault):
     key_type = "RSA"
-    vault_url = f"https://{keyvault}.vault.azure.net/"
+    vault_url = f"https://{keyvault}.vault.azure.net"
     expected = {
         "changes": {
-            "new": {"name": key, "key_type": key_type, "enabled": False,},
+            "new": {
+                "name": key,
+                "key_type": key_type,
+                "key_operations": [
+                    "encrypt",
+                    "decrypt",
+                    "sign",
+                    "verify",
+                    "wrapKey",
+                    "unwrapKey",
+                ],
+                "properties": {
+                    "enabled": False,
+                    "expires_on": None,
+                    "managed": None,
+                    "name": key,
+                    "not_before": None,
+                    "recovery_level": "Purgeable",
+                    "tags": None,
+                    "vault_url": vault_url,
+                },
+            },
             "old": {},
         },
         "comment": f"Key {key} has been created.",
@@ -27,6 +48,11 @@ async def test_present(hub, ctx, key, keyvault):
     ret = await hub.states.azurerm.keyvault.key.present(
         ctx, name=key, key_type=key_type, vault_url=vault_url, enabled=False,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"]["properties"].pop("id")
+    ret["changes"]["new"]["properties"].pop("updated_on")
+    ret["changes"]["new"]["properties"].pop("created_on")
+    ret["changes"]["new"]["properties"].pop("version")
     assert ret == expected
 
 

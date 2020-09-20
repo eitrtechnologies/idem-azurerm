@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Network Profile State Module
 
 .. versionadded:: 3.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -48,34 +50,10 @@ Azure Resource Manager (ARM) Network Profile State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: jinja
-
-        Ensure network profile exists:
-            azurerm.network.network_profile.present:
-                - name: aci-network-profile
-                - resource_group: testgroup
-                - container_network_interface_configurations:
-                    - name: eth0
-                      ip_configurations:
-                        - name: ipconfigprofile
-                          subnet:
-                              id: {{ subnet_resource_id }}
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-
-        Ensure network profile is absent:
-            azurerm.network.network_profile.absent:
-                - name: aci-network-profile
-                - resource_group: testgroup
-
 """
 # Import Python libs
 from dict_tools import differ
 import logging
-
 
 log = logging.getLogger(__name__)
 
@@ -94,6 +72,8 @@ async def present(
     """
     .. versionadded:: 3.0.0
 
+    .. versionchanged:: 4.0.0
+
     Ensure a network profile exists.
 
     :param name: The name of the network profile.
@@ -107,7 +87,6 @@ async def present(
         <https://docs.microsoft.com/en-us/python/api/azure-mgmt-network/azure.mgmt.network.v2018_12_01.models.containernetworkinterfaceconfiguration?view=azure-python>`_.
 
     :param tags: A dictionary of strings can be passed as tag metadata to the object.
-
 
     Example usage:
 
@@ -130,7 +109,6 @@ async def present(
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
     action = "create"
-    new = {}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -140,18 +118,6 @@ async def present(
                 "comment"
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
-
-    # populate dictionary of settings for changes output on creation
-    for param in [
-        "name",
-        "resource_group",
-        "container_network_interfaces",
-        "container_network_interface_configurations",
-        "tags",
-    ]:
-        value = locals()[param]
-        if value is not None:
-            new[param] = value
 
     # get existing network profile if present
     prf = await hub.exec.azurerm.network.network_profile.get(
@@ -198,10 +164,6 @@ async def present(
     elif ctx["test"]:
         ret["comment"] = "Network profile {0} would be created.".format(name)
         ret["result"] = None
-        ret["changes"] = {
-            "old": {},
-            "new": new,
-        }
         return ret
 
     prf_kwargs = kwargs.copy()
@@ -224,11 +186,12 @@ async def present(
             ctx, name, resource_group, tags=tags, **prf_kwargs,
         )
 
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": prf}
+
     if "error" not in prf:
         ret["result"] = True
         ret["comment"] = f"Network profile {name} has been {action}d."
-        if not ret["changes"]:
-            ret["changes"] = {"old": {}, "new": new}
         return ret
 
     ret["comment"] = "Failed to {0} network profile {1}! ({2})".format(

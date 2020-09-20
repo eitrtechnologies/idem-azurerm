@@ -8,9 +8,11 @@ async def test_table_present(hub, ctx, route_table, resource_group):
         "changes": {
             "new": {
                 "name": route_table,
-                "tags": None,
-                "routes": None,
-                "disable_bgp_route_propagation": None,
+                "routes": [],
+                "disable_bgp_route_propagation": False,
+                "location": "eastus",
+                "provisioning_state": "Succeeded",
+                "type": "Microsoft.Network/routeTables",
             },
             "old": {},
         },
@@ -21,12 +23,14 @@ async def test_table_present(hub, ctx, route_table, resource_group):
     ret = await hub.states.azurerm.network.route.table_present(
         ctx, name=route_table, resource_group=resource_group
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("etag")
     assert ret == expected
 
 
 @pytest.mark.run(order=3, after="test_table_present", before="test_present")
 @pytest.mark.asyncio
-async def test_table_changes(hub, ctx, route_table, resource_group, route):
+async def test_table_changes(hub, ctx, route_table, resource_group, route, tags):
     new_routes = [
         {
             "name": "test_route1",
@@ -36,13 +40,17 @@ async def test_table_changes(hub, ctx, route_table, resource_group, route):
     ]
 
     expected = {
-        "changes": {"routes": {"new": new_routes, "old": []}},
+        "changes": {"routes": {"new": new_routes, "old": []}, "tags": {"new": tags}},
         "comment": f"Route table {route_table} has been updated.",
         "name": route_table,
         "result": True,
     }
     ret = await hub.states.azurerm.network.route.table_present(
-        ctx, name=route_table, resource_group=resource_group, routes=new_routes,
+        ctx,
+        name=route_table,
+        resource_group=resource_group,
+        routes=new_routes,
+        tags=tags,
     )
     assert ret == expected
 
@@ -57,8 +65,8 @@ async def test_present(hub, ctx, route, route_table, resource_group):
             "new": {
                 "name": route,
                 "address_prefix": addr_prefix,
-                "next_hop_type": next_hop_type,
-                "next_hop_ip_address": None,
+                "next_hop_type": "VnetLocal",
+                "provisioning_state": "Succeeded",
             },
             "old": {},
         },
@@ -74,6 +82,8 @@ async def test_present(hub, ctx, route, route_table, resource_group):
         address_prefix=addr_prefix,
         next_hop_type=next_hop_type,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("etag")
     assert ret == expected
 
 

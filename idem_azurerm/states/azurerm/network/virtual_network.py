@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Virtual Network State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -48,36 +50,13 @@ Azure Resource Manager (ARM) Virtual Network State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: jinja
-
-        Ensure virtual network exists:
-            azurerm.network.virtual_network.present:
-                - name: my_vnet
-                - resource_group: my_rg
-                - address_prefixes:
-                    - '10.0.0.0/8'
-                    - '192.168.0.0/16'
-                - dns_servers:
-                    - '8.8.8.8'
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
-
-        Ensure virtual network is absent:
-            azurerm.network.virtual_network.absent:
-                - name: other_vnet
-                - resource_group: my_rg
-                - connection_auth: {{ profile }}
-
 """
 # Python libs
 from __future__ import absolute_import
 from dict_tools import differ
+from msrestazure.tools import is_valid_resource_id
+from operator import itemgetter
 import logging
-import re
 
 log = logging.getLogger(__name__)
 
@@ -105,12 +84,17 @@ async def present(
     address_prefixes,
     resource_group,
     dns_servers=None,
+    enable_vm_protection=False,
+    enable_ddos_protection=False,
+    ddos_protection_plan=None,
     tags=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a virtual network exists.
 
@@ -125,6 +109,18 @@ async def present(
 
     :param dns_servers:
         A list of DNS server addresses.
+
+    :param enable_vm_protection:
+        A boolean value indicating if VM protection is enabled for all the subnets in the virtual network.
+        Defaults to False.
+
+    :param enable_ddos_protection:
+        A boolean value indicating whether a DDoS protection is enabled for all the protected resources in
+        the virtual network. It requires a DDoS protection plan associated with the resource. Default to False.
+
+    :param ddos_protection_plan:
+        The resource ID of the DDoS protection plan associated with the virtual network. This parameter is required
+        when the ``enable_ddos_protection`` parameter is set to True.
 
     :param tags:
         A dictionary of strings can be passed as tag metadata to the virtual network object.
@@ -163,12 +159,33 @@ async def present(
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
 
+    if enable_ddos_protection and not ddos_protection_plan:
+        log.error(
+            "The resource ID of the DDOS Protection Plan must be specified if DDOS protection is going to be enabled."
+        )
+        ret[
+            "comment"
+        ] = "The resource ID of the DDOS Protection Plan must be specified if DDOS protection is going to be enabled."
+        return ret
+
+    if ddos_protection_plan:
+        if not is_valid_resource_id(ddos_protection_plan):
+            log.error(
+                "The specified resource ID of the DDOS Protection Plan is invalid."
+            )
+            ret[
+                "comment"
+            ] = "The specified resource ID of the DDOS Protection Plan is invalid."
+            return ret
+        ddos_protection_plan = {"id": ddos_protection_plan}
+
     vnet = await hub.exec.azurerm.network.virtual_network.get(
         ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in vnet:
         action = "update"
+
         tag_changes = differ.deep_diff(vnet.get("tags", {}), tags or {})
         if tag_changes:
             ret["changes"]["tags"] = tag_changes
@@ -193,21 +210,28 @@ async def present(
                 }
             }
 
-        if kwargs.get("enable_ddos_protection", False) != vnet.get(
-            "enable_ddos_protection"
-        ):
-            ret["changes"]["enable_ddos_protection"] = {
-                "old": vnet.get("enable_ddos_protection"),
-                "new": kwargs.get("enable_ddos_protection"),
-            }
+        if enable_ddos_protection is not None:
+            if enable_ddos_protection != vnet.get("enable_ddos_protection"):
+                ret["changes"]["enable_ddos_protection"] = {
+                    "old": vnet.get("enable_ddos_protection"),
+                    "new": enable_ddos_protection,
+                }
 
-        if kwargs.get("enable_vm_protection", False) != vnet.get(
-            "enable_vm_protection"
-        ):
-            ret["changes"]["enable_vm_protection"] = {
-                "old": vnet.get("enable_vm_protection"),
-                "new": kwargs.get("enable_vm_protection"),
-            }
+        if ddos_protection_plan:
+            if ddos_protection_plan.get("id") != vnet.get(
+                "ddos_protection_plan", {}
+            ).get("id"):
+                ret["changes"]["ddos_protection_plan"] = {
+                    "old": vnet.get("ddos_protection_plan"),
+                    "new": ddos_protection_plan,
+                }
+
+        if enable_vm_protection is not None:
+            if enable_vm_protection != vnet.get("enable_vm_protection"):
+                ret["changes"]["enable_vm_protection"] = {
+                    "old": vnet.get("enable_vm_protection"),
+                    "new": enable_vm_protection,
+                }
 
         if not ret["changes"]:
             ret["result"] = True
@@ -218,20 +242,6 @@ async def present(
             ret["result"] = None
             ret["comment"] = "Virtual network {0} would be updated.".format(name)
             return ret
-
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "address_space": {"address_prefixes": address_prefixes},
-                "dhcp_options": {"dns_servers": dns_servers},
-                "enable_ddos_protection": kwargs.get("enable_ddos_protection", False),
-                "enable_vm_protection": kwargs.get("enable_vm_protection", False),
-                "tags": tags,
-            },
-        }
 
     if ctx["test"]:
         ret["comment"] = "Virtual network {0} would be created.".format(name)
@@ -247,9 +257,15 @@ async def present(
         resource_group=resource_group,
         address_prefixes=address_prefixes,
         dns_servers=dns_servers,
+        enable_ddos_protection=enable_ddos_protection,
+        enable_vm_protection=enable_vm_protection,
+        ddos_protection_plan=ddos_protection_plan,
         tags=tags,
         **vnet_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": vnet}
 
     if "error" not in vnet:
         ret["result"] = True
@@ -333,11 +349,14 @@ async def subnet_present(
     resource_group,
     security_group=None,
     route_table=None,
+    service_endpoints=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a subnet exists.
 
@@ -359,8 +378,11 @@ async def subnet_present(
     :param route_table:
         The name of the existing route table to assign to the subnet.
 
-    :param connection_auth:
-        A dict with subscription and authentication parameters to be used in connecting to the
+    :param service_endpoints:
+        A list of service endpoints. More information about service endpoints and valid values can be found
+        `here <https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoints-overview>`_.
+
+    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
     Example usage:
@@ -389,6 +411,13 @@ async def subnet_present(
                 "comment"
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
+
+    # Convert the list of service endpoints into a list of ServiceEndpointPropertiesFormat objects
+    if isinstance(service_endpoints, list):
+        endpoints = []
+        for endpoint in service_endpoints:
+            endpoints.append({"service": endpoint})
+        service_endpoints = endpoints
 
     snet = await hub.exec.azurerm.network.virtual_network.subnet_get(
         ctx,
@@ -424,6 +453,27 @@ async def subnet_present(
         if route_table and (route_table != rttbl_name):
             ret["changes"]["route_table"] = {"old": rttbl_name, "new": route_table}
 
+        # Checks for changes within the service_endpoints parameter
+        if service_endpoints is not None:
+            if len(service_endpoints) == len(snet.get("service_endpoints", [])):
+                old_endpoints = sorted(
+                    snet.get("service_endpoints", []), key=itemgetter("service")
+                )
+                new_endpoints = sorted(service_endpoints, key=itemgetter("service"))
+
+                for index, endpoint in enumerate(old_endpoints):
+                    if new_endpoints[index].get("service") != endpoint.get("service"):
+                        ret["changes"]["service_endpoints"] = {
+                            "old": snet.get("service_endpoints", []),
+                            "new": service_endpoints,
+                        }
+                        break
+            else:
+                ret["changes"]["service_endpoints"] = {
+                    "old": snet.get("service_endpoints", []),
+                    "new": service_endpoints,
+                }
+
         if not ret["changes"]:
             ret["result"] = True
             ret["comment"] = "Subnet {0} is already present.".format(name)
@@ -433,17 +483,6 @@ async def subnet_present(
             ret["result"] = None
             ret["comment"] = "Subnet {0} would be updated.".format(name)
             return ret
-
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "address_prefix": address_prefix,
-                "network_security_group": security_group,
-                "route_table": route_table,
-            },
-        }
 
     if ctx["test"]:
         ret["comment"] = "Subnet {0} would be created.".format(name)
@@ -461,8 +500,12 @@ async def subnet_present(
         address_prefix=address_prefix,
         network_security_group=security_group,
         route_table=route_table,
+        service_endpoints=service_endpoints,
         **snet_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": snet}
 
     if "error" not in snet:
         ret["result"] = True
@@ -534,7 +577,11 @@ async def subnet_absent(
         return ret
 
     deleted = await hub.exec.azurerm.network.virtual_network.subnet_delete(
-        ctx, name, virtual_network, resource_group, **connection_auth
+        ctx,
+        name=name,
+        virtual_network=virtual_network,
+        resource_group=resource_group,
+        **connection_auth,
     )
 
     if deleted:

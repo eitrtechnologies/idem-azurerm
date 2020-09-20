@@ -183,26 +183,6 @@ async def present(
             ret["comment"] = "Blob container {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "account": account,
-                "resource_group": resource_group,
-                "public_access": public_access,
-            },
-        }
-
-        if deny_encryption_scope_override is not None:
-            ret["changes"]["new"][
-                "deny_encryption_scope_override"
-            ] = deny_encryption_scope_override
-        if default_encryption_scope:
-            ret["changes"]["new"]["default_encryption_scope"] = default_encryption_scope
-        if metadata:
-            ret["changes"]["new"]["metadata"] = metadata
-
     if ctx["test"]:
         ret["comment"] = "Blob container {0} would be created.".format(name)
         ret["result"] = None
@@ -223,7 +203,6 @@ async def present(
             metadata=metadata,
             **container_kwargs,
         )
-
     else:
         container = await hub.exec.azurerm.storage.container.update(
             ctx=ctx,
@@ -236,6 +215,9 @@ async def present(
             metadata=metadata,
             **container_kwargs,
         )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": container}
 
     if "error" not in container:
         ret["result"] = True
@@ -364,24 +346,6 @@ async def immutability_policy_present(
             )
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "account": account,
-                "resource_group": resource_group,
-                "immutability_period_since_creation_in_days": immutability_period,
-            },
-        }
-
-        if if_match:
-            ret["changes"]["new"]["if_match"] = if_match
-        if protected_append_writes is not None:
-            ret["changes"]["new"][
-                "allow_protected_append_writes"
-            ] = protected_append_writes
-
     if ctx["test"]:
         ret[
             "comment"
@@ -404,6 +368,9 @@ async def immutability_policy_present(
         protected_append_writes=protected_append_writes,
         **policy_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": policy}
 
     if "error" not in policy:
         ret["result"] = True

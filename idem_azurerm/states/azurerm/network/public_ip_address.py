@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Network Public IP Address State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -48,41 +50,17 @@ Azure Resource Manager (ARM) Network Public IP Address State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: jinja
-
-        Ensure virtual network exists:
-            azurerm.network.virtual_network.present:
-                - name: my_vnet
-                - resource_group: my_rg
-                - address_prefixes:
-                    - '10.0.0.0/8'
-                    - '192.168.0.0/16'
-                - dns_servers:
-                    - '8.8.8.8'
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
-
-        Ensure virtual network is absent:
-            azurerm.network.virtual_network.absent:
-                - name: other_vnet
-                - resource_group: my_rg
-                - connection_auth: {{ profile }}
-
 """
 # Python libs
 from __future__ import absolute_import
 from dict_tools import differ
+from msrestazure.tools import is_valid_resource_id
 import logging
-import re
 
 log = logging.getLogger(__name__)
 
 TREQ = {
-    "present": {"require": ["states.azurerm.resource.group.present",]},
+    "present": {"require": ["states.azurerm.resource.group.present"]},
 }
 
 
@@ -91,52 +69,62 @@ async def present(
     ctx,
     name,
     resource_group,
-    tags=None,
     sku=None,
     public_ip_allocation_method=None,
     public_ip_address_version=None,
-    dns_settings=None,
     idle_timeout_in_minutes=None,
+    dns_settings=None,
+    ddos_settings=None,
+    ip_address=None,
+    public_ip_prefix=None,
+    zones=None,
+    tags=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
 
+    .. versionchanged:: 4.0.0
+
     Ensure a public IP address exists.
 
-    :param name:
-        Name of the public IP address.
+    :param name: The name of the public IP address.
 
-    :param resource_group:
-        The resource group assigned to the public IP address.
+    :param resource_group: The resource group assigned of the public IP address.
 
-    :param dns_settings:
-        An optional dictionary representing a valid PublicIPAddressDnsSettings object. Parameters include
-        'domain_name_label' and 'reverse_fqdn', which accept strings. The 'domain_name_label' parameter is concatenated
-        with the regionalized DNS zone make up the fully qualified domain name associated with the public IP address.
-        If a domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure DNS
-        system. The 'reverse_fqdn' parameter is a user-visible, fully qualified domain name that resolves to this public
-        IP address. If the reverse FQDN is specified, then a PTR DNS record is created pointing from the IP address in
-        the in-addr.arpa domain to the reverse FQDN.
+    :param sku: The SKU of public IP address. Possible values include: 'Basic', 'Standard'.
 
-    :param sku:
-        The public IP address SKU, which can be 'Basic' or 'Standard'.
+    :param public_ip_allocation_method: The public IP allocation method. Possible values are 'Static'
+        and 'Dynamic'.
 
-    :param public_ip_allocation_method:
-        The public IP allocation method. Possible values are: 'Static' and 'Dynamic'.
+    :param public_ip_address_version: The public IP address version. Possible values are 'IPv4' and 'IPv6'.
 
-    :param public_ip_address_version:
-        The public IP address version. Possible values are: 'IPv4' and 'IPv6'.
+    :param idle_timeout_in_minutes: An integer representing the idle timeout of the public IP address.
 
-    :param idle_timeout_in_minutes:
-        An integer representing the idle timeout of the public IP address.
+    :param dns_settings: A dictionary representing a valid PublicIPAddressDnsSettings object. Parameters
+        include the following:
 
-    :param tags:
-        A dictionary of strings can be passed as tag metadata to the public IP address object.
+        - ``domain_name_label``: (Required) The domain name label. The concatenation of the domain name label and the
+            regionalize DNS zone make up the fully qualified domain name associated with the public IP address. If a
+            domain name DNS zone make up the fully qualified domain name associated with the public IP address. If a
+            domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure
+            DNS system.
+        - ``reverse_fqdn``: A user-visible, fully qualified domain name that resolves to this public IP address. If the
+            reverse FQDN is specified, then a PTR DNS record is created pointing from the IP address in the in-addr.arpa
+            domain to the reverse FQDN.
 
-    :param connection_auth:
-        A dict with subscription and authentication parameters to be used in connecting to the
+    :param ddos_settings: A dictionary representing an DdosSettings object. That DdosSettings object serves
+        as the DDoS protection custom policy associated with the public IP address.
+
+    :param public_ip_prefix: The Resource ID of the Public IP Prefix that this Public IP Address should be
+        allocated from.
+
+    :param zones: A list of availability zones denoting the IP allocated for the resource needs to come from.
+
+    :param tags: A dictionary of strings can be passed as tag metadata to the public IP address object.
+
+    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
     Example usage:
@@ -173,12 +161,23 @@ async def present(
     if sku:
         sku = {"name": sku.capitalize()}
 
+    if public_ip_prefix:
+        if is_valid_resource_id(public_ip_prefix):
+            public_ip_prefix = {"id": public_ip_prefix}
+        else:
+            log.error("The specified resource ID of the Public IP Prefix is invalid.")
+            ret[
+                "comment"
+            ] = "The specified resource ID of the Public IP Prefix is invalid."
+            return ret
+
     pub_ip = await hub.exec.azurerm.network.public_ip_address.get(
         ctx, name, resource_group, azurerm_log_level="info", **connection_auth
     )
 
     if "error" not in pub_ip:
         action = "update"
+
         # tag changes
         tag_changes = differ.deep_diff(pub_ip.get("tags", {}), tags or {})
         if tag_changes:
@@ -198,11 +197,19 @@ async def present(
                     }
                     break
 
+        # ddos_settings changes
+        ddos_changes = differ.deep_diff(
+            pub_ip.get("ddos_settings", {}), ddos_settings or {}
+        )
+        if ddos_changes:
+            ret["changes"]["ddos_settings"] = ddos_changes
+
         # sku changes
-        if sku:
-            sku_changes = differ.deep_diff(pub_ip.get("sku", {}), sku)
-            if sku_changes:
-                ret["changes"]["sku"] = sku_changes
+        if sku and sku != pub_ip.get("sku", {}):
+            ret["changes"]["sku"] = {
+                "old": pub_ip.get("sku"),
+                "new": sku,
+            }
 
         # public_ip_allocation_method changes
         if public_ip_allocation_method:
@@ -234,6 +241,19 @@ async def present(
                 "new": idle_timeout_in_minutes,
             }
 
+        # public_ip_prefix changes
+        if public_ip_prefix:
+            if public_ip_prefix != pub_ip.get("public_ip_prefix"):
+                ret["changes"]["public_ip_prefix"] = {
+                    "old": pub_ip.get("public_ip_prefix"),
+                    "new": public_ip_prefix,
+                }
+
+        # zones changes
+        if zones is not None:
+            if zones.sort() != pub_ip.get("zones").sort():
+                ret["changes"]["zones"] = {"old": pub_ip.get("zones"), "new": zones}
+
         if not ret["changes"]:
             ret["result"] = True
             ret["comment"] = "Public IP address {0} is already present.".format(name)
@@ -244,20 +264,6 @@ async def present(
             ret["comment"] = "Public IP address {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "tags": tags,
-                "dns_settings": dns_settings,
-                "sku": sku,
-                "public_ip_allocation_method": public_ip_allocation_method,
-                "public_ip_address_version": public_ip_address_version,
-                "idle_timeout_in_minutes": idle_timeout_in_minutes,
-            },
-        }
-
     if ctx["test"]:
         ret["comment"] = "Public IP address {0} would be created.".format(name)
         ret["result"] = None
@@ -266,18 +272,31 @@ async def present(
     pub_ip_kwargs = kwargs.copy()
     pub_ip_kwargs.update(connection_auth)
 
-    pub_ip = await hub.exec.azurerm.network.public_ip_address.create_or_update(
-        ctx=ctx,
-        name=name,
-        resource_group=resource_group,
-        sku=sku,
-        tags=tags,
-        dns_settings=dns_settings,
-        public_ip_allocation_method=public_ip_allocation_method,
-        public_ip_address_version=public_ip_address_version,
-        idle_timeout_in_minutes=idle_timeout_in_minutes,
-        **pub_ip_kwargs,
-    )
+    if action == "create" or len(ret["changes"]) > 1 or not tag_changes:
+        pub_ip = await hub.exec.azurerm.network.public_ip_address.create_or_update(
+            ctx=ctx,
+            name=name,
+            resource_group=resource_group,
+            sku=sku,
+            tags=tags,
+            dns_settings=dns_settings,
+            ddos_settings=ddos_settings,
+            public_ip_allocation_method=public_ip_allocation_method,
+            public_ip_address_version=public_ip_address_version,
+            idle_timeout_in_minutes=idle_timeout_in_minutes,
+            public_ip_prefix=public_ip_prefix,
+            zones=zones,
+            **pub_ip_kwargs,
+        )
+
+    # no idea why create_or_update doesn't work for tags
+    if action == "update" and tag_changes:
+        pub_ip = await hub.exec.azurerm.network.public_ip_address.update_tags(
+            ctx, name=name, resource_group=resource_group, tags=tags, **pub_ip_kwargs,
+        )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": pub_ip}
 
     if "error" not in pub_ip:
         ret["result"] = True

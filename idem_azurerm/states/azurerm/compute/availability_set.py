@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Compute Availability Set State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -48,28 +50,6 @@ Azure Resource Manager (ARM) Compute Availability Set State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: jinja
-
-        Ensure availability set exists:
-            azurerm.compute.availability_set.present:
-                - name: my_avail_set
-                - resource_group: my_rg
-                - virtual_machines:
-                    - my_vm1
-                    - my_vm2
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
-
-        Ensure availability set is absent:
-            azurerm.compute.availability_set.absent:
-                - name: other_avail_set
-                - resource_group: my_rg
-                - connection_auth: {{ profile }}
-
 """
 # Python libs
 from __future__ import absolute_import
@@ -79,7 +59,7 @@ import logging
 log = logging.getLogger(__name__)
 
 TREQ = {
-    "present": {"require": ["states.azurerm.resource.group.present",]},
+    "present": {"require": ["states.azurerm.resource.group.present"]},
 }
 
 
@@ -93,11 +73,14 @@ async def present(
     platform_fault_domain_count=None,
     virtual_machines=None,
     sku=None,
+    proximity_placement_group=None,
     connection_auth=None,
     **kwargs,
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure an availability set exists.
 
@@ -124,6 +107,9 @@ async def present(
     :param sku:
         The availability set SKU, which specifies whether the availability set is managed or not. Possible values are
         'Aligned' or 'Classic'. An 'Aligned' availability set is managed, 'Classic' is not.
+
+    :param proximity_placement_group:
+        The resource ID of the proximity placement group that the availability set should be assigned to.
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
@@ -159,6 +145,9 @@ async def present(
 
     if sku:
         sku = {"name": sku.capitalize()}
+
+    if proximity_placement_group:
+        proximity_placement_group = {"id": proximity_placement_group}
 
     aset = await hub.exec.azurerm.compute.availability_set.get(
         ctx, name, resource_group, azurerm_log_level="info", **connection_auth
@@ -205,6 +194,16 @@ async def present(
                     "new": virtual_machines,
                 }
 
+        if proximity_placement_group:
+            if (
+                proximity_placement_group.get("id").lower()
+                != aset.get("proximity_placement_group").get("id").lower()
+            ):
+                ret["changes"]["proximity_placement_group"] = {
+                    "old": aset.get("proximity_placement_group"),
+                    "new": proximity_placement_group,
+                }
+
         if not ret["changes"]:
             ret["result"] = True
             ret["comment"] = "Availability set {0} is already present.".format(name)
@@ -214,19 +213,6 @@ async def present(
             ret["result"] = None
             ret["comment"] = "Availability set {0} would be updated.".format(name)
             return ret
-
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "virtual_machines": virtual_machines,
-                "platform_update_domain_count": platform_update_domain_count,
-                "platform_fault_domain_count": platform_fault_domain_count,
-                "sku": sku,
-                "tags": tags,
-            },
-        }
 
     if ctx["test"]:
         ret["comment"] = "Availability set {0} would be created.".format(name)
@@ -243,10 +229,14 @@ async def present(
         virtual_machines=virtual_machines,
         platform_update_domain_count=platform_update_domain_count,
         platform_fault_domain_count=platform_fault_domain_count,
+        proximity_placement_group=proximity_placement_group,
         sku=sku,
         tags=tags,
         **aset_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": aset}
 
     if "error" not in aset:
         ret["result"] = True

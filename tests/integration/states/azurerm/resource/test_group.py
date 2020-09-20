@@ -19,7 +19,7 @@ async def test_present(hub, ctx, resource_group, location):
         "result": True,
     }
     ret = await hub.states.azurerm.resource.group.present(ctx, resource_group, location)
-    expected["changes"]["new"]["id"] = ret["changes"]["new"]["id"]
+    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 
@@ -27,16 +27,7 @@ async def test_present(hub, ctx, resource_group, location):
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, resource_group, location, tags):
     expected = {
-        "changes": {
-            "new": {
-                "location": location,
-                "name": resource_group,
-                "properties": {"provisioning_state": "Succeeded"},
-                "tags": tags,
-                "type": "Microsoft.Resources/resourceGroups",
-            },
-            "old": {},
-        },
+        "changes": {"tags": {"new": tags,},},
         "comment": f"Resource group {resource_group} has been updated.",
         "name": resource_group,
         "result": True,
@@ -44,7 +35,6 @@ async def test_changes(hub, ctx, resource_group, location, tags):
     ret = await hub.states.azurerm.resource.group.present(
         ctx, resource_group, location, tags=tags
     )
-    expected["changes"]["new"]["id"] = ret["changes"]["new"]["id"]
     assert ret == expected
 
 

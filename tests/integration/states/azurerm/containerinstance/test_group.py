@@ -8,6 +8,8 @@ def containers():
             "name": "mycoolwebcontainer",
             "image": "nginx:latest",
             "resources": {"requests": {"memory_in_gb": 1.0, "cpu": 1.0,}},
+            "ports": [],
+            "environment_variables": [],
         }
     ]
 
@@ -21,10 +23,15 @@ async def test_present(hub, ctx, resource_group, location, containers):
             "new": {
                 "name": aci,
                 "containers": containers,
+                "location": location,
                 "os_type": "Linux",
                 "restart_policy": "OnFailure",
-                "resource_group": resource_group,
+                "sku": "Standard",
                 "tags": {"hihi": "cats"},
+                "provisioning_state": "Succeeded",
+                "init_containers": [],
+                "instance_view": {"events": [], "state": "Running"},
+                "type": "Microsoft.ContainerInstance/containerGroups",
             },
             "old": {},
         },
@@ -40,6 +47,8 @@ async def test_present(hub, ctx, resource_group, location, containers):
         os_type="Linux",
         tags={"hihi": "cats"},
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"]["containers"][0].pop("instance_view")
     assert ret == expected
 
 
@@ -89,7 +98,5 @@ async def test_absent(hub, ctx, resource_group, location, containers, tags):
     )
     ret["changes"]["old"].pop("id")
     for cnt in ret["changes"]["old"].get("containers", []):
-        cnt.pop("environment_variables")
         cnt.pop("instance_view")
-        cnt.pop("ports")
     assert ret == expected

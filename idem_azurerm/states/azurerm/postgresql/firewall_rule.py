@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) PostgreSQL Server Firewall Rule Operations State Mo
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -79,6 +81,8 @@ async def present(
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Ensures that the specified firewall rule exists within the given PostgreSQL server.
 
     :param name: The name of the server firewall rule.
@@ -153,18 +157,6 @@ async def present(
             ret["comment"] = "Firewall Rule {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "server_name": server_name,
-                "resource_group": resource_group,
-                "start_ip_address": start_ip_address,
-                "end_ip_address": end_ip_address,
-            },
-        }
-
     if ctx["test"]:
         ret["comment"] = "Firewall Rule {0} would be created.".format(name)
         ret["result"] = None
@@ -182,6 +174,9 @@ async def present(
         end_ip_address=end_ip_address,
         **rule_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": rule}
 
     if "error" not in rule:
         ret["result"] = True

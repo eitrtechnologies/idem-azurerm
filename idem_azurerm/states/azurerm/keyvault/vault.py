@@ -381,56 +381,6 @@ async def present(
             ret["comment"] = "Key Vault {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "location": location,
-                "properties": {"tenant_id": tenant_id, "sku": {"name": sku}},
-            },
-        }
-
-        if tags:
-            ret["changes"]["new"]["properties"]["tags"] = tags
-        if access_policies:
-            ret["changes"]["new"]["properties"]["access_policies"] = access_policies
-        if vault_uri:
-            ret["changes"]["new"]["properties"]["vault_uri"] = vault_uri
-        if enabled_for_deployment is not None:
-            ret["changes"]["new"]["properties"][
-                "enabled_for_deployment"
-            ] = enabled_for_deployment
-        if enabled_for_disk_encryption is not None:
-            ret["changes"]["new"]["properties"][
-                "enabled_for_disk_encryption"
-            ] = enabled_for_disk_encryption
-        if enabled_for_template_deployment is not None:
-            ret["changes"]["new"]["properties"][
-                "enabled_for_template_deployment"
-            ] = enabled_for_template_deployment
-        if enable_soft_delete is not None:
-            ret["changes"]["new"]["properties"][
-                "enable_soft_delete"
-            ] = enable_soft_delete
-        if soft_delete_retention:
-            ret["changes"]["new"]["properties"][
-                "soft_delete_retention_in_days"
-            ] = soft_delete_retention
-        if create_mode:
-            ret["changes"]["new"]["properties"]["create_mode"] = create_mode
-        if enable_purge_protection is not None:
-            ret["changes"]["new"]["properties"][
-                "enable_purge_protection"
-            ] = enable_purge_protection
-        if enable_rbac_authorization is not None:
-            ret["changes"]["new"]["properties"][
-                "enable_rbac_authorization"
-            ] = enable_rbac_authorization
-        if network_acls:
-            ret["changes"]["new"]["properties"]["network_acls"] = network_acls
-
     if ctx["test"]:
         ret["comment"] = "Key vault {0} would be created.".format(name)
         ret["result"] = None
@@ -460,6 +410,9 @@ async def present(
         tags=tags,
         **vault_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": vault}
 
     if "error" not in vault:
         ret["result"] = True

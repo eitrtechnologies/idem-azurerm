@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) PostgreSQL Virtual Network Rule Operations State Mo
 
 .. versionadded:: 2.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -79,6 +81,8 @@ async def present(
     """
     .. versionadded:: 2.0.0
 
+    .. versionchanged:: 4.0.0
+
     Ensures that the specified virtual network rule exists within the given PostgreSQL server.
 
     :param name: The name of the virtual network rule.
@@ -151,22 +155,6 @@ async def present(
             ret["comment"] = "Virtual Network Rule {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "server_name": server_name,
-                "resource_group": resource_group,
-                "subnet_id": subnet_id,
-            },
-        }
-
-        if ignore_missing_endpoint is not None:
-            ret["changes"]["new"][
-                "ignore_missing_vnet_service_endpoint"
-            ] = ignore_missing_endpoint
-
     if ctx["test"]:
         ret["comment"] = "Virtual Network Rule {0} would be created.".format(name)
         ret["result"] = None
@@ -184,6 +172,9 @@ async def present(
         ignore_missing_endpoint=ignore_missing_endpoint,
         **rule_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": rule}
 
     if "error" not in rule:
         ret["result"] = True

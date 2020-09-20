@@ -6,26 +6,28 @@ import pytest
 async def test_present(
     hub, ctx, network_interface, subnet, vnet, resource_group, ip_config
 ):
-    subscription_id = (
-        hub.acct.PROFILES["azurerm"].get("default", {}).get("subscription_id")
-    )
-    subnet_id = f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Network/virtualNetworks/{vnet}/subnets/{subnet}"
-
     expected = {
         "changes": {
             "new": {
                 "name": network_interface,
-                "tags": None,
                 "ip_configurations": [
-                    {"name": ip_config, "subnet": {"id": subnet_id},}
+                    {
+                        "name": ip_config,
+                        "primary": True,
+                        "private_ip_address": "10.0.0.4",
+                        "private_ip_address_version": "IPv4",
+                        "private_ip_allocation_method": "Dynamic",
+                        "provisioning_state": "Succeeded",
+                    },
                 ],
-                "dns_settings": None,
-                "network_security_group": None,
-                "virtual_machine": None,
-                "enable_accelerated_networking": None,
-                "enable_ip_forwarding": None,
-                "mac_address": None,
-                "primary": None,
+                "dns_settings": {"applied_dns_servers": [], "dns_servers": []},
+                "enable_accelerated_networking": False,
+                "enable_ip_forwarding": False,
+                "type": "Microsoft.Network/networkInterfaces",
+                "tap_configurations": [],
+                "location": "eastus",
+                "provisioning_state": "Succeeded",
+                "hosted_workloads": [],
             },
             "old": {},
         },
@@ -41,6 +43,13 @@ async def test_present(
         resource_group=resource_group,
         ip_configurations=[{"name": ip_config}],
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("resource_guid")
+    ret["changes"]["new"].pop("etag")
+    ret["changes"]["new"]["ip_configurations"][0].pop("etag")
+    ret["changes"]["new"]["ip_configurations"][0].pop("id")
+    ret["changes"]["new"]["ip_configurations"][0].pop("subnet")
+    ret["changes"]["new"]["dns_settings"].pop("internal_domain_name_suffix")
     assert ret == expected
 
 

@@ -17,12 +17,12 @@ async def test_present(hub, ctx, vnet_peering, resource_group, vnet, vnet2):
         "changes": {
             "new": {
                 "name": vnet_peering,
-                "remote_virtual_network": vnet2,
-                "remote_vnet_group": resource_group,
                 "allow_virtual_network_access": True,
                 "allow_forwarded_traffic": False,
                 "allow_gateway_transit": False,
                 "use_remote_gateways": False,
+                "peering_state": "Initiated",
+                "provisioning_state": "Succeeded",
             },
             "old": {},
         },
@@ -38,6 +38,10 @@ async def test_present(hub, ctx, vnet_peering, resource_group, vnet, vnet2):
         remote_virtual_network=vnet2,
         remote_vnet_group=resource_group,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("etag")
+    ret["changes"]["new"].pop("remote_virtual_network")
+    ret["changes"]["new"].pop("remote_address_space")
     assert ret == expected
 
 

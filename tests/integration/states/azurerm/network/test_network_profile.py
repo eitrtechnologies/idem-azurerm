@@ -7,7 +7,14 @@ async def test_present(hub, ctx, resource_group):
     prf = "idemprofile"
     expected = {
         "changes": {
-            "new": {"name": prf, "resource_group": resource_group,},
+            "new": {
+                "name": prf,
+                "container_network_interface_configurations": [],
+                "container_network_interfaces": [],
+                "location": "eastus",
+                "provisioning_state": "Succeeded",
+                "type": "Microsoft.Network/networkProfiles",
+            },
             "old": {},
         },
         "comment": f"Network profile {prf} has been created.",
@@ -17,6 +24,9 @@ async def test_present(hub, ctx, resource_group):
     ret = await hub.states.azurerm.network.network_profile.present(
         ctx, prf, resource_group
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("resource_guid")
+    ret["changes"]["new"].pop("etag")
     assert ret == expected
 
 
