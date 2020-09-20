@@ -8,15 +8,20 @@ async def test_present(hub, ctx, resource_group, acr):
     expected = {
         "changes": {
             "new": {
-                "context_path": "https://github.com/Azure-Samples/acr-build-helloworld-node",
                 "name": task,
-                "image_names": [f"{acr}:helloworldnode"],
-                "registry_name": acr,
-                "resource_group": resource_group,
-                "platform_arch": "amd64",
-                "platform_os": "Linux",
-                "task_type": "DockerBuildStep",
-                "task_file_path": "Dockerfile",
+                "location": "eastus",
+                "platform": {"architecture": "amd64", "os": "Linux"},
+                "provisioning_state": "Succeeded",
+                "step": {
+                    "context_path": "https://github.com/Azure-Samples/acr-build-helloworld-node",
+                    "docker_file_path": "Dockerfile",
+                    "image_names": [f"{acr}:helloworldnode"],
+                    "is_push_enabled": True,
+                    "no_cache": False,
+                    "type": "Docker",
+                },
+                "timeout": 3600,
+                "type": "Microsoft.ContainerRegistry/registries/tasks",
             },
             "old": {},
         },
@@ -36,6 +41,8 @@ async def test_present(hub, ctx, resource_group, acr):
         task_file_path="Dockerfile",
         image_names=[f"{acr}:helloworldnode"],
     )
+    ret["changes"]["new"].pop("creation_date")
+    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 

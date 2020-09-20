@@ -268,43 +268,6 @@ async def present(
             ret["comment"] = "Storage account {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "sku": sku,
-                "kind": kind,
-                "location": location,
-            },
-        }
-
-        if tags:
-            ret["changes"]["new"]["tags"] = tags
-        if access_tier:
-            ret["changes"]["new"]["access_tier"] = access_tier
-        if custom_domain:
-            ret["changes"]["new"]["custom_domain"] = custom_domain
-        if network_rule_set:
-            ret["changes"]["new"]["network_rule_set"] = network_rule_set
-        if https_traffic_only is not None:
-            ret["changes"]["new"]["enable_https_traffic_only"] = https_traffic_only
-        if hns_enabled is not None:
-            ret["changes"]["new"]["is_hns_enabled"] = hns_enabled
-        if azure_files_identity_based_auth:
-            ret["changes"]["new"][
-                "azure_files_identity_based_authentication"
-            ] = azure_files_identity_based_auth
-        if large_file_shares:
-            ret["changes"]["new"]["large_file_shares_state"] = large_file_shares_state
-        if routing_preference:
-            ret["changes"]["new"]["routing_preference"] = routing_preference
-        if blob_public_access is not None:
-            ret["changes"]["new"]["allow_blob_public_access"] = blob_public_access
-        if minimum_tls_version:
-            ret["changes"]["new"]["minimum_tls_version"] = minimum_tls_version
-
     if ctx["test"]:
         ret["comment"] = "Storage account {0} would be created.".format(name)
         ret["result"] = None
@@ -333,6 +296,9 @@ async def present(
         tags=tags,
         **account_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": account}
 
     if "error" not in account:
         ret["result"] = True

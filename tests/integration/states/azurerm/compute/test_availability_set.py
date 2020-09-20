@@ -8,11 +8,11 @@ async def test_present(hub, ctx, availability_set, resource_group):
         "changes": {
             "new": {
                 "name": availability_set,
-                "tags": None,
-                "sku": None,
-                "virtual_machines": None,
-                "platform_update_domain_count": None,
-                "platform_fault_domain_count": None,
+                "sku": {"name": "Classic"},
+                "type": "Microsoft.Compute/availabilitySets",
+                "location": "eastus",
+                "platform_fault_domain_count": 3,
+                "platform_update_domain_count": 5,
             },
             "old": {},
         },
@@ -23,6 +23,7 @@ async def test_present(hub, ctx, availability_set, resource_group):
     ret = await hub.states.azurerm.compute.availability_set.present(
         ctx, name=availability_set, resource_group=resource_group
     )
+    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 

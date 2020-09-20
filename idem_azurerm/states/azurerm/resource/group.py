@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Resource Group State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -62,6 +64,8 @@ async def present(
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a resource group exists.
 
@@ -134,15 +138,6 @@ async def present(
     elif ctx["test"]:
         ret["comment"] = "Resource group {0} would be created.".format(name)
         ret["result"] = None
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "location": location,
-                "managed_by": managed_by,
-                "tags": tags,
-            },
-        }
         return ret
 
     group_kwargs = kwargs.copy()
@@ -152,10 +147,12 @@ async def present(
         ctx, name, location, managed_by=managed_by, tags=tags, **group_kwargs
     )
 
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": group}
+
     if "error" not in group:
         ret["result"] = True
         ret["comment"] = f"Resource group {name} has been {action}d."
-        ret["changes"] = {"old": {}, "new": group}
         return ret
 
     ret["comment"] = "Failed to {0} resource group {1}! ({2})".format(

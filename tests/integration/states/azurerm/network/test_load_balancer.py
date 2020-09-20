@@ -9,15 +9,16 @@ async def test_present(hub, ctx, load_balancer, resource_group):
         "changes": {
             "new": {
                 "name": load_balancer,
-                "tags": None,
+                "location": "eastus",
                 "sku": {"name": sku},
-                "frontend_ip_configurations": None,
-                "backend_address_pools": None,
-                "load_balancing_rules": None,
-                "probes": None,
-                "inbound_nat_rules": None,
-                "inbound_nat_pools": None,
-                "outbound_rules": None,
+                "frontend_ip_configurations": [],
+                "backend_address_pools": [],
+                "load_balancing_rules": [],
+                "probes": [],
+                "inbound_nat_rules": [],
+                "inbound_nat_pools": [],
+                "provisioning_state": "Succeeded",
+                "type": "Microsoft.Network/loadBalancers",
             },
             "old": {},
         },
@@ -28,6 +29,9 @@ async def test_present(hub, ctx, load_balancer, resource_group):
     ret = await hub.states.azurerm.network.load_balancer.present(
         ctx, name=load_balancer, resource_group=resource_group, sku=sku
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("resource_guid")
+    ret["changes"]["new"].pop("etag")
     assert ret == expected
 
 

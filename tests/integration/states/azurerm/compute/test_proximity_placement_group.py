@@ -17,9 +17,9 @@ async def test_present(hub, ctx, ppg, resource_group):
         "changes": {
             "new": {
                 "name": ppg,
-                "resource_group": resource_group,
-                "tags": None,
-                "proximity_placement_group_type": "standard",
+                "proximity_placement_group_type": "Standard",
+                "location": "eastus",
+                "type": "Microsoft.Compute/proximityPlacementGroups",
             },
             "old": {},
         },
@@ -30,6 +30,7 @@ async def test_present(hub, ctx, ppg, resource_group):
     ret = await hub.states.azurerm.compute.proximity_placement_group.present(
         ctx, name=ppg, resource_group=resource_group
     )
+    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 

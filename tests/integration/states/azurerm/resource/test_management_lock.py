@@ -23,9 +23,6 @@ def resource_lock():
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
 
-    resource_type = "virtualNetworks"
-    resource_provider_namespace = "Microsoft.Network"
-
 
 @pytest.mark.run(order=6)
 @pytest.mark.asyncio
@@ -35,8 +32,9 @@ async def test_present(hub, ctx, lock, resource_group):
         "changes": {
             "new": {
                 "name": lock,
-                "resource_group": resource_group,
-                "lock_level": level,
+                "level": level,
+                "owners": [],
+                "type": "Microsoft.Authorization/locks",
             },
             "old": {},
         },
@@ -47,6 +45,7 @@ async def test_present(hub, ctx, lock, resource_group):
     ret = await hub.states.azurerm.resource.management_lock.present(
         ctx, name=lock, lock_level=level, resource_group=resource_group
     )
+    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 
@@ -98,7 +97,12 @@ async def test_present_by_scope(hub, ctx, scope_lock, resource_group):
     level = "ReadOnly"
     expected = {
         "changes": {
-            "new": {"name": scope_lock, "scope": scope, "lock_level": level,},
+            "new": {
+                "name": scope_lock,
+                "level": level,
+                "owners": [],
+                "type": "Microsoft.Authorization/locks",
+            },
             "old": {},
         },
         "comment": f"Management lock {scope_lock} has been created.",
@@ -108,6 +112,7 @@ async def test_present_by_scope(hub, ctx, scope_lock, resource_group):
     ret = await hub.states.azurerm.resource.management_lock.present_by_scope(
         ctx, name=scope_lock, lock_level=level, scope=scope
     )
+    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 
@@ -165,11 +170,9 @@ async def test_present_at_resource_level(
         "changes": {
             "new": {
                 "name": resource_lock,
-                "resource_group": resource_group,
-                "lock_level": level,
-                "resource_type": resource_type,
-                "resource": vnet,
-                "resource_provider_namespace": resource_provider_namespace,
+                "level": level,
+                "owners": [],
+                "type": "Microsoft.Authorization/locks",
             },
             "old": {},
         },
@@ -186,6 +189,7 @@ async def test_present_at_resource_level(
         resource_type=resource_type,
         resource=vnet,
     )
+    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 

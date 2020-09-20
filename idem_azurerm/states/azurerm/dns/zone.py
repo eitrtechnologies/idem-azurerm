@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) DNS Zone State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -97,6 +99,8 @@ async def present(
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a DNS zone exists.
 
@@ -237,20 +241,6 @@ async def present(
             ret["comment"] = "DNS zone {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "etag": etag,
-                "registration_virtual_networks": registration_virtual_networks,
-                "resolution_virtual_networks": resolution_virtual_networks,
-                "tags": tags,
-                "zone_type": zone_type,
-            },
-        }
-
     if ctx["test"]:
         ret["comment"] = "DNS zone {0} would be created.".format(name)
         ret["result"] = None
@@ -272,6 +262,9 @@ async def present(
         zone_type=zone_type,
         **zone_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": zone}
 
     if "error" not in zone:
         ret["result"] = True

@@ -182,22 +182,6 @@ async def table_present(
             ret["comment"] = "Route table {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "tags": tags,
-                "routes": routes,
-            },
-        }
-
-        if disable_bgp_route_propagation is not None:
-            ret["changes"]["new"][
-                "disable_bgp_route_propagation"
-            ] = disable_bgp_route_propagation
-
     if ctx["test"]:
         ret["comment"] = "Route table {0} would be created.".format(name)
         ret["result"] = None
@@ -222,6 +206,9 @@ async def table_present(
         rt_tbl = await hub.exec.azurerm.network.route.table_update_tags(
             ctx, name=name, resource_group=resource_group, tags=tags, **rt_tbl_kwargs,
         )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": rt_tbl}
 
     if "error" not in rt_tbl:
         ret["result"] = True
@@ -397,19 +384,6 @@ async def present(
             ret["comment"] = "Route {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "address_prefix": address_prefix,
-                "next_hop_type": next_hop_type,
-            },
-        }
-
-        if next_hop_ip_address:
-            ret["changes"]["new"]["next_hop_ip_address"] = next_hop_ip_address
-
     if ctx["test"]:
         ret["comment"] = "Route {0} would be created.".format(name)
         ret["result"] = None
@@ -428,6 +402,9 @@ async def present(
         next_hop_ip_address=next_hop_ip_address,
         **route_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": route}
 
     if "error" not in route:
         ret["result"] = True

@@ -8,9 +8,11 @@ async def test_table_present(hub, ctx, route_table, resource_group):
         "changes": {
             "new": {
                 "name": route_table,
-                "resource_group": resource_group,
-                "tags": None,
-                "routes": None,
+                "routes": [],
+                "disable_bgp_route_propagation": False,
+                "location": "eastus",
+                "provisioning_state": "Succeeded",
+                "type": "Microsoft.Network/routeTables",
             },
             "old": {},
         },
@@ -21,6 +23,8 @@ async def test_table_present(hub, ctx, route_table, resource_group):
     ret = await hub.states.azurerm.network.route.table_present(
         ctx, name=route_table, resource_group=resource_group
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("etag")
     assert ret == expected
 
 
@@ -61,7 +65,8 @@ async def test_present(hub, ctx, route, route_table, resource_group):
             "new": {
                 "name": route,
                 "address_prefix": addr_prefix,
-                "next_hop_type": next_hop_type,
+                "next_hop_type": "VnetLocal",
+                "provisioning_state": "Succeeded",
             },
             "old": {},
         },
@@ -77,6 +82,8 @@ async def test_present(hub, ctx, route, route_table, resource_group):
         address_prefix=addr_prefix,
         next_hop_type=next_hop_type,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("etag")
     assert ret == expected
 
 

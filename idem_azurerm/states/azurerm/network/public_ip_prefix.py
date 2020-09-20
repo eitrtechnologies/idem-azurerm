@@ -167,20 +167,6 @@ async def present(
             ret["comment"] = "Public IP prefix {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "tags": tags,
-                "prefix_length": prefix_length,
-                "sku": {"name": sku},
-                "public_ip_address_version": public_ip_address_version,
-                "zones": (zones or []),
-            },
-        }
-
     if ctx["test"]:
         ret["comment"] = "Public IP prefix {0} would be created.".format(name)
         ret["result"] = None
@@ -207,6 +193,9 @@ async def present(
         prefix = await hub.exec.azurerm.network.public_ip_prefix.update_tags(
             ctx, name=name, resource_group=resource_group, tags=tags, **prefix_kwargs,
         )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": prefix}
 
     if "error" not in prefix:
         ret["result"] = True

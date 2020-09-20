@@ -217,41 +217,6 @@ async def present(
             )
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "location": location,
-            },
-        }
-
-        if tags:
-            ret["changes"]["new"]["tags"] = tags
-        if sku:
-            if capacity_reservation_level:
-                ret["changes"]["new"]["sku"] = {
-                    "name": sku,
-                    "capacity_reservation_level": capacity_reservation_level,
-                }
-            else:
-                ret["changes"]["new"]["sku"] = {"name": sku}
-        if workspace_capping is not None:
-            ret["changes"]["new"]["workspace_capping"] = {
-                "daily_quota_gb": workspace_capping
-            }
-        if retention is not None:
-            ret["changes"]["new"]["retention_in_days"] = retention
-        if ingestion_public_network_access:
-            ret["changes"]["new"][
-                "public_network_access_for_ingestion"
-            ] = ingestion_public_network_access
-        if query_public_network_access:
-            ret["changes"]["new"][
-                "public_network_access_for_query"
-            ] = query_public_network_access
-
     if ctx["test"]:
         ret["comment"] = "Log Analytics Workspace {0} would be created.".format(name)
         ret["result"] = None
@@ -274,6 +239,9 @@ async def present(
         tags=tags,
         **workspace_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": workspace}
 
     if "error" not in workspace:
         ret["result"] = True

@@ -255,32 +255,6 @@ async def present(
             ret["comment"] = "Diagnostic setting {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_uri": resource_uri,
-                "metrics": metrics,
-                "logs": logs,
-            },
-        }
-
-        if storage_account_id:
-            ret["changes"]["new"]["storage_account_id"] = storage_account_id
-        if workspace_id:
-            ret["changes"]["new"]["workspace_id"] = workspace_id
-        if log_analytics_destination_type:
-            ret["changes"]["new"][
-                "log_analytics_destination_type"
-            ] = log_analytics_destination_type
-        if event_hub_authorization_rule_id:
-            ret["changes"]["new"][
-                "event_hub_authorization_rule_id"
-            ] = event_hub_authorization_rule_id
-        if event_hub_name:
-            ret["changes"]["new"]["event_hub_name"] = event_hub_name
-
     if ctx["test"]:
         ret["comment"] = "Diagnostic setting {0} would be created.".format(name)
         ret["result"] = None
@@ -302,6 +276,9 @@ async def present(
         event_hub_authorization_rule_id=event_hub_authorization_rule_id,
         **setting_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": setting}
 
     if "error" not in setting:
         ret["result"] = True

@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) DNS Record Set State Module
 
 .. versionadded:: 1.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -80,8 +82,6 @@ from __future__ import absolute_import
 from dict_tools import differ
 import logging
 
-import six
-
 log = logging.getLogger(__name__)
 
 TREQ = {
@@ -121,6 +121,8 @@ async def present(
 ):
     """
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a record set exists in a DNS zone.
 
@@ -308,9 +310,9 @@ async def present(
                         for key, val in local_dict.items():
                             local_val = val
                             remote_val = remote[idx].get(key)
-                            if isinstance(local_val, six.string_types):
+                            if isinstance(local_val, str):
                                 local_val = local_val.lower()
-                            if isinstance(remote_val, six.string_types):
+                            if isinstance(remote_val, str):
                                 remote_val = remote_val.lower()
                             if local_val != remote_val:
                                 ret["changes"] = {"new": {record_str: record}}
@@ -324,25 +326,6 @@ async def present(
             ret["result"] = None
             ret["comment"] = "Record set {0} would be updated.".format(name)
             return ret
-
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "zone_name": zone_name,
-                "resource_group": resource_group,
-                "record_type": record_type,
-                "etag": etag,
-                "metadata": metadata,
-                "ttl": ttl,
-            },
-        }
-        for record in record_vars:
-            # pylint: disable=eval-used
-            if eval(record):
-                # pylint: disable=eval-used
-                ret["changes"]["new"][record] = eval(record)
 
     if ctx["test"]:
         ret["comment"] = "Record set {0} would be created.".format(name)
@@ -375,6 +358,9 @@ async def present(
         caa_records=caa_records,
         **rec_set_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": rec_set}
 
     if "error" not in rec_set:
         ret["result"] = True

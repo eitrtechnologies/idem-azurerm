@@ -24,10 +24,9 @@ async def test_present(
         "changes": {
             "new": {
                 "name": vnet_rule,
-                "server_name": postgresql_server,
-                "resource_group": resource_group,
-                "subnet_id": subnet_id,
+                "state": "Ready",
                 "ignore_missing_vnet_service_endpoint": ignore_missing_endpoint,
+                "type": "Microsoft.DBforPostgreSQL/servers/virtualNetworkRules",
             },
             "old": {},
         },
@@ -43,6 +42,8 @@ async def test_present(
         subnet_id=subnet_id,
         ignore_missing_endpoint=ignore_missing_endpoint,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("virtual_network_subnet_id")
     assert ret == expected
 
 

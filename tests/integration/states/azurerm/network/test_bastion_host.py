@@ -28,10 +28,20 @@ async def test_present(hub, ctx, bastion_host, resource_group, vnet, public_ip_a
         "changes": {
             "new": {
                 "name": bastion_host,
-                "resource_group": resource_group,
                 "ip_configurations": [ip_config],
-                "tags": None,
-                "dns_name": None,
+                "location": "eastus",
+                "provisioning_state": "Succeeded",
+                "type": "Microsoft.Network/bastionHosts",
+                "ip_configurations": [
+                    {
+                        "name": "bastion-idem-config",
+                        "private_ip_allocation_method": "Dynamic",
+                        "provisioning_state": "Succeeded",
+                        "type": "Microsoft.Network/bastionHosts/bastionHostIpConfigurations",
+                        "public_ip_address": {"id": pub_ip_id},
+                        "subnet": {"id": subnet_id},
+                    }
+                ],
             },
             "old": {},
         },
@@ -45,6 +55,11 @@ async def test_present(hub, ctx, bastion_host, resource_group, vnet, public_ip_a
         resource_group=resource_group,
         ip_configuration=ip_config,
     )
+    ret["changes"]["new"].pop("etag")
+    ret["changes"]["new"].pop("id")
+    expected["changes"]["new"]["dns_name"] = ret["changes"]["new"].get("dns_name")
+    ret["changes"]["new"]["ip_configurations"][0].pop("id")
+    ret["changes"]["new"]["ip_configurations"][0].pop("etag")
     assert ret == expected
 
 

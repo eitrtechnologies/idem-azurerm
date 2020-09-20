@@ -251,20 +251,6 @@ async def present(
             ret["comment"] = "Network interface {0} would be updated.".format(name)
             return ret
 
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "ip_configurations": ip_configurations,
-                "dns_settings": dns_settings,
-                "network_security_group": network_security_group,
-                "enable_accelerated_networking": enable_accelerated_networking,
-                "enable_ip_forwarding": enable_ip_forwarding,
-                "tags": tags,
-            },
-        }
-
     if ctx["test"]:
         ret["comment"] = "Network interface {0} would be created.".format(name)
         ret["result"] = None
@@ -294,6 +280,9 @@ async def present(
         iface = await hub.exec.azurerm.network.network_interface.update_tags(
             ctx, name=name, resource_group=resource_group, tags=tags, **iface_kwargs,
         )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": iface}
 
     if "error" not in iface:
         ret["result"] = True

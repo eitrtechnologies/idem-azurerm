@@ -8,11 +8,11 @@ async def test_present(hub, ctx, zone, resource_group):
         "changes": {
             "new": {
                 "name": zone,
-                "resource_group": resource_group,
-                "etag": None,
-                "registration_virtual_networks": None,
-                "resolution_virtual_networks": None,
-                "tags": None,
+                "location": "global",
+                "max_number_of_record_sets": 10000,
+                "tags": {},
+                "type": "Microsoft.Network/dnszones",
+                "number_of_record_sets": 2,
                 "zone_type": "Public",
             },
             "old": {},
@@ -24,6 +24,9 @@ async def test_present(hub, ctx, zone, resource_group):
     ret = await hub.states.azurerm.dns.zone.present(
         ctx, name=zone, resource_group=resource_group,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("name_servers")
+    ret["changes"]["new"].pop("etag")
     assert ret == expected
 
 

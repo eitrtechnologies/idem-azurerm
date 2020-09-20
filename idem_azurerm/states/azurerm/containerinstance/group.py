@@ -4,6 +4,8 @@ Azure Resource Manager (ARM) Container Instance Group State Module
 
 .. versionadded:: 3.0.0
 
+.. versionchanged:: 4.0.0
+
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
     authentication parameters are case sensitive.
@@ -107,6 +109,8 @@ async def present(
 ):
     """
     .. versionadded:: 3.0.0
+
+    .. versionchanged:: 4.0.0
 
     Ensure a container instance group exists.
 
@@ -271,7 +275,6 @@ async def present(
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
     action = "create"
-    new = {}
 
     if not isinstance(connection_auth, dict):
         if ctx["acct"]:
@@ -281,29 +284,6 @@ async def present(
                 "comment"
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
-
-    # populate dictionary of settings for changes output on creation
-    for param in [
-        "name",
-        "resource_group",
-        "containers",
-        "os_type",
-        "restart_policy",
-        "identity",
-        "image_registry_credentials",
-        "ip_address",
-        "volumes",
-        "diagnostics",
-        "network_profile",
-        "dns_config",
-        "sku",
-        "encryption_properties",
-        "init_containers",
-        "tags",
-    ]:
-        value = locals()[param]
-        if value is not None:
-            new[param] = value
 
     # get existing container instance group if present
     acig = await hub.exec.azurerm.containerinstance.group.get(
@@ -431,10 +411,6 @@ async def present(
     elif ctx["test"]:
         ret["comment"] = "Container instance group {0} would be created.".format(name)
         ret["result"] = None
-        ret["changes"] = {
-            "old": {},
-            "new": new,
-        }
         return ret
 
     acig_kwargs = kwargs.copy()
@@ -468,11 +444,12 @@ async def present(
             ctx, name, resource_group, tags=tags, **acig_kwargs,
         )
 
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": acig}
+
     if "error" not in acig:
         ret["result"] = True
         ret["comment"] = f"Container instance group {name} has been {action}d."
-        if not ret["changes"]:
-            ret["changes"] = {"old": {}, "new": new}
         return ret
 
     ret["comment"] = "Failed to {0} container instance group {1}! ({2})".format(
@@ -511,8 +488,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
                 "comment"
             ] = "Connection information must be specified via acct or connection_auth dictionary!"
             return ret
-
-    acig = {}
 
     acig = await hub.exec.azurerm.containerinstance.group.get(
         ctx, name, resource_group, azurerm_log_level="info", **connection_auth

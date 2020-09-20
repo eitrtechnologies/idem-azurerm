@@ -181,8 +181,8 @@ async def present(
                 }
 
         # ip_configuration changes
-        for property, value in ip_configuration.items():
-            if value != (host.get("ip_configurations", [])[0]).get(property):
+        for key, value in ip_configuration.items():
+            if value != (host.get("ip_configurations", [])[0]).get(key):
                 ret["changes"]["ip_configurations"] = {
                     "new": [ip_configuration],
                     "old": host.get("ip_configurations", []),
@@ -198,18 +198,6 @@ async def present(
             ret["result"] = None
             ret["comment"] = "Bastion Host {0} would be updated.".format(name)
             return ret
-
-    else:
-        ret["changes"] = {
-            "old": {},
-            "new": {
-                "name": name,
-                "resource_group": resource_group,
-                "tags": tags,
-                "ip_configurations": [ip_configuration],
-                "dns_name": dns_name,
-            },
-        }
 
     if ctx["test"]:
         ret["comment"] = "Bastion Host {0} would be created.".format(name)
@@ -228,6 +216,9 @@ async def present(
         tags=tags,
         **host_kwargs,
     )
+
+    if action == "create":
+        ret["changes"] = {"old": {}, "new": host}
 
     if "error" not in host:
         ret["result"] = True

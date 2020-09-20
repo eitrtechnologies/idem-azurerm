@@ -19,10 +19,9 @@ async def test_present(hub, ctx, fw_rule, postgresql_server, resource_group):
         "changes": {
             "new": {
                 "name": fw_rule,
-                "server_name": postgresql_server,
-                "resource_group": resource_group,
                 "start_ip_address": start_addr,
                 "end_ip_address": end_addr,
+                "type": "Microsoft.DBforPostgreSQL/servers/firewallRules",
             },
             "old": {},
         },
@@ -38,6 +37,7 @@ async def test_present(hub, ctx, fw_rule, postgresql_server, resource_group):
         start_ip_address=start_addr,
         end_ip_address=end_addr,
     )
+    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 

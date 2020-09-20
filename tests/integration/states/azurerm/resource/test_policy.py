@@ -39,14 +39,11 @@ async def test_definition_present(hub, ctx, def_name, def_policy_rule):
     expected = {
         "changes": {
             "new": {
-                "description": None,
-                "display_name": None,
-                "metadata": None,
-                "mode": None,
+                "mode": "Indexed",
                 "name": def_name,
-                "parameters": None,
                 "policy_rule": def_policy_rule,
-                "policy_type": None,
+                "policy_type": "Custom",
+                "type": "Microsoft.Authorization/policyDefinitions",
             },
             "old": {},
         },
@@ -57,6 +54,8 @@ async def test_definition_present(hub, ctx, def_name, def_policy_rule):
     ret = await hub.states.azurerm.resource.policy.definition_present(
         ctx, name=def_name, policy_rule=def_policy_rule,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("metadata")
     assert ret == expected
 
 
@@ -92,11 +91,9 @@ async def test_assignment_present(hub, ctx, assignment_name, def_name):
             "new": {
                 "name": assignment_name,
                 "scope": scope,
-                "definition_name": def_name,
-                "parameters": None,
-                "display_name": None,
-                "description": None,
-                "enforcement_mode": None,
+                "enforcement_mode": "Default",
+                "sku": {"name": "A0", "tier": "Free"},
+                "type": "Microsoft.Authorization/policyAssignments",
             },
             "old": {},
         },
@@ -107,6 +104,9 @@ async def test_assignment_present(hub, ctx, assignment_name, def_name):
     ret = await hub.states.azurerm.resource.policy.assignment_present(
         ctx, name=assignment_name, scope=scope, definition_name=def_name,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("policy_definition_id")
+    ret["changes"]["new"].pop("metadata")
     assert ret == expected
 
 

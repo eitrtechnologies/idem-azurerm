@@ -50,6 +50,7 @@ async def test_present(hub, ctx, vm, resource_group, vnet, subnet, password):
         subnet=subnet,
         admin_password=password,
     )
+    ret["changes"]["new"]["storage_profile"]["image_reference"].pop("exact_version")
     assert ret["changes"]["new"]["name"] == expected["changes"]["new"]["name"]
     assert (
         ret["changes"]["new"]["hardware_profile"]

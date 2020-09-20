@@ -9,9 +9,11 @@ async def test_present(hub, ctx, local_network_gateway, resource_group):
         "changes": {
             "new": {
                 "name": local_network_gateway,
-                "resource_group": resource_group,
                 "gateway_ip_address": gateway_ip_addr,
-                "tags": None,
+                "local_network_address_space": {"address_prefixes": []},
+                "location": "eastus",
+                "provisioning_state": "Succeeded",
+                "type": "Microsoft.Network/localNetworkGateways",
             },
             "old": {},
         },
@@ -25,6 +27,9 @@ async def test_present(hub, ctx, local_network_gateway, resource_group):
         resource_group=resource_group,
         gateway_ip_address=gateway_ip_addr,
     )
+    ret["changes"]["new"].pop("id")
+    ret["changes"]["new"].pop("resource_guid")
+    ret["changes"]["new"].pop("etag")
     assert ret == expected
 
 
