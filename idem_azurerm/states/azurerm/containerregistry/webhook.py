@@ -50,28 +50,6 @@ Azure Resource Manager (ARM) Container Registry Webhook State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: yaml
-
-        Ensure container registry webhook exists:
-            azurerm.containerregistry.webhook.present:
-                - name: testhook
-                - registry_name: testrepo
-                - resource_group: testgroup
-                - service_uri: http://idem.eitr.tech/webhook
-                - actions:
-                    - push
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-
-        Ensure container registry webhook is absent:
-            azurerm.containerregistry.webhook.absent:
-                - name: testhook
-                - registry_name: testrepo
-                - resource_group: testgroup
-
 """
 # Import Python libs
 from dict_tools import differ

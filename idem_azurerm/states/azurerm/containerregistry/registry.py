@@ -50,23 +50,6 @@ Azure Resource Manager (ARM) Container Registry State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: yaml
-
-        Ensure container registry exists:
-            azurerm.containerregistry.registry.present:
-                - name: testrepo
-                - resource_group: testgroup
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-
-        Ensure container registry is absent:
-            azurerm.containerregistry.registry.absent:
-                - name: other_repo
-                - resource_group: testgroup
-
 """
 # Import Python libs
 from dict_tools import differ

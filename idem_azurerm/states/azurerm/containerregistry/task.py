@@ -50,32 +50,6 @@ Azure Resource Manager (ARM) Container Registry Task State Module
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
 
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: yaml
-
-        Ensure container registry task exists:
-            azurerm.containerregistry.task.present:
-                - name: testtask
-                - registry_name: testrepo
-                - resource_group: testgroup
-                - task_type: DockerBuildStep
-                - platform_os: Linux
-                - platform_arch: amd64
-                - context_path: "https://github.com/Azure-Samples/acr-build-helloworld-node"
-                - task_file_path: Dockerfile
-                - image_names:
-                    - "testrepo:helloworldnode"
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-
-        Ensure container registry task is absent:
-            azurerm.containerregistry.task.absent:
-                - name: testtask
-                - registry_name: testrepo
-                - resource_group: testgroup
-
 """
 # Import Python libs
 from dict_tools import differ
