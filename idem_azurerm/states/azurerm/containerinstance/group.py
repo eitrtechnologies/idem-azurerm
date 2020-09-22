@@ -118,6 +118,7 @@ async def present(
         **value**: The value of the environment variable.
 
         **secure_value**: The value of the secure environment variable.
+
     - **volume_mounts**: A list of volume mounts available to the container instance.
         **name**: Required if volume_mounts is used. The name of the volume mount.
 
@@ -125,15 +126,18 @@ async def present(
         be mounted. Must not contain colon (:).
 
         **read_only**: Boolean flag indicating whether the volume mount is read-only.
+
     - **liveness_probe**:
             **exec_property**:
                 **command**: The commands to execute within the container.
+
             **http_get**:
                 **path**: The path to probe.
 
                 **port**: Required if http_get is used. The port number to probe.
 
-                **scheme**: The scheme. Possible values include: 'http', 'https'
+                **scheme**: The scheme. Possible values include: 'http', 'https'.
+
             **initial_delay_seconds**: The initial delay seconds.
 
             **period_seconds**: The period seconds.
@@ -143,15 +147,18 @@ async def present(
             **success_threshold**: The success threshold.
 
             **timeout_seconds**: The timeout seconds.
+
     - **readiness_probe**:
             **exec_property**:
                 **command**: The commands to execute within the container.
+
             **http_get**:
                 **path**: The path to probe.
 
                 **port**: Required if http_get is used. The port number to probe.
 
                 **scheme**: The scheme. Possible values include: 'http', 'https'
+
             **initial_delay_seconds**: The initial delay seconds.
 
             **period_seconds**: The period seconds.

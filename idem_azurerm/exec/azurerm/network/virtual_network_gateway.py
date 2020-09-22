@@ -87,6 +87,7 @@ async def connection_create_or_update(
         Otherwise, the resource_group within the ``resource_group`` parameter will be used.
       - If the connection type is "ExpressRoute", then a valid Resource ID representing an ExpressRouteCircuit Object
         must be passed as the ``peer`` kwarg.
+
     The second endpoint is immutable once set.
 
     CLI Example:

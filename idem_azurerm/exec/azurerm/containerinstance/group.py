@@ -54,6 +54,7 @@ log = logging.getLogger(__name__)
 def __virtual__(hub):
     """
     Only load when Azure SDK imports successfully.
+
     """
     return HAS_LIBS
 
@@ -85,9 +86,8 @@ async def create_or_update(
     Create or update container groups with specified configurations. This is an EXTREMELY complex module. I wouldn't
     recommend attempting to use this on the command line...
 
-    Consult the `SDK documentation <
-    https://docs.microsoft.com/en-us/python/api/azure-mgmt-containerinstance/azure.mgmt.containerinstance.models.containergroup?view=azure-python
-    >`_ for more information about the objects passed to the parameters in this module.
+    Consult the `SDK documentation <https://docs.microsoft.com/en-us/python/api/azure-mgmt-containerinstance/azure.mgmt.containerinstance.models.containergroup?view=azure-python>`_
+    for more information about the objects passed to the parameters in this module.
 
     :param name: The name of the container group.
 
@@ -104,21 +104,24 @@ async def create_or_update(
             **cpu**: Required. The CPU request of this container instance.
 
             **gpu**: The GPU request of this container instance.
+
         **limits**:
             **memory_in_gb**: The memory limit in GB of this container instance.
 
             **cpu**: The CPU limit of this container instance.
 
             **gpu**: The GPU limit of this container instance.
+
     - **command**: A list of commands to execute within the container instance in exec form.
     - **ports**: A list of the dictionaries of exposed ports on the container instance.
-      (``{"protocol": "TCP", "port": 80}``)
+    (``{"protocol": "TCP", "port": 80}``)
     - **environment_variables**: A list of environment variables to set in the container instance.
         **name**: Required if environment_variables is used. The name of the environment variable.
 
         **value**: The value of the environment variable.
 
         **secure_value**: The value of the secure environment variable.
+
     - **volume_mounts**: A list of volume mounts available to the container instance.
         **name**: Required if volume_mounts is used. The name of the volume mount.
 
@@ -126,15 +129,18 @@ async def create_or_update(
         be mounted. Must not contain colon (:).
 
         **read_only**: Boolean flag indicating whether the volume mount is read-only.
+
     - **liveness_probe**:
             **exec_property**:
                 **command**: The commands to execute within the container.
+
             **http_get**:
                 **path**: The path to probe.
 
                 **port**: Required if http_get is used. The port number to probe.
 
-                **scheme**: The scheme. Possible values include: 'http', 'https'
+                **scheme**: The scheme. Possible values include: 'http', 'https'.
+
             **initial_delay_seconds**: The initial delay seconds.
 
             **period_seconds**: The period seconds.
@@ -144,6 +150,7 @@ async def create_or_update(
             **success_threshold**: The success threshold.
 
             **timeout_seconds**: The timeout seconds.
+
     - **readiness_probe**:
             **exec_property**:
                 **command**: The commands to execute within the container.
@@ -167,6 +174,7 @@ async def create_or_update(
         include: 'Windows', 'Linux'
 
     :param restart_policy: Restart policy for all containers within the container group. Possible values are:
+
     - ``Always``: Always restart
     - ``OnFailure``: Restart on failure
     - ``Never``: Never restart
@@ -179,11 +187,11 @@ async def create_or_update(
 
     :param ip_address: A dictionary defining an IpAddress object which represents the IP address for the container
         group. Possible keys are:
-    - ``ports``: Required if ip_address is used. The list of ports exposed on the container group.
-    - ``type``: Required if ip_address is used. Specifies if the IP is exposed to the public internet or private VNET.
-      Possible values include: 'Public', 'Private'
-    - ``ip``: The IP exposed to the public internet.
-    - ``dns_name_label``: The Dns name label for the IP.
+        - ``ports``: Required if ip_address is used. The list of ports exposed on the container group.
+        - ``type``: Required if ip_address is used. Specifies if the IP is exposed to the public internet or private
+        VNET. Possible values include: 'Public', 'Private'
+          - ``ip``: The IP exposed to the public internet.
+          - ``dns_name_label``: The Dns name label for the IP.
 
     :param volumes: The list of dictionaries representing Volume objects that can be mounted by containers in this
         container group.

@@ -84,9 +84,9 @@ async def present(
         combination of the following destinations is acceptable:
 
         1. Archive the diagnostic settings to a storage account. This would require the ``storage_account_id``
-          parameter.
+        parameter.
         2. Stream the diagnostic settings to an event hub. This would require the ``event_hub_name`` and
-          ``event_hub_authorization_rule_id`` parameters.
+        ``event_hub_authorization_rule_id`` parameters.
         3. Send the diagnostic settings to Log Analytics. This would require the ``workspace_id`` parameter.
 
     :param name: The name of the diagnostic setting.
@@ -104,6 +104,7 @@ async def present(
         - ``retention_policy``: An optional dictionary representing a RetentionPolicy object for the specified category.
           The default retention policy for a diagnostic setting is {'enabled': False, 'days': 0}. Required parameters
           include:
+
             - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
             - ``enabled``: A value indicating whether the retention policy is enabled.
 
@@ -117,6 +118,7 @@ async def present(
         - ``retention_policy``: An optional dictionary representing a RetentionPolicy object for the specified category.
           The default retention policy for a diagnostic setting is {'enabled': False, 'days': 0}. Required parameters
           include:
+
             - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
             - ``enabled``: A value indicating whether the retention policy is enabled.
 

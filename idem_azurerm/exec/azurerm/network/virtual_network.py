@@ -259,7 +259,7 @@ async def list_(hub, ctx, resource_group=None, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    .. verionchanged:: 4.0.0
+    .. versionchanged:: 4.0.0
 
     List all virtual networks within a subscription.
 

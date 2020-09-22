@@ -316,19 +316,20 @@ async def present(
         https://docs.microsoft.com/en-us/azure/virtual-machines/linux/disk-encryption-overview
 
         The following parameters may be used to implement virtual machine disk encryption:
-        :param enable_disk_enc: This boolean flag will represent whether disk encryption has been enabled for the
-            virtual machine. This is a required parameter.
+            
+            :param enable_disk_enc: This boolean flag will represent whether disk encryption has been enabled for the
+                virtual machine. This is a required parameter.
 
-        :param disk_enc_keyvault: The resource ID of the key vault containing the disk encryption key, which is a
-            Key Vault Secret. This is a required parameter.
+            :param disk_enc_keyvault: The resource ID of the key vault containing the disk encryption key, which is a
+                Key Vault Secret. This is a required parameter.
 
-        :param disk_enc_volume_type: The volume type(s) that will be encrypted. Possible values include: 'OS',
-            'Data', and 'All'. This is a required parameter.
+            :param disk_enc_volume_type: The volume type(s) that will be encrypted. Possible values include: 'OS',
+                'Data', and 'All'. This is a required parameter.
 
-        :param disk_enc_kek_url: The Key Identifier URL for a Key Encryption Key (KEK). The KEK is used as an
-            additional layer of security for encryption keys. Azure Disk Encryption will use the KEK to wrap the
-            encryption secrets before writing to the Key Vault. The KEK must be in the same vault as the encryption
-            secrets. This is an optional parameter.
+            :param disk_enc_kek_url: The Key Identifier URL for a Key Encryption Key (KEK). The KEK is used as an
+                additional layer of security for encryption keys. Azure Disk Encryption will use the KEK to wrap the
+                encryption secrets before writing to the Key Vault. The KEK must be in the same vault as the encryption
+                secrets. This is an optional parameter.
 
     Attaching Data Disks:
         Data disks can be attached by passing a list of dictionaries in the data_disks parameter. The dictionaries in

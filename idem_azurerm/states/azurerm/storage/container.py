@@ -412,6 +412,7 @@ async def absent(
     Example usage:
 
     .. code-block:: yaml
+
         Ensure blob container is absent:
             azurerm.storage.container.absent:
                 - name: my_container
@@ -497,6 +498,7 @@ async def immutability_policy_absent(
     Example usage:
 
     .. code-block:: yaml
+
         Ensure immutability policy is absent:
             azurerm.storage.container.absent:
                 - name: my_container

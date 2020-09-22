@@ -329,6 +329,7 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     Example usage:
 
     .. code-block:: yaml
+
         Ensure storage account does not exist:
             azurerm.storage.account.absent:
                 - name: my_account
