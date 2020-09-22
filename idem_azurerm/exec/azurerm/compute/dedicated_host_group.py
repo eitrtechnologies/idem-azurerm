@@ -65,7 +65,7 @@ async def create_or_update(
     .. versionadded:: 4.0.0
 
     Create or update a dedicated host group. More information about Dedicated Host Groups can be found
-        `here <https://go.microsoft.com/fwlink/?linkid=2082596/>`_.
+    `here <https://go.microsoft.com/fwlink/?linkid=2082596/>`__.
 
     :param name: The name of the dedicated host group.
 

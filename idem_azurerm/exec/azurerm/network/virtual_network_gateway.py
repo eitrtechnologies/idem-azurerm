@@ -75,7 +75,7 @@ async def connection_create_or_update(
         This is immutable once set.
 
     A second endpoint must be passed as a keyword argument. The seocnd endpoint will be immutable once set. The
-        following are possible second endpoints for the connection:
+    following are possible second endpoints for the connection:
 
       - If the connection type is "Vnet2Vnet", then the name of a second virtual network gateway must be passed as the
         ``virtual_network_gateway2`` kwarg. If that second gateway has a different resource group than the resource
@@ -385,8 +385,8 @@ async def connection_reset_shared_key(
     """
     .. versionadded:: 1.0.0
 
-    Resets the virtual network gateway connection shared key for passed virtual network
-        gateway connection in the specified resource group through Network resource provider.
+    Resets the virtual network gateway connection shared key for passed virtual network gateway connection in the
+    specified resource group through Network resource provider.
 
     :param name: The name of the virtual network gateway connection that will have its shared key reset.
 
@@ -529,12 +529,11 @@ async def create_or_update(
         'UltraPerformance', 'VpnGw1', 'VpnGw2', 'VpnGw3', 'VpnGw4', 'VpnGw5', 'VpnGw1AZ', 'VpnGw2AZ', 'VpnGw3AZ',
         'VpnGw4AZ', 'VpnGw5AZ', 'ErGw1AZ', 'ErGw2AZ', and 'ErGw3AZ'.
 
-    :param polling:
-        An optional boolean flag representing whether a Poller will be used during the creation of the Virtual
-        Network Gateway. If set to True, a Poller will be used by this operation and the module will not return until
-        the Virtual Network Gateway has completed its creation process and has been successfully provisioned. If set to
-        False, the module will return once the Virtual Network Gateway has successfully begun its creation process.
-        Defaults to True.
+    :param polling: An optional boolean flag representing whether a Poller will be used during the creation of the
+        Virtual Network Gateway. If set to True, a Poller will be used by this operation and the module will not return
+        until the Virtual Network Gateway has completed its creation process and has been successfully provisioned. If
+        set to False, the module will return once the Virtual Network Gateway has successfully begun its creation
+        process. Defaults to True.
 
     CLI Example:
 
@@ -879,7 +878,7 @@ async def generate_vpn_profile(
     .. versionadded:: 1.0.0
 
     Generates VPN profile for P2S client of the virtual network gateway in the specified resource group. Used for IKEV2
-        and radius based authentication.
+    and radius based authentication.
 
     :param name: The name of the virtual network gateway.
 
@@ -945,8 +944,7 @@ async def get_vpn_profile_package_url(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Gets pre-generated VPN profile for P2S client of the virtual network gateway in the
-        specified resource group.
+    Gets pre-generated VPN profile for P2S client of the virtual network gateway in the specified resource group.
 
     :param name: The name of the virtual network gateway.
 
@@ -1137,7 +1135,7 @@ async def set_vpnclient_ipsec_parameters(
     .. versionadded:: 1.0.0
 
     Sets the vpnclient ipsec policy for P2S client of virtual network gateway in the specified resource group through
-        the network resource provider.
+    the network resource provider.
 
     :param name: The name of the virtual network gateway.
 
@@ -1219,14 +1217,15 @@ async def get_vpnclient_ipsec_parameters(hub, ctx, name, resource_group, **kwarg
     """
     .. versionadded:: 1.0.0
 
-    Gets information about the vpnclient ipsec policy for P2S client of virtual network
-        gateway in the specified resource group through Network resource provider.
+    Gets information about the vpnclient ipsec policy for P2S client of virtual network gateway in the specified
+    resource group through Network resource provider.
 
     :param name: The virtual network gateway name.
 
     :param resource_group: The name of the resource group.
 
     CLI Example:
+
     .. code-block:: bash
 
         azurerm.network.virtual_network_gateway.get_vpnclient_ipsec_parameters test_name test_group
@@ -1268,6 +1267,7 @@ async def vpn_device_configuration_script(
     :param firmware_version: The firmware version for the vpn device.
 
     CLI Example:
+
     .. code-block:: bash
 
         azurerm.network.virtual_network_gateway.vpn_device_configuration_script test_name test_group \

@@ -59,8 +59,8 @@ async def create_or_update(
     .. versionchanged:: 4.0.0
 
     Updates the specified configuration setting for the given server. A list of configuration settings that can be
-        updated for the given server can be found by using the list_by_server operation below. Additionally, all
-        possible values for each individual configuration setting can be found using that module.
+    updated for the given server can be found by using the list_by_server operation below. Additionally, all
+    possible values for each individual configuration setting can be found using that module.
 
     :param name: The name of the server configuration setting to update.
 

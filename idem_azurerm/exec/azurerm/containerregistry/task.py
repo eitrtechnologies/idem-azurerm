@@ -110,10 +110,10 @@ async def create_or_update(
     :param platform_os: The platform OS property against which the task has to happen. Accepts 'Windows' or 'Linux'.
 
     :param platform_arch: The platform architecture property against which the task has to happen.
-        Accepts 'amd64', 'x86', or 'arm'
+        Accepts 'amd64', 'x86', or 'arm'.
 
     :param platform_variant: The platform CPU variant property against which the run has to happen.
-        Accepts 'v6', 'v7', or 'v8'
+        Accepts 'v6', 'v7', or 'v8'.
 
     :param context_path: (DockerBuildStep, EncodedTaskStep, FileTaskStep) The URL(absolute or relative) of the source
         context for the task step. The build context for the step of the task should be a well formed absolute URI or
@@ -129,10 +129,10 @@ async def create_or_update(
         repository and tag.
 
     :param is_push_enabled: (DockerBuildStep) The value of this property indicates whether the image built should be
-        pushed to the registry or not. SDK default value: True
+        pushed to the registry or not. SDK default value: True.
 
     :param no_cache: (DockerBuildStep) The value of this property indicates whether the image cache is enabled or not.
-        SDK default value: False
+        SDK default value: False.
 
     :param target: (DockerBuildStep) The name of the target build stage for the docker build.
 
@@ -144,34 +144,34 @@ async def create_or_update(
     :param values_file_path: (FileTaskStep) The values/parameters file path relative to the source context.
 
     :param values_dict: The collection of overridable values or arguments that can be passed when running a task. This
-        is a list of dictionaries containing the following keys: 'name', 'value', and 'is_secret'
+        is a list of dictionaries containing the following keys: 'name', 'value', and 'is_secret'.
 
     :param agent_num_cores: The CPU configuration in terms of number of cores required for the run.
 
     :param trigger: The properties that describe all triggers for the task. This is a dictionary containing trigger
         information as described in the documentation for the
-        `Azure Python SDK <https://docs.microsoft.com/en-us/python/api/azure-mgmt-containerregistry/azure.mgmt.containerregistry.v2019_04_01.models.triggerproperties?view=azure-python>`_
+        `Azure Python SDK <https://docs.microsoft.com/en-us/python/api/azure-mgmt-containerregistry/azure.mgmt.containerregistry.v2019_04_01.models.triggerproperties?view=azure-python>`__
 
-    :param status: The current status of task. Possible values include: 'Disabled', 'Enabled'
+    :param status: The current status of task. Possible values include: 'Disabled', 'Enabled'.
 
-    :param timeout: Run timeout in seconds. Default value: 3600
+    :param timeout: Run timeout in seconds. Default value: 3600.
 
     :param credential_login_mode: The authentication mode which determines the source registry login scope. The
         credentials for the source registry will be generated using the given scope. These credentials will be used to
-        login to the source registry during the run. Possible values include: 'None', 'Default'
+        login to the source registry during the run. Possible values include: 'None', 'Default'.
 
     :param credential_login_server: Describes the registry login server (myregistry.azurecr.io) for accessing other
         custom registries.
 
-    :param credential_username: Username for accessing the registry defined in credential_login_server
+    :param credential_username: Username for accessing the registry defined in credential_login_server.
 
-    :param credential_password: Password for accessing the registry defined in credential_login_server
+    :param credential_password: Password for accessing the registry defined in credential_login_server.
 
     :param identity_principal_id: The principal ID of resource identity.
 
     :param identity_tenant_id: The tenant ID of resource.
 
-    :param identity_type: The identity type. Possible values include: 'SystemAssigned', 'UserAssigned'
+    :param identity_type: The identity type. Possible values include: 'SystemAssigned', 'UserAssigned'.
 
     :param user_assigned_identities: The list of user identities associated with the resource. The user identity
         dictionary key references will be ARM resource ids in the form:

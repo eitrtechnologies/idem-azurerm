@@ -107,9 +107,9 @@ async def create(
     .. versionchanged:: 4.0.0
 
     Asynchronously creates a new storage account with the specified parameters. If an account is already created and a
-        subsequent create request is issued with different properties, the account properties will be updated. If an
-        account is already created and a subsequent create or update request is issued with the exact same set of
-        properties, the request will succeed.
+    subsequent create request is issued with different properties, the account properties will be updated. If an
+    account is already created and a subsequent create or update request is issued with the exact same set of
+    properties, the request will succeed.
 
     :param name: The name of the storage account being created. Storage account names must be between 3 and 24
         characters in length and use numbers and lower-case letters only.
@@ -251,8 +251,8 @@ async def failover(hub, ctx, name, resource_group, **kwargs):
     .. versionadded:: 4.0.0
 
     Failover request can be triggered for a storage account in case of availability issues. The failover occurs from
-        the storage account's primary cluster to secondary cluster for RA-GRS accounts. The secondary cluster will
-        become primary after failover.
+    the storage account's primary cluster to secondary cluster for RA-GRS accounts. The secondary cluster will
+    become primary after failover.
 
     :param name: The name of the storage account.
 
@@ -286,7 +286,7 @@ async def get_properties(hub, ctx, name, resource_group, **kwargs):
     .. versionadded:: 2.0.0
 
     Returns the properties for the specified storage account including but not limited to name, SKU name, location,
-        and account status. The ListKeys operation should be used to retrieve storage keys.
+    and account status. The ListKeys operation should be used to retrieve storage keys.
 
     :param name: The name of the storage account.
 
@@ -299,6 +299,7 @@ async def get_properties(hub, ctx, name, resource_group, **kwargs):
         azurerm.storage.account.get_properties test_name test_group
 
     """
+    result = {}
     storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
@@ -321,7 +322,7 @@ async def list_(hub, ctx, resource_group=None, **kwargs):
     .. versionchanged:: 4.0.0
 
     Lists all the storage accounts available under the subscription. Note that storage keys are not returned; use the
-        ListKeys operation for this.
+    ListKeys operation for this.
 
     :param resource_group: The name of the resource group to limit the results.
 
@@ -552,6 +553,7 @@ async def regenerate_key(hub, ctx, name, resource_group, key_name, **kwargs):
         azurerm.storage.account.renegerate_key test_name test_group test_key
 
     """
+    result = {}
     storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:

@@ -235,7 +235,7 @@ async def list_available_sizes(hub, ctx, name, resource_group, **kwargs):
     .. versionadded:: 1.0.0
 
     List all available virtual machine sizes that can be used to create a new virtual machine in an existing
-        availability set.
+    availability set.
 
     :param name: The availability set name to list available virtual machine sizes within.
 

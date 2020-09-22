@@ -456,7 +456,7 @@ async def regenerate_credential(
     :param resource_group: The name of the resource group to which the container registry belongs.
 
     :param credential: Specifies name of the password which should be regenerated. Possible values
-        include: 'password', 'password2'
+        include: 'password', 'password2'.
 
     CLI Example:
 
@@ -689,26 +689,26 @@ async def schedule_run(
         repository and tag.
 
     :param is_push_enabled: (DockerBuild) The value of this property indicates whether the image built should be pushed
-        to the registry or not. SDK default value: True
+        to the registry or not. SDK default value: True.
 
     :param no_cache: (DockerBuild) The value of this property indicates whether the image cache is enabled or not. SDK
-        default value: False
+        default value: False.
 
     :param target: (DockerBuild) The name of the target build stage for the docker build.
 
     :param values_dict: The collection of overridable values or arguments that can be passed when running a task. This
-        is a list of dictionaries containing the following keys: 'name', 'value', and 'is_secret'
+        is a list of dictionaries containing the following keys: 'name', 'value', and 'is_secret'.
 
-    :param timeout: (FileTaskRun, DockerBuild, EncodedTaskRun) Run timeout in seconds. SDK default value: 3600
+    :param timeout: (FileTaskRun, DockerBuild, EncodedTaskRun) Run timeout in seconds. SDK default value: 3600.
 
     :param platform_os: (FileTaskRun, DockerBuild, EncodedTaskRun REQUIRED) The platform OS property against which the
         run has to happen. Accepts 'Windows' or 'Linux'.
 
     :param platform_arch: (FileTaskRun, DockerBuild, EncodedTaskRun REQUIRED) The platform architecture property against
-        which the run has to happen. Accepts 'amd64', 'x86', or 'arm'
+        which the run has to happen. Accepts 'amd64', 'x86', or 'arm'.
 
     :param platform_variant: (FileTaskRun, DockerBuild, EncodedTaskRun REQUIRED) The platform CPU variant property
-        against which the run has to happen. Accepts 'v6', 'v7', or 'v8'
+        against which the run has to happen. Accepts 'v6', 'v7', or 'v8'.
 
     :param agent_num_cores: (FileTaskRun, DockerBuild, EncodedTaskRun) The CPU configuration in terms of number of cores
         required for the run.
@@ -720,16 +720,16 @@ async def schedule_run(
     :param credential_login_mode: (FileTaskRun, DockerBuild, EncodedTaskRun) The authentication mode which determines
         the source registry login scope. The credentials for the source registry will be generated using the given
         scope. These credentials will be used to login to the source registry during the run. Possible values include:
-        'None', 'Default'
+        'None', 'Default'.
 
     :param credential_login_server: (FileTaskRun, DockerBuild, EncodedTaskRun) Describes the registry login server
         (myregistry.azurecr.io) for accessing other custom registries.
 
     :param username: (FileTaskRun, DockerBuild, EncodedTaskRun) Username for accessing the registry defined in
-        credential_login_server
+        credential_login_server.
 
     :param password: (FileTaskRun, DockerBuild, EncodedTaskRun) Password for accessing the registry defined in
-        credential_login_server
+        credential_login_server.
 
     CLI Example:
 

@@ -58,7 +58,7 @@ async def create_or_update(
 
     Creates or updates a PostgreSQL Server key.
 
-    :param name: The name of the PostgreSQL Server key to be operated on (updated or created)..
+    :param name: The name of the PostgreSQL Server key to be operated on (updated or created).
 
     :param server_name: The name of the server.
 

@@ -73,6 +73,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
     # DNS zones are global objects
     kwargs["location"] = "global"
 
+    result = {}
     dnsconn = await hub.exec.azurerm.utils.get_client(ctx, "dns", **kwargs)
 
     # Convert list of ID strings to list of dictionaries with id key.

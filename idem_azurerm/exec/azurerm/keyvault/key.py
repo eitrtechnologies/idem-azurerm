@@ -65,6 +65,7 @@ async def get_key_client(hub, ctx, vault_url, **kwargs):
     Load the key client and return a KeyClient object.
 
     :param vault_url: The URL of the vault that the client will access.
+
     """
     credential = await hub.exec.azurerm.utils.get_identity_credentials(ctx, **kwargs)
 
@@ -113,9 +114,9 @@ async def backup_key(hub, ctx, name, vault_url, **kwargs):
     .. versionadded:: 2.0.0
 
     Back up a key in a protected form useable only by Azure Key Vault. Requires key/backup permission. This is intended
-        to allow copying a key from one vault to another. Both vaults must be owned by the same Azure subscription.
-        Also, backup / restore cannot be performed across geopolitical boundaries. For example, a backup from a vault
-        in a USA region cannot be restored to a vault in an EU region.
+    to allow copying a key from one vault to another. Both vaults must be owned by the same Azure subscription.
+    Also, backup / restore cannot be performed across geopolitical boundaries. For example, a backup from a vault
+    in a USA region cannot be restored to a vault in an EU region.
 
     :param name: The name of the key to back up.
 
@@ -146,7 +147,7 @@ async def begin_delete_key(hub, ctx, name, vault_url, **kwargs):
     .. versionadded:: 2.0.0
 
     Delete all versions of a key and its cryptographic material. Requires keys/delete permission. If the vault has
-        soft-delete enabled, deletion may take several seconds to complete.
+    soft-delete enabled, deletion may take several seconds to complete.
 
     :param name: The name of the key to delete.
 
@@ -178,8 +179,8 @@ async def begin_recover_deleted_key(hub, ctx, name, vault_url, **kwargs):
     .. versionadded:: 2.0.0
 
     Recover a deleted key to its latest version. Possible only in a vault with soft-delete enabled. Requires
-        keys/recover permission. If the vault does not have soft-delete enabled, the begin_delete_key operation is permanent,
-        and this method will raise an error. Attempting to recover a non-deleted key will also raise an error.
+    keys/recover permission. If the vault does not have soft-delete enabled, the begin_delete_key operation is
+    permanent, and this method will raise an error. Attempting to recover a non-deleted key will also raise an error.
 
     :param name: The name of the deleted key to recover.
 
@@ -226,7 +227,7 @@ async def create_ec_key(
     .. versionchanged:: 4.0.0
 
     Create a new elliptic curve key or, if name is already in use, create a new version of the key. Requires the
-        keys/create permission. Key properties can be specified as keyword arguments.
+    keys/create permission. Key properties can be specified as keyword arguments.
 
     :param name: The name of the new key. Key names can only contain alphanumeric characters and dashes.
 
@@ -301,7 +302,7 @@ async def create_key(
     .. versionchanged:: 4.0.0
 
     Create a key or, if name is already in use, create a new version of the key. Requires keys/create permission.
-        Key properties can be specified as keyword arguments.
+    Key properties can be specified as keyword arguments.
 
     :param name: The name of the new key. Key names can only contain alphanumeric characters and dashes.
 
@@ -378,7 +379,7 @@ async def create_rsa_key(
     .. versionadded:: 2.0.0
 
     Create a new RSA key or, if name is already in use, create a new version of the key. Requires the keys/create
-        permission. Key properties can be specified as keyword arguments.
+    permission. Key properties can be specified as keyword arguments.
 
     :param name: The name of the new key. Key names can only contain alphanumeric characters and dashes.
 
@@ -511,9 +512,9 @@ async def import_key(
     .. versionchanged:: 4.0.0
 
     Import a key created externally. Requires keys/import permission. If name is already in use, the key will be
-        imported as a new version. Parameters used to build a JSONWebKey object will be passed to this module. More
-        information about some of those parameters can be found at the following link:
-        https://tools.ietf.org/html/draft-ietf-jose-json-web-key-18.
+    imported as a new version. Parameters used to build a JSONWebKey object will be passed to this module. More
+    information about some of those parameters can be found at the following link:
+    https://tools.ietf.org/html/draft-ietf-jose-json-web-key-18.
 
     :param name: The name of the imported key.
 
@@ -675,7 +676,7 @@ async def list_deleted_keys(hub, ctx, vault_url, **kwargs):
     .. versionadded:: 2.0.0
 
     List all deleted keys, including the public part of each. Possible only in a vault with soft-delete enabled.
-        Requires keys/list permission.
+    Requires keys/list permission.
 
     :param vault_url: The URL of the vault that the client will access.
 
@@ -705,9 +706,9 @@ async def purge_deleted_key(hub, ctx, name, vault_url, **kwargs):
     .. versionadded:: 2.0.0
 
     Permanently deletes a deleted key. Only possible in a vault with soft-delete enabled. Performs an irreversible
-        deletion of the specified key, without possibility for recovery. The operation is not available if the
-        recovery_level does not specify 'Purgeable'. This method is only necessary for purging a key before its
-        scheduled_purge_date. Requires keys/purge permission.
+    deletion of the specified key, without possibility for recovery. The operation is not available if the
+    recovery_level does not specify 'Purgeable'. This method is only necessary for purging a key before its
+    scheduled_purge_date. Requires keys/purge permission.
 
     :param name: The name of the deleted key to purge.
 
@@ -738,8 +739,8 @@ async def restore_key_backup(hub, ctx, backup, vault_url, **kwargs):
     .. versionadded:: 2.0.0
 
     Restore a key backup to the vault. This imports all versions of the key, with its name, attributes, and access
-        control policies. If the key's name is already in use, restoring it will fail. Also, the target vault must be
-        owned by the same Microsoft Azure subscription as the source vault. Requires keys/restore permission.
+    control policies. If the key's name is already in use, restoring it will fail. Also, the target vault must be
+    owned by the same Microsoft Azure subscription as the source vault. Requires keys/restore permission.
 
     :param backup: A key backup as returned by the backup_key operation.
 
@@ -784,7 +785,7 @@ async def update_key_properties(
     .. versionchanged:: 4.0.0
 
     Change a key's properties (not its cryptographic material). Requires keys/update permission. Key properties that
-        need to be updated can be specified as keyword arguments.
+    need to be updated can be specified as keyword arguments.
 
     :param name: The name of the key to update.
 

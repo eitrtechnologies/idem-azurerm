@@ -78,15 +78,15 @@ async def create_or_update(hub, ctx, name, display_name=None, parent=None, **kwa
     .. versionadded:: 2.0.0
 
     Create or update a management group. If a management group is already created and a subsequent create request is
-        issued with different properties, the management group properties will be updated.
+    issued with different properties, the management group properties will be updated.
 
-    :param name: The ID of the management group. For example, 00000000-0000-0000-0000-000000000000.
+    :param name: The ID of the management group. For example, "00000000-0000-0000-0000-000000000000".
 
     :param display_name: The friendly name of the management group. If no value is passed then this field will be set
         to the name of the management group.
 
     :param parent: The fully qualified ID for the parent management group. For example,
-        /providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000.
+        "/providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000".
 
     CLI Example:
 

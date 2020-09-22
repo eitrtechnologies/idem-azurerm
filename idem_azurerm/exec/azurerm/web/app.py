@@ -243,7 +243,7 @@ async def get_configuration(hub, ctx, name, resource_group, **kwargs):
     .. versionadded:: 3.0.0
 
     Gets the configuration of an app, such as platform version and bitness, default documents, virtual applications,
-        Always On, etc.
+    Always On, etc.
 
     :param name: The name of the App.
 

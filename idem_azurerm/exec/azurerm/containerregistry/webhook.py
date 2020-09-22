@@ -86,12 +86,12 @@ async def create_or_update(
     :param service_uri: The service URI for the webhook to post notifications.
 
     :param actions: The list of actions that trigger the webhook to post notifications. Possible values include
-        'chart_delete', 'chart_push', 'delete', 'push', and 'quarantine'
+        'chart_delete', 'chart_push', 'delete', 'push', and 'quarantine'.
 
     :param custom_headers: A dictionary of custom headers that will be added to the webhook notifications.
 
     :param status: The status of the webhook at the time the operation was called. Possible values are 'enabled' and
-        'disabled'
+        'disabled'.
 
     :param scope: The scope of repositories where the event can be triggered. For example, ``foo:>>*<<`` means events
         for all tags under repository ``foo``. ``foo:bar`` means events for ``foo:bar`` only. ``foo`` is equivalent to

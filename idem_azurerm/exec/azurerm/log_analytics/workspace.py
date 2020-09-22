@@ -164,8 +164,8 @@ async def delete(hub, ctx, name, resource_group, force=None, **kwargs):
     .. versionchanged:: 4.0.0
 
     Deletes a workspace. To recover the workspace, create it again with the same name, in the same subscription,
-        resource group and location. The name is kept for 14 days and cannot be used for another workspace. To remove
-        the workspace completely and release the name, use the force flag.
+    resource group and location. The name is kept for 14 days and cannot be used for another workspace. To remove
+    the workspace completely and release the name, use the force flag.
 
     :param name: The name of the workspace.
 

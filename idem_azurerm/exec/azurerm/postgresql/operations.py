@@ -60,7 +60,7 @@ async def list_(hub, ctx, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.postgresql.operations.list_
+        azurerm.postgresql.operations.list
 
     """
     result = {}

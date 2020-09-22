@@ -288,56 +288,45 @@ async def create_or_update(
 
         The following parameters may be used to implement virtual machine disk encryption:
 
-        :param enable_disk_enc: This boolean flag will represent whether disk encryption has been enabled for the
-            virtual machine. This is a required parameter.
-
-        :param disk_enc_keyvault: The resource ID of the key vault containing the disk encryption key, which is a
-            Key Vault Secret. This is a required parameter.
-
-        :param disk_enc_volume_type: The volume type(s) that will be encrypted. Possible values include: 'OS',
-            'Data', and 'All'. This is a required parameter.
-
-        :param disk_enc_kek_url: The Key Identifier URL for a Key Encryption Key (KEK). The KEK is used as an
-            additional layer of security for encryption keys. Azure Disk Encryption will use the KEK to wrap the
-            encryption secrets before writing to the Key Vault. The KEK must be in the same vault as the encryption
-            secrets. This is an optional parameter.
+        - **param enable_disk_enc**: This boolean flag will represent whether disk encryption has been enabled for the
+          virtual machine. This is a required parameter.
+        - **disk_enc_keyvault**: The resource ID of the key vault containing the disk encryption key, which is a
+          Key Vault Secret. This is a required parameter.
+        - **disk_enc_volume_type**: The volume type(s) that will be encrypted. Possible values include: 'OS',
+          'Data', and 'All'. This is a required parameter.
+        - **disk_enc_kek_url**: The Key Identifier URL for a Key Encryption Key (KEK). The KEK is used as an
+          additional layer of security for encryption keys. Azure Disk Encryption will use the KEK to wrap the
+          encryption secrets before writing to the Key Vault. The KEK must be in the same vault as the encryption
+          secrets. This is an optional parameter.
 
     Attaching Data Disks:
         Data disks can be attached by passing a list of dictionaries in the data_disks parameter. The dictionaries in
-        the list can have the following parameters.
+        the list can have the following parameters:
 
-        :param lun: (optional int) Specifies the logical unit number of the data disk. This value is used to identify
-            data disks within the VM and therefore must be unique for each data disk attached to a VM. If not
-            provided, we increment the lun designator based upon the index within the provided list of disks.
-
-        :param name: (optional str) The disk name. Defaults to "{vm_name}-datadisk{lun}"
-
-        :param vhd: (optional str or dict) Virtual hard disk to use. If a URI string is provided, it will be nested
-            under a "uri" key in a dictionary as expected by the SDK.
-
-        :param image: (optional str or dict) The source user image virtual hard disk. The virtual hard disk will be
-            copied before being attached to the virtual machine. If image is provided, the destination virtual hard
-            drive must not exist. If a URI string is provided, it will be nested under a "uri" key in a dictionary as
-            expected by the SDK.
-
-        :param caching: (optional str - read_only, read_write, or none) Specifies the caching requirements. Defaults to
-            "None" for Standard storage and "ReadOnly" for Premium storage.
-
-        :param write_accelerator_enabled: (optional bool - True or False) Specifies whether write accelerator should be
-            enabled or disabled on the disk.
-
-        :param create_option: (optional str - attach, from_image, or empty) Specifies how the virtual machine should be
-            created. The "attach" value is used when you are using a specialized disk to create the virtual machine. The
-            "from_image" value is used when you are using an image to create the virtual machine. If you are using a
-            platform image, you also use the image_reference element. If you are using a marketplace image, you also use
-            the plan element.
-
-        :param disk_size_gb: (optional int) Specifies the size of an empty data disk in gigabytes. This element can be
-            used to overwrite the size of the disk in a virtual machine image.
-
-        :param managed_disk: (optional str or dict) The managed disk parameters. If an ID string is provided, it will
-            be nested under an "id" key in a dictionary as expected by the SDK. If a dictionary is provided, the
-            "storage_account_type" parameter can be passed (accepts (Standard|Premium)_LRS or (Standard|Ultra)SSD_LRS).
+        - **lun**: (optional int) Specifies the logical unit number of the data disk. This value is used to identify
+          data disks within the VM and therefore must be unique for each data disk attached to a VM. If not
+          provided, we increment the lun designator based upon the index within the provided list of disks.
+        - **name**: (optional str) The disk name. Defaults to "{vm_name}-datadisk{lun}"
+        - **vhd**: (optional str or dict) Virtual hard disk to use. If a URI string is provided, it will be nested
+          under a "uri" key in a dictionary as expected by the SDK.
+        - **image**: (optional str or dict) The source user image virtual hard disk. The virtual hard disk will be
+          copied before being attached to the virtual machine. If image is provided, the destination virtual hard
+          drive must not exist. If a URI string is provided, it will be nested under a "uri" key in a dictionary as
+          expected by the SDK.
+        - **caching**: (optional str - read_only, read_write, or none) Specifies the caching requirements. Defaults to
+          "None" for Standard storage and "ReadOnly" for Premium storage.
+        - **write_accelerator_enabled**: (optional bool - True or False) Specifies whether write accelerator should be
+          enabled or disabled on the disk.
+        - **create_option**: (optional str - attach, from_image, or empty) Specifies how the virtual machine should be
+          created. The "attach" value is used when you are using a specialized disk to create the virtual machine. The
+          "from_image" value is used when you are using an image to create the virtual machine. If you are using a
+          platform image, you also use the image_reference element. If you are using a marketplace image, you also use
+          the plan element.
+        - **disk_size_gb**: (optional int) Specifies the size of an empty data disk in gigabytes. This element can be
+          used to overwrite the size of the disk in a virtual machine image.
+        - **managed_disk**: (optional str or dict) The managed disk parameters. If an ID string is provided, it will
+          be nested under an "id" key in a dictionary as expected by the SDK. If a dictionary is provided, the
+          "storage_account_type" parameter can be passed (accepts (Standard|Premium)_LRS or (Standard|Ultra)SSD_LRS).
 
     CLI Example:
 
@@ -935,7 +924,7 @@ async def capture(
     .. versionadded:: 1.0.0
 
     Captures the VM by copying virtual hard disks of the VM and outputs a template that can be used to create
-        similar VMs.
+    similar VMs.
 
     :param name: The name of the virtual machine.
 
@@ -1055,7 +1044,7 @@ async def convert_to_managed_disks(hub, ctx, name, resource_group, **kwargs):
     .. versionadded:: 1.0.0
 
     Converts virtual machine disks from blob-based to managed disks. Virtual machine must be stop-deallocated before
-        invoking this operation.
+    invoking this operation.
 
     :param name: The name of the virtual machine to convert.
 
@@ -1327,8 +1316,8 @@ async def power_off(hub, ctx, name, resource_group, skip_shutdown=False, **kwarg
 
     .. versionchanged:: 4.0.0
 
-    The operation to power off (stop) a virtual machine. The virtual machine can be restarted with the same
-        provisioned resources. You are still charged for this virtual machine.
+    The operation to power off (stop) a virtual machine. The virtual machine can be restarted with the same provisioned
+    resources. You are still charged for this virtual machine.
 
     :param name: The name of the virtual machine to stop.
 
@@ -1583,7 +1572,7 @@ async def simulate_eviction(hub, ctx, name, resource_group, **kwargs):
     .. versionadded:: 4.0.0
 
     The operation to simulate the eviction of spot virtual machine. The eviction will occur within 30 minutes of
-        calling the API.
+    calling the API.
 
     :param name: The name of the virtual machine.
 

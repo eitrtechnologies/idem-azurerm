@@ -149,7 +149,7 @@ async def create_or_update(hub, ctx, name, location, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.resource.group.create_or_update testgroup westus
+        azurerm.resource.group.create_or_update testgroup "westus"
 
     """
     result = {}

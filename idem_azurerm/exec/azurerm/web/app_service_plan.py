@@ -213,6 +213,7 @@ async def get_server_farm_skus(hub, ctx, name, resource_group, **kwargs):
     :param resource_group: The name of the resource group.
 
     CLI Example:
+
     .. code-block:: bash
 
         azurerm.web.app_service_plan.get_server_farm_skus test_name test_group

@@ -375,11 +375,9 @@ async def security_rule_get(hub, ctx, name, security_group, resource_group, **kw
 
     :param name: The name of the security rule to query.
 
-    :param security_group: The network security group containing the
-        security rule.
+    :param security_group: The network security group containing the security rule.
 
-    :param resource_group: The resource group name assigned to the
-        network security group.
+    :param resource_group: The resource group name assigned to the network security group.
 
     CLI Example:
 
