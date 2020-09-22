@@ -154,7 +154,6 @@ async def present(
                 - location: 'eastus'
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -334,7 +333,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             azurerm.storage.account.absent:
                 - name: my_account
                 - resource_group: my_rg
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

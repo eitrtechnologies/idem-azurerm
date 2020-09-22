@@ -86,7 +86,6 @@ async def present(
         Ensure management group exists:
             azurerm.managementgroup.operations.present:
                 - name: my_mgroup
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -169,6 +168,14 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure management group absent:
+            azurerm.managementgroup.operations.absent:
+              - name: test_group
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

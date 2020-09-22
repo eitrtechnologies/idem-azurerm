@@ -121,7 +121,6 @@ async def present(
                     subnet: subnet_id
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -254,7 +253,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             azurerm.network.bastion_host.absent:
                 - name: test_host
                 - resource_group: test_group
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

@@ -136,7 +136,6 @@ async def present(
                       - '443'
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -249,7 +248,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             azurerm.network.network_security_group.absent:
                 - name: nsg1
                 - resource_group: group1
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -405,7 +403,6 @@ async def security_rule_present(
                 - destination_port_ranges:
                   - '80'
                   - '443'
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -664,7 +661,6 @@ async def security_rule_absent(
                 - name: nsg1_rule2
                 - security_group: nsg1
                 - resource_group: group1
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

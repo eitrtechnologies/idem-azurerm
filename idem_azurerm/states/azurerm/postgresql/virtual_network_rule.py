@@ -110,7 +110,6 @@ async def present(
                 - server_name: my_server
                 - resource_group: my_rg
                 - subnet_id: my_id
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -210,12 +209,11 @@ async def absent(
 
     .. code-block:: yaml
 
-        Ensure vnet is absent:
+        Ensure vnet rule is absent:
             azurerm.postgresql.virtual_network_rule.absent:
                 - name: my_rule
                 - server_name: my_server
                 - resource_group: my_rg
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

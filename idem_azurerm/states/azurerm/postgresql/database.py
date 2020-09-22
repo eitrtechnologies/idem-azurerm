@@ -107,7 +107,6 @@ async def present(
                 - name: my_db
                 - server_name: my_server
                 - resource_group: my_rg
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -217,7 +216,6 @@ async def absent(
                 - name: my_rule
                 - server_name: my_server
                 - resource_group: my_rg
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

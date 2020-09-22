@@ -76,9 +76,9 @@ async def present(
     .. versionchanged:: 4.0.0
 
     Ensures that a specific configuration setting exists with the given value for a specific PostgreSQL server. A list
-        of configuration settings that can be updated for the given server can be found by using the list_by_server
-        operation below. Additionally, all possible values for each individual configuration setting can be found
-        using that module.
+    of configuration settings that can be updated for the given server can be found by using the list_by_server
+    operation below. Additionally, all possible values for each individual configuration setting can be found
+    using that module.
 
     :param name: The name of the server configuration setting.
 
@@ -101,7 +101,6 @@ async def present(
                 - server_name: my_server
                 - resource_group: my_rg
                 - value: config_value
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

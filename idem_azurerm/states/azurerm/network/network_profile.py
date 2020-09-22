@@ -81,10 +81,10 @@ async def present(
     :param resource_group: The name of the resource group to which the network profile belongs.
 
     :param container_network_interfaces: List of child `container network interfaces
-        <https://docs.microsoft.com/en-us/python/api/azure-mgmt-network/azure.mgmt.network.v2018_12_01.models.containernetworkinterface?view=azure-python>`_.
+        <https://docs.microsoft.com/en-us/python/api/azure-mgmt-network/azure.mgmt.network.v2018_12_01.models.containernetworkinterface?view=azure-python>`__.
 
     :param container_network_interface_configurations: List of child `container network interface configurations
-        <https://docs.microsoft.com/en-us/python/api/azure-mgmt-network/azure.mgmt.network.v2018_12_01.models.containernetworkinterfaceconfiguration?view=azure-python>`_.
+        <https://docs.microsoft.com/en-us/python/api/azure-mgmt-network/azure.mgmt.network.v2018_12_01.models.containernetworkinterfaceconfiguration?view=azure-python>`__.
 
     :param tags: A dictionary of strings can be passed as tag metadata to the object.
 

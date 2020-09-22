@@ -129,7 +129,6 @@ async def present(
                 - server_name: my_server
                 - resource_group: my_rg
                 - policy_state: 'Enabled'
-                - connection_auth: {{ profile }}
 
     """
     name = "Default"

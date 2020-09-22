@@ -74,6 +74,15 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure disk absent:
+            azurerm.compute.disk.absent:
+                - name: test_disk
+                - resource_group: test_group
+
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
 

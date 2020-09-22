@@ -153,7 +153,6 @@ async def present(
                 - enable_accelerated_networking: True
                 - enable_ip_forwarding: False
                 - network_security_group: nsg1
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -321,7 +320,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             azurerm.network.network_interface.absent:
                 - name: iface1
                 - resource_group: group1
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

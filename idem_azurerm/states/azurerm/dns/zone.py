@@ -92,7 +92,7 @@ async def present(
         The resource group assigned to the DNS zone.
 
     :param etag:
-        The etag of the zone. `Etags <https://docs.microsoft.com/en-us/azure/dns/dns-zones-records#etags>`_ are used
+        The etag of the zone. `Etags <https://docs.microsoft.com/en-us/azure/dns/dns-zones-records#etags>`__ are used
         to handle concurrent changes to the same resource safely.
 
     :param if_match:
@@ -105,18 +105,18 @@ async def present(
 
     :param registration_virtual_networks:
         A list of references to virtual networks that register hostnames in this DNS zone. This is only when zone_type
-        is Private. (requires `azure-mgmt-dns <https://pypi.python.org/pypi/azure-mgmt-dns>`_ >= 2.0.0rc1)
+        is Private. (requires `azure-mgmt-dns <https://pypi.python.org/pypi/azure-mgmt-dns>`__ >= 2.0.0rc1)
 
     :param resolution_virtual_networks:
         A list of references to virtual networks that resolve records in this DNS zone. This is only when zone_type is
-        Private. (requires `azure-mgmt-dns <https://pypi.python.org/pypi/azure-mgmt-dns>`_ >= 2.0.0rc1)
+        Private. (requires `azure-mgmt-dns <https://pypi.python.org/pypi/azure-mgmt-dns>`__ >= 2.0.0rc1)
 
     :param tags:
         A dictionary of strings can be passed as tag metadata to the DNS zone object.
 
     :param zone_type:
         The type of this DNS zone (Public or Private). Possible values include: 'Public', 'Private'. Default value: 'Public'
-         (requires `azure-mgmt-dns <https://pypi.python.org/pypi/azure-mgmt-dns>`_ >= 2.0.0rc1)
+         (requires `azure-mgmt-dns <https://pypi.python.org/pypi/azure-mgmt-dns>`__ >= 2.0.0rc1)
 
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
@@ -136,7 +136,6 @@ async def present(
                 - tags:
                     how_awesome: very
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -275,6 +274,15 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure zone absent:
+            azurerm.dns.zone.absent:
+              - name: test_machine
+              - resource_group: test_group
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

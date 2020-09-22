@@ -134,7 +134,6 @@ async def present(
                     - '192.168.0.0/16'
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -282,7 +281,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             azurerm.network.local_network_gateway.absent:
                 - name: gateway1
                 - resource_group: group1
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

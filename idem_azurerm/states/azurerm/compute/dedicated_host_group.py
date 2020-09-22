@@ -97,14 +97,13 @@ async def present(
 
     .. code-block:: yaml
 
-        Ensure Dedicated Host Group Exists:
+        Ensure dedicated host group exists:
             azurerm.compute.dedicate_host_group.present:
                 - name: test_host_group
                 - resource_group: test_group
                 - platform_fault_domain_count: 1
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -186,6 +185,15 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure dedicated host group absent:
+            azurerm.compute.dedicated_host_group.absent:
+                - name: test_dhg
+                - resource_group: test_rg
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

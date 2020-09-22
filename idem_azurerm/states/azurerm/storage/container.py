@@ -127,7 +127,6 @@ async def present(
                 - account: my_account
                 - resource_group: my_rg
                 - public_access: 'Blob'
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -289,7 +288,6 @@ async def immutability_policy_present(
                 - account: my_account
                 - resource_group: my_rg
                 - immutability_period: 10
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -418,7 +416,6 @@ async def absent(
                 - name: my_container
                 - account: my_account
                 - resource_group: my_rg
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -505,7 +502,6 @@ async def immutability_policy_absent(
                 - account: my_account
                 - resource_group: my_rg
                 - if_match: '"my_etag"'
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

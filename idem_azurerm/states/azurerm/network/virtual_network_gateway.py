@@ -214,7 +214,6 @@ async def connection_present(
                 - shared_key: 'key'
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
         Ensure virtual network gateway IPSec connection exists:
             azurerm.network.virtual_network_gateway.connection_present:
@@ -237,7 +236,6 @@ async def connection_present(
                     pfs_group: 'None'
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -474,7 +472,6 @@ async def connection_absent(
             azurerm.network.virtual_network_gateway.connection_absent:
                 - name: connection1
                 - resource_group: group1
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -649,7 +646,6 @@ async def present(
                     public_ip_address: pub_ip1
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
         Ensure virtual network gateway exists:
             azurerm.network.virtual_network_gateway.present:
@@ -665,7 +661,6 @@ async def present(
                     public_ip_address: pub_ip2
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
                 - gateway_type: 'Vpn'
                 - vpn_type: 'RouteBased'
                 - active_active: True
@@ -862,7 +857,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             azurerm.network.virtual_network_gateway.absent:
                 - name: gateway1
                 - resource_group: group1
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

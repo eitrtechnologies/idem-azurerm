@@ -171,7 +171,6 @@ async def present(
                 - enable_app_insights: True
                 - tags:
                     "Owner": "EITR Technologies"
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -531,7 +530,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             azurerm.web.function_app.absent:
                 - name: my_app
                 - resource_group: my_group
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

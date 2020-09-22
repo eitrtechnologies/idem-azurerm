@@ -120,8 +120,8 @@ async def present(
     :param minimum_tls_version: The specified TLS version (or higher) that clients are required to use.
         Possible values include: '1.0', '1.1', and '1.2'.
 
-    :param subnet_id: The full resource ID of a subnet in a virtual network to deploy the Redis cache in.
-        Example format: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/Microsoft.{Network|ClassicNetwork}/VirtualNetworks/vnet1/subnets/subnet1.
+    :param subnet_id: The full resource ID of a subnet in a virtual network to deploy the Redis cache in. Example
+        format: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/Microsoft.{Network|ClassicNetwork}/VirtualNetworks/vnet1/subnets/subnet1.
 
     :param static_ip: Static IP address. Required when deploying a Redis cache inside an existing Azure Virtual Network.
 
@@ -162,7 +162,6 @@ async def present(
                 - location: 'eastus'
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -340,7 +339,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             azurerm.redis.operations.absent:
                 - name: my_redis_cache
                 - resource_group: my_rg
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

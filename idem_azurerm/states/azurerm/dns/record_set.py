@@ -202,7 +202,6 @@ async def present(
                 - metadata:
                     how_awesome: very
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -381,6 +380,17 @@ async def absent(
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure record set absent:
+            azurerm.dns.record_set.absent:
+                - name: test_set
+                - zone: test_zone
+                - resource_group: test_group
+                - record_type: test_type
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

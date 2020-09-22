@@ -110,8 +110,8 @@ async def present(
         reference to a public IP address object). Valid parameters are:
 
         - ``name``: The name of the resource that is unique within a resource group.
-        - ``private_ip_address``: The private IP address of the IP configuration. Required if ``private_ip_allocation_method``
-            is 'Static'.
+        - ``private_ip_address``: The private IP address of the IP configuration. Required if
+          ``private_ip_allocation_method`` is 'Static'.
         - ``private_ip_allocation_method``: The Private IP allocation method. Possible values are: 'Static', 'Dynamic'.
         - ``subnet``: Name of an existing subnet inside of which the frontend IP will reside.
         - ``public_ip_address``: Name of an existing public IP address which will be assigned to the frontend IP object.
@@ -263,7 +263,6 @@ async def present(
                     probe: lb1_webprobe1
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -486,6 +485,15 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure load balancer absent:
+            azurerm.network.load_balancer.absent:
+              - name: test_lb
+              - resource_group: test_group
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

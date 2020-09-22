@@ -144,7 +144,6 @@ async def present(
                     - '8.8.8.8'
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -296,6 +295,15 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
 
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure virtual network absent:
+            azurerm.network.virtual_network.absent:
+              - name: test_vnet
+              - resource_group: test_group
+
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
 
@@ -380,7 +388,7 @@ async def subnet_present(
 
     :param service_endpoints:
         A list of service endpoints. More information about service endpoints and valid values can be found
-        `here <https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoints-overview>`_.
+        `here <https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-service-endpoints-overview>`__.
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
@@ -397,7 +405,6 @@ async def subnet_present(
                 - address_prefix: '192.168.1.0/24'
                 - security_group: nsg1
                 - route_table: rt1
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -540,6 +547,15 @@ async def subnet_absent(
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure subnet absent:
+            azurerm.network.virtual_network.subnet_absent:
+              - name: test_subnet
+              - resource_group: test_group
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

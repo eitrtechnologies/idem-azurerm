@@ -81,13 +81,12 @@ async def present(
     .. versionchanged:: 4.0.0
 
     Ensure a diagnostic setting exists. At least one destination for the diagnostic setting logs is required. Any
-        combination of the following destinations is acceptable:
+    combination of the following destinations is acceptable:
 
-        1. Archive the diagnostic settings to a storage account. This would require the ``storage_account_id``
-        parameter.
-        2. Stream the diagnostic settings to an event hub. This would require the ``event_hub_name`` and
-        ``event_hub_authorization_rule_id`` parameters.
-        3. Send the diagnostic settings to Log Analytics. This would require the ``workspace_id`` parameter.
+    1. Archive the diagnostic settings to a storage account. This would require the ``storage_account_id`` parameter.
+    2. Stream the diagnostic settings to an event hub. This would require the ``event_hub_name`` and
+    ``event_hub_authorization_rule_id`` parameters.
+    3. Send the diagnostic settings to Log Analytics. This would require the ``workspace_id`` parameter.
 
     :param name: The name of the diagnostic setting.
 
@@ -160,7 +159,6 @@ async def present(
                   - category: my_category
                     enabled: True
                 - storage_account_id: my_account_id
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -316,7 +314,6 @@ async def absent(hub, ctx, name, resource_uri, connection_auth=None, **kwargs):
             azurerm.monitor.diagnostic_setting.absent:
                 - name: my_setting
                 - resource_uri: my_resource
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

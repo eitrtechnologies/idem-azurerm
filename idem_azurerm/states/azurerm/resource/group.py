@@ -97,7 +97,6 @@ async def present(
                 - location: eastus
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -175,6 +174,14 @@ async def absent(hub, ctx, name, connection_auth=None, **kwargs):
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure resource group absent:
+            azurerm.resource.group.absent:
+              - name: test_group
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

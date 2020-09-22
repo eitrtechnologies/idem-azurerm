@@ -161,7 +161,6 @@ async def definition_present(
                             - centralus
                     then:
                       effect: deny
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -338,6 +337,14 @@ async def definition_absent(hub, ctx, name, connection_auth=None, **kwargs):
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure definition absent:
+            azurerm.resource.policy.definition_absent:
+              - name: test_def
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -561,9 +568,18 @@ async def assignment_absent(hub, ctx, name, scope, connection_auth=None, **kwarg
     :param scope:
         The scope of the policy assignment.
 
-    connection_auth
+    :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure assignment absent:
+            azurerm.resource.policy.assignment_absent:
+              - name: test_assign
+              - scope: test_scope
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

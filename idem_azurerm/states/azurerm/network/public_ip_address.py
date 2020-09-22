@@ -143,7 +143,6 @@ async def present(
                 - idle_timeout_in_minutes: 4
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -326,6 +325,15 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure public ip address absent:
+            azurerm.network.public_ip_address.absent:
+              - name: test_ip
+              - resource_group: test_group
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
