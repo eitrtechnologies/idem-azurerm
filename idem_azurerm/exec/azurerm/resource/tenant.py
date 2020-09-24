@@ -1,4 +1,4 @@
-u# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Azure Resource Manager (ARM) Resource Tenant Execution Module
 
