@@ -94,80 +94,60 @@ async def create_or_update(
     :param resource_group: The name of the resource group to which the container group belongs.
 
     :param containers: A list of the containers within the container group.
+        - **name**: Required. The user-provided name of the container instance.
+        - **image**: Required. The name of the image used to create the container instance.
+        - **resources**:
+            **requests**:
+              **memory_in_gb**: Required. The memory request in GB of this container instance.
+              **cpu**: Required. The CPU request of this container instance.
+              **gpu**: The GPU request of this container instance.
 
-    - **name**: Required. The user-provided name of the container instance.
-    - **image**: Required. The name of the image used to create the container instance.
-    - **resources**:
-        **requests**:
-            **memory_in_gb**: Required. The memory request in GB of this container instance.
+            **limits**:
+              **memory_in_gb**: The memory limit in GB of this container instance.
+              **cpu**: The CPU limit of this container instance.
+              **gpu**: The GPU limit of this container instance.
 
-            **cpu**: Required. The CPU request of this container instance.
+        - **command**: A list of commands to execute within the container instance in exec form.
+        - **ports**: A list of the dictionaries of exposed ports on the container instance.
+          (``{"protocol": "TCP", "port": 80}``)
+        - **environment_variables**: A list of environment variables to set in the container instance.
+            **name**: Required if environment_variables is used. The name of the environment variable.
+            **value**: The value of the environment variable.
+            **secure_value**: The value of the secure environment variable.
 
-            **gpu**: The GPU request of this container instance.
+        - **volume_mounts**: A list of volume mounts available to the container instance.
+            **name**: Required if volume_mounts is used. The name of the volume mount.
+            **mount_path**: Required if volume_mounts is used. The path within the container where the volume should
+            be mounted. Must not contain colon (:).
+            **read_only**: Boolean flag indicating whether the volume mount is read-only.
 
-        **limits**:
-            **memory_in_gb**: The memory limit in GB of this container instance.
-
-            **cpu**: The CPU limit of this container instance.
-
-            **gpu**: The GPU limit of this container instance.
-
-    - **command**: A list of commands to execute within the container instance in exec form.
-    - **ports**: A list of the dictionaries of exposed ports on the container instance.
-    (``{"protocol": "TCP", "port": 80}``)
-    - **environment_variables**: A list of environment variables to set in the container instance.
-        **name**: Required if environment_variables is used. The name of the environment variable.
-
-        **value**: The value of the environment variable.
-
-        **secure_value**: The value of the secure environment variable.
-
-    - **volume_mounts**: A list of volume mounts available to the container instance.
-        **name**: Required if volume_mounts is used. The name of the volume mount.
-
-        **mount_path**: Required if volume_mounts is used. The path within the container where the volume should
-        be mounted. Must not contain colon (:).
-
-        **read_only**: Boolean flag indicating whether the volume mount is read-only.
-
-    - **liveness_probe**:
+        - **liveness_probe**:
             **exec_property**:
-                **command**: The commands to execute within the container.
+              **command**: The commands to execute within the container.
 
             **http_get**:
-                **path**: The path to probe.
-
-                **port**: Required if http_get is used. The port number to probe.
-
-                **scheme**: The scheme. Possible values include: 'http', 'https'.
+              **path**: The path to probe.
+              **port**: Required if http_get is used. The port number to probe.
+              **scheme**: The scheme. Possible values include: 'http', 'https'.
 
             **initial_delay_seconds**: The initial delay seconds.
-
             **period_seconds**: The period seconds.
-
             **failure_threshold**: The failure threshold.
-
             **success_threshold**: The success threshold.
-
             **timeout_seconds**: The timeout seconds.
 
-    - **readiness_probe**:
+        - **readiness_probe**:
             **exec_property**:
-                **command**: The commands to execute within the container.
+              **command**: The commands to execute within the container.
             **http_get**:
-                **path**: The path to probe.
+              **path**: The path to probe.
+              **port**: Required if http_get is used. The port number to probe.
+              **scheme**: The scheme. Possible values include: 'http', 'https'
 
-                **port**: Required if http_get is used. The port number to probe.
-
-                **scheme**: The scheme. Possible values include: 'http', 'https'
             **initial_delay_seconds**: The initial delay seconds.
-
             **period_seconds**: The period seconds.
-
             **failure_threshold**: The failure threshold.
-
             **success_threshold**: The success threshold.
-
             **timeout_seconds**: The timeout seconds.
 
     :param os_type: The operating system type required by the containers in the container group. Possible values
@@ -175,9 +155,9 @@ async def create_or_update(
 
     :param restart_policy: Restart policy for all containers within the container group. Possible values are:
 
-    - ``Always``: Always restart
-    - ``OnFailure``: Restart on failure
-    - ``Never``: Never restart
+        - ``Always``: Always restart
+        - ``OnFailure``: Restart on failure
+        - ``Never``: Never restart
 
     :param identity: A dictionary defining a ContainerGroupIdentity object which represents the identity for the
         container group.
