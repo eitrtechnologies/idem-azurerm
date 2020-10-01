@@ -30,25 +30,6 @@ Azure Resource Manager (ARM) Virtual Network Execution Module
       * ``AZURE_US_GOV_CLOUD``
       * ``AZURE_GERMAN_CLOUD``
 
-    Example acct setup for Azure Resource Manager authentication:
-
-    .. code-block:: yaml
-
-        azurerm:
-            default:
-                subscription_id: 3287abc8-f98a-c678-3bde-326766fd3617
-                tenant: ABCDEFAB-1234-ABCD-1234-ABCDEFABCDEF
-                client_id: ABCDEFAB-1234-ABCD-1234-ABCDEFABCDEF
-                secret: XXXXXXXXXXXXXXXXXXXXXXXX
-                cloud_environment: AZURE_PUBLIC_CLOUD
-            user_pass_auth:
-                subscription_id: 3287abc8-f98a-c678-3bde-326766fd3617
-                username: fletch
-                password: 123pass
-
-    The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
-    parameter of each state, but this is not preferred and could be deprecated in the future.
-
 """
 # Python libs
 from __future__ import absolute_import
