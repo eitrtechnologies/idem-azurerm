@@ -534,8 +534,8 @@ async def import_key(
     :param tags: Application specific metadata in the form of key-value pairs.
 
     Additional parameters passed as keyword arguments are used to build a JSONWebKey object will be passed to this
-        module. Below some of those parameters are defined. More information about some of those parameters can be
-        found at the following link: https://tools.ietf.org/html/draft-ietf-jose-json-web-key-18.
+    module. Below some of those parameters are defined. More information about some of those parameters can be
+    found at the following link: https://tools.ietf.org/html/draft-ietf-jose-json-web-key-18.
 
     :param kid: Key identifier.
 

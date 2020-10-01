@@ -98,8 +98,8 @@ async def create_or_update(
 
     .. code-block:: bash
 
-        azurerm.compute.virtual_machine_extension.create_or_update test_name test_vm test_group test_loc \
-                test_publisher test_type test_version test_settings
+        azurerm.compute.virtual_machine_extension.create_or_update test_name test_vm test_group test_loc test_publisher
+                                                                   test_type test_version test_settings
 
     """
     result = {}

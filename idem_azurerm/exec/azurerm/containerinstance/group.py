@@ -86,7 +86,7 @@ async def create_or_update(
     Create or update container groups with specified configurations. This is an EXTREMELY complex module. I wouldn't
     recommend attempting to use this on the command line...
 
-    Consult the `SDK documentation <https://docs.microsoft.com/en-us/python/api/azure-mgmt-containerinstance/azure.mgmt.containerinstance.models.containergroup?view=azure-python>`_
+    Consult the `SDK documentation <https://docs.microsoft.com/en-us/python/api/azure-mgmt-containerinstance/azure.mgmt.containerinstance.models.containergroup?view=azure-python>`__
     for more information about the objects passed to the parameters in this module.
 
     :param name: The name of the container group.

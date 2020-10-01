@@ -505,12 +505,15 @@ async def update_access_policy(
 
     :param access_policies: A list of 0 to 16 dictionaries that represent AccessPolicyEntry objects. The
         AccessPolicyEntry objects represent identities that have access to the key vault. All identities in the
-        list must use the same tenant ID as the key vault's tenant ID. Valid parameters are:
-        - ``tenant_id``: Required. The Azure Active Directory tenant ID that should be used for authenticating
+        list must use the same tenant ID as the key vault's tenant ID. When createMode is set to "recover", access
+        policies are not required. Otherwise, access policies are required. Valid parameters are:
+
+        - ``tenant_id``: (Required) The Azure Active Directory tenant ID that should be used for authenticating
           requests to the key vault.
-        - ``object_id``: Required. The object ID of a user, service principal, or security group in the Azure Active
+        - ``object_id``: (Required) The object ID of a user, service principal, or security group in the Azure Active
           Directory tenant for the vault. The object ID must be unique for the list of access policies.
-        - ``permissions``: Required. A dictionary representing permissions the identity has for keys, secrets, and
+        - ``application_id``: (Optional) Application ID of the client making request on behalf of a principal.
+        - ``permissions``: (Required) A dictionary representing permissions the identity has for keys, secrets, and
           certifications. Valid parameters include:
             - ``keys``: A list that represents permissions to keys. Possible values include: 'backup', 'create',
               'decrypt', 'delete', 'encrypt', 'get', 'import_enum', 'list', 'purge', 'recover', 'restore', 'sign',

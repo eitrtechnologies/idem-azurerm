@@ -569,8 +569,8 @@ async def import_image(
 
     .. code-block:: bash
 
-        azurerm.containerregistry.registry.import_image testrepo testgroup library/hello-world:latest \
-            source_registry_uri=docker.io
+        azurerm.containerregistry.registry.import_image testrepo testgroup library/hello-world:latest
+                                                        source_registry_uri=docker.io
 
     """
     result = False

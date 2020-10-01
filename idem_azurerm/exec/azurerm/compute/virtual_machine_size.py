@@ -60,7 +60,7 @@ async def list_(hub, ctx, location, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.compute.virtual_machine_size.list eastus
+        azurerm.compute.virtual_machine_size.list "eastus"
 
     """
     result = {}

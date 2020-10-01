@@ -386,8 +386,8 @@ async def create_or_update_at_resource_level(
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.create_or_update_at_resource_level test_name test_level test_group \
-                  test_resource test_type test_namespace
+        azurerm.resource.management_lock.create_or_update_at_resource_level test_name test_level test_group
+                                                                            test_resource test_type test_namespace
 
     """
     result = {}
@@ -474,8 +474,8 @@ async def delete_at_resource_level(
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.delete_at_resource_level test_name test_group test_resource \
-                  test_type test_namespace
+        azurerm.resource.management_lock.delete_at_resource_level test_name test_group test_resource
+                                                                  test_type test_namespace
 
     """
     result = False
@@ -535,8 +535,8 @@ async def get_at_resource_level(
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.get_at_resource_level test_name test_group test_resource \
-                  test_type test_namespace
+        azurerm.resource.management_lock.get_at_resource_level test_name test_group test_resource test_type
+                                                               test_namespace
 
     """
     result = {}
@@ -758,8 +758,7 @@ async def list_at_resource_level(
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.list_at_resource_level test_group test_resource test_type \
-                  test_namespace test_path
+        azurerm.resource.management_lock.list_at_resource_level test_group test_resource test_type test_namespace
 
     """
     result = {}

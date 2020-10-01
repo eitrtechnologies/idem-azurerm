@@ -71,7 +71,7 @@ async def default_security_rule_get(
 
     .. code-block:: bash
 
-        azurerm.network.network_security_group.default_security_rule_get DenyAllOutBound testnsg testgroup
+        azurerm.network.network_security_group.default_security_rule_get "DenyAllOutBound" testnsg testgroup
 
     """
     result = {}
@@ -251,9 +251,12 @@ async def security_rule_create_or_update(
 
     .. code-block:: bash
 
-        azurerm.network.network_security_group.security_rule_create_or_update testrule1 allow outbound 101 tcp \
-                  testnsg testgroup source_address_prefix='*' destination_address_prefix=internet \
-                  source_port_range='*' destination_port_range='1-1024'
+        azurerm.network.network_security_group.security_rule_create_or_update testrule1 allow outbound 101 tcp
+                                                                              testnsg testgroup
+                                                                              source_address_prefix='*'
+                                                                              destination_address_prefix=internet
+                                                                              source_port_range='*'
+                                                                              destination_port_range='1-1024'
 
     """
     exclusive_params = [

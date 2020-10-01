@@ -322,8 +322,7 @@ async def connection_set_shared_key(hub, ctx, name, resource_group, value, **kwa
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network_gateway.connection_set_shared_key test_name \
-                  test_group test_value
+        azurerm.network.virtual_network_gateway.connection_set_shared_key test_name test_group test_value
 
     """
     result = False
@@ -349,8 +348,8 @@ async def connection_get_shared_key(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Gets information about the specified virtual network gateway connection shared key
-        through the Network resource provider.
+    Gets information about the specified virtual network gateway connection shared key through the Network
+    resource provider.
 
     :param name: The virtual network gateway connection shared key name.
 
@@ -399,8 +398,7 @@ async def connection_reset_shared_key(
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network_gateway.connection_set_shared_key test_name \
-                  test_group test_key_length
+        azurerm.network.virtual_network_gateway.connection_set_shared_key test_name test_group test_key_length
 
     """
     result = False
@@ -1171,8 +1169,8 @@ async def set_vpnclient_ipsec_parameters(
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network_gateway.set_vpnclient_ipsec_parameters \
-                  test_name test_group test_vpnclient_ipsec_params
+        azurerm.network.virtual_network_gateway.set_vpnclient_ipsec_parameters test_name test_group
+                                                                               test_vpnclient_ipsec_params
 
     """
     result = {}
@@ -1270,8 +1268,8 @@ async def vpn_device_configuration_script(
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network_gateway.vpn_device_configuration_script test_name test_group \
-                  test_vendor test_device_fam test_version
+        azurerm.network.virtual_network_gateway.vpn_device_configuration_script test_name test_group test_vendor
+                                                                                test_device_fam test_version
 
     """
     result = {}

@@ -197,8 +197,8 @@ async def assignments_get_by_id(hub, ctx, assignment_id, **kwargs):
 
     Gets a role assignment by ID.
 
-    :param assignment_id: The fully qualified ID of the role assignment, including the scope, resource name and resource type.
-        Use the format, /{scope}/providers/Microsoft.Authorization/roleAssignments/{roleAssignmentName}. Example:
+    :param assignment_id: The fully qualified ID of the role assignment, including the scope, resource name and resource
+        type. Use the format, /{scope}/providers/Microsoft.Authorization/roleAssignments/{roleAssignmentName}. Example:
         /subscriptions/{subId}/resourcegroups/{rgname}//providers/Microsoft.Authorization/roleAssignments/{roleAssignmentName}.
 
     CLI Example:
@@ -298,8 +298,7 @@ async def assignments_list_for_resource(
 
     .. code-block:: bash
 
-        azurerm.authorization.role.assignments_list_for_resource testname testgroup testnamespace \
-                  testtype testpath
+        azurerm.authorization.role.assignments_list_for_resource testname testgroup testnamespace testtype testpath
 
     """
     result = {}

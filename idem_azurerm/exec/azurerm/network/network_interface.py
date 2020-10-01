@@ -142,8 +142,8 @@ async def create_or_update(
 
     .. code-block:: bash
 
-        azurerm.network.network_interface.create_or_update test-iface0 [{'name': 'testipconfig1'}] \
-                  testsubnet testnet testgroup
+        azurerm.network.network_interface.create_or_update test-iface0 [{'name': 'testipconfig1'}] testsubnet
+                                                           testvnet testgroup
 
     """
     if "location" not in kwargs:
@@ -461,8 +461,8 @@ async def get_virtual_machine_scale_set_network_interface(
 
     .. code-block:: bash
 
-        azurerm.network.network_interface.get_virtual_machine_scale_set_network_interface test-iface0 testset testvm \
-        testgroup
+        azurerm.network.network_interface.get_virtual_machine_scale_set_network_interface test-iface0 testset
+                                                                                          testvm testgroup
 
     """
     result = {}

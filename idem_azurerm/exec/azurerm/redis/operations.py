@@ -139,7 +139,7 @@ async def create(
         Possible values include: '1.0', '1.1', and '1.2'.
 
     :param subnet_id: The full resource ID of a subnet in a virtual network to deploy the Redis cache in. Example
-        format: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/Microsoft.{Network|ClassicNetwork}/VirtualNetworks/vnet1/subnets/subnet1.
+        format: "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/Microsoft.{Network|ClassicNetwork}/VirtualNetworks/vnet1/subnets/subnet1".
 
     :param static_ip: Static IP address. Required when deploying a Redis cache inside an existing Azure Virtual Network.
 

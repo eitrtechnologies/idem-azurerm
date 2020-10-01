@@ -188,8 +188,8 @@ async def create_or_update(
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network_peering.create_or_update peer1 \
-                  remotenet testnet testgroup remote_vnet_group=remotegroup
+        azurerm.network.virtual_network_peering.create_or_update peer1 remotenet testnet testgroup
+                                                                 remote_vnet_group=remotegroup
 
     """
     result = {}

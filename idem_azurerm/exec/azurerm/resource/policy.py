@@ -103,8 +103,8 @@ async def assignment_create(hub, ctx, name, scope, definition_name, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.resource.policy.assignment_create testassign \
-        /subscriptions/bc75htn-a0fhsi-349b-56gh-4fghti-f84852 testpolicy
+        azurerm.resource.policy.assignment_create testassign "/subscriptions/bc75htn-a0fhsi-349b-56gh-4fghti-f84852"
+                                                  testdefn
 
     """
     result = {}

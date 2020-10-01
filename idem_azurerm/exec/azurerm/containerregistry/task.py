@@ -183,8 +183,10 @@ async def create_or_update(
 
     .. code-block:: bash
 
-        azurerm.containerregistry.task.create_or_update taskname testrepo testgroup FileTaskStep Linux amd64 v7 \
-        context_path="https://eitr.tech/some/path" task_file_path="src/task.sh"
+        azurerm.containerregistry.task.create_or_update taskname testrepo testgroup task_type=FileTaskStep
+                                                        platform_os=Linux platform_os=amd64 platform_variant=v7
+                                                        context_path="https://eitr.tech/some/path"
+                                                        task_file_path="src/task.sh"
 
     """
     agent_configuration = None
