@@ -74,7 +74,7 @@ async def connection_create_or_update(
     :param connection_type: Gateway connection type. Possible values include: 'IPsec', 'Vnet2Vnet', and 'ExpressRoute'.
         This is immutable once set.
 
-    A second endpoint must be passed as a keyword argument. The seocnd endpoint will be immutable once set. The
+    A second endpoint must be passed as a keyword argument. The second endpoint will be immutable once set. The
     following are possible second endpoints for the connection:
 
       - If the connection type is "Vnet2Vnet", then the name of a second virtual network gateway must be passed as the
@@ -514,10 +514,10 @@ async def create_or_update(
         dictionaries are required. Valid parameters for a VirtualNetworkGatewayIPConfiguration object are:
 
         - ``name``: The name of the VirtualNetworkGatewayIPConfiguration object that is unique within
-            the resource group.
+          the resource group.
         - ``public_ip_address``: The name of an existing public IP address that will be assigned to the object.
         - ``private_ip_allocation_method``: The private IP allocation method. Possible values are:
-            "Static" and "Dynamic".
+          "Static" and "Dynamic".
         - ``subnet``: The name of an existing subnet inside of which the IP configuration will reside.
 
     :param gateway_type: The type of this virtual network gateway. Possible values include: "Vpn" and "ExpressRoute".

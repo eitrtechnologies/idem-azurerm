@@ -129,9 +129,9 @@ async def create(
     :param custom_domain: User domain assigned to the storage account. Valid parameters are:
 
         - ``name``: Required. Gets or sets the custom domain name assigned to the storage account. Name is the CNAME
-            source. To clear the existing custom domain, use an empty string for this property.
+          source. To clear the existing custom domain, use an empty string for this property.
         - ``use_sub_domain_name``: Indicates whether indirect CName validation is enabled. Default value is False.
-            This should only be set on updates.
+          This should only be set on updates.
 
     :param network_rule_set: A dictionary representing a NetworkRuleSet object.
 

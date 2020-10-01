@@ -93,13 +93,13 @@ async def present(
         include the following:
 
         - ``name``: (Required) The name of the BastionHostIPConfiguration resource that is unique within the resource
-            group.
+          group.
         - ``public_ip_address``: (Required) The resource ID of the public IP address which will be assigned to the
-            Bastion Host object. The public ip address must have a "Standard" sku.
+          Bastion Host object. The public ip address must have a "Standard" sku.
         - ``subnet``: (Required) The resource ID of the "AzureBastionSubnet" subnet which will be used by the Bastion
-            Host.
+          Host.
         - ``private_ip_allocation_method``: (Optional) The Private IP allocation method. Possible values are: 'Static'
-            and 'Dynamic'.
+          and 'Dynamic'.
 
     :param dns_name: FQDN for the endpoint on which bastion host is accessible.
 

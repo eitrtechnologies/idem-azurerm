@@ -151,21 +151,21 @@ async def connection_present(
         Required for a connection type of "IPSec". Valid parameters include:
 
           - ``sa_life_time_seconds``: (Optional) The IPSec Security Association (also called Quick Mode or Phase 2 SA)
-              lifetime in seconds for a site to site VPN tunnel.
+            lifetime in seconds for a site to site VPN tunnel.
           - ``sa_data_size_kilobytes``: (Optional) The IPSec Security Association (also called Quick Mode or Phase 2 SA)
-              payload size in KB for a site to site VPN tunnel.
+            payload size in KB for a site to site VPN tunnel.
           - ``ipsec_encryption``: (Required) The IPSec encryption algorithm (IKE phase 1). Possible values include:
-              'None', 'DES', 'DES3', 'AES128', 'AES192', 'AES256', 'GCMAES128', 'GCMAES192', 'GCMAES256'.
+            'None', 'DES', 'DES3', 'AES128', 'AES192', 'AES256', 'GCMAES128', 'GCMAES192', 'GCMAES256'.
           - ``ipsec_integrity``: (Required) The IPSec integrity algorithm (IKE phase 1). Possible values include:
-              'MD5', 'SHA1', 'SHA256', 'GCMAES128', 'GCMAES192', 'GCMAES256'.
+            'MD5', 'SHA1', 'SHA256', 'GCMAES128', 'GCMAES192', 'GCMAES256'.
           - ``ike_encryption``: (Required) The IKE encryption algorithm (IKE phase 2). Possible values include: 'DES',
-              'DES3', 'AES128', 'AES192', 'AES256', 'GCMAES256', 'GCMAES128'
+            'DES3', 'AES128', 'AES192', 'AES256', 'GCMAES256', 'GCMAES128'
           - ``ike_integrity``: (Required) The IKE integrity algorithm (IKE phase 2). Possible values include: 'MD5',
-              'SHA1', 'SHA256', 'SHA384', 'GCMAES256', 'GCMAES128'.
+            'SHA1', 'SHA256', 'SHA384', 'GCMAES256', 'GCMAES128'.
           - ``dh_group``: (Required) The DH Group used in IKE Phase 1 for initial SA. Possible values include: 'None',
-              'DHGroup1', 'DHGroup2', 'DHGroup14', 'DHGroup2048', 'ECP256', 'ECP384', 'DHGroup24'.
+            'DHGroup1', 'DHGroup2', 'DHGroup14', 'DHGroup2048', 'ECP256', 'ECP384', 'DHGroup24'.
           - ``pfs_group``: (Required) The Pfs Group used in IKE Phase 2 for new child SA. Possible values include:
-              'None', 'PFS1', 'PFS2', 'PFS2048', 'ECP256', 'ECP384', 'PFS24', 'PFS14', 'PFSMM'.
+            'None', 'PFS1', 'PFS2', 'PFS2048', 'ECP256', 'ECP384', 'PFS24', 'PFS14', 'PFSMM'.
 
     :param connection_protocol:
         The connection protocol used for this connection. Possible values include: "IKEv2" and "IKEv1".
@@ -571,10 +571,10 @@ async def present(
         are required. Valid parameters for a VirtualNetworkGatewayIPConfiguration object are:
 
         - ``name``: The name of the VirtualNetworkGatewayIPConfiguration object that is unique within
-            the resource group.
+          the resource group.
         - ``public_ip_address``: The name of an existing public IP address that will be assigned to the object.
         - ``private_ip_allocation_method``: The private IP allocation method. Possible values are:
-            "Static" and "Dynamic".
+          "Static" and "Dynamic".
         - ``subnet``: The name of an existing subnet inside of which the IP configuration will reside.
 
     :param gateway_type:

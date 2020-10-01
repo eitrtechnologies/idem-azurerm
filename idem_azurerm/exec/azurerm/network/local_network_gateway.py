@@ -82,9 +82,9 @@ async def create_or_update(
 
         - ``asn``: (Required) The BGP speaker's Autonomous System Number. This is an integer value.
         - ``bgp_peering_address``: (Required) The BGP peering address and BGP identifier of this BGP speaker.
-            This is a string value.
+          This is a string value.
         - ``peer_weight``: (Optional) The weight added to routes learned from this BGP speaker. This is an
-            Integer value.
+          Integer value.
 
     :param address_prefixes: (Optional) A list of address blocks reserved for this virtual network in CIDR notation.
         Serves as the local network gateway's site address space.
