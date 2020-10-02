@@ -80,7 +80,7 @@ async def create_or_update(
 
     1. Archive the diagnostic settings to a storage account. This would require the ``storage_account_id`` paramater.
     2. Stream the diagnostic settings to an event hub. This would require the ``event_hub_name`` and
-    ``event_hub_authorization_rule_id`` parameters.
+      ``event_hub_authorization_rule_id`` parameters.
     3. Send the diagnostic settings to a Log Analytics Workspace. This would require the ``workspace_id`` parameter.
 
     :param name: The name of the diagnostic setting.

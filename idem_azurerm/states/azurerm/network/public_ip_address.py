@@ -107,13 +107,13 @@ async def present(
         include the following:
 
         - ``domain_name_label``: (Required) The domain name label. The concatenation of the domain name label and the
-            regionalize DNS zone make up the fully qualified domain name associated with the public IP address. If a
-            domain name DNS zone make up the fully qualified domain name associated with the public IP address. If a
-            domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure
-            DNS system.
+          regionalize DNS zone make up the fully qualified domain name associated with the public IP address. If a
+          domain name DNS zone make up the fully qualified domain name associated with the public IP address. If a
+          domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure
+          DNS system.
         - ``reverse_fqdn``: A user-visible, fully qualified domain name that resolves to this public IP address. If the
-            reverse FQDN is specified, then a PTR DNS record is created pointing from the IP address in the in-addr.arpa
-            domain to the reverse FQDN.
+          reverse FQDN is specified, then a PTR DNS record is created pointing from the IP address in the in-addr.arpa
+          domain to the reverse FQDN.
 
     :param ddos_settings: A dictionary representing an DdosSettings object. That DdosSettings object serves
         as the DDoS protection custom policy associated with the public IP address.

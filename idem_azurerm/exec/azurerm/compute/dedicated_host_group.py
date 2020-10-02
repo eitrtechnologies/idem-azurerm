@@ -216,7 +216,7 @@ async def list_(hub, ctx, resource_group=None, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.compute.ssh_public_key.list
+        azurerm.compute.dedicated_host_group.list
 
     """
     result = {}
