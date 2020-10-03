@@ -39,7 +39,7 @@ import logging
 HAS_LIBS = False
 try:
     import azure.mgmt.resource.resources.models  # pylint: disable=unused-import
-    from msrest.exceptions import SerializationError
+    from msrest.exceptions import SerializationError, ValidationError
     from msrestazure.azure_exceptions import CloudError
 
     HAS_LIBS = True
@@ -69,21 +69,19 @@ async def list_locations(hub, ctx, subscription_id=None, **kwargs):
     result = {}
 
     if not subscription_id:
-        subscription_id = kwargs.get("subscription_id")
-    elif not kwargs.get("subscription_id"):
-        kwargs["subscription_id"] = subscription_id
+        subscription_id = ctx["acct"].get("subscription_id")
 
-    subconn = await hub.exec.azurerm.utils.get_client(ctx, "subscription", **kwargs)
+    subconn = await hub.exec.azurerm.utils.get_client(
+        ctx, "resource_subscription", **kwargs
+    )
     try:
         locations = await hub.exec.azurerm.utils.paged_object_to_list(
-            subconn.subscriptions.list_locations(
-                subscription_id=kwargs["subscription_id"]
-            )
+            subconn.subscriptions.list_locations(subscription_id=subscription_id)
         )
 
         for loc in locations:
             result[loc["name"]] = loc
-    except CloudError as exc:
+    except (CloudError, ValidationError) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
@@ -108,18 +106,16 @@ async def get(hub, ctx, subscription_id=None, **kwargs):
     result = {}
 
     if not subscription_id:
-        subscription_id = kwargs.get("subscription_id")
-    elif not kwargs.get("subscription_id"):
-        kwargs["subscription_id"] = subscription_id
+        subscription_id = ctx["acct"].get("subscription_id")
 
-    subconn = await hub.exec.azurerm.utils.get_client(ctx, "subscription", **kwargs)
+    subconn = await hub.exec.azurerm.utils.get_client(
+        ctx, "resource_subscription", **kwargs
+    )
     try:
-        subscription = subconn.subscriptions.get(
-            subscription_id=kwargs.get("subscription_id")
-        )
+        subscription = subconn.subscriptions.get(subscription_id=subscription_id)
 
         result = subscription.as_dict()
-    except CloudError as exc:
+    except (CloudError, ValidationError) as exc:
         await hub.exec.azurerm.utils.log_cloud_error("resource", str(exc), **kwargs)
         result = {"error": str(exc)}
 
@@ -140,7 +136,9 @@ async def list_(hub, ctx, **kwargs):
 
     """
     result = {}
-    subconn = await hub.exec.azurerm.utils.get_client(ctx, "subscription", **kwargs)
+    subconn = await hub.exec.azurerm.utils.get_client(
+        ctx, "resource_subscription", **kwargs
+    )
     try:
         subs = await hub.exec.azurerm.utils.paged_object_to_list(
             subconn.subscriptions.list()
