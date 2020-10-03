@@ -154,6 +154,7 @@ async def get_client(hub, ctx, client_type, **kwargs):
         "network": "NetworkManagement",
         "policy": "Policy",
         "resource": "ResourceManagement",
+        "resource_subscription": "Subscription",
         "subscription": "Subscription",
         "web": "WebSiteManagement",
         "keyvault": "KeyVaultManagement",
@@ -173,7 +174,7 @@ async def get_client(hub, ctx, client_type, **kwargs):
 
     map_value = client_map[client_type]
 
-    if client_type in ["policy", "subscription"]:
+    if client_type in ["policy", "resource_subscription"]:
         module_name = "resource"
     elif client_type in ["managementlock"]:
         module_name = "resource.locks"
@@ -195,7 +196,7 @@ async def get_client(hub, ctx, client_type, **kwargs):
         cloud_env,
     ) = await hub.exec.azurerm.utils.determine_auth(ctx, **kwargs)
 
-    if client_type == "subscription":
+    if "subscription" in client_type:
         client = Client(
             credentials=credentials, base_url=cloud_env.endpoints.resource_manager,
         )
