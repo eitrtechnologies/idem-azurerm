@@ -9,3 +9,4 @@ Topics
    gettingstarted
    vmquickstart
    acctkvbackend
+   functionsquickstart

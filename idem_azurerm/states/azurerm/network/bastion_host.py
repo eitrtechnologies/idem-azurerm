@@ -23,7 +23,8 @@ Azure Resource Manager (ARM) Network Bastion Host State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -92,13 +93,13 @@ async def present(
         include the following:
 
         - ``name``: (Required) The name of the BastionHostIPConfiguration resource that is unique within the resource
-            group.
+          group.
         - ``public_ip_address``: (Required) The resource ID of the public IP address which will be assigned to the
-            Bastion Host object. The public ip address must have a "Standard" sku.
+          Bastion Host object. The public ip address must have a "Standard" sku.
         - ``subnet``: (Required) The resource ID of the "AzureBastionSubnet" subnet which will be used by the Bastion
-            Host.
+          Host.
         - ``private_ip_allocation_method``: (Optional) The Private IP allocation method. Possible values are: 'Static'
-            and 'Dynamic'.
+          and 'Dynamic'.
 
     :param dns_name: FQDN for the endpoint on which bastion host is accessible.
 
@@ -121,7 +122,6 @@ async def present(
                     subnet: subnet_id
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -254,7 +254,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             azurerm.network.bastion_host.absent:
                 - name: test_host
                 - resource_group: test_group
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

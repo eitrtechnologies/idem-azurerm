@@ -23,7 +23,7 @@ Azure Resource Manager (ARM) PostgreSQL Server Key Operations Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -58,7 +58,7 @@ async def create_or_update(
 
     Creates or updates a PostgreSQL Server key.
 
-    :param name: The name of the PostgreSQL Server key to be operated on (updated or created)..
+    :param name: The name of the PostgreSQL Server key to be operated on (updated or created).
 
     :param server_name: The name of the server.
 

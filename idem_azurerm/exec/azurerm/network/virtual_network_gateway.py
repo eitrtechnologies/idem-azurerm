@@ -25,7 +25,7 @@ Azure Resource Manager (ARM) Virtual Network Gateway Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -74,8 +74,8 @@ async def connection_create_or_update(
     :param connection_type: Gateway connection type. Possible values include: 'IPsec', 'Vnet2Vnet', and 'ExpressRoute'.
         This is immutable once set.
 
-    A second endpoint must be passed as a keyword argument. The seocnd endpoint will be immutable once set. The
-        following are possible second endpoints for the connection:
+    A second endpoint must be passed as a keyword argument. The second endpoint will be immutable once set. The
+    following are possible second endpoints for the connection:
 
       - If the connection type is "Vnet2Vnet", then the name of a second virtual network gateway must be passed as the
         ``virtual_network_gateway2`` kwarg. If that second gateway has a different resource group than the resource
@@ -87,6 +87,7 @@ async def connection_create_or_update(
         Otherwise, the resource_group within the ``resource_group`` parameter will be used.
       - If the connection type is "ExpressRoute", then a valid Resource ID representing an ExpressRouteCircuit Object
         must be passed as the ``peer`` kwarg.
+
     The second endpoint is immutable once set.
 
     CLI Example:
@@ -321,8 +322,7 @@ async def connection_set_shared_key(hub, ctx, name, resource_group, value, **kwa
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network_gateway.connection_set_shared_key test_name \
-                  test_group test_value
+        azurerm.network.virtual_network_gateway.connection_set_shared_key test_name test_group test_value
 
     """
     result = False
@@ -348,8 +348,8 @@ async def connection_get_shared_key(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Gets information about the specified virtual network gateway connection shared key
-        through the Network resource provider.
+    Gets information about the specified virtual network gateway connection shared key through the Network
+    resource provider.
 
     :param name: The virtual network gateway connection shared key name.
 
@@ -384,8 +384,8 @@ async def connection_reset_shared_key(
     """
     .. versionadded:: 1.0.0
 
-    Resets the virtual network gateway connection shared key for passed virtual network
-        gateway connection in the specified resource group through Network resource provider.
+    Resets the virtual network gateway connection shared key for passed virtual network gateway connection in the
+    specified resource group through Network resource provider.
 
     :param name: The name of the virtual network gateway connection that will have its shared key reset.
 
@@ -398,8 +398,7 @@ async def connection_reset_shared_key(
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network_gateway.connection_set_shared_key test_name \
-                  test_group test_key_length
+        azurerm.network.virtual_network_gateway.connection_set_shared_key test_name test_group test_key_length
 
     """
     result = False
@@ -515,10 +514,10 @@ async def create_or_update(
         dictionaries are required. Valid parameters for a VirtualNetworkGatewayIPConfiguration object are:
 
         - ``name``: The name of the VirtualNetworkGatewayIPConfiguration object that is unique within
-            the resource group.
+          the resource group.
         - ``public_ip_address``: The name of an existing public IP address that will be assigned to the object.
         - ``private_ip_allocation_method``: The private IP allocation method. Possible values are:
-            "Static" and "Dynamic".
+          "Static" and "Dynamic".
         - ``subnet``: The name of an existing subnet inside of which the IP configuration will reside.
 
     :param gateway_type: The type of this virtual network gateway. Possible values include: "Vpn" and "ExpressRoute".
@@ -528,12 +527,11 @@ async def create_or_update(
         'UltraPerformance', 'VpnGw1', 'VpnGw2', 'VpnGw3', 'VpnGw4', 'VpnGw5', 'VpnGw1AZ', 'VpnGw2AZ', 'VpnGw3AZ',
         'VpnGw4AZ', 'VpnGw5AZ', 'ErGw1AZ', 'ErGw2AZ', and 'ErGw3AZ'.
 
-    :param polling:
-        An optional boolean flag representing whether a Poller will be used during the creation of the Virtual
-        Network Gateway. If set to True, a Poller will be used by this operation and the module will not return until
-        the Virtual Network Gateway has completed its creation process and has been successfully provisioned. If set to
-        False, the module will return once the Virtual Network Gateway has successfully begun its creation process.
-        Defaults to True.
+    :param polling: An optional boolean flag representing whether a Poller will be used during the creation of the
+        Virtual Network Gateway. If set to True, a Poller will be used by this operation and the module will not return
+        until the Virtual Network Gateway has completed its creation process and has been successfully provisioned. If
+        set to False, the module will return once the Virtual Network Gateway has successfully begun its creation
+        process. Defaults to True.
 
     CLI Example:
 
@@ -878,7 +876,7 @@ async def generate_vpn_profile(
     .. versionadded:: 1.0.0
 
     Generates VPN profile for P2S client of the virtual network gateway in the specified resource group. Used for IKEV2
-        and radius based authentication.
+    and radius based authentication.
 
     :param name: The name of the virtual network gateway.
 
@@ -944,8 +942,7 @@ async def get_vpn_profile_package_url(hub, ctx, name, resource_group, **kwargs):
     """
     .. versionadded:: 1.0.0
 
-    Gets pre-generated VPN profile for P2S client of the virtual network gateway in the
-        specified resource group.
+    Gets pre-generated VPN profile for P2S client of the virtual network gateway in the specified resource group.
 
     :param name: The name of the virtual network gateway.
 
@@ -1136,7 +1133,7 @@ async def set_vpnclient_ipsec_parameters(
     .. versionadded:: 1.0.0
 
     Sets the vpnclient ipsec policy for P2S client of virtual network gateway in the specified resource group through
-        the network resource provider.
+    the network resource provider.
 
     :param name: The name of the virtual network gateway.
 
@@ -1172,8 +1169,8 @@ async def set_vpnclient_ipsec_parameters(
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network_gateway.set_vpnclient_ipsec_parameters \
-                  test_name test_group test_vpnclient_ipsec_params
+        azurerm.network.virtual_network_gateway.set_vpnclient_ipsec_parameters test_name test_group
+                                                                               test_vpnclient_ipsec_params
 
     """
     result = {}
@@ -1218,14 +1215,15 @@ async def get_vpnclient_ipsec_parameters(hub, ctx, name, resource_group, **kwarg
     """
     .. versionadded:: 1.0.0
 
-    Gets information about the vpnclient ipsec policy for P2S client of virtual network
-        gateway in the specified resource group through Network resource provider.
+    Gets information about the vpnclient ipsec policy for P2S client of virtual network gateway in the specified
+    resource group through Network resource provider.
 
     :param name: The virtual network gateway name.
 
     :param resource_group: The name of the resource group.
 
     CLI Example:
+
     .. code-block:: bash
 
         azurerm.network.virtual_network_gateway.get_vpnclient_ipsec_parameters test_name test_group
@@ -1267,10 +1265,11 @@ async def vpn_device_configuration_script(
     :param firmware_version: The firmware version for the vpn device.
 
     CLI Example:
+
     .. code-block:: bash
 
-        azurerm.network.virtual_network_gateway.vpn_device_configuration_script test_name test_group \
-                  test_vendor test_device_fam test_version
+        azurerm.network.virtual_network_gateway.vpn_device_configuration_script test_name test_group test_vendor
+                                                                                test_device_fam test_version
 
     """
     result = {}

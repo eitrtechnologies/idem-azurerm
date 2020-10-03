@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) Management Lock State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -106,7 +107,6 @@ async def present_by_scope(
                 - name: my_lock
                 - scope: my_scope
                 - lock_level: 'ReadOnly'
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -215,7 +215,6 @@ async def absent_by_scope(hub, ctx, name, scope, connection_auth=None, **kwargs)
             azurerm.resource.management_lock.absent_by_scope:
                 - name: my_lock
                 - scope: my_scope
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -320,7 +319,6 @@ async def present_at_resource_level(
                 - resource_type: my_type
                 - resource_provider_namespace: my_namespace
                 - lock_level: 'ReadOnly'
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -460,7 +458,6 @@ async def absent_at_resource_level(
                 - resource: my_resource
                 - resource_type: my_type
                 - resource_provider_namespace: my_namespace
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -538,8 +535,8 @@ async def present(
     .. versionchanged:: 4.0.0
 
     Ensure a management lock exists. By default this module ensures that the management lock exists at the
-        subscription level. If you would like to ensure that the management lock exists at the resource group level
-        instead, you can specify a resource group using the resource_group parameter.
+    subscription level. If you would like to ensure that the management lock exists at the resource group level
+    instead, you can specify a resource group using the resource_group parameter.
 
     :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
         :, ?, /, or any control characters.
@@ -566,7 +563,6 @@ async def present(
             azurerm.resource.management_lock.present:
                 - name: my_lock
                 - lock_level: 'ReadOnly'
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -670,8 +666,8 @@ async def absent(hub, ctx, name, resource_group=None, connection_auth=None, **kw
     .. versionadded:: 2.0.0
 
     Ensure a management lock does not exist. By default this module ensures that the management lock does not exist at
-        the subscription level. If you would like to ensure that the management lock does not exist at the resource
-        group level instead, you can specify a resource group using the resource_group parameter.
+    the subscription level. If you would like to ensure that the management lock does not exist at the resource
+    group level instead, you can specify a resource group using the resource_group parameter.
 
     :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
         :, ?, /, or any control characters.
@@ -688,7 +684,6 @@ async def absent(hub, ctx, name, resource_group=None, connection_auth=None, **kw
         Ensure management lock is absent:
             azurerm.resource.management_lock.absent:
                 - name: my_lock
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

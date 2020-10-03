@@ -15,4 +15,5 @@ compute execution modules
    virtual_machine_extension_image
    virtual_machine_extension
    virtual_machine_image
+   virtual_machine_size
    virtual_machine

@@ -23,7 +23,7 @@ Azure Resource Manager (ARM) Web App Operations Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -243,7 +243,7 @@ async def get_configuration(hub, ctx, name, resource_group, **kwargs):
     .. versionadded:: 3.0.0
 
     Gets the configuration of an app, such as platform version and bitness, default documents, virtual applications,
-        Always On, etc.
+    Always On, etc.
 
     :param name: The name of the App.
 

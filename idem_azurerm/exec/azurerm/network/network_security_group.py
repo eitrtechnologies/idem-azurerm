@@ -25,7 +25,7 @@ Azure Resource Manager (ARM) Network Security Group Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -71,7 +71,7 @@ async def default_security_rule_get(
 
     .. code-block:: bash
 
-        azurerm.network.network_security_group.default_security_rule_get DenyAllOutBound testnsg testgroup
+        azurerm.network.network_security_group.default_security_rule_get "DenyAllOutBound" testnsg testgroup
 
     """
     result = {}
@@ -251,9 +251,12 @@ async def security_rule_create_or_update(
 
     .. code-block:: bash
 
-        azurerm.network.network_security_group.security_rule_create_or_update testrule1 allow outbound 101 tcp \
-                  testnsg testgroup source_address_prefix='*' destination_address_prefix=internet \
-                  source_port_range='*' destination_port_range='1-1024'
+        azurerm.network.network_security_group.security_rule_create_or_update testrule1 allow outbound 101 tcp
+                                                                              testnsg testgroup
+                                                                              source_address_prefix='*'
+                                                                              destination_address_prefix=internet
+                                                                              source_port_range='*'
+                                                                              destination_port_range='1-1024'
 
     """
     exclusive_params = [
@@ -375,11 +378,9 @@ async def security_rule_get(hub, ctx, name, security_group, resource_group, **kw
 
     :param name: The name of the security rule to query.
 
-    :param security_group: The network security group containing the
-        security rule.
+    :param security_group: The network security group containing the security rule.
 
-    :param resource_group: The resource group name assigned to the
-        network security group.
+    :param resource_group: The resource group name assigned to the network security group.
 
     CLI Example:
 

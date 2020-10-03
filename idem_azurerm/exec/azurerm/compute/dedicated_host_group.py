@@ -23,7 +23,7 @@ Azure Resource Manager (ARM) Compute Dedicated Host Group Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -65,7 +65,7 @@ async def create_or_update(
     .. versionadded:: 4.0.0
 
     Create or update a dedicated host group. More information about Dedicated Host Groups can be found
-        `here <https://go.microsoft.com/fwlink/?linkid=2082596/>`_.
+    `here <https://go.microsoft.com/fwlink/?linkid=2082596/>`__.
 
     :param name: The name of the dedicated host group.
 
@@ -216,7 +216,7 @@ async def list_(hub, ctx, resource_group=None, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.compute.ssh_public_key.list
+        azurerm.compute.dedicated_host_group.list
 
     """
     result = {}

@@ -25,7 +25,7 @@ Azure Resource Manager (ARM) Resource Policy Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -68,8 +68,7 @@ async def assignment_delete(hub, ctx, name, scope, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.resource.policy.assignment_delete testassign \
-        /subscriptions/bc75htn-a0fhsi-349b-56gh-4fghti-f84852
+        azurerm.resource.policy.assignment_delete testassign "/subscriptions/bc75htn-a0fhsi-349b-56gh-4fghti-f84852"
 
     """
     result = False
@@ -104,8 +103,8 @@ async def assignment_create(hub, ctx, name, scope, definition_name, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.resource.policy.assignment_create testassign \
-        /subscriptions/bc75htn-a0fhsi-349b-56gh-4fghti-f84852 testpolicy
+        azurerm.resource.policy.assignment_create testassign "/subscriptions/bc75htn-a0fhsi-349b-56gh-4fghti-f84852"
+                                                  testdefn
 
     """
     result = {}
@@ -171,8 +170,7 @@ async def assignment_get(hub, ctx, name, scope, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.resource.policy.assignment_get testassign \
-        /subscriptions/bc75htn-a0fhsi-349b-56gh-4fghti-f84852
+        azurerm.resource.policy.assignment_get testassign "/subscriptions/bc75htn-a0fhsi-349b-56gh-4fghti-f84852"
 
     """
     result = {}
@@ -242,7 +240,7 @@ async def definition_create_or_update(hub, ctx, name, policy_rule, **kwargs):
     :param name: The name of the policy definition to create or update.
 
     :param policy_rule: A dictionary defining the
-        `policy rule <https://docs.microsoft.com/en-us/azure/azure-policy/policy-definition#policy-rule>`_.
+        `policy rule <https://docs.microsoft.com/en-us/azure/azure-policy/policy-definition#policy-rule>`__.
 
     CLI Example:
 

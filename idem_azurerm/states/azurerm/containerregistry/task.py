@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) Container Registry Task State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -49,32 +50,6 @@ Azure Resource Manager (ARM) Container Registry Task State Module
 
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
-
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: yaml
-
-        Ensure container registry task exists:
-            azurerm.containerregistry.task.present:
-                - name: testtask
-                - registry_name: testrepo
-                - resource_group: testgroup
-                - task_type: DockerBuildStep
-                - platform_os: Linux
-                - platform_arch: amd64
-                - context_path: "https://github.com/Azure-Samples/acr-build-helloworld-node"
-                - task_file_path: Dockerfile
-                - image_names:
-                    - "testrepo:helloworldnode"
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-
-        Ensure container registry task is absent:
-            azurerm.containerregistry.task.absent:
-                - name: testtask
-                - registry_name: testrepo
-                - resource_group: testgroup
 
 """
 # Import Python libs
@@ -140,10 +115,10 @@ async def present(
     :param platform_os: The platform OS property against which the task has to happen. Accepts 'Windows' or 'Linux'.
 
     :param platform_arch: The platform architecture property against which the task has to happen.
-        Accepts 'amd64', 'x86', or 'arm'
+        Accepts 'amd64', 'x86', or 'arm'.
 
     :param platform_variant: The platform CPU variant property against which the run has to happen.
-        Accepts 'v6', 'v7', or 'v8'
+        Accepts 'v6', 'v7', or 'v8'.
 
     :param context_path: (DockerBuildStep, EncodedTaskStep, FileTaskStep) The URL(absolute or relative) of the source
         context for the task step. The build context for the step of the task should be a well formed absolute URI or
@@ -159,10 +134,10 @@ async def present(
         repository and tag.
 
     :param is_push_enabled: (DockerBuildStep) The value of this property indicates whether the image built should be
-        pushed to the registry or not. SDK default value: True
+        pushed to the registry or not. SDK default value: True.
 
     :param no_cache: (DockerBuildStep) The value of this property indicates whether the image cache is enabled or not.
-        SDK default value: False
+        SDK default value: False.
 
     :param target: (DockerBuildStep) The name of the target build stage for the docker build.
 
@@ -180,32 +155,32 @@ async def present(
 
     :param trigger: The properties that describe all triggers for the task. This is a dictionary containing trigger
         information as described in the documentation for the
-        `Azure Python SDK <https://docs.microsoft.com/en-us/python/api/azure-mgmt-containerregistry/azure.mgmt.containerregistry.v2019_04_01.models.triggerproperties?view=azure-python>`_
+        `Azure Python SDK <https://docs.microsoft.com/en-us/python/api/azure-mgmt-containerregistry/azure.mgmt.containerregistry.v2019_04_01.models.triggerproperties?view=azure-python>`__.
 
-    :param status: The current status of task. Possible values include: 'Disabled', 'Enabled'
+    :param status: The current status of task. Possible values include: 'Disabled', 'Enabled'.
 
-    :param timeout: Run timeout in seconds. Default value: 3600
+    :param timeout: Run timeout in seconds. Default value: 3600.
 
     :param credential_login_mode: The authentication mode which determines the source registry login scope. The
         credentials for the source registry will be generated using the given scope. These credentials will be used to
-        login to the source registry during the run. Possible values include: 'None', 'Default'
+        login to the source registry during the run. Possible values include: 'None', 'Default'.
 
     :param credential_login_server: Describes the registry login server (myregistry.azurecr.io) for accessing other
         custom registries.
 
-    :param credential_username: Username for accessing the registry defined in credential_login_server
+    :param credential_username: Username for accessing the registry defined in credential_login_server.
 
-    :param credential_password: Password for accessing the registry defined in credential_login_server
+    :param credential_password: Password for accessing the registry defined in credential_login_server.
 
     :param identity_principal_id: The principal ID of resource identity.
 
     :param identity_tenant_id: The tenant ID of resource.
 
-    :param identity_type: The identity type. Possible values include: 'SystemAssigned', 'UserAssigned'
+    :param identity_type: The identity type. Possible values include: 'SystemAssigned', 'UserAssigned'.
 
     :param user_assigned_identities: The list of user identities associated with the resource. The user identity
         dictionary key references will be ARM resource ids in the form:
-        ``/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{identityName}``
+        ``/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{identityName}``.
 
     :param tags: A dictionary of strings can be passed as tag metadata to the object.
 

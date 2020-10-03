@@ -23,7 +23,8 @@ Azure Resource Manager (ARM) Function App State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -171,7 +172,6 @@ async def present(
                 - enable_app_insights: True
                 - tags:
                     "Owner": "EITR Technologies"
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -531,7 +531,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             azurerm.web.function_app.absent:
                 - name: my_app
                 - resource_group: my_group
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

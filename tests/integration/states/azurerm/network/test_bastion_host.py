@@ -28,7 +28,6 @@ async def test_present(hub, ctx, bastion_host, resource_group, vnet, public_ip_a
         "changes": {
             "new": {
                 "name": bastion_host,
-                "ip_configurations": [ip_config],
                 "location": "eastus",
                 "provisioning_state": "Succeeded",
                 "type": "Microsoft.Network/bastionHosts",

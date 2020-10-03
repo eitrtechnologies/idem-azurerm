@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) Key State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -84,7 +85,7 @@ async def present(
     .. versionchanged:: 4.0.0
 
     Ensure the specified key exists within the given key vault. Requires keys/create permission. Key properties can be
-        specified as keyword arguments.
+    specified as keyword arguments.
 
     :param name: The name of the new key. Key names can only contain alphanumeric characters and dashes.
 
@@ -124,7 +125,6 @@ async def present(
                 - vault_url: my_vault
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -267,7 +267,6 @@ async def absent(hub, ctx, name, vault_url, connection_auth=None, **kwargs):
             azurerm.keyvault.key.absent:
                 - name: my_key
                 - vault_url: my_vault
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

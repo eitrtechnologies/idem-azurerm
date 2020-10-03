@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) Container Instance Group State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -49,32 +50,6 @@ Azure Resource Manager (ARM) Container Instance Group State Module
 
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
-
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: yaml
-
-        Ensure container instance group exists:
-            azurerm.containerinstance.group.present:
-                - name: containergroup
-                - resource_group: testgroup
-                - containers:
-                    - name: mycoolwebcontainer
-                      image: "nginx:latest"
-                      resources:
-                          requests:
-                              memory_in_gb: 1
-                              cpu: 1
-                - os_type: Linux
-                - restart_policy: OnFailure
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-
-        Ensure container instance group is absent:
-            azurerm.containerinstance.group.absent:
-                - name: containergroup
-                - resource_group: testgroup
 
 """
 # Import Python libs
@@ -118,83 +93,85 @@ async def present(
 
     :param resource_group: The name of the resource group to which the container group belongs.
 
-    :param containers: A list of the containers within the container group.
+    :param containers: A list of the containers within the container group. The following are possible parameters for
+        the containers:
 
-    - **name**: Required. The user-provided name of the container instance.
-    - **image**: Required. The name of the image used to create the container instance.
-    - **resources**:
-        **requests**:
-            **memory_in_gb**: Required. The memory request in GB of this container instance.
+        - **name**: Required. The user-provided name of the container instance.
+        - **image**: Required. The name of the image used to create the container instance.
+        - **resources**:
 
-            **cpu**: Required. The CPU request of this container instance.
+          - **requests**:
 
-            **gpu**: The GPU request of this container instance.
-        **limits**:
-            **memory_in_gb**: The memory limit in GB of this container instance.
+            - **memory_in_gb**: Required. The memory request in GB of this container instance.
+            - **cpu**: Required. The CPU request of this container instance.
+            - **gpu**: The GPU request of this container instance.
 
-            **cpu**: The CPU limit of this container instance.
+          - **limits**:
 
-            **gpu**: The GPU limit of this container instance.
-    - **command**: A list of commands to execute within the container instance in exec form.
-    - **ports**: A list of the dictionaries of exposed ports on the container instance.
-      (``{"protocol": "TCP", "port": 80}``)
-    - **environment_variables**: A list of environment variables to set in the container instance.
-        **name**: Required if environment_variables is used. The name of the environment variable.
+            - **memory_in_gb**: The memory limit in GB of this container instance.
+            - **cpu**: The CPU limit of this container instance.
+            - **gpu**: The GPU limit of this container instance.
 
-        **value**: The value of the environment variable.
+        - **command**: A list of commands to execute within the container instance in exec form.
+        - **ports**: A list of the dictionaries of exposed ports on the container instance
+          (i.e., ``{"protocol": "TCP", "port": 80}``).
+        - **environment_variables**: A list of environment variables to set in the container instance.
 
-        **secure_value**: The value of the secure environment variable.
-    - **volume_mounts**: A list of volume mounts available to the container instance.
-        **name**: Required if volume_mounts is used. The name of the volume mount.
+          - **name**: Required if environment_variables is used. The name of the environment variable.
+          - **value**: The value of the environment variable.
+          - **secure_value**: The value of the secure environment variable.
 
-        **mount_path**: Required if volume_mounts is used. The path within the container where the volume should
-        be mounted. Must not contain colon (:).
+        - **volume_mounts**: A list of volume mounts available to the container instance.
 
-        **read_only**: Boolean flag indicating whether the volume mount is read-only.
-    - **liveness_probe**:
-            **exec_property**:
-                **command**: The commands to execute within the container.
-            **http_get**:
-                **path**: The path to probe.
+          - **name**: Required if volume_mounts is used. The name of the volume mount.
+          - **mount_path**: Required if volume_mounts is used. The path within the container where the volume should
+            be mounted. Must not contain colon (:).
+          - **read_only**: Boolean flag indicating whether the volume mount is read-only.
 
-                **port**: Required if http_get is used. The port number to probe.
+        - **liveness_probe**:
 
-                **scheme**: The scheme. Possible values include: 'http', 'https'
-            **initial_delay_seconds**: The initial delay seconds.
+          - **exec_property**:
 
-            **period_seconds**: The period seconds.
+            - **command**: The commands to execute within the container.
 
-            **failure_threshold**: The failure threshold.
+          - **http_get**:
 
-            **success_threshold**: The success threshold.
+            - **path**: The path to probe.
+            - **port**: Required if http_get is used. The port number to probe.
+            - **scheme**: The scheme. Possible values include: 'http', 'https'.
 
-            **timeout_seconds**: The timeout seconds.
-    - **readiness_probe**:
-            **exec_property**:
-                **command**: The commands to execute within the container.
-            **http_get**:
-                **path**: The path to probe.
+          - **initial_delay_seconds**: The initial delay seconds.
+          - **period_seconds**: The period seconds.
+          - **failure_threshold**: The failure threshold.
+          - **success_threshold**: The success threshold.
+          - **timeout_seconds**: The timeout seconds.
 
-                **port**: Required if http_get is used. The port number to probe.
+        - **readiness_probe**:
 
-                **scheme**: The scheme. Possible values include: 'http', 'https'
-            **initial_delay_seconds**: The initial delay seconds.
+          - **exec_property**:
 
-            **period_seconds**: The period seconds.
+            - **command**: The commands to execute within the container.
 
-            **failure_threshold**: The failure threshold.
+          - **http_get**:
 
-            **success_threshold**: The success threshold.
+            - **path**: The path to probe.
+            - **port**: Required if http_get is used. The port number to probe.
+            - **scheme**: The scheme. Possible values include: 'http', 'https'
 
-            **timeout_seconds**: The timeout seconds.
+          - **initial_delay_seconds**: The initial delay seconds.
+          - **period_seconds**: The period seconds.
+          - **failure_threshold**: The failure threshold.
+          - **success_threshold**: The success threshold.
+          - **timeout_seconds**: The timeout seconds.
 
     :param os_type: The operating system type required by the containers in the container group. Possible values
-        include: 'Windows', 'Linux'
+        include: 'Windows', 'Linux'.
 
     :param restart_policy: Restart policy for all containers within the container group. Possible values are:
-    - ``Always``: Always restart
-    - ``OnFailure``: Restart on failure
-    - ``Never``: Never restart
+
+        - ``Always``: Always restart.
+        - ``OnFailure``: Restart on failure.
+        - ``Never``: Never restart.
 
     :param identity: A dictionary defining a ContainerGroupIdentity object which represents the identity for the
         container group.
@@ -204,11 +181,12 @@ async def present(
 
     :param ip_address: A dictionary defining an IpAddress object which represents the IP address for the container
         group. Possible keys are:
-    - ``ports``: Required if ip_address is used. The list of ports exposed on the container group.
-    - ``type``: Required if ip_address is used. Specifies if the IP is exposed to the public internet or private VNET.
-      Possible values include: 'Public', 'Private'
-    - ``ip``: The IP exposed to the public internet.
-    - ``dns_name_label``: The Dns name label for the IP.
+
+        - ``ports``: The list of ports exposed on the container group. Required if ip_address is used.
+        - ``type``: Specifies if the IP is exposed to the public internet or private VNET. Required if ip_address is
+          used. Possible values include: 'Public', 'Private'.
+        - ``ip``: The IP exposed to the public internet.
+        - ``dns_name_label``: The Dns name label for the IP.
 
     :param volumes: The list of dictionaries representing Volume objects that can be mounted by containers in this
         container group.
@@ -222,7 +200,7 @@ async def present(
     :param dns_config: A dictionary defining a DnsConfiguration object which represents the DNS config information for
         the container group.
 
-    :param sku: The SKU for a container group. Possible values include: 'Standard', 'Dedicated'
+    :param sku: The SKU for a container group. Possible values include: 'Standard', 'Dedicated'.
 
     :param encryption_properties: A dictionary defining an EncryptionProperties object which represents the encryption
         properties for the container group.
@@ -232,6 +210,8 @@ async def present(
 
     :param tags: A dictionary of strings can be passed as tag metadata to the object.
 
+    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
+        Azure Resource Manager API.
 
     Example usage:
 
@@ -469,6 +449,9 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     :param name: Name of the container instance group.
 
     :param resource_group: The name of the resource group to which the container instance group belongs.
+
+    :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
+        Azure Resource Manager API.
 
     .. code-block:: yaml
 

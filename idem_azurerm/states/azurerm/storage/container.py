@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) Blob Container State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -127,7 +128,6 @@ async def present(
                 - account: my_account
                 - resource_group: my_rg
                 - public_access: 'Blob'
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -289,7 +289,6 @@ async def immutability_policy_present(
                 - account: my_account
                 - resource_group: my_rg
                 - immutability_period: 10
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -412,12 +411,12 @@ async def absent(
     Example usage:
 
     .. code-block:: yaml
+
         Ensure blob container is absent:
             azurerm.storage.container.absent:
                 - name: my_container
                 - account: my_account
                 - resource_group: my_rg
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -497,13 +496,13 @@ async def immutability_policy_absent(
     Example usage:
 
     .. code-block:: yaml
+
         Ensure immutability policy is absent:
             azurerm.storage.container.absent:
                 - name: my_container
                 - account: my_account
                 - resource_group: my_rg
                 - if_match: '"my_etag"'
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

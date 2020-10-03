@@ -86,16 +86,13 @@ async def check_ip_address_availability(
     """
     .. versionadded:: 1.0.0
 
-    Check that a private ip address is available within the specified
-    virtual network.
+    Check that a private ip address is available within the specified virtual network.
 
     :param ip_address: The ip_address to query.
 
-    :param virtual_network: The virtual network to query for the IP address
-        in question.
+    :param virtual_network: The virtual network to query for the IP address in question.
 
-    :param resource_group: The resource group name assigned to the
-        virtual network.
+    :param resource_group: The resource group name assigned to the virtual network.
 
     CLI Example:
 

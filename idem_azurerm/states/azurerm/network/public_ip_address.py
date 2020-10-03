@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) Network Public IP Address State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -106,13 +107,13 @@ async def present(
         include the following:
 
         - ``domain_name_label``: (Required) The domain name label. The concatenation of the domain name label and the
-            regionalize DNS zone make up the fully qualified domain name associated with the public IP address. If a
-            domain name DNS zone make up the fully qualified domain name associated with the public IP address. If a
-            domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure
-            DNS system.
+          regionalize DNS zone make up the fully qualified domain name associated with the public IP address. If a
+          domain name DNS zone make up the fully qualified domain name associated with the public IP address. If a
+          domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure
+          DNS system.
         - ``reverse_fqdn``: A user-visible, fully qualified domain name that resolves to this public IP address. If the
-            reverse FQDN is specified, then a PTR DNS record is created pointing from the IP address in the in-addr.arpa
-            domain to the reverse FQDN.
+          reverse FQDN is specified, then a PTR DNS record is created pointing from the IP address in the in-addr.arpa
+          domain to the reverse FQDN.
 
     :param ddos_settings: A dictionary representing an DdosSettings object. That DdosSettings object serves
         as the DDoS protection custom policy associated with the public IP address.
@@ -143,7 +144,6 @@ async def present(
                 - idle_timeout_in_minutes: 4
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -326,6 +326,15 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure public ip address absent:
+            azurerm.network.public_ip_address.absent:
+              - name: test_ip
+              - resource_group: test_group
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

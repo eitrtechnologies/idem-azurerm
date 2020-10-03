@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) Compute Virtual Machine State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -316,56 +317,46 @@ async def present(
         https://docs.microsoft.com/en-us/azure/virtual-machines/linux/disk-encryption-overview
 
         The following parameters may be used to implement virtual machine disk encryption:
-        :param enable_disk_enc: This boolean flag will represent whether disk encryption has been enabled for the
-            virtual machine. This is a required parameter.
 
-        :param disk_enc_keyvault: The resource ID of the key vault containing the disk encryption key, which is a
-            Key Vault Secret. This is a required parameter.
-
-        :param disk_enc_volume_type: The volume type(s) that will be encrypted. Possible values include: 'OS',
-            'Data', and 'All'. This is a required parameter.
-
-        :param disk_enc_kek_url: The Key Identifier URL for a Key Encryption Key (KEK). The KEK is used as an
-            additional layer of security for encryption keys. Azure Disk Encryption will use the KEK to wrap the
-            encryption secrets before writing to the Key Vault. The KEK must be in the same vault as the encryption
-            secrets. This is an optional parameter.
+        - **param enable_disk_enc**: This boolean flag will represent whether disk encryption has been enabled for the
+          virtual machine. This is a required parameter.
+        - **disk_enc_keyvault**: The resource ID of the key vault containing the disk encryption key, which is a
+          Key Vault Secret. This is a required parameter.
+        - **disk_enc_volume_type**: The volume type(s) that will be encrypted. Possible values include: 'OS',
+          'Data', and 'All'. This is a required parameter.
+        - **disk_enc_kek_url**: The Key Identifier URL for a Key Encryption Key (KEK). The KEK is used as an
+          additional layer of security for encryption keys. Azure Disk Encryption will use the KEK to wrap the
+          encryption secrets before writing to the Key Vault. The KEK must be in the same vault as the encryption
+          secrets. This is an optional parameter.
 
     Attaching Data Disks:
         Data disks can be attached by passing a list of dictionaries in the data_disks parameter. The dictionaries in
-        the list can have the following parameters.
+        the list can have the following parameters:
 
-        :param lun: (optional int) Specifies the logical unit number of the data disk. This value is used to identify
-            data disks within the VM and therefore must be unique for each data disk attached to a VM. If not
-            provided, we increment the lun designator based upon the index within the provided list of disks.
-
-        :param name: (optional str) The disk name. Defaults to "{vm_name}-datadisk{lun}"
-
-        :param vhd: (optional str or dict) Virtual hard disk to use. If a URI string is provided, it will be nested
-            under a "uri" key in a dictionary as expected by the SDK.
-
-        :param image: (optional str or dict) The source user image virtual hard disk. The virtual hard disk will be
-            copied before being attached to the virtual machine. If image is provided, the destination virtual hard
-            drive must not exist. If a URI string is provided, it will be nested under a "uri" key in a dictionary as
-            expected by the SDK.
-
-        :param caching: (optional str - read_only, read_write, or none) Specifies the caching requirements. Defaults to
-            "None" for Standard storage and "ReadOnly" for Premium storage.
-
-        :param write_accelerator_enabled: (optional bool - True or False) Specifies whether write accelerator should be
-            enabled or disabled on the disk.
-
-        :param create_option: (optional str - attach, from_image, or empty) Specifies how the virtual machine should be
-            created. The "attach" value is used when you are using a specialized disk to create the virtual machine. The
-            "from_image" value is used when you are using an image to create the virtual machine. If you are using a
-            platform image, you also use the image_reference element. If you are using a marketplace image, you also use
-            the plan element.
-
-        :param disk_size_gb: (optional int) Specifies the size of an empty data disk in gigabytes. This element can be
-            used to overwrite the size of the disk in a virtual machine image.
-
-        :param managed_disk: (optional str or dict) The managed disk parameters. If an ID string is provided, it will
-            be nested under an "id" key in a dictionary as expected by the SDK. If a dictionary is provided, the
-            "storage_account_type" parameter can be passed (accepts (Standard|Premium)_LRS or (Standard|Ultra)SSD_LRS).
+        - **lun**: (optional int) Specifies the logical unit number of the data disk. This value is used to identify
+          data disks within the VM and therefore must be unique for each data disk attached to a VM. If not
+          provided, we increment the lun designator based upon the index within the provided list of disks.
+        - **name**: (optional str) The disk name. Defaults to "{vm_name}-datadisk{lun}"
+        - **vhd**: (optional str or dict) Virtual hard disk to use. If a URI string is provided, it will be nested
+          under a "uri" key in a dictionary as expected by the SDK.
+        - **image**: (optional str or dict) The source user image virtual hard disk. The virtual hard disk will be
+          copied before being attached to the virtual machine. If image is provided, the destination virtual hard
+          drive must not exist. If a URI string is provided, it will be nested under a "uri" key in a dictionary as
+          expected by the SDK.
+        - **caching**: (optional str - read_only, read_write, or none) Specifies the caching requirements. Defaults to
+          "None" for Standard storage and "ReadOnly" for Premium storage.
+        - **write_accelerator_enabled**: (optional bool - True or False) Specifies whether write accelerator should be
+          enabled or disabled on the disk.
+        - **create_option**: (optional str - attach, from_image, or empty) Specifies how the virtual machine should be
+          created. The "attach" value is used when you are using a specialized disk to create the virtual machine. The
+          "from_image" value is used when you are using an image to create the virtual machine. If you are using a
+          platform image, you also use the image_reference element. If you are using a marketplace image, you also use
+          the plan element.
+        - **disk_size_gb**: (optional int) Specifies the size of an empty data disk in gigabytes. This element can be
+          used to overwrite the size of the disk in a virtual machine image.
+        - **managed_disk**: (optional str or dict) The managed disk parameters. If an ID string is provided, it will
+          be nested under an "id" key in a dictionary as expected by the SDK. If a dictionary is provided, the
+          "storage_account_type" parameter can be passed (accepts (Standard|Premium)_LRS or (Standard|Ultra)SSD_LRS).
 
     Example usage:
 
@@ -383,7 +374,6 @@ async def present(
                     - /home/myuser/.ssh/id_rsa.pub
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -714,6 +704,15 @@ async def absent(
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure virtual machine absent:
+            azurerm.compute.virtual_machine.absent:
+                - name: test_machine
+                - resource_group: test_group
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

@@ -7,4 +7,5 @@ keyvault execution modules
    :glob:
 
    key
+   secret
    vault

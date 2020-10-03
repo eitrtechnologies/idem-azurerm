@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) PostgreSQL Server Operations State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -115,7 +116,7 @@ async def present(
 
         - ``backup_retention_days``: Backup retention days for the server.
         - ``geo_redundant_backup``: Enable Geo-redundant or not for server backup. Possible values include:
-            'Enabled', 'Disabled'.
+          'Enabled', 'Disabled'.
         - ``storage_mb``: Max storage allowed for a server.
         - ``storage_autogrow``: Enable Storage Auto Grow. Possible values include: 'Enabled', 'Disabled'.
 
@@ -145,7 +146,6 @@ async def present(
                 - login_password: my_password
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -323,7 +323,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             azurerm.postgresql.server.absent:
                 - name: my_server
                 - resource_group: my_rg
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

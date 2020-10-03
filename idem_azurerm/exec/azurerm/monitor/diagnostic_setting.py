@@ -76,13 +76,12 @@ async def create_or_update(
     .. versionchanged:: 4.0.0
 
     Create or update diagnostic settings for the specified resource. At least one destination for the diagnostic
-        setting logs is required. Any combination of the following destinations is acceptable:
+    setting logs is required. Any combination of the following destinations is acceptable:
 
-        1. Archive the diagnostic settings to a storage account. This would require the ``storage_account_id``
-          paramater.
-        2. Stream the diagnostic settings to an event hub. This would require the ``event_hub_name`` and
-          ``event_hub_authorization_rule_id`` parameters.
-        3. Send the diagnostic settings to a Log Analytics Workspace. This would require the ``workspace_id`` parameter.
+    1. Archive the diagnostic settings to a storage account. This would require the ``storage_account_id`` paramater.
+    2. Stream the diagnostic settings to an event hub. This would require the ``event_hub_name`` and
+      ``event_hub_authorization_rule_id`` parameters.
+    3. Send the diagnostic settings to a Log Analytics Workspace. This would require the ``workspace_id`` parameter.
 
     :param name: The name of the diagnostic setting.
 
@@ -99,6 +98,7 @@ async def create_or_update(
         - ``retention_policy``: An optional dictionary representing a RetentionPolicy object for the specified category.
           The default retention policy for a diagnostic setting is {'enabled': False, 'days': 0}. Required parameters
           include:
+
             - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
             - ``enabled``: A value indicating whether the retention policy is enabled.
 
@@ -112,8 +112,9 @@ async def create_or_update(
         - ``retention_policy``: An optional dictionary representing a RetentionPolicy object for the specified category.
           The default retention policy for a diagnostic setting is {'enabled': False, 'days': 0}. Required parameters
           include:
-            - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
-            - ``enabled``: A value indicating whether the retention policy is enabled.
+
+          - ``days``: The number of days for the retention in days. A value of 0 will retain the events indefinitely.
+          - ``enabled``: A value indicating whether the retention policy is enabled.
 
     :param workspace_id: The resource ID of the Log Analytics workspace to which you would like to send Diagnostic Logs.
         Required if you want to send the diagnostic settings data to Log Analytics.

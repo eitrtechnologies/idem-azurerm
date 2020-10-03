@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) PostgreSQL Server Security Alert Policy Operations 
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -129,7 +130,6 @@ async def present(
                 - server_name: my_server
                 - resource_group: my_rg
                 - policy_state: 'Enabled'
-                - connection_auth: {{ profile }}
 
     """
     name = "Default"

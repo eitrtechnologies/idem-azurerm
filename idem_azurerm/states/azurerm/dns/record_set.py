@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) DNS Record Set State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -49,32 +50,6 @@ Azure Resource Manager (ARM) DNS Record Set State Module
 
     The authentication parameters can also be passed as a dictionary of keyword arguments to the ``connection_auth``
     parameter of each state, but this is not preferred and could be deprecated in the future.
-
-    Example states using Azure Resource Manager authentication:
-
-    .. code-block:: yaml
-
-        Ensure DNS record set exists:
-            azurerm.dns.record_set.present:
-                - name: web
-                - zone_name: contoso.com
-                - resource_group: my_rg
-                - record_type: A
-                - ttl: 300
-                - arecords:
-                  - ipv4_address: 10.0.0.1
-                - tags:
-                    how_awesome: very
-                    contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
-
-        Ensure DNS record set is absent:
-            azurerm.dns.record_set.absent:
-                - name: web
-                - zone_name: contoso.com
-                - resource_group: my_rg
-                - record_type: A
-                - connection_auth: {{ profile }}
 
 """
 # Python libs
@@ -149,7 +124,7 @@ async def present(
         will be ignored.
 
     :param etag:
-        The etag of the record set. `Etags <https://docs.microsoft.com/en-us/azure/dns/dns-zones-records#etags>`_ are
+        The etag of the record set. `Etags <https://docs.microsoft.com/en-us/azure/dns/dns-zones-records#etags>`__ are
         used to handle concurrent changes to the same resource safely.
 
     :param metadata:
@@ -160,52 +135,52 @@ async def present(
 
     :param arecords:
         The list of A records in the record set. View the
-        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.arecord?view=azure-python>`_
+        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.arecord?view=azure-python>`__
         to create a list of dictionaries representing the record objects.
 
     :param aaaa_records:
         The list of AAAA records in the record set. View the
-        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.aaaarecord?view=azure-python>`_
+        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.aaaarecord?view=azure-python>`__
         to create a list of dictionaries representing the record objects.
 
     :param mx_records:
         The list of MX records in the record set. View the
-        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.mxrecord?view=azure-python>`_
+        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.mxrecord?view=azure-python>`__
         to create a list of dictionaries representing the record objects.
 
     :param ns_records:
         The list of NS records in the record set. View the
-        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.nsrecord?view=azure-python>`_
+        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.nsrecord?view=azure-python>`__
         to create a list of dictionaries representing the record objects.
 
     :param ptr_records:
         The list of PTR records in the record set. View the
-        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.ptrrecord?view=azure-python>`_
+        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.ptrrecord?view=azure-python>`__
         to create a list of dictionaries representing the record objects.
 
     :param srv_records:
         The list of SRV records in the record set. View the
-        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.srvrecord?view=azure-python>`_
+        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.srvrecord?view=azure-python>`__
         to create a list of dictionaries representing the record objects.
 
     :param txt_records:
         The list of TXT records in the record set. View the
-        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.txtrecord?view=azure-python>`_
+        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.txtrecord?view=azure-python>`__
         to create a list of dictionaries representing the record objects.
 
     :param cname_record:
         The CNAME record in the record set. View the
-        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.cnamerecord?view=azure-python>`_
+        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.cnamerecord?view=azure-python>`__
         to create a dictionary representing the record object.
 
     :param soa_record:
         The SOA record in the record set. View the
-        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.soarecord?view=azure-python>`_
+        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.soarecord?view=azure-python>`__
         to create a dictionary representing the record object.
 
     :param caa_records:
         The list of CAA records in the record set. View the
-        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.caarecord?view=azure-python>`_
+        `Azure SDK documentation <https://docs.microsoft.com/en-us/python/api/azure.mgmt.dns.models.caarecord?view=azure-python>`__
         to create a list of dictionaries representing the record objects.
 
     :param connection_auth:
@@ -228,7 +203,6 @@ async def present(
                 - metadata:
                     how_awesome: very
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -407,6 +381,17 @@ async def absent(
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure record set absent:
+            azurerm.dns.record_set.absent:
+                - name: test_set
+                - zone: test_zone
+                - resource_group: test_group
+                - record_type: test_type
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
