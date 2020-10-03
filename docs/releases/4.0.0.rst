@@ -1,0 +1,9 @@
+Version 4.0.0
+=============
+
+Get the Newest Azure API Functionality
+**************************************
+This release marked a huge effort to bring the Azure Python SDK versions up to a current release. Many of the modules
+in ``idem-azurerm`` were ported over from Salt states which were written in 2017. Cloud moves fast and we found
+ourselves unable to use some newer features. Shout out to `Ajnbro <https://github.com/Ajnbro>`_ for putting in the good
+work!
