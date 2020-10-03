@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2020-10-03
+
+### Added
+
+- [#190](https://github.com/eitrtechnologies/idem-azurerm/pull/190) - Added Managed Identity modules
+- [#173](https://github.com/eitrtechnologies/idem-azurerm/pull/173) - Function App Quickstart Guide
+
+### Changed
+
+- [#195](https://github.com/eitrtechnologies/idem-azurerm/pull/195) - Standardized state module return structure
+- [#194](https://github.com/eitrtechnologies/idem-azurerm/pull/194) - Changed Management Group list function return
+- [#193](https://github.com/eitrtechnologies/idem-azurerm/pull/193) - Bump redis Azure SDK version
+- [#192](https://github.com/eitrtechnologies/idem-azurerm/pull/192) - Bump azure-identity Azure SDK version
+- [#191](https://github.com/eitrtechnologies/idem-azurerm/pull/191) - Bump Graph RBAC Azure SDK version
+- [#189](https://github.com/eitrtechnologies/idem-azurerm/pull/189) - Bump general Azure SDK package versions
+- [#187](https://github.com/eitrtechnologies/idem-azurerm/pull/187) - Bump compute Azure SDK version
+- [#185](https://github.com/eitrtechnologies/idem-azurerm/pull/185) - Bump authorization Azure SDK version
+- [#183](https://github.com/eitrtechnologies/idem-azurerm/pull/183) - Bump network Azure SDK version
+- [#182](https://github.com/eitrtechnologies/idem-azurerm/pull/182) - Bump resource Azure SDK version
+- [#179](https://github.com/eitrtechnologies/idem-azurerm/pull/179) - Bump keyvault Azure SDK version
+- [#178](https://github.com/eitrtechnologies/idem-azurerm/pull/178) - Bump storage Azure SDK version
+- [#177](https://github.com/eitrtechnologies/idem-azurerm/pull/177) - Bump RDBMS Azure SDK version
+- [#176](https://github.com/eitrtechnologies/idem-azurerm/pull/176) - Bump Management Group Azure SDK version
+- [#175](https://github.com/eitrtechnologies/idem-azurerm/pull/175) - Bump DNS Azure SDK version
+- [#174](https://github.com/eitrtechnologies/idem-azurerm/pull/174) - Bump monitor Azure SDK version
+- [#172](https://github.com/eitrtechnologies/idem-azurerm/pull/172) - Bump log analytics Azure SDK version
+
+### Fixed
+
+- [#197](https://github.com/eitrtechnologies/idem-azurerm/pull/197) - Fixed some resource subscription logic
+- [#196](https://github.com/eitrtechnologies/idem-azurerm/pull/196) - Fixed documentation formatting
+- [#186](https://github.com/eitrtechnologies/idem-azurerm/pull/186) - Fixed problems introduced in #174
+
+### Deprecated
+
+### Removed
+
 ## [3.0.0] - 2020-08-11
 
 ### Added
@@ -228,6 +265,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release of execution and state modules from Salt along with some additional functionality ported from
   salt-cloud for virtual machines.
 
+[4.0.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v3.0.0...v4.0.0
 [3.0.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.4.0...v3.0.0
 [2.4.0]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.3.2...v2.4.0
 [2.3.2]: https://github.com/eitrtechnologies/idem-azurerm/compare/v2.3.1...v2.3.2
