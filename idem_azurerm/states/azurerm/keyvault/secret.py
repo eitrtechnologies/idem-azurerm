@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) Key Vault Secret State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -82,7 +83,7 @@ async def present(
     .. versionchanged:: 4.0.0
 
     Ensure the specified secret exists within the given key vault. Requires secrets/set permission. Secret properties
-        can be specified as keyword arguments.
+    can be specified as keyword arguments.
 
     :param name: The name of the secret. Secret names can only contain alphanumeric characters and dashes.
 
@@ -279,7 +280,7 @@ async def absent(
 
     .. code-block:: yaml
 
-        Ensure key is absent:
+        Ensure secret is absent:
             azurerm.keyvault.secret.absent:
                 - name: secretname
                 - vault_url: "https://myvault.vault.azure.net/"

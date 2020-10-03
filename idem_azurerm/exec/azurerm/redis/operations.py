@@ -25,7 +25,7 @@ Azure Resource Manager (ARM) Redis Operations Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -138,11 +138,10 @@ async def create(
     :param minimum_tls_version: The specified TLS version (or higher) that clients are required to use.
         Possible values include: '1.0', '1.1', and '1.2'.
 
-    :param subnet_id: The full resource ID of a subnet in a virtual network to deploy the Redis cache in.
-        Example format: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/Microsoft.{Network|ClassicNetwork}/VirtualNetworks/vnet1/subnets/subnet1.
+    :param subnet_id: The full resource ID of a subnet in a virtual network to deploy the Redis cache in. Example
+        format: "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/Microsoft.{Network|ClassicNetwork}/VirtualNetworks/vnet1/subnets/subnet1".
 
-    :param static_ip: Static IP address. Required when deploying a Redis cache inside an existing Azure
-        Virtual Network.
+    :param static_ip: Static IP address. Required when deploying a Redis cache inside an existing Azure Virtual Network.
 
     :param zones: A list of availability zones denoting where the resource needs to come from.
 
@@ -300,7 +299,7 @@ async def force_reboot(
     .. versionadded:: 2.0.0
 
     Reboot specified Redis node(s). This operation requires write permission to the cache resource.
-        There can be potential data loss.
+    There can be potential data loss.
 
     :param name: The name of the redis cache.
 
@@ -577,7 +576,7 @@ async def update(
         - ``name``: The type of Redis cache to deploy. Possible values include: 'Basic', 'Standard', and 'Premium'.
         - ``family``: The SKU family to use. Possible values include 'C' for Basic/Standard and 'P' for Premium.
         - ``capacity``: The size of the Redis cache to deploy. Possible values include 0, 1, 2, 3, 4, 5, and 6 for the
-                        C (Basic/Standard) family and 1, 2, 3, and 4 for the P (Premium) family.
+          C (Basic/Standard) family and 1, 2, 3, and 4 for the P (Premium) family.
 
     :param redis_configuration: A dictionary of string key-value pairs that represent all Redis Settings. Some possible
         keys include: rdb-backup-enabled, rdb-storage-connection-string, rdb-backup-frequency, maxmemory-delta,
@@ -601,6 +600,7 @@ async def update(
         azurerm.redis.operations.update test_name test_rg test_location test_sku
 
     """
+    result = {}
     redconn = await hub.exec.azurerm.utils.get_client(ctx, "redis", **kwargs)
 
     try:

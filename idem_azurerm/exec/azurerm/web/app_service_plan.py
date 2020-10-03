@@ -23,7 +23,7 @@ Azure Resource Manager (ARM) Web App Service Plan Operations Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -213,6 +213,7 @@ async def get_server_farm_skus(hub, ctx, name, resource_group, **kwargs):
     :param resource_group: The name of the resource group.
 
     CLI Example:
+
     .. code-block:: bash
 
         azurerm.web.app_service_plan.get_server_farm_skus test_name test_group

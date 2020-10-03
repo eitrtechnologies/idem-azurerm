@@ -31,7 +31,6 @@ Azure Resource Manager (ARM) DNS Record Set Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -64,16 +63,15 @@ async def create_or_update(
 
     :param resource_group: The name of the resource group.
 
-    :param record_type: The type of DNS record in this record set. Record sets of type SOA can be
-    updated but not created (they are created when the DNS zone is created).
-    Possible values include: 'A', 'AAAA', 'CAA', 'CNAME', 'MX', 'NS', 'PTR', 'SOA', 'SRV', 'TXT'
+    :param record_type: The type of DNS record in this record set. Record sets of type SOA can be updated but not
+        created (they are created when the DNS zone is created). Possible values include: 'A', 'AAAA', 'CAA', 'CNAME',
+        'MX', 'NS', 'PTR', 'SOA', 'SRV', 'TXT'
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.dns.record_set.create_or_update myhost myzone testgroup A
-            arecords='[{ipv4_address: 10.0.0.1}]' ttl=300
+        azurerm.dns.record_set.create_or_update myhost myzone testgroup A arecords='[{ipv4_address: 10.0.0.1}]' ttl=300
 
     """
     dnsconn = await hub.exec.azurerm.utils.get_client(ctx, "dns", **kwargs)
@@ -122,9 +120,9 @@ async def delete(hub, ctx, name, zone_name, resource_group, record_type, **kwarg
 
     :param resource_group: The name of the resource group.
 
-    :param record_type: The type of DNS record in this record set. Record sets of type SOA cannot be
-    deleted (they are deleted when the DNS zone is deleted).
-    Possible values include: 'A', 'AAAA', 'CAA', 'CNAME', 'MX', 'NS', 'PTR', 'SOA', 'SRV', 'TXT'
+    :param record_type: The type of DNS record in this record set. Record sets of type SOA cannot be deleted (they are
+        deleted when the DNS zone is deleted). Possible values include: 'A', 'AAAA', 'CAA', 'CNAME', 'MX', 'NS', 'PTR',
+        'SOA', 'SRV', 'TXT'
 
     CLI Example:
 
@@ -162,8 +160,8 @@ async def get(hub, ctx, name, zone_name, resource_group, record_type, **kwargs):
 
     :param resource_group: The name of the resource group.
 
-    :param record_type: The type of DNS record in this record set.
-    Possible values include: 'A', 'AAAA', 'CAA', 'CNAME', 'MX', 'NS', 'PTR', 'SOA', 'SRV', 'TXT'
+    :param record_type: The type of DNS record in this record set. Possible values include: 'A', 'AAAA', 'CAA', 'CNAME',
+        'MX', 'NS', 'PTR', 'SOA', 'SRV', 'TXT'
 
     CLI Example:
 
@@ -208,14 +206,13 @@ async def list_by_type(
 
     :param resource_group: The name of the resource group.
 
-    :param record_type: The type of record sets to enumerate.
-    Possible values include: 'A', 'AAAA', 'CAA', 'CNAME', 'MX', 'NS', 'PTR', 'SOA', 'SRV', 'TXT'
+    :param record_type: The type of record sets to enumerate. Possible values include: 'A', 'AAAA', 'CAA', 'CNAME',
+        'MX', 'NS', 'PTR', 'SOA', 'SRV', 'TXT'
 
-    :param top: The maximum number of record sets to return. If not specified,
-    returns up to 100 record sets.
+    :param top: The maximum number of record sets to return. If not specified, returns up to 100 record sets.
 
-    :param recordsetnamesuffix: The suffix label of the record set name that has
-    to be used to filter the record set enumerations.
+    :param recordsetnamesuffix: The suffix label of the record set name that has to be used to filter the record set
+        enumerations.
 
     CLI Example:
 
@@ -258,11 +255,10 @@ async def list_by_dns_zone(
 
     :param resource_group: The name of the resource group.
 
-    :param top: The maximum number of record sets to return. If not specified,
-    returns up to 100 record sets.
+    :param top: The maximum number of record sets to return. If not specified, returns up to 100 record sets.
 
-    :param recordsetnamesuffix: The suffix label of the record set name that has
-    to be used to filter the record set enumerations.
+    :param recordsetnamesuffix: The suffix label of the record set name that has to be used to filter the record set
+        enumerations.
 
     CLI Example:
 

@@ -33,7 +33,6 @@ Azure Resource Manager (ARM) DNS Zone Execution Module
       * ``AZURE_GERMAN_CLOUD``
 
 """
-
 # Python libs
 from __future__ import absolute_import
 import logging
@@ -74,6 +73,7 @@ async def create_or_update(hub, ctx, name, resource_group, **kwargs):
     # DNS zones are global objects
     kwargs["location"] = "global"
 
+    result = {}
     dnsconn = await hub.exec.azurerm.utils.get_client(ctx, "dns", **kwargs)
 
     # Convert list of ID strings to list of dictionaries with id key.
@@ -122,7 +122,7 @@ async def delete(hub, ctx, name, resource_group, **kwargs):
     .. versionadded:: 1.0.0
 
     Delete a DNS zone within a resource group. WARNING: All DNS records in the zone will also be deleted. This
-        operation cannot be undone.
+    operation cannot be undone.
 
     :param name: The name of the DNS zone to delete.
 

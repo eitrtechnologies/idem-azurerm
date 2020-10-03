@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) Local Network Gateway State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -98,9 +99,9 @@ async def present(
 
           - ``asn``: (Required) The BGP speaker's Autonomous System Number. This is an integer value.
           - ``bgp_peering_address``: (Required) The BGP peering address and BGP identifier of this BGP speaker.
-              This is a string value.
+            This is a string value.
           - ``peer_weight``: (Optional) The weight added to routes learned from this BGP speaker. This is an
-              Integer value.
+            Integer value.
 
     :param address_prefixes:
         A list of address blocks reserved for this virtual network in CIDR notation. Serves as the local
@@ -134,7 +135,6 @@ async def present(
                     - '192.168.0.0/16'
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -282,7 +282,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             azurerm.network.local_network_gateway.absent:
                 - name: gateway1
                 - resource_group: group1
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

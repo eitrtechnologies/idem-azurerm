@@ -23,7 +23,7 @@ Azure Resource Manager (ARM) Resource Group Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -149,7 +149,7 @@ async def create_or_update(hub, ctx, name, location, **kwargs):
 
     .. code-block:: bash
 
-        azurerm.resource.group.create_or_update testgroup westus
+        azurerm.resource.group.create_or_update testgroup "westus"
 
     """
     result = {}

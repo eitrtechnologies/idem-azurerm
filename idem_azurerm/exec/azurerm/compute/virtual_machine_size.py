@@ -22,7 +22,7 @@ Azure Resource Manager (ARM) Compute Virtual Machine Size Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -54,13 +54,13 @@ async def list_(hub, ctx, location, **kwargs):
 
     Get all supported sizes of Virtual Machine in a given region.
 
-    :param location: The name of the location to query for all possible vm sizes. This is a required parameter.
+    :param location: The name of the location to query for all possible vm sizes.
 
     CLI Example:
 
     .. code-block:: bash
 
-        azurerm.compute.virtual_machine_size.list eastus
+        azurerm.compute.virtual_machine_size.list "eastus"
 
     """
     result = {}

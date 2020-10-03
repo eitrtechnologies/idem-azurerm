@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) Log Analytics Workspace State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -124,7 +125,6 @@ async def present(
                 - location: my_location
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -264,10 +264,10 @@ async def absent(
 
     .. versionchanged:: 4.0.0
 
-    Ensure the specified Log Analytics Workspace does not exist. A deleted workspace can be recovered if you
-        recreate it in the same subscription, resource group and location. Upon deletion, the name of the Log Analytics
-        Workspace is kept for 14 days and cannot be used for another workspace. To remove the workspace completely and
-        release the name, use the force flag.
+    Ensure the specified Log Analytics Workspace does not exist. A deleted workspace can be recovered if you recreate
+    it in the same subscription, resource group and location. Upon deletion, the name of the Log Analytics Workspace is
+    kept for 14 days and cannot be used for another workspace. To remove the workspace completely and release the name,
+    use the force flag.
 
     :param name: The name of the workspace.
 
@@ -287,7 +287,6 @@ async def absent(
             azurerm.log_analytics.workspace.absent:
                 - name: my_workspace
                 - resource_group: my_rg
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

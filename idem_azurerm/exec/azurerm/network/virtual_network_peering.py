@@ -23,7 +23,7 @@ Azure Resource Manager (ARM) Virtual Network Peering Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -34,11 +34,6 @@ Azure Resource Manager (ARM) Virtual Network Peering Execution Module
 # Python libs
 from __future__ import absolute_import
 import logging
-
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
 
 # Azure libs
 HAS_LIBS = False
@@ -193,8 +188,8 @@ async def create_or_update(
 
     .. code-block:: bash
 
-        azurerm.network.virtual_network_peering.create_or_update peer1 \
-                  remotenet testnet testgroup remote_vnet_group=remotegroup
+        azurerm.network.virtual_network_peering.create_or_update peer1 remotenet testnet testgroup
+                                                                 remote_vnet_group=remotegroup
 
     """
     result = {}

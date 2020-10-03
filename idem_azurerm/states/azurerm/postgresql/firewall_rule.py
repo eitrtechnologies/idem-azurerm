@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) PostgreSQL Server Firewall Rule Operations State Mo
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -109,7 +110,6 @@ async def present(
                 - resource_group: my_rg
                 - start_ip_address: '0.0.0.0'
                 - end_ip_address: '255.255.255.255'
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -217,7 +217,6 @@ async def absent(
                 - name: my_rule
                 - server_name: my_server
                 - resource_group: my_rg
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

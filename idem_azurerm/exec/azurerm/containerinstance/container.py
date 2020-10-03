@@ -23,7 +23,7 @@ Azure Resource Manager (ARM) Container Instance Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -248,8 +248,8 @@ async def list_logs(
 
     :param resource_group: The name of the resource group to which the container group belongs.
 
-    :param tail: The number of lines to show from the tail of the container instance log. If not provided, all available
-        logs are shown up to 4mb.
+    :param tail: The number of lines to show from the tail of the container instance log. If not provided, all
+        available logs are shown up to 4mb.
 
     CLI Example:
 

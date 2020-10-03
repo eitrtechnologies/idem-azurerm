@@ -35,11 +35,6 @@ Azure Resource Manager (ARM) Network Bastion Host Execution Module
 from __future__ import absolute_import
 import logging
 
-try:
-    from six.moves import range as six_range
-except ImportError:
-    six_range = range
-
 # Azure libs
 HAS_LIBS = False
 try:
@@ -72,13 +67,13 @@ async def create_or_update(
         include the following:
 
         - ``name``: (Required) The name of the BastionHostIPConfiguration resource that is unique within the resource
-            group.
+          group.
         - ``public_ip_address``: (Required) The resource ID of the public IP address which will be assigned to the
-            Bastion Host object. The public ip address must have a "Standard" sku.
+          Bastion Host object. The public ip address must have a "Standard" sku.
         - ``subnet``: (Required) The resource ID of the "AzureBastionSubnet" subnet which will be used by the Bastion
-            Host.
+          Host.
         - ``private_ip_allocation_method``: (Optional) The Private IP allocation method. Possible values are: 'Static'
-            and 'Dynamic'.
+          and 'Dynamic'.
 
     :param dns_name: FQDN for the endpoint on which bastion host is accessible.
 

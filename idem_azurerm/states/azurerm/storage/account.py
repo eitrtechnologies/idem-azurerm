@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) Storage Account State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -108,9 +109,9 @@ async def present(
     :param custom_domain: User domain assigned to the storage account. Valid parameters are:
 
         - ``name``: Required. Gets or sets the custom domain name assigned to the storage account. Name is the CNAME
-            source. To clear the existing custom domain, use an empty string for this property.
+          source. To clear the existing custom domain, use an empty string for this property.
         - ``use_sub_domain_name``: Indicates whether indirect CName validation is enabled. Default value is False.
-            This should only be set on updates.
+          This should only be set on updates.
 
     :param network_rule_set: A dictionary representing a NetworkRuleSet object.
 
@@ -154,7 +155,6 @@ async def present(
                 - location: 'eastus'
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -329,11 +329,11 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
     Example usage:
 
     .. code-block:: yaml
+
         Ensure storage account does not exist:
             azurerm.storage.account.absent:
                 - name: my_account
                 - resource_group: my_rg
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

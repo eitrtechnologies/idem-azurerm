@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) Key Vault State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -116,17 +117,18 @@ async def present(
         - ``application_id``: (Optional) Application ID of the client making request on behalf of a principal.
         - ``permissions``: (Required) A dictionary representing permissions the identity has for keys, secrets, and
           certifications. Valid parameters include:
-            - ``keys``: A list that represents permissions to keys. Possible values include: 'backup', 'create',
-              'decrypt', 'delete', 'encrypt', 'get', 'import_enum', 'list', 'purge', 'recover', 'restore', 'sign',
-              'unwrap_key', 'update', 'verify', and 'wrap_key'.
-            - ``secrets``: A list that represents permissions to secrets. Possible values include: 'backup', 'delete',
-              'get', 'list', 'purge', 'recover', 'restore', and 'set'.
-            - ``certificates``: A list that represents permissions to certificates. Possible values include: 'create',
-              'delete', 'deleteissuers', 'get', 'getissuers', 'import_enum', 'list', 'listissuers', 'managecontacts',
-              'manageissuers', 'purge', 'recover', 'setissuers', and 'update'.
-            - ``storage``: A list that represents permissions to storage accounts. Possible values include: 'backup',
-              'delete', 'deletesas', 'get', 'getsas', 'list', 'listsas', 'purge', 'recover', 'regeneratekey',
-              'restore', 'set', 'setsas', and 'update'.
+
+          - ``keys``: A list that represents permissions to keys. Possible values include: 'backup', 'create',
+            'decrypt', 'delete', 'encrypt', 'get', 'import_enum', 'list', 'purge', 'recover', 'restore', 'sign',
+            'unwrap_key', 'update', 'verify', and 'wrap_key'.
+          - ``secrets``: A list that represents permissions to secrets. Possible values include: 'backup', 'delete',
+            'get', 'list', 'purge', 'recover', 'restore', and 'set'.
+          - ``certificates``: A list that represents permissions to certificates. Possible values include: 'create',
+            'delete', 'deleteissuers', 'get', 'getissuers', 'import_enum', 'list', 'listissuers', 'managecontacts',
+            'manageissuers', 'purge', 'recover', 'setissuers', and 'update'.
+          - ``storage``: A list that represents permissions to storage accounts. Possible values include: 'backup',
+            'delete', 'deletesas', 'get', 'getsas', 'list', 'listsas', 'purge', 'recover', 'regeneratekey',
+            'restore', 'set', 'setsas', and 'update'.
 
     :param vault_uri: The URI of the vault for performing operations on keys and secrets.
 
@@ -202,7 +204,6 @@ async def present(
                         - perm3
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -448,7 +449,6 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
             azurerm.keyvault.vault.absent:
                 - name: my_vault
                 - resource_group: my_rg
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

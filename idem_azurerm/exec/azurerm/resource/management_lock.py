@@ -23,7 +23,7 @@ Azure Resource Manager (ARM) Management Lock Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -56,8 +56,8 @@ async def create_or_update_at_resource_group_level(
     .. versionadded:: 1.0.0
 
     Creates or updates a management lock at the resource group level. When you apply a lock at a parent scope,
-        all child resources inherit the same lock. To create management locks, you must have access to
-        Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
+    all child resources inherit the same lock. To create management locks, you must have access to
+    Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
 
     :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
         :, ?, /, or any control characters.
@@ -126,7 +126,7 @@ async def delete_at_resource_group_level(hub, ctx, name, resource_group, **kwarg
     .. versionadded:: 1.0.0
 
     Deletes a management lock at the resource group level. To delete management locks, you must have access to
-        Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
+    Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
 
     :param name: The name of the lock to be deleted.
 
@@ -195,8 +195,8 @@ async def create_or_update_by_scope(
     .. versionadded:: 1.0.0
 
     Create or update a management lock by scope. When you apply a lock at a parent scope, all child resources inherit
-        the same lock. To create management locks, you must have access to Microsoft.Authorization/* or
-        Microsoft.Authorization/locks/* actions.
+    the same lock. To create management locks, you must have access to Microsoft.Authorization/* or
+    Microsoft.Authorization/locks/* actions.
 
     :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
         :, ?, /, or any control characters.
@@ -269,7 +269,7 @@ async def delete_by_scope(hub, ctx, name, scope, **kwargs):
     .. versionadded:: 1.0.0
 
     Delete a management lock by scope. To delete management locks, you must have access to Microsoft.Authorization/*
-        or Microsoft.Authorization/locks/* actions.
+    or Microsoft.Authorization/locks/* actions.
 
     :param name: The name of the lock to be deleted.
 
@@ -357,8 +357,8 @@ async def create_or_update_at_resource_level(
     .. versionadded:: 1.0.0
 
     Creates or updates a management lock at the resource level or any level below the resource. When you apply a lock
-        at a parent scope, all child resources inherit the same lock. To create management locks, you must have access
-        to Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
+    at a parent scope, all child resources inherit the same lock. To create management locks, you must have access
+    to Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
 
     :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
         :, ?, /, or any control characters.
@@ -386,8 +386,8 @@ async def create_or_update_at_resource_level(
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.create_or_update_at_resource_level test_name test_level test_group \
-                  test_resource test_type test_namespace
+        azurerm.resource.management_lock.create_or_update_at_resource_level test_name test_level test_group
+                                                                            test_resource test_type test_namespace
 
     """
     result = {}
@@ -455,8 +455,8 @@ async def delete_at_resource_level(
     .. versionadded:: 1.0.0
 
     Deletes the management lock of a resource or any level below the resource. When you apply a lock
-        at a parent scope, all child resources inherit the same lock. To delete management locks, you must have access
-        to Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
+    at a parent scope, all child resources inherit the same lock. To delete management locks, you must have access
+    to Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
 
     :param name: The name of the lock to delete.
 
@@ -474,8 +474,8 @@ async def delete_at_resource_level(
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.delete_at_resource_level test_name test_group test_resource \
-                  test_type test_namespace
+        azurerm.resource.management_lock.delete_at_resource_level test_name test_group test_resource
+                                                                  test_type test_namespace
 
     """
     result = False
@@ -535,8 +535,8 @@ async def get_at_resource_level(
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.get_at_resource_level test_name test_group test_resource \
-                  test_type test_namespace
+        azurerm.resource.management_lock.get_at_resource_level test_name test_group test_resource test_type
+                                                               test_namespace
 
     """
     result = {}
@@ -571,8 +571,8 @@ async def create_or_update_at_subscription_level(
     .. versionadded:: 1.0.0
 
     Creates or updates a management lock at the subscription level. When you apply a lock at a parent scope,
-        all child resources inherit the same lock. To create management locks, you must have access to
-        Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
+    all child resources inherit the same lock. To create management locks, you must have access to
+    Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
 
     :param name: The name of the lock. The lock name can be a maximum of 260 characters. It cannot contain <, > %, &,
         :, ?, /, or any control characters.
@@ -639,7 +639,7 @@ async def delete_at_subscription_level(hub, ctx, name, **kwargs):
     .. versionadded:: 1.0.0
 
     Deletes the management lock at the subscription level. To delete management locks, you must have access to
-        Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
+    Microsoft.Authorization/* or Microsoft.Authorization/locks/* actions.
 
     :param name: The name of the lock to be deleted.
 
@@ -758,8 +758,7 @@ async def list_at_resource_level(
 
     .. code-block:: bash
 
-        azurerm.resource.management_lock.list_at_resource_level test_group test_resource test_type \
-                  test_namespace test_path
+        azurerm.resource.management_lock.list_at_resource_level test_group test_resource test_type test_namespace
 
     """
     result = {}

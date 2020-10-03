@@ -25,7 +25,8 @@ Azure Resource Manager (ARM) Virtual Network Peering State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -141,7 +142,6 @@ async def present(
                 - allow_forwarded_traffic: False
                 - allow_gateway_transit: False
                 - use_remote_gateways: False
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -303,6 +303,16 @@ async def absent(
     :param connection_auth:
         A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure virtual network peer absent:
+            azurerm.network.virtual_network_peering.absent:
+              - name: test_lb
+              - virtual_network: test_vnet
+              - resource_group: test_group
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

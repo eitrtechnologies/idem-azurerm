@@ -25,7 +25,7 @@ Azure Resource Manager (ARM) PostgreSQL Server Operations Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -106,7 +106,7 @@ async def create(
 
         - ``backup_retention_days``: Backup retention days for the server.
         - ``geo_redundant_backup``: Enable Geo-redundant or not for server backup. Possible values include:
-            'Enabled', 'Disabled'.
+          'Enabled', 'Disabled'.
         - ``storage_mb``: Max storage allowed for a server.
         - ``storage_autogrow``: Enable Storage Auto Grow. Possible values include: 'Enabled', 'Disabled'.
 
@@ -370,9 +370,9 @@ async def update(
 
         - ``backup_retention_days``: Backup retention days for the server.
         - ``geo_redundant_backup``: Enable Geo-redundant or not for server backup. Possible values include:
-            'Enabled', 'Disabled'.
+          'Enabled', 'Disabled'.
         - ``storage_mb``: Max storage allowed for a server.
-        - ``storage_autogrow``: Enable Storage Auto Grow. Possible values include: 'Enabled', 'Disabled'
+        - ``storage_autogrow``: Enable Storage Auto Grow. Possible values include: 'Enabled', 'Disabled'.
 
     :param login_password: The password of the administrator login.
 

@@ -25,7 +25,7 @@ Azure Resource Manager (ARM) Compute Virtual Machine Extension Operations Execut
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -98,8 +98,8 @@ async def create_or_update(
 
     .. code-block:: bash
 
-        azurerm.compute.virtual_machine_extension.create_or_update test_name test_vm test_group test_loc \
-                test_publisher test_type test_version test_settings
+        azurerm.compute.virtual_machine_extension.create_or_update test_name test_vm test_group test_loc test_publisher
+                                                                   test_type test_version test_settings
 
     """
     result = {}

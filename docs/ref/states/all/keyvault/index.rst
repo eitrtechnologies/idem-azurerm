@@ -7,4 +7,5 @@ keyvault state modules
    :glob:
 
    key
+   secret
    vault

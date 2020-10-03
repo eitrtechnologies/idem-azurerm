@@ -23,7 +23,8 @@ Azure Resource Manager (ARM) Compute Proximity Placement Group State Module
 
     Optional provider parameters:
 
-    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud. Possible values:
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
       * ``AZURE_US_GOV_CLOUD``
@@ -99,7 +100,6 @@ async def present(
                 - group_type: test_type
                 - tags:
                     contact_name: Elmer Fudd Gantry
-                - connection_auth: {{ profile }}
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}
@@ -184,6 +184,15 @@ async def absent(hub, ctx, name, resource_group, connection_auth=None, **kwargs)
 
     :param connection_auth: A dict with subscription and authentication parameters to be used in connecting to the
         Azure Resource Manager API.
+
+    Example usage:
+
+    .. code-block:: yaml
+
+        Ensure proximity placement group absent:
+            azurerm.compute.proximity_placement_group.absent:
+                - name: test_ppg
+                - resource_group: test_group
 
     """
     ret = {"name": name, "result": False, "comment": "", "changes": {}}

@@ -25,7 +25,7 @@ Azure Resource Manager (ARM) Blob Container Operations Execution Module
 
     Optional provider parameters:
 
-**cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
+    **cloud_environment**: Used to point the cloud driver to different API endpoints, such as Azure GovCloud.
     Possible values:
       * ``AZURE_PUBLIC_CLOUD`` (default)
       * ``AZURE_CHINA_CLOUD``
@@ -100,7 +100,7 @@ async def get_client(
     .. versionadded:: 3.0.0
 
     Load the specified blob service, container, or blob client and return a BlobServiceClient, ContainerClient, or
-        BlobClient object, respectively.
+    BlobClient object, respectively.
 
     :param client_type: The type of client to create. Possible values are "BlobService", "Blob", and "Container".
 
@@ -158,7 +158,7 @@ async def clear_legal_hold(hub, ctx, name, account, resource_group, tags, **kwar
     .. versionadded:: 2.0.0
 
     Clears legal hold tags. Clearing the same or non-existent tag results in an idempotent operation. ClearLegalHold
-        clears out only the specified tags in the request.
+    clears out only the specified tags in the request.
 
     :param name: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
@@ -214,7 +214,7 @@ async def create(
     .. versionchanged:: 4.0.0
 
     Creates a new container under the specified account as described by request body. The container resource includes
-        metadata and properties for that container. It does not include a list of the blobs contained by the container.
+    metadata and properties for that container. It does not include a list of the blobs contained by the container.
 
     :param name: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
@@ -299,7 +299,7 @@ async def create_or_update_immutability_policy(
     .. versionchanged:: 4.0.0
 
     Creates or updates an unlocked immutability policy. ETag in If-Match is honored if given but not required for this
-        operation. The container must be of account kind 'StorageV2' in order to utilize an immutability policy.
+    operation. The container must be of account kind 'StorageV2' in order to utilize an immutability policy.
 
     :param name: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
@@ -474,8 +474,8 @@ async def delete_immutability_policy(
     .. versionadded:: 2.0.0
 
     Aborts an unlocked immutability policy. The response of delete has immutabilityPeriodSinceCreationInDays set to 0.
-        ETag in If-Match is required for this operation. Deleting a locked immutability policy is not allowed, only way
-        is to delete the container after deleting all blobs inside the container.
+    ETag in If-Match is required for this operation. Deleting a locked immutability policy is not allowed, only way
+    is to delete the container after deleting all blobs inside the container.
 
     :param name: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
@@ -522,7 +522,7 @@ async def extend_immutability_policy(
     .. versionadded:: 2.0.0
 
     Extends the immutabilityPeriodSinceCreationInDays of a locked immutabilityPolicy. The only action allowed on a
-        Locked policy will be this action. ETag in If-Match is required for this operation.
+    Locked policy will be this action. ETag in If-Match is required for this operation.
 
     :param name: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
@@ -671,7 +671,7 @@ async def lease(
     .. versionadded:: 4.0.0
 
     The Lease Container operation establishes and manages a lock on a container for delete operations. The lock duration
-        can be 15 to 60 seconds, or can be infinite.
+    can be 15 to 60 seconds, or can be infinite.
 
     :param container: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
@@ -755,7 +755,7 @@ async def list_(
     .. versionchanged:: 4.0.0
 
     Lists all containers and does not support a prefix like data plane. Also SRP today does not return continuation
-        token.
+    token.
 
     :param account: The name of the storage account within the specified resource group. Storage account names must be
         between 3 and 24 characters in length and use numbers and lower-case letters only.
@@ -850,6 +850,9 @@ async def lock_immutability_policy(
     """
     .. versionadded:: 2.0.0
 
+    Sets the ImmutabilityPolicy to Locked state. The only action allowed on a Locked policy is ExtendImmutabilityPolicy
+    action. ETag in If-Match is required for this operation.
+
     :param name: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
         character must be immediately preceded and followed by a letter or number.
@@ -870,6 +873,7 @@ async def lock_immutability_policy(
         azurerm.storage.container.lock_immutability_policy test_name test_account test_group test_if_match
 
     """
+    result = {}
     storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
@@ -894,7 +898,7 @@ async def set_legal_hold(hub, ctx, name, account, resource_group, tags, **kwargs
     .. versionadded:: 2.0.0
 
     Sets legal hold tags. Setting the same tag results in an idempotent operation. SetLegalHold follows an append
-        pattern and does not clear out the existing tags that are not specified in the request.
+    pattern and does not clear out the existing tags that are not specified in the request.
 
     :param name: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
@@ -914,6 +918,7 @@ async def set_legal_hold(hub, ctx, name, account, resource_group, tags, **kwargs
         azurerm.storage.container.set_legal_hold test_name test_account test_group test_tags
 
     """
+    result = {}
     storconn = await hub.exec.azurerm.utils.get_client(ctx, "storage", **kwargs)
 
     try:
@@ -950,7 +955,7 @@ async def update(
     .. versionchanged:: 4.0.0
 
     Updates container properties as specified in request body. Properties not mentioned in the request will be
-        unchanged. Update fails if the specified container doesn't already exist.
+    unchanged. Update fails if the specified container doesn't already exist.
 
     :param name: The name of the blob container within the specified storage account. Blob container names must be
         between 3 and 63 characters in length and use numbers, lower-case letters and dash (-) only. Every dash (-)
