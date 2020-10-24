@@ -31,14 +31,14 @@ Azure Key Vault Backend for Acct
     Credentials stored in the Key Vault will need to be named in a prescribed
     way in order to be properly retrieved and used for acct:
 
-    .. code-block::
+    .. code-block:: none
 
         {designator}{provider}-{profile}-{parameter}
 
     So, an example of secret names stored in Key Vault to be used for
     ``idem-azurerm`` would be:
 
-    .. code-block::
+    .. code-block:: none
 
         acct-provider-azurerm-default-client-id
         acct-provider-azurerm-default-secret
