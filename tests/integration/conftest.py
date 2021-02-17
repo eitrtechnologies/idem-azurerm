@@ -65,6 +65,13 @@ def storage_account():
 
 
 @pytest.fixture(scope="session")
+def file_share():
+    yield "fshare-" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(16)
+    )
+
+
+@pytest.fixture(scope="session")
 def storage_container():
     yield "container-idem-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(32)
