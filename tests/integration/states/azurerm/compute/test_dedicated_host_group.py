@@ -19,6 +19,8 @@ async def test_present(hub, ctx, host_group, resource_group, location):
                 "name": host_group,
                 "location": location,
                 "platform_fault_domain_count": 2,
+                "support_automatic_placement": False,
+                "type": "Microsoft.Compute/hostGroups",
             },
             "old": {},
         },
@@ -59,7 +61,12 @@ async def test_changes(hub, ctx, host_group, resource_group, tags):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, host_group, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": host_group,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": host_group,
+            },
+        },
         "comment": f"SSH public key {host_group} has been deleted.",
         "name": host_group,
         "result": True,
