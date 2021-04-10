@@ -4,7 +4,7 @@ Azure Resource Manager (ARM) Utilities
 
 .. versionadded:: 1.0.0
 
-.. versionchanged:: 2.4.0, 2.0.0, 4.0.0
+.. versionchanged:: 2.4.0, 2.0.0, 4.0.0, 4.0.1
 
 :maintainer: <devops@eitr.tech>
 
@@ -57,7 +57,7 @@ async def determine_auth(hub, ctx, resource=None, **kwargs):
     service_principal_creds_kwargs = ["client_id", "secret", "tenant"]
     user_pass_creds_kwargs = ["username", "password"]
 
-    if ctx["acct"]:
+    if ctx.get("acct"):
         for key, val in ctx["acct"].items():
             # explicit kwargs override acct
             kwargs.setdefault(key, val)
@@ -190,11 +190,14 @@ async def get_client(hub, ctx, client_type, **kwargs):
     except ImportError:
         raise sys.exit("The azure {0} client is not available.".format(client_type))
 
-    (
-        credentials,
-        subscription_id,
-        cloud_env,
-    ) = await hub.exec.azurerm.utils.determine_auth(ctx, **kwargs)
+    try:
+        (
+            credentials,
+            subscription_id,
+            cloud_env,
+        ) = await hub.exec.azurerm.utils.determine_auth(ctx, **kwargs)
+    except Exception as exc:
+        raise sys.exit(exc)
 
     if "subscription" in client_type:
         client = Client(
