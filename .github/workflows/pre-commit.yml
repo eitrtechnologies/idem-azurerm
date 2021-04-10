@@ -15,10 +15,8 @@ jobs:
       with:
         version: 3.6
         architecture: x64
-    - name: set-py
-      run: echo "::set-output name=py::$(python -c 'import hashlib, sys;print(hashlib.sha256(sys.version.encode()+sys.executable.encode()).hexdigest())')"
     - uses: actions/cache@v1.2.0
       with:
         path: ~/.cache/pre-commit
-        key: pre-commit|${{ steps.set-py.outputs.py }}|${{ hashFiles('.pre-commit-config.yaml') }}
+        key: pre-commit|${{ hashFiles('.pre-commit-config.yaml') }}
     - uses: pre-commit/action@v2.0.2
