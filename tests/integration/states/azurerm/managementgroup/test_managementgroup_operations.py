@@ -32,7 +32,8 @@ async def test_present(hub, ctx, management_group):
         "result": True,
     }
     ret = await hub.states.azurerm.managementgroup.operations.present(
-        ctx, name=management_group,
+        ctx,
+        name=management_group,
     )
     ret["changes"]["new"]["properties"].pop("tenantId")
     ret["changes"]["new"]["properties"]["details"]["parent"].pop("id")
@@ -50,13 +51,17 @@ async def test_changes(hub, ctx, management_group):
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
     expected = {
-        "changes": {"display_name": {"new": display_name, "old": management_group},},
+        "changes": {
+            "display_name": {"new": display_name, "old": management_group},
+        },
         "comment": f"Management Group {management_group} has been updated.",
         "name": management_group,
         "result": True,
     }
     ret = await hub.states.azurerm.managementgroup.operations.present(
-        ctx, name=management_group, display_name=display_name,
+        ctx,
+        name=management_group,
+        display_name=display_name,
     )
     assert ret == expected
 
@@ -65,7 +70,12 @@ async def test_changes(hub, ctx, management_group):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, management_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": management_group,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": management_group,
+            },
+        },
         "comment": f"Management Group {management_group} has been deleted.",
         "name": management_group,
         "result": True,

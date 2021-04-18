@@ -53,7 +53,12 @@ async def test_changes(hub, ctx, ppg, resource_group, tags):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, ppg, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": ppg,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": ppg,
+            },
+        },
         "comment": f"Proximity placement group {ppg} has been deleted.",
         "name": ppg,
         "result": True,

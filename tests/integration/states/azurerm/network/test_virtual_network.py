@@ -13,7 +13,7 @@ async def test_present(hub, ctx, vnet, vnet2, resource_group):
                 "dhcp_options": {"dns_servers": []},
                 "location": "eastus",
                 "enable_ddos_protection": False,
-                "enable_vm_protection": False,
+                # "enable_vm_protection": False, # Not usable until next version bump
                 "subnets": [],
                 "virtual_network_peerings": [],
                 "type": "Microsoft.Network/virtualNetworks",
@@ -49,7 +49,11 @@ async def test_present(hub, ctx, vnet, vnet2, resource_group):
 @pytest.mark.run(order=3, after="test_present", before="test_subnet_present")
 @pytest.mark.asyncio
 async def test_changes(
-    hub, ctx, vnet, resource_group, subnet,
+    hub,
+    ctx,
+    vnet,
+    resource_group,
+    subnet,
 ):
     vnet_addr_prefixes = ["10.0.0.0/16"]
     changed_vnet_addr_prefixes = ["10.0.0.0/16", "192.168.0.0/16", "128.0.0.0/16"]
@@ -183,7 +187,11 @@ async def test_subnet_present(hub, ctx, subnet, vnet, resource_group):
 @pytest.mark.run(order=3, after="test_subnet_present", before="test_subnet_absent")
 @pytest.mark.asyncio
 async def test_subnet_changes(
-    hub, ctx, subnet, vnet, resource_group,
+    hub,
+    ctx,
+    subnet,
+    vnet,
+    resource_group,
 ):
     subnet_addr_prefix = "10.0.0.0/16"
     changed_subnet_addr_prefix = "10.0.0.0/24"
@@ -215,7 +223,12 @@ async def test_subnet_changes(
 @pytest.mark.asyncio
 async def test_subnet_absent(hub, ctx, subnet, vnet, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": subnet,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": subnet,
+            },
+        },
         "comment": f"Subnet {subnet} has been deleted.",
         "name": subnet,
         "result": True,
@@ -232,7 +245,12 @@ async def test_subnet_absent(hub, ctx, subnet, vnet, resource_group):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, vnet, vnet2, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": vnet,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": vnet,
+            },
+        },
         "comment": f"Virtual network {vnet} has been deleted.",
         "name": vnet,
         "result": True,
@@ -246,6 +264,8 @@ async def test_absent(hub, ctx, vnet, vnet2, resource_group):
 
     # The second vnet used by the vnet peering tests is removed here
     ret = await hub.states.azurerm.network.virtual_network.absent(
-        ctx, name=vnet2, resource_group=resource_group,
+        ctx,
+        name=vnet2,
+        resource_group=resource_group,
     )
     assert ret["result"]

@@ -63,7 +63,11 @@ async def test_changes(hub, ctx, nsg, resource_group, tags):
 @pytest.mark.run(order=3, after="test_changes", before="test_rule_changes")
 @pytest.mark.asyncio
 async def test_rule_present(
-    hub, ctx, nsg, resource_group, rule,
+    hub,
+    ctx,
+    nsg,
+    resource_group,
+    rule,
 ):
     expected = {
         "changes": {
@@ -138,7 +142,12 @@ async def test_rule_changes(hub, ctx, nsg, resource_group, rule):
 @pytest.mark.asyncio
 async def test_rule_absent(hub, ctx, nsg, resource_group, rule):
     expected = {
-        "changes": {"new": {}, "old": {"name": rule,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": rule,
+            },
+        },
         "comment": f"Security rule {rule} has been deleted.",
         "name": rule,
         "result": True,
@@ -155,7 +164,12 @@ async def test_rule_absent(hub, ctx, nsg, resource_group, rule):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, nsg, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": nsg,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": nsg,
+            },
+        },
         "comment": f"Network security group {nsg} has been deleted.",
         "name": nsg,
         "result": True,

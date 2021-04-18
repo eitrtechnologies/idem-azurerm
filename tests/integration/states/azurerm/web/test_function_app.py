@@ -99,7 +99,9 @@ async def test_changes(
     runtime_stack = "python"
 
     expected = {
-        "changes": {"tags": {"new": tags},},
+        "changes": {
+            "tags": {"new": tags},
+        },
         "comment": f"Function App {function_app} has been updated.",
         "name": function_app,
         "result": True,
@@ -124,7 +126,10 @@ async def test_changes(
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, function_app, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": function_app},},
+        "changes": {
+            "new": {},
+            "old": {"name": function_app},
+        },
         "comment": f"Function App {function_app} has been deleted.",
         "name": function_app,
         "result": True,

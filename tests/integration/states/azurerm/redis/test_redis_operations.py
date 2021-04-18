@@ -64,7 +64,9 @@ async def test_present(hub, ctx, resource_group, location, sku, redis_cache):
 async def test_changes(hub, ctx, resource_group, location, sku, redis_cache):
     enable_non_ssl_port = True
     expected = {
-        "changes": {"enable_non_ssl_port": {"new": True, "old": False},},
+        "changes": {
+            "enable_non_ssl_port": {"new": True, "old": False},
+        },
         "comment": f"Redis cache {redis_cache} has been updated.",
         "name": redis_cache,
         "result": True,
@@ -85,7 +87,12 @@ async def test_changes(hub, ctx, resource_group, location, sku, redis_cache):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, redis_cache):
     expected = {
-        "changes": {"new": {}, "old": {"name": redis_cache,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": redis_cache,
+            },
+        },
         "comment": f"Redis cache {redis_cache} has been deleted.",
         "name": redis_cache,
         "result": True,

@@ -46,7 +46,12 @@ async def test_changes(hub, ctx, availability_set, resource_group, tags):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, availability_set, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": availability_set,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": availability_set,
+            },
+        },
         "comment": f"Availability set {availability_set} has been deleted.",
         "name": availability_set,
         "result": True,

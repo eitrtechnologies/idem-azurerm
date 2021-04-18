@@ -27,7 +27,11 @@ async def test_present(hub, ctx, resource_group, location):
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, resource_group, location, tags):
     expected = {
-        "changes": {"tags": {"new": tags,},},
+        "changes": {
+            "tags": {
+                "new": tags,
+            },
+        },
         "comment": f"Resource group {resource_group} has been updated.",
         "name": resource_group,
         "result": True,

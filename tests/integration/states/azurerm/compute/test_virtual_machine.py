@@ -21,7 +21,7 @@ async def test_present(hub, ctx, vm, resource_group, vnet, subnet, password):
         "changes": {
             "new": {
                 "name": vm,
-                "hardware_profile": {"vm_size": vm_size.lower()},
+                "hardware_profile": {"vm_size": vm_size},
                 "storage_profile": {
                     "image_reference": {
                         "publisher": image_info[0],
@@ -97,7 +97,12 @@ async def test_changes(hub, ctx, vm, resource_group, vnet, subnet, password, tag
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, vm, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": vm,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": vm,
+            },
+        },
         "comment": f"Virtual machine {vm} has been deleted.",
         "name": vm,
         "result": True,

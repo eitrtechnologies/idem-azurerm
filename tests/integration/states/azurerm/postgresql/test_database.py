@@ -41,7 +41,12 @@ async def test_present(hub, ctx, postgresql_db, postgresql_server, resource_grou
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, postgresql_db, postgresql_server, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": postgresql_db,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": postgresql_db,
+            },
+        },
         "comment": f"Database {postgresql_db} has been deleted.",
         "name": postgresql_db,
         "result": True,

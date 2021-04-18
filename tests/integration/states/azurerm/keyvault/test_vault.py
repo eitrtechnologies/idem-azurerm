@@ -138,7 +138,11 @@ async def test_changes(hub, ctx, resource_group, location, tags, keyvault):
         }
     ]
     expected = {
-        "changes": {"tags": {"new": tags,},},
+        "changes": {
+            "tags": {
+                "new": tags,
+            },
+        },
         "comment": f"Key Vault {keyvault} has been updated.",
         "name": keyvault,
         "result": True,

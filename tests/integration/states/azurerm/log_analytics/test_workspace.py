@@ -43,7 +43,9 @@ async def test_present(hub, ctx, resource_group, location, log_analytics_workspa
 async def test_changes(hub, ctx, resource_group, location, log_analytics_workspace):
     retention = 10
     expected = {
-        "changes": {"retention_in_days": {"new": 10, "old": 30},},
+        "changes": {
+            "retention_in_days": {"new": 10, "old": 30},
+        },
         "comment": f"Log Analytics Workspace {log_analytics_workspace} has been updated.",
         "name": log_analytics_workspace,
         "result": True,
@@ -62,7 +64,12 @@ async def test_changes(hub, ctx, resource_group, location, log_analytics_workspa
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, log_analytics_workspace):
     expected = {
-        "changes": {"new": {}, "old": {"name": log_analytics_workspace,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": log_analytics_workspace,
+            },
+        },
         "comment": f"Log Analytics Workspace {log_analytics_workspace} has been deleted.",
         "name": log_analytics_workspace,
         "result": True,

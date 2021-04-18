@@ -45,7 +45,9 @@ async def test_present(hub, ctx, public_ip_prefix, resource_group):
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, public_ip_prefix, resource_group, tags):
     expected = {
-        "changes": {"tags": {"new": tags},},
+        "changes": {
+            "tags": {"new": tags},
+        },
         "comment": f"Public IP prefix {public_ip_prefix} has been updated.",
         "name": public_ip_prefix,
         "result": True,
@@ -64,7 +66,12 @@ async def test_changes(hub, ctx, public_ip_prefix, resource_group, tags):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, public_ip_prefix, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": public_ip_prefix,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": public_ip_prefix,
+            },
+        },
         "comment": f"Public IP prefix {public_ip_prefix} has been deleted.",
         "name": public_ip_prefix,
         "result": True,

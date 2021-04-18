@@ -50,7 +50,9 @@ async def test_changes(hub, ctx, record_set, zone, resource_group):
     record_type = "A"
     metadata = {"zone": zone}
     expected = {
-        "changes": {"metadata": {"new": metadata},},
+        "changes": {
+            "metadata": {"new": metadata},
+        },
         "comment": f"Record set {record_set} has been updated.",
         "name": record_set,
         "result": True,
@@ -71,7 +73,12 @@ async def test_changes(hub, ctx, record_set, zone, resource_group):
 async def test_absent(hub, ctx, record_set, zone, resource_group):
     record_type = "A"
     expected = {
-        "changes": {"new": {}, "old": {"name": record_set,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": record_set,
+            },
+        },
         "comment": f"Record set {record_set} has been deleted.",
         "name": record_set,
         "result": True,

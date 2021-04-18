@@ -48,7 +48,9 @@ async def test_changes(hub, ctx, fw_rule, postgresql_server, resource_group):
     end_addr = "10.0.0.255"
     changed_end_addr = "10.0.0.254"
     expected = {
-        "changes": {"end_ip_address": {"new": changed_end_addr, "old": end_addr},},
+        "changes": {
+            "end_ip_address": {"new": changed_end_addr, "old": end_addr},
+        },
         "comment": f"Firewall Rule {fw_rule} has been updated.",
         "name": fw_rule,
         "result": True,
@@ -68,7 +70,12 @@ async def test_changes(hub, ctx, fw_rule, postgresql_server, resource_group):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, fw_rule, postgresql_server, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": fw_rule,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": fw_rule,
+            },
+        },
         "comment": f"Firewall Rule {fw_rule} has been deleted.",
         "name": fw_rule,
         "result": True,

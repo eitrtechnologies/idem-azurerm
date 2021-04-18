@@ -35,7 +35,13 @@ def ipsec_policy():
 @pytest.mark.slow
 @pytest.mark.asyncio
 async def test_present(
-    hub, ctx, vnet_gateway, resource_group, ip_config, public_ip_addr2, vnet,
+    hub,
+    ctx,
+    vnet_gateway,
+    resource_group,
+    ip_config,
+    public_ip_addr2,
+    vnet,
 ):
     gateway_type = "Vpn"
     vpn_type = "RouteBased"
@@ -105,7 +111,14 @@ async def test_present(
 @pytest.mark.slow
 @pytest.mark.asyncio
 async def test_changes(
-    hub, ctx, vnet_gateway, resource_group, ip_config, public_ip_addr2, vnet, tags,
+    hub,
+    ctx,
+    vnet_gateway,
+    resource_group,
+    ip_config,
+    public_ip_addr2,
+    vnet,
+    tags,
 ):
     gateway_type = "Vpn"
     vpn_type = "RouteBased"
@@ -120,7 +133,11 @@ async def test_changes(
     active_active = False
     enable_bgp = False
     expected = {
-        "changes": {"tags": {"new": tags,}},
+        "changes": {
+            "tags": {
+                "new": tags,
+            }
+        },
         "comment": f"Virtual network gateway {vnet_gateway} has been updated.",
         "name": vnet_gateway,
         "result": True,
@@ -252,7 +269,12 @@ async def test_connection_changes(
 @pytest.mark.asyncio
 async def test_connection_absent(hub, ctx, vnet_gateway_connection, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": vnet_gateway_connection,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": vnet_gateway_connection,
+            },
+        },
         "comment": f"Virtual network gateway connection {vnet_gateway_connection} has been deleted.",
         "name": vnet_gateway_connection,
         "result": True,
@@ -270,7 +292,12 @@ async def test_connection_absent(hub, ctx, vnet_gateway_connection, resource_gro
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, vnet_gateway, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": vnet_gateway,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": vnet_gateway,
+            },
+        },
         "comment": f"Virtual network gateway {vnet_gateway} has been deleted.",
         "name": vnet_gateway,
         "result": True,

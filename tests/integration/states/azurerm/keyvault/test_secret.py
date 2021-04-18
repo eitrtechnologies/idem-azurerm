@@ -28,7 +28,10 @@ async def test_present(hub, ctx, keyvault):
         "result": True,
     }
     ret = await hub.states.azurerm.keyvault.secret.present(
-        ctx, "secretname", "supersecret", f"https://{keyvault}.vault.azure.net/",
+        ctx,
+        "secretname",
+        "supersecret",
+        f"https://{keyvault}.vault.azure.net/",
     )
     ret["changes"]["new"].pop("id")
     ret["changes"]["new"]["properties"].pop("created_on")
@@ -43,7 +46,9 @@ async def test_present(hub, ctx, keyvault):
 async def test_changes(hub, ctx, keyvault, tags):
     expected = {
         "changes": {
-            "tags": {"new": tags,},
+            "tags": {
+                "new": tags,
+            },
             "content_type": {"new": "text/plain", "old": None},
         },
         "comment": f"Secret secretname has been updated.",
@@ -88,7 +93,9 @@ async def test_absent(hub, ctx, keyvault, tags):
         "result": True,
     }
     ret = await hub.states.azurerm.keyvault.secret.absent(
-        ctx, "secretname", f"https://{keyvault}.vault.azure.net/",
+        ctx,
+        "secretname",
+        f"https://{keyvault}.vault.azure.net/",
     )
     expected["changes"]["old"]["id"] = ret["changes"]["old"]["id"]
     expected["changes"]["old"]["properties"]["id"] = ret["changes"]["old"][

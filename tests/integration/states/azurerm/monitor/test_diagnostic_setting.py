@@ -49,6 +49,7 @@ async def test_present(
                 "metrics": metrics,
                 "logs": logs,
                 "storage_account_id": storage_account_id,
+                "type": "Microsoft.Insights/diagnosticSettings",
             },
             "old": {},
         },
@@ -89,7 +90,9 @@ async def test_changes(
     storage_account_id = f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Storage/storageAccounts/{storage_account}"
     workspace_id = f"/subscriptions/{subscription_id}/resourcegroups/{resource_group}/providers/microsoft.operationalinsights/workspaces/{log_analytics_workspace}"
     expected = {
-        "changes": {"workspace_id": {"new": workspace_id, "old": None},},
+        "changes": {
+            "workspace_id": {"new": workspace_id, "old": None},
+        },
         "comment": f"Diagnostic setting {diag_setting} has been updated.",
         "name": diag_setting,
         "result": True,
@@ -114,7 +117,12 @@ async def test_absent(hub, ctx, diag_setting, resource_group, vnet):
     )
     resource_uri = f"/subscriptions/{subscription_id}/resourceGroups/{resource_group}/providers/Microsoft.Network/virtualNetworks/{vnet}"
     expected = {
-        "changes": {"new": {}, "old": {"name": diag_setting,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": diag_setting,
+            },
+        },
         "comment": f"Diagnostic setting {diag_setting} has been deleted.",
         "name": diag_setting,
         "result": True,

@@ -28,7 +28,11 @@ async def test_present(hub, ctx, resource_group, location, acr):
         "result": True,
     }
     ret = await hub.states.azurerm.containerregistry.registry.present(
-        ctx, acr, resource_group, sku="Basic", location=location,
+        ctx,
+        acr,
+        resource_group,
+        sku="Basic",
+        location=location,
     )
     ret["changes"]["new"].pop("creation_date")
     ret["changes"]["new"].pop("id")
@@ -40,13 +44,22 @@ async def test_present(hub, ctx, resource_group, location, acr):
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, resource_group, location, acr, tags):
     expected = {
-        "changes": {"tags": {"new": tags,},},
+        "changes": {
+            "tags": {
+                "new": tags,
+            },
+        },
         "comment": f"Container registry {acr} has been updated.",
         "name": acr,
         "result": True,
     }
     ret = await hub.states.azurerm.containerregistry.registry.present(
-        ctx, acr, resource_group, sku="Basic", location=location, tags=tags,
+        ctx,
+        acr,
+        resource_group,
+        sku="Basic",
+        location=location,
+        tags=tags,
     )
     assert ret == expected
 

@@ -55,7 +55,9 @@ async def test_changes(hub, ctx, lock, resource_group):
     level = "ReadOnly"
     updated_notes = "This is a test lock"
     expected = {
-        "changes": {"notes": {"new": updated_notes, "old": None},},
+        "changes": {
+            "notes": {"new": updated_notes, "old": None},
+        },
         "comment": f"Management lock {lock} has been updated.",
         "name": lock,
         "result": True,
@@ -74,7 +76,12 @@ async def test_changes(hub, ctx, lock, resource_group):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, lock, resource_group):
     expected = {
-        "changes": {"new": {}, "old": {"name": lock,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": lock,
+            },
+        },
         "comment": f"Management lock {lock} has been deleted.",
         "name": lock,
         "result": True,
@@ -126,13 +133,19 @@ async def test_changes_by_scope(hub, ctx, scope_lock, resource_group):
     level = "ReadOnly"
     updated_notes = "This is a test lock"
     expected = {
-        "changes": {"notes": {"new": updated_notes, "old": None},},
+        "changes": {
+            "notes": {"new": updated_notes, "old": None},
+        },
         "comment": f"Management lock {scope_lock} has been updated.",
         "name": scope_lock,
         "result": True,
     }
     ret = await hub.states.azurerm.resource.management_lock.present_by_scope(
-        ctx, name=scope_lock, lock_level=level, scope=scope, notes=updated_notes,
+        ctx,
+        name=scope_lock,
+        lock_level=level,
+        scope=scope,
+        notes=updated_notes,
     )
     assert ret == expected
 
@@ -145,7 +158,12 @@ async def test_absent_by_scope(hub, ctx, scope_lock, resource_group):
     )
     scope = f"/subscriptions/{subscription_id}/resourcegroups/{resource_group}"
     expected = {
-        "changes": {"new": {}, "old": {"name": scope_lock,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": scope_lock,
+            },
+        },
         "comment": f"Management lock {scope_lock} has been deleted.",
         "name": scope_lock,
         "result": True,
@@ -161,7 +179,11 @@ async def test_absent_by_scope(hub, ctx, scope_lock, resource_group):
 @pytest.mark.run(order=6, after="test_absent_by_scope")
 @pytest.mark.asyncio
 async def test_present_at_resource_level(
-    hub, ctx, resource_lock, resource_group, vnet,
+    hub,
+    ctx,
+    resource_lock,
+    resource_group,
+    vnet,
 ):
     level = "ReadOnly"
     resource_type = "virtualNetworks"
@@ -200,14 +222,20 @@ async def test_present_at_resource_level(
 )
 @pytest.mark.asyncio
 async def test_changes_at_resource_level(
-    hub, ctx, resource_lock, resource_group, vnet,
+    hub,
+    ctx,
+    resource_lock,
+    resource_group,
+    vnet,
 ):
     level = "ReadOnly"
     resource_type = "virtualNetworks"
     resource_provider_namespace = "Microsoft.Network"
     updated_notes = "This is a test lock"
     expected = {
-        "changes": {"notes": {"new": updated_notes, "old": None},},
+        "changes": {
+            "notes": {"new": updated_notes, "old": None},
+        },
         "comment": f"Management lock {resource_lock} has been updated.",
         "name": resource_lock,
         "result": True,
@@ -228,13 +256,22 @@ async def test_changes_at_resource_level(
 @pytest.mark.run(order=-6, after="test_absent_by_scope")
 @pytest.mark.asyncio
 async def test_absent_at_resource_level(
-    hub, ctx, resource_lock, resource_group, vnet,
+    hub,
+    ctx,
+    resource_lock,
+    resource_group,
+    vnet,
 ):
     level = "ReadOnly"
     resource_type = "virtualNetworks"
     resource_provider_namespace = "Microsoft.Network"
     expected = {
-        "changes": {"new": {}, "old": {"name": resource_lock,},},
+        "changes": {
+            "new": {},
+            "old": {
+                "name": resource_lock,
+            },
+        },
         "comment": f"Management lock {resource_lock} has been deleted.",
         "name": resource_lock,
         "result": True,
