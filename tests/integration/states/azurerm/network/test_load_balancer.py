@@ -55,12 +55,7 @@ async def test_changes(hub, ctx, load_balancer, resource_group, tags):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, load_balancer, resource_group):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": load_balancer,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": load_balancer,},},
         "comment": f"Load balancer {load_balancer} has been deleted.",
         "name": load_balancer,
         "result": True,

@@ -104,12 +104,7 @@ async def test_changes(hub, ctx, public_ip_addr, resource_group, tags):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, public_ip_addr, resource_group):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": public_ip_addr,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": public_ip_addr,},},
         "comment": f"Public IP address {public_ip_addr} has been deleted.",
         "name": public_ip_addr,
         "result": True,

@@ -35,11 +35,7 @@ async def test_present(hub, ctx, resource_group, acr):
 async def test_changes(hub, ctx, resource_group, acr, tags):
     hook = "idemhook"
     expected = {
-        "changes": {
-            "tags": {
-                "new": tags,
-            },
-        },
+        "changes": {"tags": {"new": tags,},},
         "comment": f"Container registry webhook {hook} has been updated.",
         "name": hook,
         "result": True,

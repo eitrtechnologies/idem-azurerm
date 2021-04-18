@@ -80,12 +80,7 @@ async def test_changes(
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, network_interface, resource_group):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": network_interface,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": network_interface,},},
         "comment": f"Network interface {network_interface} has been deleted.",
         "name": network_interface,
         "result": True,

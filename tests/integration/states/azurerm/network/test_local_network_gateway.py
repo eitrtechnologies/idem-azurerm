@@ -62,12 +62,7 @@ async def test_changes(hub, ctx, local_network_gateway, resource_group):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, local_network_gateway, resource_group):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": local_network_gateway,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": local_network_gateway,},},
         "comment": f"Local network gateway {local_network_gateway} has been deleted.",
         "name": local_network_gateway,
         "result": True,

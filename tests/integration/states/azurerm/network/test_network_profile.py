@@ -35,20 +35,13 @@ async def test_present(hub, ctx, resource_group):
 async def test_changes(hub, ctx, resource_group, tags):
     prf = "idemprofile"
     expected = {
-        "changes": {
-            "tags": {
-                "new": tags,
-            },
-        },
+        "changes": {"tags": {"new": tags,},},
         "comment": f"Network profile {prf} has been updated.",
         "name": prf,
         "result": True,
     }
     ret = await hub.states.azurerm.network.network_profile.present(
-        ctx,
-        prf,
-        resource_group,
-        tags=tags,
+        ctx, prf, resource_group, tags=tags,
     )
     assert ret == expected
 

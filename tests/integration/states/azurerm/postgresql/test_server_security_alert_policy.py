@@ -28,12 +28,7 @@ async def test_changes(hub, ctx, postgresql_server, resource_group):
     policy_state = "Disabled"
     new_state = "Enabled"
     expected = {
-        "changes": {
-            "state": {
-                "new": new_state,
-                "old": policy_state,
-            },
-        },
+        "changes": {"state": {"new": new_state, "old": policy_state,},},
         "comment": f"The server security alert policy {name} for the server {postgresql_server} has been updated.",
         "name": name,
         "result": True,

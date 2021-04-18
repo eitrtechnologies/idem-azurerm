@@ -52,9 +52,7 @@ async def test_definition_present(hub, ctx, def_name, def_policy_rule):
         "result": True,
     }
     ret = await hub.states.azurerm.resource.policy.definition_present(
-        ctx,
-        name=def_name,
-        policy_rule=def_policy_rule,
+        ctx, name=def_name, policy_rule=def_policy_rule,
     )
     ret["changes"]["new"].pop("id")
     ret["changes"]["new"].pop("metadata")
@@ -68,9 +66,7 @@ async def test_definition_present(hub, ctx, def_name, def_policy_rule):
 async def test_definition_changes(hub, ctx, def_name, def_policy_rule):
     desc = "test"
     expected = {
-        "changes": {
-            "description": {"new": desc, "old": None},
-        },
+        "changes": {"description": {"new": desc, "old": None},},
         "comment": f"Policy definition {def_name} has been updated.",
         "name": def_name,
         "result": True,
@@ -106,10 +102,7 @@ async def test_assignment_present(hub, ctx, assignment_name, def_name):
         "result": True,
     }
     ret = await hub.states.azurerm.resource.policy.assignment_present(
-        ctx,
-        name=assignment_name,
-        scope=scope,
-        definition_name=def_name,
+        ctx, name=assignment_name, scope=scope, definition_name=def_name,
     )
     ret["changes"]["new"].pop("id")
     ret["changes"]["new"].pop("policy_definition_id")
@@ -154,12 +147,7 @@ async def test_assignment_absent(hub, ctx, assignment_name):
     )
     scope = f"/subscriptions/{subscription_id}"
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": assignment_name,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": assignment_name,},},
         "comment": f"Policy assignment {assignment_name} has been deleted.",
         "name": assignment_name,
         "result": True,
@@ -176,12 +164,7 @@ async def test_assignment_absent(hub, ctx, assignment_name):
 @pytest.mark.asyncio
 async def test_definition_absent(hub, ctx, def_name):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": def_name,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": def_name,},},
         "comment": f"Policy defintion {def_name} has been deleted.",
         "name": def_name,
         "result": True,

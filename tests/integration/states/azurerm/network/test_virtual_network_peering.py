@@ -70,12 +70,7 @@ async def test_changes(hub, ctx, vnet_peering, resource_group, vnet, vnet2):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, vnet_peering, vnet, resource_group):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": vnet_peering,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": vnet_peering,},},
         "comment": f"Peering object {vnet_peering} has been deleted.",
         "name": vnet_peering,
         "result": True,

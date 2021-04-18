@@ -8,9 +8,7 @@ async def test_present_and_changes(hub, ctx, postgresql_server, resource_group):
     val = "5"
     old_val = "3"
     expected = {
-        "changes": {
-            "value": {"new": val, "old": old_val},
-        },
+        "changes": {"value": {"new": val, "old": old_val},},
         "comment": f"Configuration Setting {config_name} has been updated.",
         "name": config_name,
         "result": True,

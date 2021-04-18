@@ -13,13 +13,7 @@ def vnet_rule():
 @pytest.mark.run(order=4)
 @pytest.mark.asyncio
 async def test_present(
-    hub,
-    ctx,
-    vnet_rule,
-    postgresql_server,
-    resource_group,
-    subnet,
-    vnet,
+    hub, ctx, vnet_rule, postgresql_server, resource_group, subnet, vnet,
 ):
     ignore_missing_endpoint = False
     subscription_id = (
@@ -56,13 +50,7 @@ async def test_present(
 @pytest.mark.run(order=4, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(
-    hub,
-    ctx,
-    vnet_rule,
-    postgresql_server,
-    resource_group,
-    subnet,
-    vnet,
+    hub, ctx, vnet_rule, postgresql_server, resource_group, subnet, vnet,
 ):
     ignore_missing_endpoint = False
     subscription_id = (
@@ -96,12 +84,7 @@ async def test_changes(
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, vnet_rule, postgresql_server, resource_group):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": vnet_rule,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": vnet_rule,},},
         "comment": f"Virtual Network Rule {vnet_rule} has been deleted.",
         "name": vnet_rule,
         "result": True,

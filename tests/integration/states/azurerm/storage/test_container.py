@@ -46,11 +46,7 @@ async def test_changes(
     public_access = "Blob"
     metadata = {"Company": "EITR Technologies"}
     expected = {
-        "changes": {
-            "metadata": {
-                "new": metadata,
-            },
-        },
+        "changes": {"metadata": {"new": metadata,},},
         "comment": f"Blob container {storage_container} has been updated.",
         "name": storage_container,
         "result": True,
@@ -107,12 +103,7 @@ async def test_immutability_policy_present_and_changes(
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, storage_account, storage_container):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": storage_container,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": storage_container,},},
         "comment": f"Storage container {storage_container} has been deleted.",
         "name": storage_container,
         "result": True,

@@ -28,9 +28,7 @@ async def test_present(hub, ctx, identity, resource_group, location):
         "result": True,
     }
     ret = await hub.states.azurerm.managed_service_identity.user_assigned_identity.present(
-        ctx,
-        name=identity,
-        resource_group=resource_group,
+        ctx, name=identity, resource_group=resource_group,
     )
     ret["changes"]["new"].pop("id")
     ret["changes"]["new"].pop("tenant_id")
@@ -43,18 +41,13 @@ async def test_present(hub, ctx, identity, resource_group, location):
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, identity, resource_group, tags):
     expected = {
-        "changes": {
-            "tags": {"new": tags},
-        },
+        "changes": {"tags": {"new": tags},},
         "comment": f"User assigned identity {identity} has been updated.",
         "name": identity,
         "result": True,
     }
     ret = await hub.states.azurerm.managed_service_identity.user_assigned_identity.present(
-        ctx,
-        name=identity,
-        resource_group=resource_group,
-        tags=tags,
+        ctx, name=identity, resource_group=resource_group, tags=tags,
     )
     assert ret == expected
 
@@ -63,20 +56,13 @@ async def test_changes(hub, ctx, identity, resource_group, tags):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, identity, resource_group):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": identity,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": identity,},},
         "comment": f"User assigned identity {identity} has been deleted.",
         "name": identity,
         "result": True,
     }
-    ret = (
-        await hub.states.azurerm.managed_service_identity.user_assigned_identity.absent(
-            ctx, name=identity, resource_group=resource_group
-        )
+    ret = await hub.states.azurerm.managed_service_identity.user_assigned_identity.absent(
+        ctx, name=identity, resource_group=resource_group
     )
     assert ret["changes"]["new"] == expected["changes"]["new"]
     assert ret["changes"]["old"]["name"] == expected["changes"]["old"]["name"]

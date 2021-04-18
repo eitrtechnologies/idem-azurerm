@@ -79,9 +79,7 @@ async def test_changes(
         "public_ip_address": pub_ip_id,
     }
     expected = {
-        "changes": {
-            "tags": {"new": tags},
-        },
+        "changes": {"tags": {"new": tags},},
         "comment": f"Bastion Host {bastion_host} has been updated.",
         "name": bastion_host,
         "result": True,
@@ -101,12 +99,7 @@ async def test_changes(
 @pytest.mark.slow
 async def test_absent(hub, ctx, bastion_host, resource_group):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": bastion_host,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": bastion_host,},},
         "comment": f"Bastion Host {bastion_host} has been deleted.",
         "name": bastion_host,
         "result": True,

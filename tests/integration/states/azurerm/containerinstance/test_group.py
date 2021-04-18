@@ -7,12 +7,7 @@ def containers():
         {
             "name": "mycoolwebcontainer",
             "image": "nginx:latest",
-            "resources": {
-                "requests": {
-                    "memory_in_gb": 1.0,
-                    "cpu": 1.0,
-                }
-            },
+            "resources": {"requests": {"memory_in_gb": 1.0, "cpu": 1.0,}},
             "ports": [],
             "environment_variables": [],
         }
@@ -62,20 +57,13 @@ async def test_present(hub, ctx, resource_group, location, containers):
 async def test_changes(hub, ctx, resource_group, location, containers, tags):
     aci = "aci-idemtest"
     expected = {
-        "changes": {
-            "tags": {"new": tags, "old": {"hihi": "cats"}},
-        },
+        "changes": {"tags": {"new": tags, "old": {"hihi": "cats"}},},
         "comment": f"Container instance group {aci} has been updated.",
         "name": aci,
         "result": True,
     }
     ret = await hub.states.azurerm.containerinstance.group.present(
-        ctx,
-        aci,
-        resource_group,
-        containers=containers,
-        os_type="Linux",
-        tags=tags,
+        ctx, aci, resource_group, containers=containers, os_type="Linux", tags=tags,
     )
     assert ret == expected
 

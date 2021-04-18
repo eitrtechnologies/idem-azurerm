@@ -61,12 +61,7 @@ async def test_changes(hub, ctx, host_group, resource_group, tags):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, host_group, resource_group):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": host_group,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": host_group,},},
         "comment": f"SSH public key {host_group} has been deleted.",
         "name": host_group,
         "result": True,

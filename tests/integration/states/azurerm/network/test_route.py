@@ -90,11 +90,7 @@ async def test_present(hub, ctx, route, route_table, resource_group):
 @pytest.mark.run(order=3, after="test_present", before="test_absent")
 @pytest.mark.asyncio
 async def test_changes(
-    hub,
-    ctx,
-    route,
-    route_table,
-    resource_group,
+    hub, ctx, route, route_table, resource_group,
 ):
     next_hop_type = "vnetlocal"
     addr_prefix = "192.168.0.0/16"
@@ -120,12 +116,7 @@ async def test_changes(
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, route, route_table, resource_group):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": route,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": route,},},
         "comment": f"Route {route} has been deleted.",
         "name": route,
         "result": True,
@@ -142,12 +133,7 @@ async def test_absent(hub, ctx, route, route_table, resource_group):
 @pytest.mark.run(order=-3)
 async def test_table_absent(hub, ctx, route_table, resource_group):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": route_table,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": route_table,},},
         "comment": f"Route table {route_table} has been deleted.",
         "name": route_table,
         "result": True,

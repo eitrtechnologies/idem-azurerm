@@ -85,7 +85,7 @@ async def present(
     address_prefixes,
     resource_group,
     dns_servers=None,
-    #enable_vm_protection=False, # Not usable until next version bump 
+    # enable_vm_protection=False, # Not usable until next version bump
     enable_ddos_protection=False,
     ddos_protection_plan=None,
     tags=None,
@@ -257,7 +257,7 @@ async def present(
         address_prefixes=address_prefixes,
         dns_servers=dns_servers,
         enable_ddos_protection=enable_ddos_protection,
-        #enable_vm_protection=enable_vm_protection, # Not usable until next version bump
+        # enable_vm_protection=enable_vm_protection, # Not usable until next version bump
         ddos_protection_plan=ddos_protection_plan,
         tags=tags,
         **vnet_kwargs,

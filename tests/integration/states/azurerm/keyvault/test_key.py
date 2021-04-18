@@ -46,11 +46,7 @@ async def test_present(hub, ctx, key, keyvault):
         "result": True,
     }
     ret = await hub.states.azurerm.keyvault.key.present(
-        ctx,
-        name=key,
-        key_type=key_type,
-        vault_url=vault_url,
-        enabled=False,
+        ctx, name=key, key_type=key_type, vault_url=vault_url, enabled=False,
     )
     ret["changes"]["new"].pop("id")
     ret["changes"]["new"]["properties"].pop("id")
@@ -72,11 +68,7 @@ async def test_changes(hub, ctx, key, keyvault):
         "result": True,
     }
     ret = await hub.states.azurerm.keyvault.key.present(
-        ctx,
-        name=key,
-        key_type=key_type,
-        vault_url=vault_url,
-        enabled=True,
+        ctx, name=key, key_type=key_type, vault_url=vault_url, enabled=True,
     )
     assert ret == expected
 

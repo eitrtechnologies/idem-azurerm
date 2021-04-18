@@ -14,13 +14,7 @@ def ssh_key():
 @pytest.mark.asyncio
 async def test_present(hub, ctx, ssh_key, resource_group, location):
     expected = {
-        "changes": {
-            "new": {
-                "name": ssh_key,
-                "location": location,
-            },
-            "old": {},
-        },
+        "changes": {"new": {"name": ssh_key, "location": location,}, "old": {},},
         "comment": f"SSH public key {ssh_key} has been created.",
         "name": ssh_key,
         "result": True,
@@ -51,12 +45,7 @@ async def test_changes(hub, ctx, ssh_key, resource_group, tags):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, ssh_key, resource_group):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": ssh_key,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": ssh_key,},},
         "comment": f"SSH public key {ssh_key} has been deleted.",
         "name": ssh_key,
         "result": True,

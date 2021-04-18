@@ -51,11 +51,7 @@ async def test_present(hub, ctx, resource_group, acr):
 async def test_changes(hub, ctx, resource_group, acr, tags):
     task = "idemtask"
     expected = {
-        "changes": {
-            "tags": {
-                "new": tags,
-            },
-        },
+        "changes": {"tags": {"new": tags,},},
         "comment": f"Container registry task {task} has been updated.",
         "name": task,
         "result": True,

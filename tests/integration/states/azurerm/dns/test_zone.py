@@ -22,9 +22,7 @@ async def test_present(hub, ctx, zone, resource_group):
         "result": True,
     }
     ret = await hub.states.azurerm.dns.zone.present(
-        ctx,
-        name=zone,
-        resource_group=resource_group,
+        ctx, name=zone, resource_group=resource_group,
     )
     ret["changes"]["new"].pop("id")
     ret["changes"]["new"].pop("name_servers")
@@ -36,18 +34,13 @@ async def test_present(hub, ctx, zone, resource_group):
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, zone, resource_group, tags):
     expected = {
-        "changes": {
-            "tags": {"new": tags},
-        },
+        "changes": {"tags": {"new": tags},},
         "comment": f"DNS zone {zone} has been updated.",
         "name": zone,
         "result": True,
     }
     ret = await hub.states.azurerm.dns.zone.present(
-        ctx,
-        name=zone,
-        resource_group=resource_group,
-        tags=tags,
+        ctx, name=zone, resource_group=resource_group, tags=tags,
     )
     assert ret == expected
 
@@ -56,12 +49,7 @@ async def test_changes(hub, ctx, zone, resource_group, tags):
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, zone, resource_group):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": zone,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": zone,},},
         "comment": f"DNS zone {zone} has been deleted.",
         "name": zone,
         "result": True,

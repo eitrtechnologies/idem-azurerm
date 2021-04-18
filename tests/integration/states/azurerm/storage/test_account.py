@@ -38,14 +38,8 @@ async def test_present(hub, ctx, resource_group, location, storage_account):
                 "encryption": {
                     "key_source": "Microsoft.Storage",
                     "services": {
-                        "blob": {
-                            "enabled": True,
-                            "key_type": "Account",
-                        },
-                        "file": {
-                            "enabled": True,
-                            "key_type": "Account",
-                        },
+                        "blob": {"enabled": True, "key_type": "Account",},
+                        "file": {"enabled": True, "key_type": "Account",},
                     },
                 },
             },
@@ -76,11 +70,7 @@ async def test_changes(hub, ctx, resource_group, tags, location, storage_account
     sku = "Standard_LRS"
     kind = "StorageV2"
     expected = {
-        "changes": {
-            "tags": {
-                "new": tags,
-            },
-        },
+        "changes": {"tags": {"new": tags,},},
         "comment": f"Storage account {storage_account} has been updated.",
         "name": storage_account,
         "result": True,
@@ -101,12 +91,7 @@ async def test_changes(hub, ctx, resource_group, tags, location, storage_account
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, storage_account):
     expected = {
-        "changes": {
-            "new": {},
-            "old": {
-                "name": storage_account,
-            },
-        },
+        "changes": {"new": {}, "old": {"name": storage_account,},},
         "comment": f"Storage account {storage_account} has been deleted.",
         "name": storage_account,
         "result": True,
