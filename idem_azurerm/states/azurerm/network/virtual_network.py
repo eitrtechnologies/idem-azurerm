@@ -95,7 +95,7 @@ async def present(
     """
     .. versionadded:: 1.0.0
 
-    .. versionchanged:: 4.0.0
+    .. versionchanged:: 4.0.0, 4.0.1
 
     Ensure a virtual network exists.
 
@@ -223,14 +223,12 @@ async def present(
                 }
 
         # Functionality not usable until next version bump
-        """
-        if enable_vm_protection is not None:
-            if enable_vm_protection != vnet.get("enable_vm_protection"):
-                ret["changes"]["enable_vm_protection"] = {
-                    "old": vnet.get("enable_vm_protection"),
-                    "new": enable_vm_protection,
-                }
-        """
+        # if enable_vm_protection is not None:
+        #    if enable_vm_protection != vnet.get("enable_vm_protection"):
+        #        ret["changes"]["enable_vm_protection"] = {
+        #            "old": vnet.get("enable_vm_protection"),
+        #            "new": enable_vm_protection,
+        #        }
 
         if not ret["changes"]:
             ret["result"] = True
