@@ -4,7 +4,7 @@ Azure Resource Manager (ARM) Virtual Network State Module
 
 .. versionadded:: 1.0.0
 
-.. versionchanged:: 4.0.0, 4.0.1
+.. versionchanged:: 4.0.0, 5.0.0
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
