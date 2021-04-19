@@ -95,7 +95,7 @@ async def present(
     """
     .. versionadded:: 1.0.0
 
-    .. versionchanged:: 4.0.0, 4.0.1
+    .. versionchanged:: 4.0.0, 5.0.0
 
     Ensure a virtual network exists.
 
