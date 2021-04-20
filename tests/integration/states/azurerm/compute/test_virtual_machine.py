@@ -21,7 +21,7 @@ async def test_present(hub, ctx, vm, resource_group, vnet, subnet, password):
         "changes": {
             "new": {
                 "name": vm,
-                "hardware_profile": {"vm_size": vm_size.lower()},
+                "hardware_profile": {"vm_size": vm_size},
                 "storage_profile": {
                     "image_reference": {
                         "publisher": image_info[0],

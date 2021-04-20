@@ -13,7 +13,7 @@ async def test_present(hub, ctx, vnet, vnet2, resource_group):
                 "dhcp_options": {"dns_servers": []},
                 "location": "eastus",
                 "enable_ddos_protection": False,
-                "enable_vm_protection": False,
+                # "enable_vm_protection": False, # Not usable until next version bump
                 "subnets": [],
                 "virtual_network_peerings": [],
                 "type": "Microsoft.Network/virtualNetworks",

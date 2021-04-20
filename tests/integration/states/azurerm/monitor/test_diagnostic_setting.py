@@ -49,6 +49,7 @@ async def test_present(
                 "metrics": metrics,
                 "logs": logs,
                 "storage_account_id": storage_account_id,
+                "type": "Microsoft.Insights/diagnosticSettings",
             },
             "old": {},
         },

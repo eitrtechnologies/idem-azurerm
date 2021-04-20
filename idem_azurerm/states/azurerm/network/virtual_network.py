@@ -4,7 +4,7 @@ Azure Resource Manager (ARM) Virtual Network State Module
 
 .. versionadded:: 1.0.0
 
-.. versionchanged:: 4.0.0
+.. versionchanged:: 4.0.0, 5.0.0
 
 :maintainer: <devops@eitr.tech>
 :configuration: This module requires Azure Resource Manager credentials to be passed via acct. Note that the
@@ -85,7 +85,7 @@ async def present(
     address_prefixes,
     resource_group,
     dns_servers=None,
-    enable_vm_protection=False,
+    # enable_vm_protection=False, # Not usable until next version bump
     enable_ddos_protection=False,
     ddos_protection_plan=None,
     tags=None,
@@ -95,7 +95,7 @@ async def present(
     """
     .. versionadded:: 1.0.0
 
-    .. versionchanged:: 4.0.0
+    .. versionchanged:: 4.0.0, 5.0.0
 
     Ensure a virtual network exists.
 
@@ -110,10 +110,6 @@ async def present(
 
     :param dns_servers:
         A list of DNS server addresses.
-
-    :param enable_vm_protection:
-        A boolean value indicating if VM protection is enabled for all the subnets in the virtual network.
-        Defaults to False.
 
     :param enable_ddos_protection:
         A boolean value indicating whether a DDoS protection is enabled for all the protected resources in
@@ -226,12 +222,13 @@ async def present(
                     "new": ddos_protection_plan,
                 }
 
-        if enable_vm_protection is not None:
-            if enable_vm_protection != vnet.get("enable_vm_protection"):
-                ret["changes"]["enable_vm_protection"] = {
-                    "old": vnet.get("enable_vm_protection"),
-                    "new": enable_vm_protection,
-                }
+        # Functionality not usable until next version bump
+        # if enable_vm_protection is not None:
+        #    if enable_vm_protection != vnet.get("enable_vm_protection"):
+        #        ret["changes"]["enable_vm_protection"] = {
+        #            "old": vnet.get("enable_vm_protection"),
+        #            "new": enable_vm_protection,
+        #        }
 
         if not ret["changes"]:
             ret["result"] = True
@@ -258,7 +255,7 @@ async def present(
         address_prefixes=address_prefixes,
         dns_servers=dns_servers,
         enable_ddos_protection=enable_ddos_protection,
-        enable_vm_protection=enable_vm_protection,
+        # enable_vm_protection=enable_vm_protection, # Not usable until next version bump
         ddos_protection_plan=ddos_protection_plan,
         tags=tags,
         **vnet_kwargs,
