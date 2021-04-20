@@ -16,18 +16,6 @@ The azurerm idem provider can be installed via pip:
 pip install idem-azurerm
 ```
 
-## INSTALLATION FOR DEVELOPMENT
-1. Clone the `idem-azurerm` repository.
-2. Install requirements with pip:
-```
-pip install -r requirements.txt
-```
-3. Install `idem-azurerm` in "editable" mode:
-```
-pip install -e <path cloned repo>
-```
-You are now fully set up to begin developing additional functionality for this provider.
-
 ## CREDENTIALS
 This provider requires that a dictionary populated with valid Azure credentials be passed via
 [acct](https://gitlab.com/saltstack/pop/acct).
@@ -91,4 +79,50 @@ Once you determine that your state file with perform the intended operations, th
 by running idem like so:
 ```
 (env) $ idem state mytest.sls
+```
+
+## DEVELOPMENT
+
+### Installation For Development
+
+1. Clone the `idem-azurerm` repository.
+2. Install requirements with pip:
+
+```
+pip install -r requirements.txt
+```
+
+3. Install `idem-azurerm` in "editable" mode:
+
+```
+pip install -e <path cloned repo>
+```
+
+You are now fully set up to begin developing additional functionality for this provider.
+
+### Integration Tests
+
+Integration tests run against Azure using credentials as detailed [above](#CREDENTIALS). Keep in mind running
+integration tests incur real costs for your subscription. The Resource Group used for testing ought to be cleaned up at
+the end of the `pytest` run, but ***if the test process is abnormally interrupted clean up may not happen, and you'll
+need to manually remove any resources that remain***.
+
+#### IAM requirements
+
+To run tests you will need to create an App Registration, and under your subscription add a Role Assignment for it.
+Minimally, assign the role 'Contributor' to run the majority of tests. If you want to run all tests additional
+authorization is required, but currently undocumented.
+
+#### Run The Tests
+
+After creating credentials and exporting them as above, to run all but the expensive tests:
+
+```shell
+pytest
+```
+
+By default, tests marked as `@pytest.mark.expensive_test` will not be run, but to include them:
+
+```shell
+pytest --run-expensive
 ```

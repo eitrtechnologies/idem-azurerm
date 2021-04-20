@@ -16,6 +16,7 @@ def sku():
 
 
 @pytest.mark.run(order=3)
+@pytest.mark.expensive_test
 @pytest.mark.slow
 @pytest.mark.asyncio
 async def test_present(hub, ctx, resource_group, location, sku, redis_cache):
@@ -59,6 +60,7 @@ async def test_present(hub, ctx, resource_group, location, sku, redis_cache):
 
 
 @pytest.mark.run(order=3, after="test_present", before="test_absent")
+@pytest.mark.expensive_test
 @pytest.mark.slow
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, resource_group, location, sku, redis_cache):
@@ -81,6 +83,7 @@ async def test_changes(hub, ctx, resource_group, location, sku, redis_cache):
 
 
 @pytest.mark.run(order=-3)
+@pytest.mark.expensive_test
 @pytest.mark.slow
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, resource_group, redis_cache):

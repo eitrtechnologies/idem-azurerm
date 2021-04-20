@@ -3,13 +3,6 @@ import random
 import string
 
 
-@pytest.fixture(scope="session")
-def password():
-    yield "#PASS" + "".join(
-        random.choice(string.ascii_lowercase + string.digits) for _ in range(16)
-    ) + "!"
-
-
 @pytest.mark.run(order=5)
 @pytest.mark.asyncio
 async def test_present(hub, ctx, vm, resource_group, vnet, subnet, password):

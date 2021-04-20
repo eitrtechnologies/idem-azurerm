@@ -11,6 +11,7 @@ def vnet_rule():
 
 
 @pytest.mark.run(order=4)
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 async def test_present(
     hub, ctx, vnet_rule, postgresql_server, resource_group, subnet, vnet,
@@ -48,6 +49,7 @@ async def test_present(
 
 
 @pytest.mark.run(order=4, after="test_present", before="test_absent")
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 async def test_changes(
     hub, ctx, vnet_rule, postgresql_server, resource_group, subnet, vnet,
@@ -81,6 +83,7 @@ async def test_changes(
 
 
 @pytest.mark.run(order=-4)
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, vnet_rule, postgresql_server, resource_group):
     expected = {

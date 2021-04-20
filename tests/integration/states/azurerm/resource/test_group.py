@@ -5,21 +5,13 @@ import pytest
 @pytest.mark.asyncio
 async def test_present(hub, ctx, resource_group, location):
     expected = {
-        "changes": {
-            "new": {
-                "location": location,
-                "name": resource_group,
-                "type": "Microsoft.Resources/resourceGroups",
-                "properties": {"provisioning_state": "Succeeded"},
-            },
-            "old": {},
-        },
-        "comment": f"Resource group {resource_group} has been created.",
         "name": resource_group,
         "result": True,
+        "comment": f"Resource group {resource_group} is already present.",
+        "changes": {},
     }
+
     ret = await hub.states.azurerm.resource.group.present(ctx, resource_group, location)
-    ret["changes"]["new"].pop("id")
     assert ret == expected
 
 

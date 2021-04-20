@@ -11,6 +11,7 @@ def bastion_host():
 
 
 @pytest.mark.run(order=4)
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 @pytest.mark.slow
 async def test_present(hub, ctx, bastion_host, resource_group, vnet, public_ip_addr):
@@ -63,6 +64,7 @@ async def test_present(hub, ctx, bastion_host, resource_group, vnet, public_ip_a
 
 
 @pytest.mark.run(order=4, after="test_present", before="test_absent")
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 @pytest.mark.slow
 async def test_changes(
@@ -95,6 +97,7 @@ async def test_changes(
 
 
 @pytest.mark.run(order=-4)
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 @pytest.mark.slow
 async def test_absent(hub, ctx, bastion_host, resource_group):

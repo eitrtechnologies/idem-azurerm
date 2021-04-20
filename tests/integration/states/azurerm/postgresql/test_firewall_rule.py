@@ -11,6 +11,7 @@ def fw_rule():
 
 
 @pytest.mark.run(order=4)
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 async def test_present(hub, ctx, fw_rule, postgresql_server, resource_group):
     start_addr = "10.0.0.0"
@@ -42,6 +43,7 @@ async def test_present(hub, ctx, fw_rule, postgresql_server, resource_group):
 
 
 @pytest.mark.run(order=4, after="test_present", before="test_absent")
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, fw_rule, postgresql_server, resource_group):
     start_addr = "10.0.0.0"
@@ -65,6 +67,7 @@ async def test_changes(hub, ctx, fw_rule, postgresql_server, resource_group):
 
 
 @pytest.mark.run(order=-4)
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, fw_rule, postgresql_server, resource_group):
     expected = {

@@ -3,14 +3,8 @@ import random
 import string
 
 
-@pytest.fixture(scope="session")
-def password():
-    yield "#" + "".join(
-        random.choice(string.ascii_lowercase + string.digits) for _ in range(16)
-    ) + "!"
-
-
 @pytest.mark.run(order=3)
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 async def test_present(hub, ctx, postgresql_server, resource_group, location, password):
     login = "dbadmin"
@@ -68,6 +62,7 @@ async def test_present(hub, ctx, postgresql_server, resource_group, location, pa
 
 
 @pytest.mark.run(order=3, after="test_present", before="test_absent")
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, postgresql_server, resource_group, location, password):
     login = "dbadmin"
@@ -94,6 +89,7 @@ async def test_changes(hub, ctx, postgresql_server, resource_group, location, pa
 
 
 @pytest.mark.run(order=-3)
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, postgresql_server, resource_group):
     expected = {

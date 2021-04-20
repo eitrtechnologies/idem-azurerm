@@ -2,7 +2,7 @@ asynctest>=0.13.0
 mock>=4.0.2
 pytest>=6.0.1
 pytest-asyncio>=0.14.0
-pytest-pop>=6.3
+pytest-pop>=6.5.0
 pytest-subtests>=0.4.0
 pytest-ordering>=0.6
 sphinx
