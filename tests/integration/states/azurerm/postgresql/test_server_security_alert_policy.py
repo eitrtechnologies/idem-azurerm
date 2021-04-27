@@ -2,6 +2,7 @@ import pytest
 
 
 @pytest.mark.run(order=4)
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 async def test_present(hub, ctx, postgresql_server, resource_group):
     name = "Default"
@@ -22,6 +23,7 @@ async def test_present(hub, ctx, postgresql_server, resource_group):
 
 
 @pytest.mark.run(order=4, after="test_present")
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 async def test_changes(hub, ctx, postgresql_server, resource_group):
     name = "Default"

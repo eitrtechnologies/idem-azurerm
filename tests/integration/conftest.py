@@ -46,10 +46,16 @@ def tags():
 
 
 @pytest.fixture(scope="session")
-def resource_group():
-    yield "rg-idem-inttest-" + "".join(
+async def resource_group(hub, ctx, location):
+    name = "rg-idem-inttest-" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(20)
     )
+
+    await hub.states.azurerm.resource.group.present(ctx, name, location)
+    yield name
+
+    # Clean up
+    await hub.states.azurerm.resource.group.absent(ctx, name, location)
 
 
 @pytest.fixture(scope="session")
@@ -190,3 +196,10 @@ def acr():
     yield "acrideminttest" + "".join(
         random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
     )
+
+
+@pytest.fixture(scope="session")
+def password():
+    yield "#PASS" + "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(16)
+    ) + "!"

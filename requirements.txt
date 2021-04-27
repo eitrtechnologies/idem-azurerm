@@ -1,5 +1,5 @@
-pop==13.2
-acct==2.3
+pop~=17.1
+acct==6
 idem==7.4
 pop-config==6.10
 takara==1.2

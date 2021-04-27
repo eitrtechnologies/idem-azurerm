@@ -11,6 +11,7 @@ def postgresql_db():
 
 
 @pytest.mark.run(order=4)
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 async def test_present(hub, ctx, postgresql_db, postgresql_server, resource_group):
     expected = {
@@ -38,6 +39,7 @@ async def test_present(hub, ctx, postgresql_db, postgresql_server, resource_grou
 
 
 @pytest.mark.run(order=-4)
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 async def test_absent(hub, ctx, postgresql_db, postgresql_server, resource_group):
     expected = {

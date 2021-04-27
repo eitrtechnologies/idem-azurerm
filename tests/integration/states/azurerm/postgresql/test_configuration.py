@@ -2,6 +2,7 @@ import pytest
 
 
 @pytest.mark.run(order=4)
+@pytest.mark.expensive_test
 @pytest.mark.asyncio
 async def test_present_and_changes(hub, ctx, postgresql_server, resource_group):
     config_name = "log_retention_days"
